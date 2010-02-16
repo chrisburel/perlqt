@@ -158,17 +158,18 @@ sub setRenderer
     this->m_highQualityAntialiasingAction->setEnabled(0);
 #endif
 
-    if ($action == this->m_nativeAction) {
-        this->m_view->setRenderer(SvgView::Native());
+    # FIXME Why doesn't adding an operator overload to call op_ref_equal work?
+    if ($action->op_ref_equal( this->m_nativeAction ) ) {
+        this->m_view->setRenderer(SvgView::Native);
     }
-#ifndef Qt::T_NO_OPENGL
-    elsif ($action == this->m_glAction) {
+#ifndef QT_NO_OPENGL
+    elsif ($action->op_ref_equal( this->m_glAction ) ) {
         this->m_highQualityAntialiasingAction->setEnabled(1);
-        this->m_view->setRenderer(SvgView::OpenGL());
+        this->m_view->setRenderer(SvgView::OpenGL);
     }
 #endif
-    elsif ($action == this->m_imageAction) {
-        this->m_view->setRenderer(SvgView::Image());
+    elsif ($action->op_ref_equal( this->m_imageAction ) ) {
+        this->m_view->setRenderer(SvgView::Image);
     }
 }
 

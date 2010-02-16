@@ -48,6 +48,7 @@ sub NEW
     this->{svgItem} = 0;
     this->{backgroundItem} = 0;
     this->{outlineItem} = 0;
+    this->{m_image} = Qt::Image();
 
     this->setScene(Qt::GraphicsScene(this));
     this->setTransformationAnchor(Qt::GraphicsView::AnchorUnderMouse());
@@ -104,7 +105,9 @@ sub openFile
     my $outline = Qt::Pen(Qt::Brush(Qt::black()), 2, Qt::DashLine());
     $outline->setCosmetic(1);
     this->m_outlineItem->setPen($outline);
-    this->m_outlineItem->setBrush(Qt::Brush(Qt::NoBrush()));
+    # FIXME This should work with the 1 argument form.  But that has been cached
+    # already as calling the QBrush(Qt::GlobalColor) constructor.
+    this->m_outlineItem->setBrush(Qt::Brush(Qt::white(), Qt::NoBrush()));
     this->m_outlineItem->setVisible($drawOutline);
     this->m_outlineItem->setZValue(1);
 
@@ -166,11 +169,12 @@ sub paintEvent
         }
 
         my $imagePainter = Qt::Painter(this->m_image);
-        Qt::GraphicsView::render($imagePainter);
+        this->SUPER->render($imagePainter);
         $imagePainter->end();
 
         my $p = Qt::Painter(this->viewport());
         $p->drawImage(0, 0, this->m_image);
+        $p->end();
 
     } else {
         this->SUPER->paintEvent($event);
@@ -180,7 +184,7 @@ sub paintEvent
 sub wheelEvent
 {
     my ($event) = @_;
-    my $factor = 1.2 ** $event->delta() / 240.0;
+    my $factor = 1.2 ** ($event->delta() / 240.0);
     this->scale($factor, $factor);
     $event->accept();
 }
