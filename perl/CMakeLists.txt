@@ -11,6 +11,7 @@ if(PERLQT_ENABLED)
     SET(CUSTOM_PERL_SITE_ARCH_DIR ${PERL_SITE_ARCH_DIR} CACHE DIR "Custom installation directory for perl binary extension" )
 
     add_subdirectory(lib)
+    add_subdirectory(tools)
 
     include_directories( ${CMAKE_SOURCE_DIR}/smoke ${PERL_INCLUDE_PATH} )
     include_directories( ${QT_INCLUDES} )

@@ -838,7 +838,7 @@ sub import { goto &Exporter::import }
 sub Qt::Object::ON_DESTROY {
     package Qt::_internal;
     my $parent = Qt::this()->parent;
-    if( $parent ) {
+    if( defined $parent ) {
         my $ptr = sv_to_ptr(Qt::this());
         ${ $parent->{'hidden children'} }{ $ptr } = Qt::this();
         Qt::this()->{'has been hidden'} = 1;
