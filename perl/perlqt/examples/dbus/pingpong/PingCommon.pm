@@ -3,7 +3,7 @@ package PingCommon;
 use strict;
 use warnings;
 
-use constant SERVICE_NAME => 'com.trolltech.Qt4DBus.PingExample';
+use constant SERVICE_NAME => 'com.trolltech.QtDBus.PingExample';
 
 require Exporter;
 use base qw(Exporter);

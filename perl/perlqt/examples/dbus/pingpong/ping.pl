@@ -19,7 +19,7 @@ sub main {
 
     my $iface = Qt4::DBusInterface(SERVICE_NAME, '/', '', Qt4::DBusConnection::sessionBus());
     if ($iface->isValid()) {
-        my $reply = Qt4::DBusReply( $iface->call( 'ping', Qt4::Variant(@ARGV > 0 ? $ARGV[0] : '')) );
+        my $reply = Qt4::DBusReply( $iface->call( 'ping', Qt4::Variant(@ARGV > 0 ? Qt4::String($ARGV[0]) : Qt4::String(''))) );
         if ($reply->isValid()) {
             printf "Reply was: %s\n", $reply->value();
             exit 0;
