@@ -140,13 +140,11 @@ Smoke::Index package_classid(const char *package) {
 
     // Get the ISA array, nisa is a temp string to build package::ISA
     char *nisa = new char[strlen(package)+6];
-    strcpy(nisa, package);
-    strcat(nisa, "::ISA");
+    sprintf(nisa, "%s::ISA", package);
     AV* isa=get_av(nisa, true);
+    delete[] nisa;
 
     // Loop over the ISA array
-    //fprintf( stderr, "ISA contains %d entries for %s\n", av_len(isa), nisa );
-    delete[] nisa;
     for(int i=0; i<=av_len(isa); i++) {
         // Get the value of the current index into @isa
         SV** np = av_fetch(isa, i, 0); // np = 'new package'?
@@ -220,21 +218,34 @@ XS(XS_Qt__myQAbstractItemModel_flags){
     if( do_debug && ( do_debug | qtdb_autoload ) )
         fprintf( stderr, "In XS Custom   for Qt::QAbstractItemModel::flags\n" );
 
-    QAbstractItemModel* mythis = (QAbstractItemModel*)sv_obj_info(sv_this)->ptr;
-    QModelIndex* modelix = (QModelIndex*)sv_obj_info( ST(0) )->ptr;
-    SV* retval = newSViv(mythis->QAbstractItemModel::flags( *modelix ));
-    /*
     char *classname = "QAbstractItemModel";
     char *methodname = "flags#";
 
-    Smoke::StackItem args[items + 1];
-    args[1].s_voidp = sv_obj_info( ST(0) )->ptr;
-
     Smoke::Index methodIndex = getMethod(qt_Smoke, classname, methodname );
-    fprintf(stderr, "methodIndex: %d\n", methodIndex);
 
-    callMethod( qt_Smoke, sv_this, methodIndex, args );
+    /*
+    //Method 1
+    QAbstractItemModel* mythis = (QAbstractItemModel*)sv_obj_info(sv_this)->ptr;
+    QModelIndex* modelix = (QModelIndex*)sv_obj_info( ST(0) )->ptr;
+    SV* retval = newSViv(mythis->QAbstractItemModel::flags( *modelix ));
+
+    //Method 2
+    Smoke::StackItem args[items + 1];
+    // ST(0) should contain 'this'.  ST(1) is the 1st arg.
+    args[1].s_voidp = sv_obj_info( ST(1) )->ptr;
+    callMethod( qt_Smoke, sv_obj_info(sv_this)->ptr, methodIndex, args );
+    SV* retval = newSViv(args[0].s_int);
     */
+
+    //Method 3
+    int withObject = 1;
+    PerlQt::MethodCall call( qt_Smoke,
+                             methodIndex,
+                             sv_obj_info(sv_this),
+                             SP - items + 1 + withObject,
+                             items - withObject );
+    call.next();
+    SV* retval = call.var();
 
     // Put the return value onto perl's stack
     ST(0) = sv_2mortal(retval);

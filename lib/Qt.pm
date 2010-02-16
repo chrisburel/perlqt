@@ -95,9 +95,13 @@ require Exporter;
 
 our $VERSION = '0.01';
 
+our @EXPORT = qw( &emit );
+
 XSLoader::load('Qt', $VERSION);
 
 Qt::_internal::init();
+
+sub emit (@) { pop @_ }
 
 # Preloaded methods go here.
 

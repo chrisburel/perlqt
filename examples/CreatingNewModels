@@ -67,14 +67,24 @@ sub flags {
         return 32; #Qt::ItemIsEnabled
     }
 
-    return SUPER->flags($index) | 2; #Qt::ItemIsEditable
+    return SUPER->flags(this, $index) | 2; #Qt::ItemIsEditable
 }
 
+sub setData {
+    my( $index, $value, $role ) = @_;
+    if ($index->isValid() && $role == 2) { #Qt::EditRole
+        @stringList[$index->row()] = $value->toString();
+        this->dataChanged($index, $index); # emit
+        return 1;
+    }
+    return 0;
+}
 1;
 
 package main;
 
 use Qt;
+#use Qt::debug qw(all);
 use myStringListModel;
 
 my $model = myStringListModel( [qw( Hello world you are awesome )] );
