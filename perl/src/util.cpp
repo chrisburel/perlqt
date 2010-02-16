@@ -330,6 +330,7 @@ QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName, QList<Q
 // c++ pointer.  This reference allows you to trace back to a perl package, and
 // find a subroutine in that package to call.
 SV* getPointerObject(void* ptr) {
+    if (PL_dirty) return 0;
     HV *hv = pointer_map;
     SV *keysv = newSViv((IV)ptr);
     STRLEN len;
@@ -343,9 +344,7 @@ SV* getPointerObject(void* ptr) {
     }
     // Corrupt entry, not sure how this would happen
     if(!SvOK(*svp)){
-        if( !PL_dirty ) {
-            hv_delete(hv, key, len, G_DISCARD);
-        }
+        hv_delete(hv, key, len, G_DISCARD);
         SvREFCNT_dec(keysv);
         return 0;
     }
