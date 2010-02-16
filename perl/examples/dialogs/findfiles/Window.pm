@@ -4,11 +4,11 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::Dialog );
+use Qt4;
+use Qt4::isa qw( Qt4::Dialog );
 
 # [0]
-use Qt::slots
+use Qt4::slots
     browse => [],
     find => [],
     openFileOfItem => ['int', 'int'];
@@ -23,22 +23,22 @@ sub NEW {
 
     my $fileComboBox = createComboBox(this->tr('*'));
     my $textComboBox = createComboBox();
-    my $directoryComboBox = createComboBox(Qt::Dir::currentPath());
+    my $directoryComboBox = createComboBox(Qt4::Dir::currentPath());
 
-    my $fileLabel = Qt::Label(this->tr('Named:'));
-    my $textLabel = Qt::Label(this->tr('Containing text:'));
-    my $directoryLabel = Qt::Label(this->tr('In directory:'));
-    my $filesFoundLabel = Qt::Label();
+    my $fileLabel = Qt4::Label(this->tr('Named:'));
+    my $textLabel = Qt4::Label(this->tr('Containing text:'));
+    my $directoryLabel = Qt4::Label(this->tr('In directory:'));
+    my $filesFoundLabel = Qt4::Label();
 
     createFilesTable();
 # [0]
 
 # [1]
-    my $buttonsLayout = Qt::HBoxLayout();
+    my $buttonsLayout = Qt4::HBoxLayout();
     $buttonsLayout->addStretch();
     $buttonsLayout->addWidget($findButton);
 
-    my $mainLayout = Qt::GridLayout();
+    my $mainLayout = Qt4::GridLayout();
     $mainLayout->addWidget($fileLabel, 0, 0);
     $mainLayout->addWidget($fileComboBox, 0, 1, 1, 2);
     $mainLayout->addWidget($textLabel, 1, 0);
@@ -68,8 +68,8 @@ sub NEW {
 
 # [2]
 sub browse {
-    my $directory = Qt::FileDialog::getExistingDirectory(this,
-                               this->tr('Find Files'), Qt::Dir::currentPath());
+    my $directory = Qt4::FileDialog::getExistingDirectory(this,
+                               this->tr('Find Files'), Qt4::Dir::currentPath());
 
     my $directoryComboBox = this->{directoryComboBox};
     if ($directory) {
@@ -107,14 +107,14 @@ sub find {
     updateComboBox($directoryComboBox);
 
 # [4]
-    $currentDir = Qt::Dir($path);
+    $currentDir = Qt4::Dir($path);
     this->{currentDir} = $currentDir;
     my $files;
     if (!$fileName) {
         $fileName = '*';
     }
     $files = $currentDir->entryList( [ $fileName ],
-                                 Qt::Dir::Files() | Qt::Dir::NoSymLinks());
+                                 Qt4::Dir::Files() | Qt4::Dir::NoSymLinks());
 
     if ($text) {
         $files = findFiles($files, $text);
@@ -127,7 +127,7 @@ sub find {
 
 sub findFiles {
     my ($files, $text) = @_;
-    my $progressDialog = Qt::ProgressDialog(this);
+    my $progressDialog = Qt4::ProgressDialog(this);
     $progressDialog->setCancelButtonText(this->tr('&Cancel'));
     $progressDialog->setRange(0, $#{$files});
     $progressDialog->setWindowTitle(this->tr('Find Files'));
@@ -146,11 +146,11 @@ sub findFiles {
         }
 
 # [7]
-        my $file = Qt::File(this->{currentDir}->absoluteFilePath($files->[$i]));
+        my $file = Qt4::File(this->{currentDir}->absoluteFilePath($files->[$i]));
 
-        if ($file->open(Qt::IODevice::ReadOnly())) {
+        if ($file->open(Qt4::IODevice::ReadOnly())) {
             my $line;
-            my $in = Qt::TextStream($file);
+            my $in = Qt4::TextStream($file);
             while (!$in->atEnd()) {
                 if ($progressDialog->wasCanceled()) {
                     last;
@@ -171,17 +171,17 @@ sub findFiles {
 sub showFiles {
     my ($files) = @_;
     my $filesTable = this->{filesTable};
-    for (my $i = 0; $i < $#{$files}; ++$i) {
-        my $file = Qt::File(this->{currentDir}->absoluteFilePath($files->[$i]));
-        my $size = Qt::FileInfo($file)->size();
+    for (my $i = 0; $i < @{$files}; ++$i) {
+        my $file = Qt4::File(this->{currentDir}->absoluteFilePath($files->[$i]));
+        my $size = Qt4::FileInfo($file)->size();
 
-        my $fileNameItem = Qt::TableWidgetItem($files->[$i]);
-        $fileNameItem->setFlags($fileNameItem->flags() ^ Qt::ItemIsEditable());
+        my $fileNameItem = Qt4::TableWidgetItem($files->[$i]);
+        $fileNameItem->setFlags($fileNameItem->flags() ^ Qt4::ItemIsEditable());
         $DB::single=1;
-        my $sizeItem = Qt::TableWidgetItem(this->tr(sprintf '%d KB',
+        my $sizeItem = Qt4::TableWidgetItem(this->tr(sprintf '%d KB',
                                              (($size + 1023) / 1024)));
-        $sizeItem->setTextAlignment(Qt::AlignRight() | Qt::AlignVCenter());
-        $sizeItem->setFlags($sizeItem->flags() ^ Qt::ItemIsEditable());
+        $sizeItem->setTextAlignment(Qt4::AlignRight() | Qt4::AlignVCenter());
+        $sizeItem->setFlags($sizeItem->flags() ^ Qt4::ItemIsEditable());
 
         my $row = $filesTable->rowCount();
         $filesTable->insertRow($row);
@@ -197,7 +197,7 @@ sub showFiles {
 # [9]
 sub createButton {
     my ($text, $member) = @_;
-    my $button = Qt::PushButton($text);
+    my $button = Qt4::PushButton($text);
     this->connect($button, SIGNAL 'clicked()', this, $member);
     return $button;
 }
@@ -206,24 +206,24 @@ sub createButton {
 # [10]
 sub createComboBox {
     my ($text) = @_;
-    my $comboBox = Qt::ComboBox();
+    my $comboBox = Qt4::ComboBox();
     $comboBox->setEditable(1);
     $comboBox->addItem($text);
-    $comboBox->setSizePolicy(Qt::SizePolicy::Expanding(), Qt::SizePolicy::Preferred());
+    $comboBox->setSizePolicy(Qt4::SizePolicy::Expanding(), Qt4::SizePolicy::Preferred());
     return $comboBox;
 }
 # [10]
 
 # [11]
 sub createFilesTable {
-    my $filesTable = Qt::TableWidget(0, 2);
+    my $filesTable = Qt4::TableWidget(0, 2);
     this->{filesTable} = $filesTable;
-    $filesTable->setSelectionBehavior(Qt::AbstractItemView::SelectRows());
+    $filesTable->setSelectionBehavior(Qt4::AbstractItemView::SelectRows());
 
     my @labels;
     push @labels, this->tr('File Name'), this->tr('Size');
     $filesTable->setHorizontalHeaderLabels(\@labels);
-    $filesTable->horizontalHeader()->setResizeMode(0, Qt::HeaderView::Stretch());
+    $filesTable->horizontalHeader()->setResizeMode(0, Qt4::HeaderView::Stretch());
     $filesTable->verticalHeader()->hide();
     $filesTable->setShowGrid(0);
 
@@ -239,7 +239,7 @@ sub openFileOfItem {
     my $filesTable = this->{filesTable};
     my $item = $filesTable->item($row, 0);
 
-    Qt::DesktopServices::openUrl(Qt::Url(this->{currentDir}->absoluteFilePath($item->text())));
+    Qt4::DesktopServices::openUrl(Qt4::Url(this->{currentDir}->absoluteFilePath($item->text())));
 }
 
 # [12]

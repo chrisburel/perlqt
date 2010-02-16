@@ -3,17 +3,17 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 
 use ClassWizard;
 
 sub main {
-    my $app = Qt::Application(\@ARGV);
+    my $app = Qt4::Application(\@ARGV);
 
     my $translatorFileName = 'qt_';
-    $translatorFileName .= Qt::Locale::system()->name();
-    my $translator = Qt::Translator($app);
-    if ($translator->load($translatorFileName, Qt::LibraryInfo::location(Qt::LibraryInfo::TranslationsPath()))) {
+    $translatorFileName .= Qt4::Locale::system()->name();
+    my $translator = Qt4::Translator($app);
+    if ($translator->load($translatorFileName, Qt4::LibraryInfo::location(Qt4::LibraryInfo::TranslationsPath()))) {
         $app->installTranslator($translator);
     }
 

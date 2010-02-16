@@ -3,12 +3,12 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 
 use FindDialog;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
     my $dialog = FindDialog();
     exit $dialog->exec();
 }

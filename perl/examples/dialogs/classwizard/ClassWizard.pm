@@ -4,17 +4,17 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::WizardPage );
+use Qt4;
+use Qt4::isa qw( Qt4::WizardPage );
 
 #! [7]
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
     this->setTitle(this->tr('Introduction'));
-    this->setPixmap(Qt::Wizard::WatermarkPixmap(), Qt::Pixmap('images/watermark1.png'));
+    this->setPixmap(Qt4::Wizard::WatermarkPixmap(), Qt4::Pixmap('images/watermark1.png'));
 
-    my $label = Qt::Label(this->tr('This wizard will generate a skeleton C++ class ' .
+    my $label = Qt4::Label(this->tr('This wizard will generate a skeleton C++ class ' .
                           'definition, including a few functions. You simply ' .
                           'need to specify the class name and set a few ' .
                           'options to produce a header file and an ' .
@@ -22,7 +22,7 @@ sub NEW {
     this->{label} = $label;
     $label->setWordWrap(1);
 
-    my $layout = Qt::VBoxLayout();
+    my $layout = Qt4::VBoxLayout();
     $layout->addWidget($label);
     this->setLayout($layout);
 }
@@ -34,8 +34,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::WizardPage );
+use Qt4;
+use Qt4::isa qw( Qt4::WizardPage );
 
 #! [8] //! [9]
 sub NEW {
@@ -45,36 +45,36 @@ sub NEW {
     this->setTitle(this->tr('Class Information'));
     this->setSubTitle(this->tr('Specify basic information about the class for which you ' .
                    'want to generate skeleton source code files.'));
-    this->setPixmap(Qt::Wizard::LogoPixmap(), Qt::Pixmap('images/logo1.png'));
+    this->setPixmap(Qt4::Wizard::LogoPixmap(), Qt4::Pixmap('images/logo1.png'));
 
 #! [10]
-    my $classNameLabel = Qt::Label(this->tr('&Class name:'));
+    my $classNameLabel = Qt4::Label(this->tr('&Class name:'));
     this->{classNameLabel} = $classNameLabel;
-    my $classNameLineEdit = Qt::LineEdit();
+    my $classNameLineEdit = Qt4::LineEdit();
     this->{classNameLineEdit} = $classNameLineEdit;
     $classNameLabel->setBuddy($classNameLineEdit);
 
-    my $baseClassLabel = Qt::Label(this->tr('B&ase class:'));
+    my $baseClassLabel = Qt4::Label(this->tr('B&ase class:'));
     this->{baseClassLabel} = $baseClassLabel;
-    my $baseClassLineEdit = Qt::LineEdit();
+    my $baseClassLineEdit = Qt4::LineEdit();
     this->{baseClassLineEdit} = $baseClassLineEdit;
     $baseClassLabel->setBuddy($baseClassLineEdit);
 
-    my $qobjectMacroCheckBox = Qt::CheckBox(this->tr('Generate Q_OBJECT &macro'));
+    my $qobjectMacroCheckBox = Qt4::CheckBox(this->tr('Generate Q_OBJECT &macro'));
     this->{qobjectMacroCheckBox} = $qobjectMacroCheckBox;
 
 #! [10]
-    my $groupBox = Qt::GroupBox(this->tr('C&onstructor'));
+    my $groupBox = Qt4::GroupBox(this->tr('C&onstructor'));
     this->{groupBox} = $groupBox;
 #! [9]
 
-    my $qobjectCtorRadioButton = Qt::RadioButton(this->tr('&Qt::Object-style constructor'));
+    my $qobjectCtorRadioButton = Qt4::RadioButton(this->tr('&QObject-style constructor'));
     this->{qobjectCtorRadioButton} = $qobjectCtorRadioButton;
-    my $qwidgetCtorRadioButton = Qt::RadioButton(this->tr('Q&Widget-style constructor'));
+    my $qwidgetCtorRadioButton = Qt4::RadioButton(this->tr('Q&Widget-style constructor'));
     this->{qwidgetCtorRadioButton} = $qwidgetCtorRadioButton;
-    my $defaultCtorRadioButton = Qt::RadioButton(this->tr('&Default constructor'));
+    my $defaultCtorRadioButton = Qt4::RadioButton(this->tr('&Default constructor'));
     this->{defaultCtorRadioButton} = $defaultCtorRadioButton;
-    my $copyCtorCheckBox = Qt::CheckBox(this->tr('&Generate copy constructor and ' .
+    my $copyCtorCheckBox = Qt4::CheckBox(this->tr('&Generate copy constructor and ' .
                                         'operator='));
     this->{copyCtorCheckBox} = $copyCtorCheckBox;
 
@@ -93,7 +93,7 @@ sub NEW {
     this->registerField('defaultCtor', $defaultCtorRadioButton);
     this->registerField('copyCtor', $copyCtorCheckBox);
 
-    my $groupBoxLayout = Qt::VBoxLayout();
+    my $groupBoxLayout = Qt4::VBoxLayout();
 #! [12]
     $groupBoxLayout->addWidget($qobjectCtorRadioButton);
     $groupBoxLayout->addWidget($qwidgetCtorRadioButton);
@@ -101,7 +101,7 @@ sub NEW {
     $groupBoxLayout->addWidget($copyCtorCheckBox);
     $groupBox->setLayout($groupBoxLayout);
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget($classNameLabel, 0, 0);
     $layout->addWidget($classNameLineEdit, 0, 1);
     $layout->addWidget($baseClassLabel, 1, 0);
@@ -119,8 +119,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::WizardPage );
+use Qt4;
+use Qt4::isa qw( Qt4::WizardPage );
 
 #! [14]
 sub NEW {
@@ -128,30 +128,30 @@ sub NEW {
     $class->SUPER::NEW( $parent );
     this->setTitle(this->tr('Code Style Options'));
     this->setSubTitle(this->tr('Choose the formatting of the generated code.'));
-    this->setPixmap(Qt::Wizard::LogoPixmap(), Qt::Pixmap('images/logo2.png'));
+    this->setPixmap(Qt4::Wizard::LogoPixmap(), Qt4::Pixmap('images/logo2.png'));
 
-    my $commentCheckBox = Qt::CheckBox(this->tr('&Start generated files with a ' .
+    my $commentCheckBox = Qt4::CheckBox(this->tr('&Start generated files with a ' .
                                        'comment'));
     this->{commentCheckBox} = $commentCheckBox;
 #! [14]
     $commentCheckBox->setChecked(1);
 
-    my $protectCheckBox = Qt::CheckBox(this->tr('&Protect header file against multiple ' .
+    my $protectCheckBox = Qt4::CheckBox(this->tr('&Protect header file against multiple ' .
                                        'inclusions'));
     this->{protectCheckBox} = $protectCheckBox;
     $protectCheckBox->setChecked(1);
 
-    my $macroNameLabel = Qt::Label(this->tr('&Macro name:'));
+    my $macroNameLabel = Qt4::Label(this->tr('&Macro name:'));
     this->{macroNameLabel} = $macroNameLabel;
-    my $macroNameLineEdit = Qt::LineEdit;
+    my $macroNameLineEdit = Qt4::LineEdit;
     this->{macroNameLineEdit} = $macroNameLineEdit;
     $macroNameLabel->setBuddy($macroNameLineEdit);
 
-    my $includeBaseCheckBox = Qt::CheckBox(this->tr('&Include base class definition'));
+    my $includeBaseCheckBox = Qt4::CheckBox(this->tr('&Include base class definition'));
     this->{includeBaseCheckBox} = $includeBaseCheckBox;
-    my $baseIncludeLabel = Qt::Label(this->tr('Base class include:'));
+    my $baseIncludeLabel = Qt4::Label(this->tr('Base class include:'));
     this->{baseIncludeLabel} = $baseIncludeLabel;
-    my $baseIncludeLineEdit = Qt::LineEdit();
+    my $baseIncludeLineEdit = Qt4::LineEdit();
     this->{baseIncludeLineEdit} = $baseIncludeLineEdit;
     $baseIncludeLabel->setBuddy($baseIncludeLineEdit);
 
@@ -170,7 +170,7 @@ sub NEW {
     this->registerField('includeBase', $includeBaseCheckBox);
     this->registerField('baseInclude', $baseIncludeLineEdit);
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->setColumnMinimumWidth(0, 20);
     $layout->addWidget($commentCheckBox, 0, 0, 1, 3);
     $layout->addWidget($protectCheckBox, 1, 0, 1, 3);
@@ -212,8 +212,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::WizardPage );
+use Qt4;
+use Qt4::isa qw( Qt4::WizardPage );
 
 sub NEW {
     my ( $class, $parent ) = @_;
@@ -221,23 +221,23 @@ sub NEW {
     this->setTitle(this->tr('Output Files'));
     this->setSubTitle(this->tr('Specify where you want the wizard to put the generated ' .
                    'skeleton code.'));
-    this->setPixmap(Qt::Wizard::LogoPixmap(), Qt::Pixmap('images/logo3.png'));
+    this->setPixmap(Qt4::Wizard::LogoPixmap(), Qt4::Pixmap('images/logo3.png'));
 
-    my $outputDirLabel = Qt::Label(this->tr('&Output directory:'));
+    my $outputDirLabel = Qt4::Label(this->tr('&Output directory:'));
     this->{outputDirLabel} = $outputDirLabel;
-    my $outputDirLineEdit = Qt::LineEdit();
+    my $outputDirLineEdit = Qt4::LineEdit();
     this->{outputDirLineEdit} = $outputDirLineEdit;
     $outputDirLabel->setBuddy($outputDirLineEdit);
 
-    my $headerLabel = Qt::Label(this->tr('&Header file name:'));
+    my $headerLabel = Qt4::Label(this->tr('&Header file name:'));
     this->{headerLabel} = $headerLabel;
-    my $headerLineEdit = Qt::LineEdit();
+    my $headerLineEdit = Qt4::LineEdit();
     this->{headerLineEdit} = $headerLineEdit;
     $headerLabel->setBuddy($headerLineEdit);
 
-    my $implementationLabel = Qt::Label(this->tr('&Implementation file name:'));
+    my $implementationLabel = Qt4::Label(this->tr('&Implementation file name:'));
     this->{implementationLabel} = $implementationLabel;
-    my $implementationLineEdit = Qt::LineEdit();
+    my $implementationLineEdit = Qt4::LineEdit();
     this->{implementationLineEdit} = $implementationLineEdit;
     $implementationLabel->setBuddy($implementationLineEdit);
 
@@ -245,7 +245,7 @@ sub NEW {
     this->registerField('header*', $headerLineEdit);
     this->registerField('implementation*', $implementationLineEdit);
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget($outputDirLabel, 0, 0);
     $layout->addWidget($outputDirLineEdit, 0, 1);
     $layout->addWidget($headerLabel, 1, 0);
@@ -260,7 +260,7 @@ sub initializePage {
     my $className = this->field('className')->toString();
     this->{headerLineEdit}->setText(lc $className . '.h');
     this->{implementationLineEdit}->setText(lc $className . '.cpp');
-    this->{outputDirLineEdit}->setText(Qt::Dir::toNativeSeparators(Qt::Dir::tempPath()));
+    this->{outputDirLineEdit}->setText(Qt4::Dir::toNativeSeparators(Qt4::Dir::tempPath()));
 }
 #! [17]
 
@@ -270,26 +270,26 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::WizardPage );
+use Qt4;
+use Qt4::isa qw( Qt4::WizardPage );
 
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
     this->setTitle(this->tr('Conclusion'));
-    this->setPixmap(Qt::Wizard::WatermarkPixmap(), Qt::Pixmap('images/watermark2.png'));
+    this->setPixmap(Qt4::Wizard::WatermarkPixmap(), Qt4::Pixmap('images/watermark2.png'));
 
-    my $label = Qt::Label();
+    my $label = Qt4::Label();
     this->{label} = $label;
     $label->setWordWrap(1);
 
-    my $layout = Qt::VBoxLayout();
+    my $layout = Qt4::VBoxLayout();
     $layout->addWidget($label);
     this->setLayout($layout);
 }
 
 sub initializePage {
-    my $finishText = this->wizard()->buttonText(Qt::Wizard::FinishButton());
+    my $finishText = this->wizard()->buttonText(Qt4::Wizard::FinishButton());
     $finishText =~ s/&//g;
     this->{label}->setText(this->tr("Click $finishText to generate the class skeleton."));
 }
@@ -300,8 +300,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::Wizard );
+use Qt4;
+use Qt4::isa qw( Qt4::Wizard );
 use IntroPage;
 use ClassInfoPage;
 use CodeStylePage;
@@ -320,8 +320,8 @@ sub NEW {
     this->addPage(ConclusionPage());
 #! [0]
 
-    this->setPixmap(Qt::Wizard::BannerPixmap(), Qt::Pixmap('images/banner.png'));
-    this->setPixmap(Qt::Wizard::BackgroundPixmap(), Qt::Pixmap('images/background.png'));
+    this->setPixmap(Qt4::Wizard::BannerPixmap(), Qt4::Pixmap('images/banner.png'));
+    this->setPixmap(Qt4::Wizard::BackgroundPixmap(), Qt4::Pixmap('images/background.png'));
 
     this->setWindowTitle(this->tr('Class Wizard'));
 #! [2]
@@ -375,9 +375,9 @@ sub accept {
     $block .= "public:\n";
 
     if (this->field('qobjectCtor')->toBool()) {
-        $block .= '    ' . $className . "(Qt::Object *parent = 0);\n";
+        $block .= '    ' . $className . "(QObject *parent = 0);\n";
     } elsif (this->field('qwidgetCtor')->toBool()) {
-        $block .= '    ' . $className . "(Qt::Widget *parent = 0);\n";
+        $block .= '    ' . $className . "(QWidget *parent = 0);\n";
     } elsif (this->field('defaultCtor')->toBool()) {
         $block .= '    ' . $className . "();\n";
         if (this->field('copyCtor')->toBool()) {
@@ -394,15 +394,15 @@ sub accept {
         $block .= "#endif\n";
     }
 
-    my $headerFile = Qt::File($outputDir . '/' . $header);
-    if (!$headerFile->open(Qt::File::WriteOnly() | Qt::File::Text())) {
-        Qt::MessageBox::warning(0, Qt::Object::this->tr('Simple Wizard'),
-                             Qt::Object::this->tr('Cannot write file ' . 
+    my $headerFile = Qt4::File($outputDir . '/' . $header);
+    if (!$headerFile->open(Qt4::File::WriteOnly() | Qt4::File::Text())) {
+        Qt4::MessageBox::warning(0, Qt4::Object::this->tr('Simple Wizard'),
+                             Qt4::Object::this->tr('Cannot write file ' . 
                              $headerFile->fileName() . ":\n" .
                              $headerFile->errorString()));
         return;
     }
-    $headerFile->write($block);
+    $headerFile->write(Qt4::ByteArray($block));
     $headerFile->close();
 
     $block = '';
@@ -417,12 +417,12 @@ sub accept {
     $block .= "\n";
 
     if (this->field('qobjectCtor')->toBool()) {
-        $block .= $className . '::' . $className . "(Qt::Object *parent)\n";
+        $block .= $className . '::' . $className . "(QObject *parent)\n";
         $block .= '    : ' . $baseClass . "(parent)\n";
         $block .= "{\n";
         $block .= "}\n";
     } elsif (this->field('qwidgetCtor')->toBool()) {
-        $block .= $className . '::' . $className . "(Qt::Widget *parent)\n";
+        $block .= $className . '::' . $className . "(QWidget *parent)\n";
         $block .= '    : ' . $baseClass . "(parent)\n";
         $block .= "{\n";
         $block .= "}\n";
@@ -452,15 +452,15 @@ sub accept {
         }
     }
 
-    my $implementationFile = Qt::File($outputDir . '/' . $implementation);
-    if (!$implementationFile->open(Qt::File::WriteOnly() | Qt::File::Text())) {
-        Qt::MessageBox::warning(0, Qt::Object::this->tr('Simple Wizard'),
-                             Qt::Object::this->tr('Cannot write file ' . 
+    my $implementationFile = Qt4::File($outputDir . '/' . $implementation);
+    if (!$implementationFile->open(Qt4::File::WriteOnly() | Qt4::File::Text())) {
+        Qt4::MessageBox::warning(0, Qt4::Object::this->tr('Simple Wizard'),
+                             Qt4::Object::this->tr('Cannot write file ' . 
                              $implementationFile->fileName() . ":\n" .
                              $implementationFile->errorString()));
         return;
     }
-    $implementationFile->write($block);
+    $implementationFile->write(Qt4::ByteArray($block));
     $implementationFile->close();
 
 #! [5]

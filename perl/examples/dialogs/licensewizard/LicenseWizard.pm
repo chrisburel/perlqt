@@ -16,9 +16,9 @@ require Exporter;
 my @ISA = qw(Exporter);
 my @EXPORT_OK = qw( Page_Intro Page_Evaluate Page_Register Page_Details Page_Conclusion );
 
-use Qt;
-use Qt::isa qw( Qt::Wizard );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::Wizard );
+use Qt4::slots
     showHelp => [];
 
 package IntroPage;
@@ -27,8 +27,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::WizardPage );
+use Qt4;
+use Qt4::isa qw( Qt4::WizardPage );
 
 # [16]
 sub NEW {
@@ -36,22 +36,22 @@ sub NEW {
     $class->SUPER::NEW( $parent );
 
     this->setTitle(this->tr('Introduction'));
-    this->setPixmap(Qt::Wizard::WatermarkPixmap(), Qt::Pixmap('images/watermark.png'));
+    this->setPixmap(Qt4::Wizard::WatermarkPixmap(), Qt4::Pixmap('images/watermark.png'));
 
-    my $topLabel = Qt::Label(this->tr('This wizard will help you register your copy of ' .
+    my $topLabel = Qt4::Label(this->tr('This wizard will help you register your copy of ' .
                              '<i>Super Product One</i>&trade; or start ' .
                              'evaluating the product.'));
     this->{topLabel} = $topLabel;
     $topLabel->setWordWrap(1);
 
-    my $registerRadioButton = Qt::RadioButton(this->tr('&Register your copy'));
+    my $registerRadioButton = Qt4::RadioButton(this->tr('&Register your copy'));
     this->{registerRadioButton} = $registerRadioButton;
-    my $evaluateRadioButton = Qt::RadioButton(this->tr('&Evaluate the product for 30 ' .
+    my $evaluateRadioButton = Qt4::RadioButton(this->tr('&Evaluate the product for 30 ' .
                                               'days'));
     this->{evaluateRadioButton} = $evaluateRadioButton;
     $registerRadioButton->setChecked(1);
 
-    my $layout = Qt::VBoxLayout();
+    my $layout = Qt4::VBoxLayout();
     $layout->addWidget($topLabel);
     $layout->addWidget($registerRadioButton);
     $layout->addWidget($evaluateRadioButton);
@@ -77,8 +77,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::WizardPage );
+use Qt4;
+use Qt4::isa qw( Qt4::WizardPage );
 
 sub NEW {
     my ( $class, $parent ) = @_;
@@ -88,18 +88,18 @@ sub NEW {
     this->setSubTitle(this->tr('Please fill both fields. Make sure to provide a valid ' .
                    'email address (e.g., john.smith@example.com).'));
 
-    my $nameLabel = Qt::Label(this->tr('N&ame:'));
+    my $nameLabel = Qt4::Label(this->tr('N&ame:'));
     this->{nameLabel} = $nameLabel;
-    my $nameLineEdit = Qt::LineEdit();
+    my $nameLineEdit = Qt4::LineEdit();
     this->{nameLineEdit} = $nameLineEdit;
 # [20]
     $nameLabel->setBuddy($nameLineEdit);
 
-    my $emailLabel = Qt::Label(this->tr('&Email address:'));
+    my $emailLabel = Qt4::Label(this->tr('&Email address:'));
     this->{emailLabel} = $emailLabel;
-    my $emailLineEdit = Qt::LineEdit();
+    my $emailLineEdit = Qt4::LineEdit();
     this->{emailLineEdit} = $emailLineEdit;
-    $emailLineEdit->setValidator(Qt::RegExpValidator(Qt::RegExp('.*@.*'), this));
+    $emailLineEdit->setValidator(Qt4::RegExpValidator(Qt4::RegExp('.*@.*'), this));
     $emailLabel->setBuddy($emailLineEdit);
 
 # [21]
@@ -107,7 +107,7 @@ sub NEW {
     this->registerField('evaluate.email*', $emailLineEdit);
 # [21]
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget($nameLabel, 0, 0);
     $layout->addWidget($nameLineEdit, 0, 1);
     $layout->addWidget($emailLabel, 1, 0);
@@ -130,8 +130,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::WizardPage );
+use Qt4;
+use Qt4::isa qw( Qt4::WizardPage );
 
 sub NEW {
     my ( $class, $parent ) = @_;
@@ -141,22 +141,22 @@ sub NEW {
     this->setSubTitle(this->tr('If you have an upgrade key, please fill in ' .
                    'the appropriate field.'));
 
-    my $nameLabel = Qt::Label(this->tr('N&ame:'));
+    my $nameLabel = Qt4::Label(this->tr('N&ame:'));
     this->{nameLabel} = $nameLabel;
-    my $nameLineEdit = Qt::LineEdit();
+    my $nameLineEdit = Qt4::LineEdit();
     this->{nameLineEdit} = $nameLineEdit;
     $nameLabel->setBuddy($nameLineEdit);
 
-    my $upgradeKeyLabel = Qt::Label(this->tr('&Upgrade key:'));
+    my $upgradeKeyLabel = Qt4::Label(this->tr('&Upgrade key:'));
     this->{upgradeKeyLabel} = $upgradeKeyLabel;
-    my $upgradeKeyLineEdit = Qt::LineEdit();
+    my $upgradeKeyLineEdit = Qt4::LineEdit();
     this->{upgradeKeyLineEdit} = $upgradeKeyLineEdit;
     $upgradeKeyLabel->setBuddy($upgradeKeyLineEdit);
 
     this->registerField('register.name*', $nameLineEdit);
     this->registerField('register.upgradeKey', $upgradeKeyLineEdit);
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget($nameLabel, 0, 0);
     $layout->addWidget($nameLineEdit, 0, 1);
     $layout->addWidget($upgradeKeyLabel, 1, 0);
@@ -181,8 +181,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::WizardPage );
+use Qt4;
+use Qt4::isa qw( Qt4::WizardPage );
 
 sub NEW {
     my ( $class, $parent ) = @_;
@@ -191,22 +191,22 @@ sub NEW {
     this->setSubTitle(this->tr('Please fill all three fields. Make sure to provide a valid ' .
                    'email address (e.g., tanaka.aya@example.co.jp).'));
 
-    my $companyLabel = Qt::Label(this->tr('&Company name:'));
+    my $companyLabel = Qt4::Label(this->tr('&Company name:'));
     this->{companyLabel} = $companyLabel;
-    my $companyLineEdit = Qt::LineEdit();
+    my $companyLineEdit = Qt4::LineEdit();
     this->{companyLineEdit} = $companyLineEdit;
     $companyLabel->setBuddy($companyLineEdit);
 
-    my $emailLabel = Qt::Label(this->tr('&Email address:'));
+    my $emailLabel = Qt4::Label(this->tr('&Email address:'));
     this->{emailLabel} = $emailLabel;
-    my $emailLineEdit = Qt::LineEdit();
+    my $emailLineEdit = Qt4::LineEdit();
     this->{emailLineEdit} = $emailLineEdit;
-    $emailLineEdit->setValidator(Qt::RegExpValidator(Qt::RegExp('.*@.*'), this));
+    $emailLineEdit->setValidator(Qt4::RegExpValidator(Qt4::RegExp('.*@.*'), this));
     $emailLabel->setBuddy($emailLineEdit);
 
-    my $postalLabel = Qt::Label(this->tr('&Postal address:'));
+    my $postalLabel = Qt4::Label(this->tr('&Postal address:'));
     this->{postalLabel} = $postalLabel;
-    my $postalLineEdit = Qt::LineEdit();
+    my $postalLineEdit = Qt4::LineEdit();
     this->{postalLineEdit} = $postalLineEdit;
     $postalLabel->setBuddy($postalLineEdit);
 
@@ -214,7 +214,7 @@ sub NEW {
     this->registerField('details.email*', $emailLineEdit);
     this->registerField('details.postal*', $postalLineEdit);
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget($companyLabel, 0, 0);
     $layout->addWidget($companyLineEdit, 0, 1);
     $layout->addWidget($emailLabel, 1, 0);
@@ -236,27 +236,27 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::WizardPage );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::WizardPage );
+use Qt4::slots
     printButtonClicked => [];
 
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
     this->setTitle(this->tr("Complete Your Registration"));
-    this->setPixmap(Qt::Wizard::WatermarkPixmap(), Qt::Pixmap("images/watermark.png"));
+    this->setPixmap(Qt4::Wizard::WatermarkPixmap(), Qt4::Pixmap("images/watermark.png"));
 
-    my $bottomLabel = Qt::Label();
+    my $bottomLabel = Qt4::Label();
     this->{bottomLabel} = $bottomLabel;
     $bottomLabel->setWordWrap(1);
 
-    my $agreeCheckBox = Qt::CheckBox(this->tr("I agree to the terms of the license"));
+    my $agreeCheckBox = Qt4::CheckBox(this->tr("I agree to the terms of the license"));
     this->{agreeCheckBox} = $agreeCheckBox;
 
     this->registerField("conclusion.agree*", $agreeCheckBox);
 
-    my $layout = Qt::VBoxLayout();
+    my $layout = Qt4::VBoxLayout();
     $layout->addWidget($bottomLabel);
     $layout->addWidget($agreeCheckBox);
     this->setLayout($layout);
@@ -296,13 +296,13 @@ sub setVisible {
 
     if ($visible) {
 # [29]
-        this->wizard()->setButtonText(Qt::Wizard::CustomButton1(), this->tr("&Print"));
-        this->wizard()->setOption(Qt::Wizard::HaveCustomButton1(), 1);
+        this->wizard()->setButtonText(Qt4::Wizard::CustomButton1(), this->tr("&Print"));
+        this->wizard()->setOption(Qt4::Wizard::HaveCustomButton1(), 1);
         this->connect(this->wizard(), SIGNAL 'customButtonClicked(int)',
                 this, SLOT 'printButtonClicked()');
 # [29]
     } else {
-        this->wizard()->setOption(Qt::Wizard::HaveCustomButton1(), 0);
+        this->wizard()->setOption(Qt4::Wizard::HaveCustomButton1(), 0);
         this->disconnect(this->wizard(), SIGNAL 'customButtonClicked(int)',
                    this, SLOT 'printButtonClicked()');
     }
@@ -310,10 +310,10 @@ sub setVisible {
 # [28]
 
 sub printButtonClicked {
-    my $printer = Qt::Printer();
-    my $dialog = Qt::PrintDialog($printer, this);
+    my $printer = Qt4::Printer();
+    my $dialog = Qt4::PrintDialog($printer, this);
     if ($dialog->exec()) {
-        Qt::MessageBox::warning(this, this->tr('Print License'),
+        Qt4::MessageBox::warning(this, this->tr('Print License'),
                              this->tr('As an environmentally friendly measure, the ' .
                                 'license text will not actually be printed.'));
     }
@@ -345,11 +345,11 @@ sub NEW {
 
 # [3]
 # [3] //! [4]
-    this->setWizardStyle(Qt::Wizard::ModernStyle());
+    this->setWizardStyle(Qt4::Wizard::ModernStyle());
 # [4] //! [5]
-    this->setOption(Qt::Wizard::HaveHelpButton(), 1);
+    this->setOption(Qt4::Wizard::HaveHelpButton(), 1);
 # [5] //! [6]
-    this->setPixmap(Qt::Wizard::LogoPixmap(), Qt::Pixmap('images/logo.png'));
+    this->setPixmap(Qt4::Wizard::LogoPixmap(), Qt4::Pixmap('images/logo.png'));
 
 # [7]
     this->connect(this, SIGNAL 'helpRequested()', this, SLOT 'showHelp()');
@@ -394,7 +394,7 @@ sub showHelp {
     }
 
 # [14]
-    Qt::MessageBox::information(this, this->tr('License Wizard Help'), $message);
+    Qt4::MessageBox::information(this, this->tr('License Wizard Help'), $message);
 # [14]
 
     $lastHelpMessage = $message;

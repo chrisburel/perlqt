@@ -4,9 +4,9 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::Dialog );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::Dialog );
+use Qt4::slots
     changePage => ['QListWidgetItem *', 'QListWidgetItem *'];
 
 use Pages;
@@ -16,36 +16,36 @@ use QueryPage;
 
 sub NEW {
     shift->SUPER::NEW();
-    my $contentsWidget = Qt::ListWidget();
+    my $contentsWidget = Qt4::ListWidget();
     this->{contentsWidget} = $contentsWidget;
-    $contentsWidget->setViewMode(Qt::ListView::IconMode());
-    $contentsWidget->setIconSize(Qt::Size(96, 84));
-    $contentsWidget->setMovement(Qt::ListView::Static());
+    $contentsWidget->setViewMode(Qt4::ListView::IconMode());
+    $contentsWidget->setIconSize(Qt4::Size(96, 84));
+    $contentsWidget->setMovement(Qt4::ListView::Static());
     $contentsWidget->setMaximumWidth(128);
     $contentsWidget->setSpacing(12);
 
-    my $pagesWidget = Qt::StackedWidget();
+    my $pagesWidget = Qt4::StackedWidget();
     this->{pagesWidget} = $pagesWidget;
     $pagesWidget->addWidget(ConfigurationPage());
     $pagesWidget->addWidget(UpdatePage());
     $pagesWidget->addWidget(QueryPage());
 
-    my $closeButton = Qt::PushButton(this->tr('Close'));
+    my $closeButton = Qt4::PushButton(this->tr('Close'));
 
     createIcons();
     $contentsWidget->setCurrentRow(0);
 
     this->connect($closeButton, SIGNAL 'clicked()', this, SLOT 'close()');
 
-    my $horizontalLayout = Qt::HBoxLayout();
+    my $horizontalLayout = Qt4::HBoxLayout();
     $horizontalLayout->addWidget($contentsWidget);
     $horizontalLayout->addWidget($pagesWidget, 1);
 
-    my $buttonsLayout = Qt::HBoxLayout();
+    my $buttonsLayout = Qt4::HBoxLayout();
     $buttonsLayout->addStretch(1);
     $buttonsLayout->addWidget($closeButton);
 
-    my $mainLayout = Qt::VBoxLayout();
+    my $mainLayout = Qt4::VBoxLayout();
     $mainLayout->addLayout($horizontalLayout);
     $mainLayout->addStretch(1);
     $mainLayout->addSpacing(12);
@@ -58,23 +58,23 @@ sub NEW {
 sub createIcons {
     my $contentsWidget = this->{contentsWidget};
 
-    my $configButton = Qt::ListWidgetItem($contentsWidget);
-    $configButton->setIcon(Qt::Icon('images/config.png'));
+    my $configButton = Qt4::ListWidgetItem($contentsWidget);
+    $configButton->setIcon(Qt4::Icon('images/config.png'));
     $configButton->setText(this->tr('Configuration'));
-    $configButton->setTextAlignment(Qt::AlignHCenter());
-    $configButton->setFlags(Qt::ItemIsSelectable() | Qt::ItemIsEnabled());
+    $configButton->setTextAlignment(Qt4::AlignHCenter());
+    $configButton->setFlags(Qt4::ItemIsSelectable() | Qt4::ItemIsEnabled());
 
-    my $updateButton = Qt::ListWidgetItem($contentsWidget);
-    $updateButton->setIcon(Qt::Icon('images/update.png'));
+    my $updateButton = Qt4::ListWidgetItem($contentsWidget);
+    $updateButton->setIcon(Qt4::Icon('images/update.png'));
     $updateButton->setText(this->tr('Update'));
-    $updateButton->setTextAlignment(Qt::AlignHCenter());
-    $updateButton->setFlags(Qt::ItemIsSelectable() | Qt::ItemIsEnabled());
+    $updateButton->setTextAlignment(Qt4::AlignHCenter());
+    $updateButton->setFlags(Qt4::ItemIsSelectable() | Qt4::ItemIsEnabled());
 
-    my $queryButton = Qt::ListWidgetItem($contentsWidget);
-    $queryButton->setIcon(Qt::Icon('images/query.png'));
+    my $queryButton = Qt4::ListWidgetItem($contentsWidget);
+    $queryButton->setIcon(Qt4::Icon('images/query.png'));
     $queryButton->setText(this->tr('Query'));
-    $queryButton->setTextAlignment(Qt::AlignHCenter());
-    $queryButton->setFlags(Qt::ItemIsSelectable() | Qt::ItemIsEnabled());
+    $queryButton->setTextAlignment(Qt4::AlignHCenter());
+    $queryButton->setFlags(Qt4::ItemIsSelectable() | Qt4::ItemIsEnabled());
 
     $DB::single=1;
     this->connect($contentsWidget,
