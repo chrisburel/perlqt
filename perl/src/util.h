@@ -69,6 +69,7 @@ SV* set_obj_info(const char * className, smokeperl_object * o);
 
 void unmapPointer(smokeperl_object* o, Smoke::Index classId, void* lastptr);
 
+XS(XS_qobject_qt_metacast);
 XS(XS_find_qobject_children);
 
 XS(XS_qabstract_item_model_rowcount);

@@ -552,6 +552,58 @@ pl_qFindChildren_helper(SV* parent, const QString &objectName, SV* re,
     return;
 }
 
+XS(XS_qobject_qt_metacast) {
+    dXSARGS;
+    SV* mythis=0;
+    SV* klass=0;
+    if( items == 1 ) {
+        mythis = sv_this;
+        klass = ST(0);
+    }
+    else if ( items == 2 ) {
+        mythis = ST(0);
+        klass = ST(1);
+    }
+    else {
+        croak( "%s", "Invalid arguments to qobject_cast\n" );
+    }
+
+    smokeperl_object *o = sv_obj_info(mythis);
+	if (o == 0 || o->ptr == 0) {
+		XSRETURN_UNDEF;
+	}
+
+	const char * classname = SvPV_nolen(klass); //HvNAME(SvSTASH(SvRV(mythis)));
+	Smoke::Index classId = package_classId(classname);
+	if (classId == 0) {
+		XSRETURN_UNDEF;
+	}
+
+	QObject* qobj = (QObject*) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QObject").index);
+	if (qobj == 0) {
+		XSRETURN_UNDEF;
+	}
+
+	void* ret = qobj->qt_metacast(qt_Smoke->classes[classId].className);
+
+	if (ret == 0) {
+		XSRETURN_UNDEF;
+	}
+
+    SV* obj = getPointerObject(ret);
+    if ( !obj ) {
+        smokeperl_object * o_cast = alloc_smokeperl_object(
+            o->allocated, qt_Smoke, classId, ret );
+
+        classname = resolve_classname(o);
+
+        obj = sv_2mortal( set_obj_info( classname, o_cast ) );
+        mapPointer(obj, o_cast, pointer_map, o_cast->classId, 0);
+    }
+    ST(0) = obj;
+    XSRETURN(1);
+}
+
 /* Should mimic Qt4's QObject::findChildren method with this syntax:
      obj.findChildren("Object Type", "Optional Widget Name")
 */

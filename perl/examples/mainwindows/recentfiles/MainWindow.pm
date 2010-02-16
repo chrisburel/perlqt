@@ -263,14 +263,14 @@ sub setCurrentFile
     my $files = $settings->value('recentFileList')->toStringList();
     $files = [grep{ $_ ne $fileName} @{$files}];
     unshift @{$files}, $fileName;
-    while (scalar @{$files} > MaxRecentFiles-1) {
+    while (scalar @{$files} > MaxRecentFiles) {
         pop @{$files};
     }
 
     $settings->setValue('recentFileList', Qt::Variant($files));
 
     foreach my $widget (@{Qt::Application::topLevelWidgets()}) {
-        my $mainWin = $widget;
+        my $mainWin = $widget->qobject_cast('Qt::MainWindow');
         if ($mainWin) {
             $mainWin->updateRecentFileActions();
         }
@@ -282,10 +282,10 @@ sub updateRecentFileActions()
     my $settings = Qt::Settings('Trolltech', 'Recent Files Example');
     my $files = $settings->value('recentFileList')->toStringList();
 
-    my $numRecentFiles = min(scalar @{$files}, MaxRecentFiles-1);
+    my $numRecentFiles = min(scalar @{$files}, MaxRecentFiles);
 
     foreach my $i (0..$numRecentFiles-1) {
-        my $text = $i + 1 . this->strippedName($files->[$i]);
+        my $text = $i + 1 . ' ' . this->strippedName($files->[$i]);
         this->recentFileActs->[$i]->setText($text);
         this->recentFileActs->[$i]->setData(Qt::Variant(Qt::String($files->[$i])));
         this->recentFileActs->[$i]->setVisible(1);
