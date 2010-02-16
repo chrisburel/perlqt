@@ -529,6 +529,9 @@ XS(XS_AUTOLOAD){
         else if(!strcmp(methodname, "QPalette#")){
             methodid = 11302;
         }
+        else if(!strcmp(methodname, "update#")){
+            methodid = 18634;
+        }
         else {
             methodid = getMethod(qt_Smoke, classname, methodname );
         }
@@ -600,9 +603,9 @@ gimmePainter(sv_widget)
         Smoke::Index methodid = getMethod(qt_Smoke, classname, methodname);
 
         Smoke::StackItem args[2];
-        args[1].s_class = o->ptr;
-        //callMethod( qt_Smoke, 0, methodid, args );
-        args[0].s_class = new QPainter((QWidget*)o->ptr);
+        smokeCast( qt_Smoke, methodid, args, 1, o->ptr, "QWidget" );
+        callMethod( qt_Smoke, 0, methodid, args );
+        //args[0].s_class = new QPainter((QWidget*)o->ptr);
 
         HV *hv = newHV();
         RETVAL = newRV_noinc((SV*)hv);
