@@ -22,7 +22,6 @@ sub import {
     for my $super (@_) {
         no warnings; # Name "Foo::META" used only once
         push @{ $caller . '::ISA' }, $super;
-        push @{ $caller . '::SUPER::ISA' }, $caller;
         push @{ ${$caller . '::META'}{'superClass'} }, $super;
 
         # Convert ::'s to a filepath /
