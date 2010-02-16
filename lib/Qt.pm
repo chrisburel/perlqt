@@ -389,11 +389,21 @@ sub op_equal {
 }
 
 sub op_plus {
-    return bless( \(${$_[0]} + ${$_[1]}), ref $_[0] );
+    if ( ref $_[1] ) {
+        return bless( \(${$_[0]} + ${$_[1]}), ref $_[0] );
+    }
+    else {
+        return bless( \(${$_[0]} + $_[1]), ref $_[0] );
+    }
 }
 
 sub op_or {
-    return bless( \(${$_[0]} | ${$_[1]}), ref $_[0] );
+    if ( ref $_[1] ) {
+        return bless( \(${$_[0]} | ${$_[1]}), ref $_[0] );
+    }
+    else {
+        return bless( \(${$_[0]} | $_[1]), ref $_[0] );
+    }
 }
 
 package Qt::_internal;
@@ -442,7 +452,7 @@ sub argmatch {
         }
         # strings
         elsif ( $argType eq 's' ) {
-            if( $typeName =~ m/^(?:(?:const )?u?char\*|(?:const )?(?:(QString)|QByteArray)[*&]?)$/ ) {
+            if( $typeName =~ m/^(?:(?:const )?u?char\*|(?:const )?(?:(QString)|QByteArray)[\*&]?)$/ ) {
                 $match{$methodId} = [0,$methodIdIdx];
             }
         }

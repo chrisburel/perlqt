@@ -13,14 +13,6 @@ use Qt::slots
     rowsInserted => ['const Qt::ModelIndex&', 'int', 'int'],
     rowsAboutToBeRemoved => ['const Qt::ModelIndex&', 'int', 'int'];
 
-    #int margin;
-    #int totalSize;
-    #int pieSize;
-    #int validItems;
-    #double totalValue;
-    #Qt::Point origin;
-    #Qt::RubberBand *rubberBand;
-
 use constant { M_PI => 3.1415927 };
 
 sub NEW {
@@ -169,7 +161,6 @@ sub itemRect {
     my $valueIndex;
 
     if ($index->column() != 1) {
-        $DB::single=1;
         $valueIndex = this->model()->index($index->row(), 1, this->rootIndex());
     }
     else {
@@ -251,12 +242,15 @@ sub horizontalOffset {
 
 sub mousePressEvent {
     my ($event) = @_;
+
     this->SUPER->mousePressEvent($event);
-    my $origin = this->{origin};
+
+    my $origin = Qt::Point($event->pos());
+    this->{origin} = $origin;
     my $rubberBand = this->{rubberBand};
-    $origin = $event->pos();
     if (!$rubberBand) {
         $rubberBand = Qt::RubberBand(Qt::RubberBand::Rectangle(), this);
+        this->{rubberBand} = $rubberBand;
     }
     $rubberBand->setGeometry(Qt::Rect($origin, Qt::Size()));
     $rubberBand->show();
@@ -318,7 +312,6 @@ sub paintEvent {
     my $option = this->viewOptions();
     my $state = $option->state;
 
-    #Qt::_internal::setDebug(0xffffff);
     my $background = $option->palette()->base();
     my $foreground = Qt::Pen($option->palette->color(Qt::Palette::WindowText()));
     my $textPen = Qt::Pen($option->palette->color(Qt::Palette::Text()));
@@ -387,13 +380,15 @@ sub paintEvent {
             if ($value > 0.0) {
                 my $labelIndex = this->model()->index($row, 0, this->rootIndex());
 
+                # TODO: Fix this.  It should be able to do
+                # $option->rect = this->visualRect($labelIndex), etc.
                 my $option = this->viewOptions();
-                #$option->rect = this->visualRect($labelIndex);
+                $option->setRect( this->visualRect($labelIndex) );
                 if ($selections->isSelected($labelIndex)) {
-                    #$option->state |= Qt::Style::State_Selected();
+                    $option->setState( $option->state | Qt::Style::State_Selected() );
                 }
                 if (this->currentIndex() == $labelIndex) {
-                    #$option->state |= Qt::Style::State_HasFocus();
+                    $option->setState( $option->state | Qt::Style::State_HasFocus() );
                 }
                 this->itemDelegate()->paint($painter, $option, $labelIndex);
 
@@ -506,7 +501,7 @@ sub setSelection {
         }
     }
 
-    if (scalar @{$indexes} > 0) {
+    if ( ref $indexes eq 'ARRAY' && scalar @{$indexes} > 0) {
         my $firstRow = $indexes->[0]->row();
         my $lastRow = $indexes->[0]->row();
         my $firstColumn = $indexes->[0]->column();
@@ -570,10 +565,10 @@ sub visualRect {
 
 sub visualRegionForSelection {
     my ($selection) = @_;
-    my $ranges = this->selection->count();
+    my $ranges = ref $selection eq 'ARRAY' ? scalar @{$selection} : 0;
 
     if ($ranges == 0) {
-        return Qt::Rect();
+        return Qt::Region( Qt::Rect() );
     }
 
     my $region;

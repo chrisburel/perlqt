@@ -62,7 +62,7 @@ sub setupViews {
     my $selectionModel = Qt::ItemSelectionModel($model);
     this->{selectionModel} = $selectionModel;
     $table->setSelectionModel($selectionModel);
-    #$pieChart->setSelectionModel($selectionModel);
+    $pieChart->setSelectionModel($selectionModel);
 
     my $headerView = $table->horizontalHeader();
     $headerView->setStretchLastSection(1);
@@ -136,8 +136,11 @@ sub saveFile {
                 push @pieces, $model->data($model->index($row, 0, Qt::ModelIndex()),
                                           Qt::DecorationRole())->toString();
 
-                $stream << [ join ',', @pieces ];
-                $stream << "\n";
+                {
+                    no warnings qw(void);
+                    $stream << [ join ',', @pieces ];
+                    $stream << "\n";
+                }
             }
         }
 
