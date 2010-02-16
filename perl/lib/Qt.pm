@@ -1247,9 +1247,7 @@ sub reportNoMethodFound {
 sub init {
     my $classes = getClassList();
     push @{$classes}, keys %customClasses;
-    foreach my $cxxClassName (@{$classes}) {
-        init_class($cxxClassName);
-    }
+    init_class($_) for(@$classes);
 
     my $enums = getEnumList();
     foreach my $enumName (@$enums) {
