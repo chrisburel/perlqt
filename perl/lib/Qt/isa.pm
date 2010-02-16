@@ -37,8 +37,8 @@ sub import {
     # This hash is used to get an object blessed to the right thing, so that
     # when we call SUPER(), we get this blessed object back.
     {
-      my $superthing = bless {}, "  $caller";
-      $ISUB->($caller.'::SUPER', sub {$superthing});
+        my $superthing = bless {}, "  $caller";
+        $ISUB->($caller.'::SUPER', sub {$superthing});
     }
 
     # Make it so that 'use <packagename>' makes a subroutine called
@@ -48,11 +48,13 @@ sub import {
         # doing the loading
         my $name = shift;    # classname = function-name
         my $incaller = (caller)[0];
+        $ISUB->( $name, sub { $name->new(@_); } )
+            unless defined &{"$name"};
         $ISUB->("$incaller\::$name", sub { $name->new(@_) })
-          unless defined &{"$incaller\::$name"};
+            unless defined &{"$incaller\::$name"};
 
         $name->export($incaller, @_)
-          if(grep { $_ eq 'Exporter' } @{$A->("$name\::ISA")});
+            if(grep { $_ eq 'Exporter' } @{$A->("$name\::ISA")});
     });
 
     foreach my $sp ('  ', ' ', '') {

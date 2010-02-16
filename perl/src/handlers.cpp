@@ -204,6 +204,8 @@ QString* qstringFromPerlString( SV* perlstring ) {
     // What's blk_oldcop?
     if( SvROK( perlstring ) )
         perlstring = SvRV( perlstring );
+    else if( !SvOK( perlstring ) )
+        return new QString();
 
     COP *cop = cxstack[cxstack_ix].blk_oldcop;
     if ( SvUTF8( perlstring ) )

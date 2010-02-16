@@ -1624,7 +1624,7 @@ $ISUB->(' Qt::Variant::value', sub {
         return $this->toUrl();
     }
     else {
-        return Qt::qVariantValue(undef, $this);
+        return Qt::qVariantValue($this);
     }
 });
 
