@@ -366,6 +366,7 @@ sub loadFile
     Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
     this->textEdit->setPlainText($in->readAll());
     Qt::Application::restoreOverrideCursor();
+    $file->close();
 
     this->setCurrentFile($fileName);
     this->statusBar()->showMessage(this->tr('File loaded'), 2000);
@@ -386,8 +387,9 @@ sub saveFile
     my $out = Qt::TextStream($file);
     Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
     no warnings qw(void); # For bitshift warning
-    $out << this->textEdit->toPlainText();
+    $out << Qt::String(this->textEdit->toPlainText());
     Qt::Application::restoreOverrideCursor();
+    $file->close();
 
     this->setCurrentFile($fileName);
     this->statusBar()->showMessage(this->tr('File saved'), 2000);
