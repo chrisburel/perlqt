@@ -10,6 +10,8 @@ use TableModel;
 use NewAddressTab;
 use AddDialog;
 
+use List::Util qw(first);
+
 use Qt::slots
     addEntry => [],
     addEntry2 => ['QString', 'QString'],
@@ -29,19 +31,19 @@ sub NEW {
     this->connect($newAddressTab, SIGNAL 'sendDetails(QString, QString)',
         this, SLOT 'addEntry2(QString, QString)');
 
-    this->addTab($newAddressTab, 'Address Book');    
+    this->addTab($newAddressTab, 'Address Book');
 
     setupTabs();
 
 }
 
-sub addEntry {    
+sub addEntry {
     my $aDialog = AddDialog();
 
     if ($aDialog->exec()) {
         my $name = $aDialog->nameText()->text();
         my $address = $aDialog->addressText()->toPlainText();
-        
+
         this->addEntry2($name, $address);
     }
 }
@@ -52,7 +54,7 @@ sub addEntry2 {
     my $newAddressTab = this->{newAddressTab};
     my $list = $table->getList();
 
-    #if (!list.contains(pair)) {
+    if ( !first{ $_->[0] eq $name && $_->[1] eq $address } @{$list}) {
         $table->insertRows(0, 1, Qt::ModelIndex());
 
         my $index = $table->index(0, 0, Qt::ModelIndex());
@@ -60,10 +62,10 @@ sub addEntry2 {
         $index = $table->index(0, 1, Qt::ModelIndex());
         $table->setData($index, $address, Qt::EditRole());
         this->removeTab(this->indexOf($newAddressTab));
-    #} else {
-        #Qt::MessageBox::information(this, tr("Duplicate Name"),
-            #tr("The name \"%1\" already exists.").arg(name));
-    #}
+    } else {
+        Qt::MessageBox::information(this, this->tr('Duplicate Name'),
+            this->tr("The name \"$name\" already exists."));
+    }
 }
 
 sub editEntry {
@@ -73,7 +75,7 @@ sub editEntry {
     my $table = this->{table};
 
     my $indexes = $selectionModel->selectedRows();
-    my $i;        
+    my $i;
     my $name;
     my $address;
     my $row;
@@ -82,8 +84,8 @@ sub editEntry {
         $row = $proxy->mapToSource($index)->row();
         $i = $table->index($row, 0, Qt::ModelIndex());
         my $varName = $table->data($i, Qt::DisplayRole());
-        my $name = $varName->toString();
-    
+        $name = $varName->toString();
+
         $i = $table->index($row, 1, Qt::ModelIndex());
         my $varAddr = $table->data($i, Qt::DisplayRole());
         $address = $varAddr->toString();
@@ -98,7 +100,7 @@ sub editEntry {
 
     if ($aDialog->exec()) {
         my $newAddress = $aDialog->addressText()->toPlainText();
-        if ($newAddress != $address) {
+        if ($newAddress ne $address) {
             $i = $table->index($row, 1, Qt::ModelIndex());
             $table->setData($i, $newAddress, Qt::EditRole());
         }
@@ -132,7 +134,7 @@ sub setupTabs {
         my $proxyModel = Qt::SortFilterProxyModel(this);
         $proxyModel->setSourceModel($table);
         $proxyModel->setDynamicSortFilter(1);
-    
+
         my $tableView = Qt::TableView();
         $tableView->setModel($proxyModel);
         $tableView->setSortingEnabled(1);
@@ -147,7 +149,7 @@ sub setupTabs {
         $proxyModel->setFilterRegExp(Qt::RegExp($newStr, Qt::CaseInsensitive()));
         $proxyModel->setFilterKeyColumn(0);
         $proxyModel->sort(0, Qt::AscendingOrder());
-    
+
         this->connect($tableView->selectionModel(),
             SIGNAL 'selectionChanged(QItemSelection,QItemSelection)',
             this, SIGNAL 'selectionChanged(QItemSelection)');
@@ -156,47 +158,52 @@ sub setupTabs {
     }
 }
 
-=begin
+sub readFromFile {
+    my ($fileName) = @_;
 
-void AddressWidget::readFromFile(QString fileName)
-{
-    QFile file(fileName);
-
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::information(this, tr("Unable to open file"),
-            file.errorString());
+    my $FH;
+    if(!(open $FH, '<', $fileName)) {
+        Qt::MessageBox::information(this, this->tr('Unable to open file'), $!);
         return;
     }
 
-    QList< QPair<QString, QString> > pairs = table->getList();    
-    QDataStream in(&file);
-    in >> pairs;
+    my $pairs;
+    my $i = 0;
+    while( <$FH> ) {
+        if ( $_ =~ s/\0\n$// ) {
+            $pairs->[sprintf "%d", $i/2]->[$i%2] .= $_;
+            ++$i;
+        }
+        else {
+            $pairs->[sprintf "%d", $i/2]->[$i%2] .= $_;
+        }
+    }
 
-    if (pairs.isEmpty()) {
-        QMessageBox::information(this, tr("No contacts in file"),
-            tr("The file you are attempting to open contains no contacts."));  
+    if (!@{$pairs}) {
+        Qt::MessageBox::information(this, this->tr('No contacts in file'),
+            this->tr('The file you are attempting to open contains no contacts.'));
     } else {
-        for (int i=0; i<pairs.size(); ++i) {
-            QPair<QString, QString> p = pairs.at(i);
-            addEntry(p.first, p.second);
+        foreach my $p ( @{$pairs} ) {
+            addEntry2($p->[0], $p->[1]);
         }
     }
 }
 
-void AddressWidget::writeToFile(QString fileName)
-{
-    QFile file(fileName);
+sub writeToFile {
+    my ($fileName) = @_;
 
-    if (!file.open(QIODevice::WriteOnly)) {
-        QMessageBox::information(this, tr("Unable to open file"), file.errorString());
+    my $FH;
+    if(!(open $FH, '>', $fileName)) {
+        Qt::MessageBox::information(this, this->tr('Unable to open file'), $!);
         return;
     }
 
-    QList< QPair<QString, QString> > pairs = table->getList();    
-    QDataStream out(&file);
-    out << pairs;
+    my $pairs = this->{table}->getList();
+    foreach my $pair ( @{$pairs} ) {
+        print $FH $pair->[0] . "\0\n";
+        print $FH $pair->[1] . "\0\n";
+    }
+    close $FH;
 }
-
-=cut
 
 1;

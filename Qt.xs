@@ -818,9 +818,13 @@ XS(XS_qt_metacall){
         QMetaMethod method = metaobject->method(_id);
 
         // Signals are easy, just activate the meta object
+        // This code gets called when a cxx signal is connected to a signal
+        // defined in a perl package
         if (method.methodType() == QMetaMethod::Signal) {
-            //fprintf( stderr, "In signal for %s::%s\n", metaobject->className(), method.signature() );
-            fprintf( stderr, "Does it ever get here?\n" );
+#ifdef DEBUG
+            if(do_debug && (do_debug & qtdb_signals))
+                fprintf( stderr, "In signal for %s::%s\n", metaobject->className(), method.signature() );
+#endif
             metaobject->activate(sv_this_ptr, metaobject, 0, _a);
             // +1.  Id is 0 based, count is 1 based
             ST(0) = sv_2mortal(newSViv(_id - count + 1));

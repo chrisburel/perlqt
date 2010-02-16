@@ -71,25 +71,19 @@ sub createMenus {
         this, SLOT 'updateActions(QItemSelection)');
 }
 
-=begin
-
 sub openFile {
-    Qt::String fileName = Qt::FileDialog::getOpenFileName(this);
-    if (!fileName.isEmpty()) {
-        addressWidget->readFromFile(fileName);
+    my $fileName = Qt::FileDialog::getOpenFileName(this);
+    if ($fileName) {
+        this->{addressWidget}->readFromFile($fileName);
     }
 }
-
-
 
 sub saveFile {
-    Qt::String fileName = Qt::FileDialog::getSaveFileName(this);
-    if (!fileName.isEmpty()) {
-        addressWidget->writeToFile(fileName);
+    my $fileName = Qt::FileDialog::getSaveFileName(this);
+    if ($fileName) {
+        this->{addressWidget}->writeToFile($fileName);
     }
 }
-
-=cut
 
 sub updateActions {
     my ($selection) = @_;

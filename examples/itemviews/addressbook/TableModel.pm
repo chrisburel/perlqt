@@ -102,7 +102,7 @@ sub removeRows {
     my $listOfPairs = this->{listOfPairs};
     this->beginRemoveRows(Qt::ModelIndex(), $position, $position+$rows-1);
 
-    foreach my $row (0..$rows) {
+    foreach my $row (0..$rows-1) {
         splice( @{$listOfPairs}, $position, 1 );
     }
 

@@ -23,19 +23,338 @@ sub new {
 package Qt::base::_overload;
 use strict;
 
-no strict 'refs';
 use overload
     "fallback" => 1,
-    "==" => "Qt::base::_overload::op_equal";
+    "==" => "Qt::base::_overload::op_equal",
+    "!=" => "Qt::base::_overload::op_not_equal",
+    "+=" => "Qt::base::_overload::op_plus_equal",
+    "-=" => "Qt::base::_overload::op_minus_equal",
+    "*=" => "Qt::base::_overload::op_mul_equal",
+    "/=" => "Qt::base::_overload::op_div_equal",
+    ">>" => "Qt::base::_overload::op_shift_right",
+    "<<" => "Qt::base::_overload::op_shift_left",
+    "<=" => "Qt::base::_overload::op_lesser_equal",
+    ">=" => "Qt::base::_overload::op_greater_equal",
+    "^=" => "Qt::base::_overload::op_xor_equal",
+    "|=" => "Qt::base::_overload::op_or_equal",
+    ">"  => "Qt::base::_overload::op_greater",
+    "<"  => "Qt::base::_overload::op_lesser",
+    "+"  => "Qt::base::_overload::op_plus",
+    "-"  => "Qt::base::_overload::op_minus",
+    "*"  => "Qt::base::_overload::op_mul",
+    "/"  => "Qt::base::_overload::op_div",
+    "^"  => "Qt::base::_overload::op_xor",
+    "|"  => "Qt::base::_overload::op_or",
+    "--" => "Qt::base::_overload::op_decrement",
+    "++" => "Qt::base::_overload::op_increment",
+    "neg"=> "Qt::base::_overload::op_negate";
 
 sub op_equal {
     $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator==';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
-    return $ret;
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator==';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret
 }
 
+sub op_not_equal {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator!=';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator!=';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret
+}
+
+sub op_plus_equal {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator+=';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my $err;
+    eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
+    my $ret;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator+=';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret
+}
+
+sub op_minus_equal {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator-=';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my $err;
+    eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
+    my $ret;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator-=';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@; 
+    $ret
+}
+
+sub op_mul_equal {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator*=';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my $err;
+    eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
+    my $ret;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator*=';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@; 
+    $ret
+}
+
+sub op_div_equal {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator/=';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my $err;
+    eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
+    my $ret;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator/=';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@; 
+    $ret
+}
+
+sub op_shift_right {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator>>';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator>>';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret    
+}
+
+sub op_shift_left {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator<<';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator<<';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret
+}
+
+sub op_lesser_equal {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator<=';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my $err;
+    eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
+    my $ret;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator<=';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@; 
+    $ret
+}
+
+sub op_greater_equal {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator>=';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my $err;
+    eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
+    my $ret;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator>=';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@; 
+    $ret
+}
+
+sub op_xor_equal {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator^=';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my $err;
+    eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
+    my $ret;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator^=';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@; 
+    $ret
+}
+
+sub op_or_equal {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator|=';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my $err;
+    eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
+    my $ret;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator|=';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@; 
+    $ret
+}
+
+sub op_greater {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator>';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator>';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret    
+}
+
+sub op_lesser {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator<';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator<';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret    
+}
+
+sub op_plus {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator+';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator+';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret    
+}
+
+sub op_minus {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator-';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator-';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret    
+}
+
+sub op_mul {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator*';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator*';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret     
+}
+
+sub op_div {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator/';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator/';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret     
+}
+
+sub op_negate {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator-';
+    my $autoload = ref($_[0])."::AUTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->($_[0]) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator-';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload($_[0]) };
+    die $err.$@ if $@;
+    $ret
+}
+
+sub op_xor {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator^';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator^';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret    
+}
+
+sub op_or {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator|';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator|';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    die $err.$@ if $@;
+    $ret    
+}
+
+sub op_increment {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator++';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my $err;
+    eval { local $SIG{'__DIE__'}; $autoload->($_[0]) };
+    return $_[0] unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator++';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; &$autoload($_[0]) };
+    die $err.$@ if $@; 
+    $_[0]
+}
+
+sub op_decrement {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator--';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my $err;
+    eval { local $SIG{'__DIE__'}; $autoload->($_[0]) };
+    return $_[0] unless $err = $@;
+    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator--';
+    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    eval { local $SIG{'__DIE__'}; &$autoload($_[0]) };
+    die $err.$@ if $@;
+    $_[0]
+}
 
 package Qt::enum::_overload;
 
