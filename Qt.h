@@ -1,5 +1,5 @@
-#ifndef QTSIMPLE_H
-#define QTSIMPLE_H
+#ifndef QT_H
+#define QT_H
 
 #ifdef do_open
 #undef do_open
@@ -28,7 +28,7 @@ public:
     char *className(Smoke::Index classId) {
         const char *className = smoke->className(classId);
         char *buf = new char[strlen(className) + 12];
-        strcpy(buf, " QtSimple::");
+        strcpy(buf, " Qt::");
         strcat(buf, className);
         return buf;
     }

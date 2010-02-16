@@ -4,25 +4,30 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 
 $CC = 'g++';
-#$pathToSrc = '/usr/scratch/cburel';
-$pathToSrc = '/home/chris/';
-$qtincludePath = '/usr/local/Trolltech/Qt-4.4.0/include';
-$qtsmokePath = '/home/chris/src/kdebindings/smoke/qt';
-$smokePath = '/home/chris/src/kdebindings/smoke';
+
+$QT_DIR = '/usr/local/Trolltech/Qt-4.4.0';
+$QT_INCLUDE = "$QT_DIR/include";
+$QT_LIB = "$QT_DIR/lib";
+
+#$SMOKE_DIR = '/pts/testPipe/share/Qt4/def/dat/kdebindings/smoke';
+$SMOKE_DIR = '/home/chris/src/kdebindings/smoke';
+$SMOKE_LIB = "$SMOKE_DIR/qt";
+
+$CXX_FLAGS = "-g -Wall";
+$CXX_LIBS = "-L$QT_LIB -L$SMOKE_LIB -lQtCore -lQtGui -lsmokeqt";
+$CXX_INC = "-I. -I$QT_INCLUDE -I$SMOKE_DIR";
 
 WriteMakefile(
-    NAME              => 'QtSimple',
-    VERSION_FROM      => 'lib/QtSimple.pm', # finds $VERSION
+    NAME              => 'Qt',
+    VERSION_FROM      => 'lib/Qt.pm', # finds $VERSION
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM  => 'lib/QtSimple.pm', # retrieve abstract from module
+      (ABSTRACT_FROM  => 'lib/Qt.pm', # retrieve abstract from module
        AUTHOR         => 'Chris Burel <chris@localdomain>') : ()),
-    LIBS              => ['-L/usr/local/Trolltech/Qt-4.4.0/lib -lQtCore -lQtGui'], # e.g., '-lm'
+    LIBS              => ["$CXX_LIBS"], # e.g., '-lm'
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
-    INC               => "-I. -I$qtincludePath -I$smokePath",
-	# Un-comment this if you add C files to link with later:
+    INC               => "$CXX_INC",
     OBJECT            => '$(O_FILES)', # link all the C files too
-    LDFROM            => '$(O_FILES)' . " $qtsmokePath/libsmokeqt.so.2",
 
     # To get C++ code to work:
     CC                => $CC,
@@ -30,5 +35,5 @@ WriteMakefile(
     XSOPT             => '-C++',
 
     # Debugging
-    CCFLAGS           => '-g',
+    CCFLAGS           => "$CXX_FLAGS",
 );

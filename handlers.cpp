@@ -1,5 +1,5 @@
 #include "handlers.h"
-#include "QtSimple.h"
+#include "Qt.h"
 #include "QtCore/qstring.h"
 #include "QtCore/QHash"
 

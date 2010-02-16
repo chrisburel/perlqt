@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "smoke.h"
-#include "QtSimple.h"
+#include "Qt.h"
 #include "marshall.h"
 #include "smokeperl.h"
 #include "handlers.h"
@@ -203,7 +203,7 @@ void smokeCastThis(Smoke *smoke, Smoke::Index method, Smoke::Stack args, void *o
 // init_class function in Qt::_internal
 Smoke::Index package_classid(const char *package) {
     // Get the cache hash
-    HV* classcache_ext = get_hv( "QtSimple::_internal::package2classid", false);
+    HV* classcache_ext = get_hv( "Qt::_internal::package2classid", false);
     U32 klen = strlen( package );
     SV** classcache = hv_fetch( classcache_ext, package, klen, 0 );
     Smoke::Index item = 0;
@@ -239,7 +239,7 @@ Smoke::Index package_classid(const char *package) {
     return (Smoke::Index) 0;
 }
 
-XS(XS_QtSimple__myQTableView_setRootIndex){
+XS(XS_Qt__myQTableView_setRootIndex){
     dXSARGS;
     fprintf( stderr, "In XS Custom   for setRootIndex\n" );
     
@@ -263,7 +263,7 @@ XS(XS_QtSimple__myQTableView_setRootIndex){
 
 XS(XS_AUTOLOAD){
     dXSARGS;
-    SV *autoload = get_sv("QtSimple::AutoLoad::AUTOLOAD", TRUE);
+    SV *autoload = get_sv("Qt::AutoLoad::AUTOLOAD", TRUE);
     char *package = SvPV_nolen(autoload);
     fprintf(stderr, "In XS Autoload for %s\n", SvPV_nolen( autoload ));
     char *methodname = 0;
@@ -287,7 +287,7 @@ XS(XS_AUTOLOAD){
     char *classname = (char*)qt_Smoke->className(classid);
 
     // Look to see if there's a perl subroutine for this method
-    HV* classcache_ext = get_hv( "QtSimple::_internal::package2classid", false);
+    HV* classcache_ext = get_hv( "Qt::_internal::package2classid", false);
     U32 klen = strlen( package );
     SV** classcache = hv_fetch( classcache_ext, package, klen, 0 );
     if( !classcache ) {
@@ -353,7 +353,7 @@ XS(XS_AUTOLOAD){
     }
 }
 
-MODULE = QtSimple   PACKAGE = QtSimple::_internal
+MODULE = Qt   PACKAGE = Qt::_internal
 
 PROTOTYPES: DISABLE
 
@@ -399,7 +399,7 @@ installautoload(package)
         newXS(autoload, XS_AUTOLOAD, file);
         delete[] autoload;
 
-MODULE = QtSimple   PACKAGE = QtSimple
+MODULE = Qt   PACKAGE = Qt
 
 PROTOTYPES: DISABLE
 
@@ -418,4 +418,4 @@ BOOT:
     perlqt_modules[qt_Smoke] = module;
 
     install_handlers(Qt_handlers);
-    //newXS(" QtSimple::QTableView::setRootIndex", XS_QtSimple__myQTableView_setRootIndex, file);
+    //newXS(" Qt::QTableView::setRootIndex", XS_Qt__myQTableView_setRootIndex, file);

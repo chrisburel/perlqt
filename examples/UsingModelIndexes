@@ -1,18 +1,18 @@
 #!/usr/local/bin/perl -w
 
 BEGIN {
-        chdir "$ENV{HOME}/src/qt/4/PerlQtSimple";
+        chdir "$ENV{HOME}/src/qt/4/PerlQt";
         unshift @INC, 'blib/arch';
         unshift @INC, 'blib/lib';
 }
 
 use strict;
-use QtSimple;
+use Qt;
 use Devel::Peek;
 
-#my $app = QtSimple::QApplication( \@ARGV );
-my $model = QtSimple::QDirModel();
-my $parentIndex = $model->index(QtSimple::QDir::currentPath());
+#my $app = Qt::QApplication( \@ARGV );
+my $model = Qt::QDirModel();
+my $parentIndex = $model->index(Qt::QDir::currentPath());
 my $numRows = $model->rowCount( $parentIndex );
 my $numCols = $model->columnCount( $parentIndex );
 

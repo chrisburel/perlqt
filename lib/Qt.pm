@@ -1,4 +1,4 @@
-package QtSimple::base;
+package Qt::base;
 
 use strict;
 
@@ -6,7 +6,7 @@ sub new {
     return shift->NEW(@_);
 }
 
-package QtSimple::_internal;
+package Qt::_internal;
 
 use strict;
 
@@ -18,40 +18,40 @@ sub init_class {
     my $perlClassName = $cxxClassName;
 
     # Prepend my package namespace
-    $perlClassName =~ s/^/QtSimple::/;
+    $perlClassName =~ s/^/Qt::/;
 
     # Create the Perl fully-qualified package name -> classId relationship
     # Why use QHash or QAsciiDict when perl has built-in hashes?
-    my $classId = QtSimple::_internal::idClass($cxxClassName);
+    my $classId = Qt::_internal::idClass($cxxClassName);
     $package2classid{$perlClassName} = $classId; # My insert_pclassid
 
     # Setting the @isa array makes it look up the perl inheritance list to
     # find the new() function
     my @isa = getIsa($classId);
     for my $super (@isa) {
-        $super =~ /^QtSimple/ and next;
-        $super =~ s/^/QtSimple::/ and next;
+        $super =~ /^Qt/ and next;
+        $super =~ s/^/Qt::/ and next;
     }
-    @isa = ("QtSimple::base") unless @isa;
+    @isa = ("Qt::base") unless @isa;
     *{ "$perlClassName\::ISA" } = \@isa;
 
     installautoload("$perlClassName");
     {
-        package QtSimple::AutoLoad;
+        package Qt::AutoLoad;
         my $closure = \&{ "$perlClassName\::_UTOLOAD" };
         *{ $perlClassName . "::AUTOLOAD" } = sub{ &$closure };
     }
 
     installautoload( " $perlClassName");
     {
-        package QtSimple::AutoLoad;
+        package Qt::AutoLoad;
         my $closure = \&{ " $perlClassName\::_UTOLOAD" };
         *{ " $perlClassName\::AUTOLOAD" } = sub{ &$closure };
     }
 
     *{ "$perlClassName\::NEW" } = sub {
         my $perlClassName = shift;
-        $QtSimple::AutoLoad::AUTOLOAD = "$perlClassName\::$cxxClassName";
+        $Qt::AutoLoad::AUTOLOAD = "$perlClassName\::$cxxClassName";
         my $autoload = "$perlClassName\::_UTOLOAD";
         my $retval; 
         {
@@ -75,7 +75,7 @@ sub init {
     }
 }
 
-package QtSimple;
+package Qt;
 
 use 5.008006;
 use strict;
@@ -86,9 +86,9 @@ require Exporter;
 
 our $VERSION = '0.01';
 
-XSLoader::load('QtSimple', $VERSION);
+XSLoader::load('Qt', $VERSION);
 
-QtSimple::_internal::init();
+Qt::_internal::init();
 
 # Preloaded methods go here.
 
@@ -98,16 +98,16 @@ __END__
 
 =head1 NAME
 
-QtSimple - Perl extension for blah blah blah
+Qt - Perl extension for blah blah blah
 
 =head1 SYNOPSIS
 
-  use QtSimple;
+  use Qt;
   blah blah blah
 
 =head1 DESCRIPTION
 
-Stub documentation for QtSimple, created by h2xs. It looks like the
+Stub documentation for Qt, created by h2xs. It looks like the
 author of the extension was negligent enough to leave the stub
 unedited.
 

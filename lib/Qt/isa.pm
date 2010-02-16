@@ -1,8 +1,8 @@
-package QtSimple::isa;
+package Qt::isa;
 use strict;
 sub import {
     no strict 'refs';
-    # Class will be QtSimple::isa.  Caller is the name of the package doing the use.
+    # Class will be Qt::isa.  Caller is the name of the package doing the use.
     my $class = shift;
     my $caller = (caller)[0];
 
@@ -10,10 +10,10 @@ sub import {
     my $pm = $caller . ".pm";
     $pm =~ s!::!/!g;
     unless(exists $::INC{$pm}) {
-        $::INC{$pm} = $::INC{"QtSimple/isa.pm"};
+        $::INC{$pm} = $::INC{"Qt/isa.pm"};
     }
 
-    # Define the QtSimple::ISA array
+    # Define the Qt::ISA array
     for my $super (@_) {
         push @{ $caller . '::ISA' }, $super;
     }
@@ -47,10 +47,10 @@ sub import {
         };
     };
 
-    QtSimple::_internal::installautoload(" $caller");
-    QtSimple::_internal::installautoload($caller);
+    Qt::_internal::installautoload(" $caller");
+    Qt::_internal::installautoload($caller);
     {
-        package QtSimple::AutoLoad;
+        package Qt::AutoLoad;
         my $autosub = \&{ " $caller\::_UTOLOAD" };
         *{ "  $caller\::AUTOLOAD" } = sub { &$autosub };        
         $autosub = \&{ "$caller\::_UTOLOAD" };

@@ -2,14 +2,14 @@
 use strict;
 
 BEGIN {
-    chdir "$ENV{HOME}/src/qt/4/PerlQtSimple";
+    chdir "$ENV{HOME}/src/qt/4/PerlQt";
     unshift @INC, 'blib/arch';
     unshift @INC, 'blib/lib';
 }
 
 package Button::Hello;
-use QtSimple;
-use QtSimple::isa qw(QtSimple::QPushButton);
+use Qt;
+use Qt::isa qw(Qt::QPushButton);
 
 my $this;
 
@@ -29,9 +29,9 @@ sub resize {
 
 package main;
 
-use QtSimple;
+use Qt;
 use Button::Hello;
 
 my $w = Button::Hello("Hello World!", undef);
 $w->show;
-exit QtSimple::appexec();
+exit Qt::appexec();

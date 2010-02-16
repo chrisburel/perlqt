@@ -1,8 +1,8 @@
 Changes
 Makefile.PL
 MANIFEST
-QtSimple.xs
+Qt.xs
 ppport.h
 README
-t/PerlQtSimple.t
-lib/QtSimple.pm
+t/Qt.t
+lib/Qt.pm

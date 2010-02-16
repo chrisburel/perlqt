@@ -3,15 +3,15 @@
 use strict;
 
 BEGIN {
-#        chdir "$ENV{HOME}/src/qt/4/PerlQt";
+        chdir "$ENV{HOME}/src/qt/4/PerlQt";
         unshift @INC, 'blib/arch';
         unshift @INC, 'blib/lib';
 }
 
-use QtSimple;
+use Qt;
 use Devel::Peek;
 
-my $label = QtSimple::QLabel("Hello Awesome!");
+my $label = Qt::QLabel("Hello Awesome!");
 #Dump($label);
 $label->show();
-QtSimple::appexec();
+Qt::appexec();
