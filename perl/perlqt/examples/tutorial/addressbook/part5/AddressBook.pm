@@ -3,6 +3,7 @@ package AddressBook;
 use strict;
 use warnings;
 use Qt4;
+use FindDialog;
 
 use Qt4::isa qw( Qt4::Widget );
 
@@ -22,7 +23,8 @@ use Qt4::slots
     removeContact => [],
 # [edit and remove slots]
     next => [],
-    previous => [];
+    previous => [],
+    findContact => [];
 
 sub NEW
 {
@@ -37,12 +39,14 @@ sub NEW
     this->{addressText}->setReadOnly(1);
 
     this->{addButton} = Qt4::PushButton(this->tr('&Add'));
-# [edit and remove buttons] 
     this->{editButton} = Qt4::PushButton(this->tr('&Edit'));
     this->{editButton}->setEnabled(0);
     this->{removeButton} = Qt4::PushButton(this->tr('&Remove'));
     this->{removeButton}->setEnabled(0);
-# [edit and remove buttons] 
+# [instantiating findButton]
+    this->{findButton} = Qt4::PushButton(this->tr("&Find"));
+    this->{findButton}->setEnabled(0);
+# [instantiating findButton]
     this->{submitButton} = Qt4::PushButton(this->tr('&Submit'));
     this->{submitButton}->hide();
     this->{cancelButton} = Qt4::PushButton(this->tr('&Cancel'));
@@ -53,24 +57,28 @@ sub NEW
     this->{previousButton} = Qt4::PushButton(this->tr('&Previous'));
     this->{previousButton}->setEnabled(0);
 
+# [instantiating FindDialog]
+    this->{dialog} = FindDialog(this);
+# [instantiating FindDialog]
+
     this->{order} = 0;
 
     this->connect(this->{addButton}, SIGNAL 'clicked()', this, SLOT 'addContact()');
     this->connect(this->{submitButton}, SIGNAL 'clicked()', this, SLOT 'submitContact()');
-# [connecting edit and remove] 
     this->connect(this->{editButton}, SIGNAL 'clicked()', this, SLOT 'editContact()');
     this->connect(this->{removeButton}, SIGNAL 'clicked()', this, SLOT 'removeContact()');
-# [connecting edit and remove] 
     this->connect(this->{cancelButton}, SIGNAL 'clicked()', this, SLOT 'cancel()');
     this->connect(this->{nextButton}, SIGNAL 'clicked()', this, SLOT 'next()');
     this->connect(this->{previousButton}, SIGNAL 'clicked()', this, SLOT 'previous()');
+    this->connect(this->{findButton}, SIGNAL 'clicked()', this, SLOT 'findContact()');
 
     my $buttonLayout1 = Qt4::VBoxLayout();
     $buttonLayout1->addWidget(this->{addButton});
-# [adding edit and remove to the layout]     
     $buttonLayout1->addWidget(this->{editButton});
     $buttonLayout1->addWidget(this->{removeButton});
-# [adding edit and remove to the layout]         
+# [adding findButton to layout]     
+    $buttonLayout1->addWidget(this->{findButton});
+# [adding findButton to layout]     
     $buttonLayout1->addWidget(this->{submitButton});
     $buttonLayout1->addWidget(this->{cancelButton});
     $buttonLayout1->addStretch();
@@ -101,7 +109,6 @@ sub addContact
 
     this->updateInterface(AddingMode);
 }
-# [editContact() function]
 sub editContact
 {
     this->{oldName} = this->{nameLine}->text();
@@ -109,11 +116,9 @@ sub editContact
 
     this->updateInterface(EditingMode);
 }
-# [editContact() function]
-# [submitContact() function beginning]
+
 sub submitContact
 {
-# [submitContact() function beginning]
     my $name = this->{nameLine}->text();
     my $address = this->{addressText}->toPlainText();
 
@@ -121,7 +126,6 @@ sub submitContact
         Qt4::MessageBox::information(this, this->tr('Empty Field'),
             this->tr('Please enter a name and address.'));
     }
-# [submitContact() function part1]
     if (this->{currentMode} == AddingMode) {
         
         if (!defined this->{contacts}->{$name}) {
@@ -135,8 +139,6 @@ sub submitContact
             Qt4::MessageBox::information(this, this->tr('Add Unsuccessful'),
                 sprintf this->tr('Sorry, \'%1\' is already in your address book.'), $name);
         }
-# [submitContact() function part1]
-# [submitContact() function part2]
     } elsif (this->{currentMode} == EditingMode) {
         
         if (this->{oldName} ne $name) {
@@ -157,7 +159,6 @@ sub submitContact
 
     this->updateInterface(NavigationMode);
 }
-# [submitContact() function part2]
 
 sub cancel
 {
@@ -165,7 +166,6 @@ sub cancel
     this->{addressText}->setText(this->{oldAddress});
     this->updateInterface(NavigationMode);
 }
-# [removeContact() function]
 sub removeContact
 {
     my $name = this->{nameLine}->text();
@@ -190,7 +190,7 @@ sub removeContact
 
     this->updateInterface(NavigationMode);
 }
-# [removeContact() function]
+
 sub next
 {
     my $name = this->{nameLine}->text();
@@ -225,7 +225,27 @@ sub previous
     this->{addressText}->setText(this->{contacts}->{$newName}->{address});
 }
 
-# [update interface() part 1]
+# [findContact() function] 
+sub findContact {
+    this->{dialog}->show();
+
+    if (this->{dialog}->exec() == Qt4::Dialog::Accepted()) {
+        my $contactName = this->{dialog}->getFindText();
+
+        if (defined this->{contacts}->{$contactName}) {
+            this->{nameLine}->setText($contactName);
+            this->{addressText}->setText(this->{contacts}->{$contactName}->{address});
+        } else {
+            Qt4::MessageBox::information(this, this->tr("Contact Not Found"),
+                sprintf this->tr("Sorry, \"%s\" is not in your address book."), $contactName);
+            return;
+        }
+    }
+
+    this->updateInterface(NavigationMode);
+}
+# [findContact() function] 
+
 sub updateInterface
 {
     my ($mode) = @_;
@@ -247,8 +267,6 @@ sub updateInterface
         this->{cancelButton}->show();
     }
     elsif ($mode == NavigationMode) {
-# [update interface() part 1]
-# [update interface() part 2]
         if (scalar keys %{this->{contacts}} == 0) {
             this->{nameLine}->clear();
             this->{addressText}->clear();
@@ -261,6 +279,7 @@ sub updateInterface
         my $number = scalar( keys %{this->{contacts}} );
         this->{editButton}->setEnabled($number >= 1);
         this->{removeButton}->setEnabled($number >= 1);
+        this->{findButton}->setEnabled($number > 2);
         this->{nextButton}->setEnabled($number > 1);
         this->{previousButton}->setEnabled($number >1 );
 
@@ -268,6 +287,5 @@ sub updateInterface
         this->{cancelButton}->hide();
     }
 }
-# [update interface() part 2]
 
 1;
