@@ -1224,7 +1224,7 @@ XS(XS_qvariant_value) {
             XSRETURN(1);
         }
         else if(qstrcmp(variant->typeName(), "HV*") == 0) {
-            ST(0) = sv_2mortal( newRV_noinc( (SV*)qVariantValue<HV*>(*variant)) );
+            ST(0) = newRV_noinc( (SV*)qVariantValue<HV*>(*variant));
             XSRETURN(1);
         }
         else if (strcmp(variant->typeName(), "QDBusVariant") == 0) {
@@ -1433,16 +1433,27 @@ XS(XS_qvariant_from_value) {
         }
     }
     else {
-        switch ( SvTYPE(SvRV(ST(0))) ) {
-            case SVt_PVAV:
-                v = new QVariant(qVariantFromValue((AV*)SvRV(ST(0))));
+        SV* perlvar = ST(0);
+        if (SvROK(perlvar)) {
+            switch ( SvTYPE(SvRV(perlvar))) {
+                case SVt_PVAV:
+                    SvREFCNT_inc(perlvar);
+                    v = new QVariant(qVariantFromValue((AV*)SvRV(perlvar)));
+                    break;
                 break;
-            break;
-            case SVt_PVHV:
-                v = new QVariant(qVariantFromValue((HV*)SvRV(ST(0))));
+                case SVt_PVHV:
+                    SvREFCNT_inc(perlvar);
+                    v = new QVariant(qVariantFromValue((HV*)SvRV(perlvar)));
+                    break;
                 break;
-            break;
-        };
+                default:
+                    croak( "%s", "Can only handle hash and array references in"
+                        " call to Qt4::Variant constructor" );
+            };
+        }
+        else
+            croak( "%s", "Can only handle hash and array references in call to"
+                " Qt4::Variant constructor" );
     }
 
 
@@ -1499,7 +1510,7 @@ XS(XS_AUTOLOAD) {
         if((do_debug & qtdb_verbose) && withObject) {
             smokeperl_object *o = sv_obj_info(withObject ? ST(0) : sv_this);
             if(o)
-                fprintf(stderr, " - this: (%s)%p\n", o->smoke->classes[o->classId].className, o->ptr);
+                fprintf(stderr, " - SV*: %p this: (%s)%p\n", withObject ? ST(0) : sv_this, o->smoke->classes[o->classId].className, o->ptr);
             else
                 fprintf(stderr, " - this: (unknown)(nil)\n");
         }
