@@ -71,6 +71,7 @@
 #include "marshall_macros.h"
 #include "smokeperl.h"
 #include "smokehelp.h"
+#include "util.h"
 
 HV *type_handlers = 0;
 
@@ -81,6 +82,7 @@ int smokeperl_free(pTHX_ SV* sv, MAGIC* mg) {
     if (o->allocated && o->ptr) {
         invoke_dtor( o );
     }
+    // Looks like perl takes care of deleting the magic for us
     return 0;
 }
 
@@ -353,7 +355,36 @@ void marshall_basetype(Marshall* m) {
                         break;
                     }
 
-                    var = sv_2mortal(allocSmokePerlSV( cxxptr, m->type() ));
+                    // We have a pointer to something that we didn't create.
+                    // We don't own this memory, so we don't want to delete it.
+                    // The smokeperl_object contains all the info we need to
+                    // know about this object
+                    smokeperl_object* o = alloc_smokeperl_object(
+                        false, m->smoke(), m->type().classId(), cxxptr );
+
+                    // Try to create a copy (using the copy constructor) if
+                    // it's a const ref
+                    if( m->type().isConst() && m->type().isRef()) {
+	                    cxxptr = construct_copy( o );
+
+                        if(cxxptr) {
+                            o->ptr = cxxptr;
+                            // We made this copy, we do own this memory
+                            o->allocated = true;
+                        }
+                    }
+
+                    // Figure out what Perl name this should get
+                    const char* classname = resolve_classname(o);
+
+                    // Bless a HV ref into that package name, and shove o into
+                    // var
+                    var = sv_2mortal(set_obj_info( classname, o ) );
+
+                    // Store this into the ptr map for reference from virtual
+                    // function calls.
+                    if( SmokeClass( m->type() ).hasVirtual() )
+                        mapPointer(var, o, pointer_map, o->classId, 0);
 
                     // Copy our local var into the marshaller's var, and make
                     // sure to copy our magic with it

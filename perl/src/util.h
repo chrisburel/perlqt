@@ -33,6 +33,7 @@ extern "C" {
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
 
+smokeperl_object * alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr);
 SV* allocSmokePerlSV ( void* ptr, SmokeType type );
 
 #ifdef DEBUG
@@ -60,7 +61,11 @@ void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId,
 
 Smoke::Index package_classId( const char *package );
 
+const char* resolve_classname( smokeperl_object* o );
+
 void* sv_to_ptr(SV* sv);
+
+SV* set_obj_info(const char * className, smokeperl_object * o);
 
 void unmapPointer(smokeperl_object* o, Smoke::Index classId, void* lastptr);
 

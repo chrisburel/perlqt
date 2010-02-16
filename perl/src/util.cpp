@@ -50,6 +50,16 @@ int do_debug = 0;
 // Method caches, to avoid expensive lookups
 QHash<QByteArray, Smoke::Index *> methcache;
 
+smokeperl_object * 
+alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr) {
+    smokeperl_object * o = new smokeperl_object;
+	o->classId = classId;
+	o->smoke = smoke;
+	o->ptr = ptr;
+	o->allocated = allocated;
+    return o;
+}
+
 SV* allocSmokePerlSV ( void* ptr, SmokeType type ) {
     // The hash
     HV* hv = newHV();
@@ -74,7 +84,7 @@ SV* allocSmokePerlSV ( void* ptr, SmokeType type ) {
         o.allocated = true;
     else
         o.allocated = false;
-     
+
     // For this, we need a magic wand.  This is what actually
     // stores 'o' into our hash.
     sv_magic((SV*)hv, 0, '~', (char*)&o, sizeof(o));
@@ -443,6 +453,32 @@ SV* prettyPrintMethod(Smoke::Index id) {
     return r;
 }
 #endif
+
+const char* resolve_classname( smokeperl_object* o ) {
+    return binding.className( o->classId );
+}
+
+SV* set_obj_info(const char * className, smokeperl_object * o) {
+    // The hash
+    HV* hv = newHV();
+    // The hash reference to return
+    SV* var = newRV_noinc((SV*)hv);
+
+    // Bless the sv to that package.
+    sv_bless( var, gv_stashpv(className, TRUE) );
+
+    // For this, we need a magic wand.  This is what actually
+    // stores 'o' into our hash.
+    sv_magic((SV*)hv, 0, '~', (char*)o, sizeof(*o));
+
+    // Associate our vtbl_smoke with our sv, so that
+    // smokeperl_free is called for us when the sv's refcount goes to 0
+    MAGIC* mg = mg_find((SV*)hv, '~');
+    mg->mg_virtual = &vtbl_smoke;
+
+    // We're done with our local var
+    return var;
+}
 
 // Returns the memory address of the cxxptr stored within a given sv.
 void* sv_to_ptr(SV* sv) {
