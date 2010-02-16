@@ -52,7 +52,7 @@ sub baz
    # 3) testing Perl to Perl SUPER
    SUPER->baz();
    # 4) 5) 6) testing non-qualified enum calls vs. Perl method/static calls
-   eval { Qt::blue };
+   ok( eval { Qt::blue } );
    ok( !$@ );
    diag( $@ );
    coincoin('a','b');
@@ -62,7 +62,7 @@ sub baz
 
 package main;
 
-use Test::More tests => 6;
+use Test::More tests => 7;
 
 use Qt;
 use MySubApp;

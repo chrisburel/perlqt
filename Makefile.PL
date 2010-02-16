@@ -4,13 +4,13 @@ use ExtUtils::MakeMaker;
 $CC = 'g++';
 
 #$build = 'release';
-#$build = 'debug';
+$build = 'debug';
 
 $QT_DIR = "/opt/qt";
 $QT_INCLUDE = "$QT_DIR/include";
 $QT_LIB = "$QT_DIR/lib";
 
-$SMOKE_DIR = "/usr/src/rpm/build/kdebindings-4.2.0/smoke";
+$SMOKE_DIR = "/home/cburel/src/kdebindings-4.2.0/smoke";
 $SMOKE_INCLUDE = $SMOKE_DIR;
 $SMOKE_LIB = "/opt/kde-4.2/lib";
 
@@ -44,6 +44,6 @@ WriteMakefile(
     OPTIMIZE          => $OPTIMIZE,
 
     # So we don't have to define LD_LIBRARY_PATH
-    USE_MM_LD_RUN_PATH => 1,
+    #USE_MM_LD_RUN_PATH => 1,
 
 );
