@@ -119,48 +119,50 @@ sub undo {
     $document->undo();
 }
 
-=begin
-
 sub insertCustomer {
-    if (customer.isEmpty())
+    my ( $customer ) = @_;
+    if (!$customer) {
         return;
-    QStringList customerList = customer.split(", ");
-    QTextDocument *document = textEdit->document();
-    QTextCursor cursor = document->find("NAME");
-    if (!cursor.isNull()) {
-        cursor.beginEditBlock();
-        cursor.insertText(customerList.at(0));
-        QTextCursor oldcursor = cursor;
-        cursor = document->find("ADDRESS");
-        if (!cursor.isNull()) {
-            for (int i = 1; i < customerList.size(); ++i) {
-                cursor.insertBlock();
-                cursor.insertText(customerList.at(i));
+    }
+    my @customerList = split /", "/, $customer;
+    my $document = this->{textEdit}->document();
+    my $cursor = $document->find('NAME');
+    if (!$cursor->isNull()) {
+        $cursor->beginEditBlock();
+        $cursor->insertText($customerList[0]);
+        my $oldcursor = $cursor;
+        $cursor = $document->find('ADDRESS');
+        if (!$cursor->isNull()) {
+            foreach my $i (1..$#customerList) {
+                $cursor->insertBlock();
+                $cursor->insertText($customerList[$i]);
             }
-            cursor.endEditBlock();
+            $cursor->endEditBlock();
         }
-        else
-            oldcursor.endEditBlock();
+        else {
+            $oldcursor->endEditBlock();
+        }
     }
 }
 
 sub addParagraph {
-    if (paragraph.isEmpty())
-        return;
-    QTextDocument *document = textEdit->document();
-    QTextCursor cursor = document->find("Yours sincerely,");
-    if (cursor.isNull())
-        return;
-    cursor.beginEditBlock();
-    cursor.movePosition(QTextCursor::PreviousBlock, QTextCursor::MoveAnchor, 2);
-    cursor.insertBlock();
-    cursor.insertText(paragraph);
-    cursor.insertBlock();
-    cursor.endEditBlock();
+    my ( $paragraph ) = @_;
 
+    if (!$paragraph) {
+        return;
+    }
+    my $document = this->{textEdit}->document();
+    my $cursor = $document->find('Yours sincerely,');
+    if ($cursor->isNull()){
+        return;
+    }
+    $cursor->beginEditBlock();
+    $cursor->movePosition(Qt::QTextCursor::PreviousBlock(), Qt::QTextCursor::MoveAnchor(), 2);
+    $cursor->insertBlock();
+    $cursor->insertText($paragraph);
+    $cursor->insertBlock();
+    $cursor->endEditBlock();
 }
-
-=cut
 
 sub about {
    Qt::QMessageBox::about(this, "About Dock Widgets",
@@ -252,37 +254,37 @@ sub createDockWindows {
     my $dock = Qt::QDockWidget("Customers", this);
     $dock->setAllowedAreas(Qt::Qt::LeftDockWidgetArea() | Qt::Qt::RightDockWidgetArea());
     my $customerList = Qt::QListWidget($dock);
-    #$customerList->addItems(QStringList()
-            #<< "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton"
-            #<< "Jane Doe, Memorabilia, 23 Watersedge, Beaton"
-            #<< "Tammy Shea, Tiblanka, 38 Sea Views, Carlton"
-            #<< "Tim Sheen, Caraba Gifts, 48 Ocean Way, Deal"
-            #<< "Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston"
-            #<< "Sally Hobart, Tiroli Tea, 67 Long River, Fedula");
+    $customerList->addItems( [
+            'John Doe, Harmony Enterprises, 12 Lakeside, Ambleton',
+            'Jane Doe, Memorabilia, 23 Watersedge, Beaton',
+            'Tammy Shea, Tiblanka, 38 Sea Views, Carlton',
+            'Tim Sheen, Caraba Gifts, 48 Ocean Way, Deal',
+            'Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston',
+            'Sally Hobart, Tiroli Tea, 67 Long River, Fedula' ] );
     $dock->setWidget($customerList);
     this->addDockWidget(Qt::Qt::RightDockWidgetArea(), $dock);
     this->{viewMenu}->addAction($dock->toggleViewAction());
 
     $dock = Qt::QDockWidget("Paragraphs", this);
     my $paragraphsList = Qt::QListWidget($dock);
-    #paragraphsList->addItems(QStringList()
-            #<< "Thank you for your payment which we have received today."
-            #<< "Your order has been dispatched and should be with you "
-               #"within 28 days."
-            #<< "We have dispatched those items that were in stock. The "
-               #"rest of your order will be dispatched once all the "
-               #"remaining items have arrived at our warehouse. No "
-               #"additional shipping charges will be made."
-            #<< "You made a small overpayment (less than $5) which we "
-               #"will keep on account for you, or return at your request."
-            #<< "You made a small underpayment (less than $1), but we have "
-               #"sent your order anyway. We'll add this underpayment to "
-               #"your next bill."
-            #<< "Unfortunately you did not send enough money. Please remit "
-               #"an additional $. Your order will be dispatched as soon as "
-               #"the complete amount has been received."
-            #<< "You made an overpayment (more than $5). Do you wish to "
-               #"buy more items, or should we return the excess to you?");
+    $paragraphsList->addItems( [
+            'Thank you for your payment which we have received today.',
+            'Your order has been dispatched and should be with you '.
+               'within 28 days.',
+            'We have dispatched those items that were in stock. The '.
+               'rest of your order will be dispatched once all the '.
+               'remaining items have arrived at our warehouse. No '.
+               'additional shipping charges will be made.',
+            'You made a small overpayment (less than $5) which we '.
+               'will keep on account for you, or return at your request.',
+            'You made a small underpayment (less than $1), but we have '.
+               "sent your order anyway. We'll add this underpayment to ".
+               'your next bill.',
+            'Unfortunately you did not send enough money. Please remit '.
+               'an additional $. Your order will be dispatched as soon as '.
+               'the complete amount has been received.',
+            'You made an overpayment (more than $5). Do you wish to '.
+               'buy more items, or should we return the excess to you?' ] );
     $dock->setWidget($paragraphsList);
     this->addDockWidget(Qt::Qt::RightDockWidgetArea(), $dock);
     this->{viewMenu}->addAction($dock->toggleViewAction());

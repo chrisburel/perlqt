@@ -1,7 +1,8 @@
 #include "handlers.h"
 #include "Qt.h"
-#include "QtCore/qstring.h"
 #include "QtCore/QHash"
+#include "QtCore/QString"
+#include "QtCore/QStringList"
 #include "marshall_basetypes.h"
 
 extern HV* pointer_map;
@@ -63,6 +64,79 @@ static void marshall_charP(Marshall *m) {
         }
         break;
       default:
+        m->unsupported();
+        break;
+    }
+}
+
+void marshall_QStringList(Marshall *m) {
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV* listref = m->var();
+            if( !SvROK(listref) && (SvTYPE(SvRV(listref)) != SVt_PVAV) ) {
+                fprintf( stderr, "Not an array\n" );
+                m->item().s_voidp = 0;
+                break;
+            }
+            AV* list = (AV*)SvRV(listref);
+
+            int count = av_len(list) + 1;
+            QStringList *stringlist = new QStringList;
+
+            for(long i = 0; i < count; i++) {
+                SV** lookup = av_fetch( list, i, 0 );
+                if( !lookup ) {
+                    continue;
+                }
+                SV* item = *lookup;
+                if(!item && ( SvPOK(item) ) ) {
+                    stringlist->append(QString());
+                    continue;
+                }
+                // TODO: handle different encodings
+                stringlist->append(QString(SvPV_nolen(item)));
+            }
+
+            m->item().s_voidp = stringlist;
+            /*
+            m->next();
+
+            if (stringlist != 0 && !m->type().isConst()) {
+                rb_ary_clear(list);
+                for(QStringList::Iterator it = stringlist->begin(); it != stringlist->end(); ++it)
+                rb_ary_push(list, rstringFromQString(&(*it)));
+            }
+            
+            if (m->cleanup()) {
+                delete stringlist;
+            }
+            */ 
+            break;
+        }
+        case Marshall::ToSV: {
+            m->unsupported();
+            /*
+            QStringList *stringlist = static_cast<QStringList *>(m->item().s_voidp);
+            if (!stringlist) {
+                *(m->var()) = Qnil;
+                break;
+            }
+
+            VALUE av = rb_ary_new();
+            for (QStringList::Iterator it = stringlist->begin(); it != stringlist->end(); ++it) {
+                VALUE rv = rstringFromQString(&(*it));
+                rb_ary_push(av, rv);
+            }
+
+            *(m->var()) = av;
+
+            if (m->cleanup()) {
+                delete stringlist;
+            }
+            */
+        }
+        break;
+    default:
         m->unsupported();
         break;
     }
@@ -255,6 +329,9 @@ TypeHandler Qt_handlers[] = {
     { "QString", marshall_QString },
     { "QString&", marshall_QString },
     { "QString*", marshall_QString },
+    { "QStringList", marshall_QStringList },
+    { "QStringList*", marshall_QStringList },
+    { "QStringList&", marshall_QStringList },
     { "const QString", marshall_QString },
     { "const QString&", marshall_QString },
     { "const QString*", marshall_QString },

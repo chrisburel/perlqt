@@ -34,6 +34,7 @@ WriteMakefile(
     LD                => '$(CC)',
     XSOPT             => '-C++',
 
+    USE_MM_LD_RUN_PATH => 1,
     # Debugging
     CCFLAGS           => "$CXX_FLAGS",
 );

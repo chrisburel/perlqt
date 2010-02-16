@@ -437,7 +437,7 @@ namespace PerlQt {
         _stack = new Smoke::StackItem[_items - 1];
         // Create this on the heap.  Just saying _methodname = methodname only
         // leaves enough space for 1 char.
-        _methodname = new char[strlen(methodname)];
+        _methodname = new char[strlen(methodname)+1];
         strcpy(_methodname, methodname);
         dSP;
         ENTER;

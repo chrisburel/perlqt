@@ -22,6 +22,7 @@ void Binding::deleted(Smoke::Index classId, void *ptr) {
 }
 
 bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool isAbstract) {
+    PERL_SET_CONTEXT(PL_curinterp);
     if( do_debug && (do_debug & qtdb_virtual)){
         Smoke::Method methodobj = qt_Smoke->methods[method];
         //fprintf( stderr, "Looking for virtual method override for %s::%s()\n",
