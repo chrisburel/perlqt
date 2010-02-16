@@ -168,7 +168,7 @@ sub doLayout
         }
 # [10]
 # [11]
-        my $nextX = $x + $item->sizeHint().width() + $spaceX;
+        my $nextX = $x + $item->sizeHint()->width() + $spaceX;
         if ($nextX - $spaceX > $effectiveRect->right() && $lineHeight > 0) {
             $x = $effectiveRect->x();
             $y = $y + $lineHeight + $spaceY;
