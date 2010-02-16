@@ -240,7 +240,9 @@ sub saveFile
 
     my $out = Qt::TextStream($file);
     Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
+    no warnings qw(void); # For bitshift warning
     $out << this->textEdit->toPlainText();
+    use warnings;
     Qt::Application::restoreOverrideCursor();
 
     this->setCurrentFile($fileName);

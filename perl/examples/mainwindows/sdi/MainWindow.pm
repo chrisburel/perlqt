@@ -125,7 +125,6 @@ sub open
     my $fileName = Qt::FileDialog::getOpenFileName(this);
     if ($fileName) {
         my $existing = findMainWindow($fileName);
-        $DB::single=1;
         if ($existing) {
             $existing->show();
             $existing->raise();
@@ -388,6 +387,7 @@ sub saveFile
     Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
     no warnings qw(void); # For bitshift warning
     $out << Qt::String(this->textEdit->toPlainText());
+    use warnings;
     Qt::Application::restoreOverrideCursor();
     $file->close();
 
