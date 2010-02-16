@@ -6,6 +6,8 @@ use blib;
 
 use Qt;
 use Qt::isa qw(Qt::QWidget);
+use Qt::slots setValue => ['int'];
+use Qt::signals valueChanged => ['int'];
 
 sub NEW {
     shift->SUPER::NEW(@_);

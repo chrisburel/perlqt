@@ -114,27 +114,68 @@ sub makeMetaData {
     my $signals = $meta->{signals};
     my $slots = $meta->{slots};
 
+    @$signals = () if !defined @$signals;
+    @$slots = () if !defined @$slots;
+
     # Each entry in 'stringdata' corresponds to a string in the
     # qt_meta_stringdata_<classname> structure.
-    # 'pack_string' is used to convert 'stringdata' into the
-    # binary sequence of null terminated strings for the metaObject
-    #my @stringdata;
-    #my $pack_string = "";
-    #my $string_table = string_table_handler(stringdata, pack_string);
 
-    my $data = [1,                   # revision
-                0,                   # classname
-                0, 0,                # classinfo
-                2, 10,               # methods
-                0, 0,                # properties
-                0, 0,                # enums/sets
-                19, 10, 9, 9, 0x05,  # signals
-                43, 37, 9, 9, 0x0a,  # slots
-                0];                  # eod
-    my $stringdata = 
-        "LCDRange\0\0newValue\0valueChanged(int)\0" .
-        "value\0setValue(int)\0"
-    ;
+    #
+    # From the enum MethodFlags in qt-copy/src/tools/moc/generator.cpp
+    #
+    my $AccessPrivate = 0x00;
+    my $AccessProtected = 0x01;
+    my $AccessPublic = 0x02;
+    my $MethodMethod = 0x00;
+    my $MethodSignal = 0x04;
+    my $MethodSlot = 0x08;
+    my $MethodCompatibility = 0x10;
+    my $MethodCloned = 0x20;
+    my $MethodScriptable = 0x40;
+
+    my $data = [1,               #revision
+                0,               #str index of classname
+                0, 0,            #don't have classinfo
+                scalar @$signals + scalar @$slots, #number of sig/slots
+                10,              #do have methods
+                0, 0,            #no properties
+                0, 0,            #no enums/sets
+    ];
+
+    my $stringdata = "$classname\0\0";
+    my $nullposition = length( $stringdata ) - 1;
+
+    # Build the stringdata string, storing the indexes in data
+    foreach my $signal ( @$signals ) {
+        my $curPosition = length $stringdata;
+
+        # Add this signal to the stringdata
+        $stringdata .= $signal->{signature} . "\0" ;
+
+        push @$data, $curPosition; #signature
+        push @$data, $nullposition; #parameter names
+        push @$data, $nullposition; #return type, void
+        push @$data, $nullposition; #tag
+        push @$data, $MethodSignal | $AccessProtected; # flags
+    }
+
+    foreach my $slot ( @$slots ) {
+        my $curPosition = length $stringdata;
+
+        # Add this slot to the stringdata
+        $stringdata .= $slot->{signature} . "\0" ;
+
+        push @$data, $curPosition; #signature
+        push @$data, $nullposition; #parameter names
+        push @$data, $nullposition; #return type, void
+        push @$data, $nullposition; #tag
+        push @$data, $MethodSlot | $AccessPublic; # flags
+    }
+    $DB::single=1;
+
+    push @$data, 0; #eod
+
+
 
     return ($stringdata, $data);
 }
