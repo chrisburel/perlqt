@@ -198,8 +198,8 @@ sub createStatusBar {
 
 sub readSettings {
     my $settings = Qt::QSettings("Trolltech", "Application Example");
-    my $pos = $settings->value("pos", Qt::QPoint(200, 200))->toPoint();
-    my $size = $settings->value("size", Qt::QSize(400, 400))->toSize();
+    my $pos = $settings->value("pos", Qt::QVariant(Qt::QPoint(200, 200)))->toPoint();
+    my $size = $settings->value("size", Qt::QVariant(Qt::QSize(400, 400)))->toSize();
     this->resize($size);
     this->move($pos);
 }
