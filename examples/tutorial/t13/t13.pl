@@ -10,10 +10,11 @@ use Qt;
 use GameBoard;
 
 sub main {
+    my $app = Qt::Application( \@ARGV );
     my $widget = GameBoard();
     $widget->setGeometry(100, 100, 500, 355);
     $widget->show();
-    return Qt::qapp->exec();
+    return $app->exec();
 } 
 
 main();

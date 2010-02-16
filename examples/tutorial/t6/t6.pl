@@ -7,22 +7,22 @@ use blib;
 package LCDRange;
 
 use Qt;
-use Qt::isa qw(Qt::QWidget);
+use Qt::isa qw(Qt::Widget);
 
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $lcd = Qt::QLCDNumber(2);
-    $lcd->setSegmentStyle(Qt::QLCDNumber::Filled());
+    my $lcd = Qt::LCDNumber(2);
+    $lcd->setSegmentStyle(Qt::LCDNumber::Filled());
 
-    my $slider = Qt::QSlider(Qt::Qt::Horizontal());
+    my $slider = Qt::Slider(Qt::Horizontal());
     $slider->setRange(0, 99);
     $slider->setValue(0);
 
     this->connect($slider, SIGNAL "valueChanged(int)",
                   $lcd, SLOT "display(int)");
 
-    my $layout = Qt::QVBoxLayout;
+    my $layout = Qt::VBoxLayout;
     $layout->addWidget($lcd);
     $layout->addWidget($slider);
     this->setLayout($layout);
@@ -31,17 +31,17 @@ sub NEW {
 package MyWidget;
 
 use Qt;
-use Qt::isa qw(Qt::QWidget);
+use Qt::isa qw(Qt::Widget);
 use LCDRange;
 
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $quit = Qt::QPushButton("Quit");
-    $quit->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
-    this->connect($quit, SIGNAL "clicked()", Qt::qapp(), SLOT "quit()");
+    my $quit = Qt::PushButton("Quit");
+    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
+    this->connect($quit, SIGNAL "clicked()", qApp, SLOT "quit()");
 
-    my $grid = Qt::QGridLayout();
+    my $grid = Qt::GridLayout();
 
     foreach my $row ( 0..2 ) {
         foreach my $column ( 0..2 ) {
@@ -50,7 +50,7 @@ sub NEW {
         }
     }
 
-    my $layout = Qt::QVBoxLayout;
+    my $layout = Qt::VBoxLayout;
     $layout->addWidget($quit);
     $layout->addLayout($grid);
     this->setLayout($layout);
@@ -62,9 +62,10 @@ use Qt;
 use MyWidget;
 
 sub main {
+    my $app = Qt::Application( \@ARGV );
     my $widget = MyWidget();
     $widget->show();
-    return Qt::qapp()->exec();
+    return $app->exec();
 } 
 
 main();

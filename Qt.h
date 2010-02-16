@@ -1,20 +1,23 @@
 #ifndef QT_H
 #define QT_H
 
-#include "binding.h"
 #include "smokeperl.h"
+#include "smokehelp.h"
 
-#ifdef do_open
-#undef do_open
+SV* allocSmokePerlSV ( void* ptr, SmokeType type );
+#ifdef DEBUG
+SV* catArguments(SV** sp, int n);
 #endif
+char* get_SVt(SV* sv);
+SV* getPointerObject(void* ptr);
+int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke::Index baseId, int cnt);
+int isDerivedFrom(Smoke *smoke, const char *className, const char *baseClassName, int cnt);
+void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void *lastptr);
+Smoke::Index package_classId(const char *package);
+void unmapPointer( smokeperl_object* o, Smoke::Index classId, void* lastptr);
 
-#ifdef do_close
-#undef do_close
-#endif
-#include "QtCore/QHash"
+extern SV* sv_this;
+extern HV* pointer_map;
+extern int do_debug;
 
-extern Q_DECL_EXPORT SV *getPointerObject(void *ptr);
-extern Q_DECL_EXPORT void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void *lastptr);
-extern Q_DECL_EXPORT void unmapPointer(smokeperl_object *o, Smoke::Index classId, void *lastptr);
-
-#endif
+#endif // QT_H

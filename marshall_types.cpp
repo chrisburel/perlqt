@@ -1,19 +1,15 @@
-#include "marshall_types.h"
-#include "handlers.h"
-#include "perlqt.h"
-
-extern SV* sv_this;
-extern Smoke* qt_Smoke;
-extern int do_debug;
-
-// this doesn't belong here
-SV *catArguments(SV** sp, int n);
-
-#include "QtCore/QList"
 #include "QtCore/QHash"
-#include "QtCore/QVector"
 #include "QtCore/QMap"
-//#include "QtCore/QDBusVariant"
+#include "QtCore/QVector"
+
+#include "smoke.h"
+#include "marshall_types.h"
+#include "smokeperl.h" // for smokeperl_object
+#include "smokehelp.h" // for SmokeType and SmokeClass
+#include "handlers.h" // for getMarshallType
+#include "Qt.h" // for extern sv_this
+
+extern Smoke* qt_Smoke;
 
 void
 smokeStackToQtStack(Smoke::Stack stack, void ** o, int start, int end, QList<MocArgument*> args)
@@ -281,6 +277,7 @@ namespace PerlQt {
 
     //------------------------------------------------
 
+
     MethodCallBase::MethodCallBase(Smoke *smoke, Smoke::Index meth) :
         _smoke(smoke), _method(meth), _cur(-1), _called(false), _sp(0)  
     {  
@@ -310,8 +307,14 @@ namespace PerlQt {
     void MethodCallBase::next() {
         int oldcur = _cur;
         _cur++;
-        while( _cur < items() ) {
+        while( !_called && _cur < items() ) {
             Marshall::HandlerFn fn = getMarshallFn(type());
+
+            // The handler will call this function recursively.  The control
+            // flow looks like: 
+            // MethodCallBase::next -> TypeHandler fn -> recurse back to next()
+            // until all variables are marshalled -> callMethod -> TypeHandler
+            // fn to clean up any variables they create
             (*fn)(this);
             _cur++;
         }
@@ -480,6 +483,8 @@ namespace PerlQt {
     }
 
     void InvokeSlot::callMethod() {
+        if (_called) return;
+        _called = true;
         //Call the perl sub
         //Copy the way the VirtualMethodCall does it
         HV *stash = SvSTASH(SvRV(_this));
@@ -492,12 +497,14 @@ namespace PerlQt {
             return;
         }
 
+#ifdef DEBUG
         if(do_debug && (do_debug & qtdb_slots)) {
             fprintf( stderr, "In slot call %s::%s\n", HvNAME(stash), _methodname );
             if(do_debug & qtdb_verbose) {
                 fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(_sp, _items-1))));
             }
         }
+#endif
         
         dSP;
         SP = _sp + _items - 1;
@@ -508,7 +515,7 @@ namespace PerlQt {
     void InvokeSlot::next() {
         int oldcur = _cur;
         _cur++;
-        while( _cur < _items - 1 ) {
+        while( !_called && _cur < _items - 1 ) {
             Marshall::HandlerFn fn = getMarshallFn(type());
             (*fn)(this);
             _cur++;
@@ -638,4 +645,4 @@ namespace PerlQt {
             o[0] = new QString;
         }
     }
-}
+} // End namespace PerlQt

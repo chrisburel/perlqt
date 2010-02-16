@@ -5,7 +5,7 @@ use warnings;
 use blib;
 
 use Qt;
-use Qt::isa qw(Qt::QWidget);
+use Qt::isa qw(Qt::Widget);
 use Qt::slots setAngle    => ['int'],
               setForce    => ['int'],
               shoot       => [],
@@ -25,14 +25,14 @@ sub NEW {
     this->{currentAngle} = 45;
     this->{currentForce} = 0;
     this->{timerCount} = 0;
-    my $autoShootTimer = Qt::QTimer(this);
+    my $autoShootTimer = Qt::Timer(this);
     this->{autoShootTimer} = $autoShootTimer;
     this->connect( $autoShootTimer, SIGNAL 'timeout()', this, SLOT 'moveShot()' );
     this->{shootAngle} = 0;
     this->{shootForce} = 0;
-    this->{target} = Qt::QPoint(0, 0);
+    this->{target} = Qt::Point(0, 0);
     this->{gameEnded} = 0;
-    this->setPalette(Qt::QPalette(Qt::QColor(250,250,200)));
+    this->setPalette(Qt::Palette(Qt::Color(250,250,200)));
     this->setAutoFillBackground(1);
     this->{firstTime} = 1;
     newTarget();
@@ -85,7 +85,7 @@ sub newTarget {
 
     # 2147483647 is the value of RAND_MAX, defined in stdlib.h, at least on my machine.
     # See the Qt 4.2 documentation on qrand() for more details.
-    this->{target} = Qt::QPoint( 150 + rand(2147483647) % 190, 10 + rand(2147483647) % 255);
+    this->{target} = Qt::Point( 150 + rand(2147483647) % 190, 10 + rand(2147483647) % 255);
     this->update();
 }
 
@@ -130,15 +130,15 @@ sub moveShot {
     this->update($region);
 }
 
-my $barrelRect = Qt::QRect(30, -5, 20, 10);
+my $barrelRect = Qt::Rect(30, -5, 20, 10);
 
 sub paintEvent {
-    my $painter = Qt::_internal::gimmePainter(this);
+    my $painter = Qt::Painter(this);
 
     if (this->{gameEnded}) {
-        $painter->setPen(Qt::QColor(0, 0, 0));
-        $painter->setFont(Qt::QFont("Courier", 48, Qt::QFont::Bold()));
-        $painter->drawText(this->rect(), Qt::Qt::AlignCenter(), "Game Over");
+        $painter->setPen(Qt::Color(0, 0, 0));
+        $painter->setFont(Qt::Font("Courier", 48, Qt::Font::Bold()));
+        $painter->drawText(this->rect(), Qt::AlignCenter(), "Game Over");
     }
     if (isShooting()){
         paintShot($painter);
@@ -153,31 +153,31 @@ sub paintEvent {
 
 sub paintShot {
     my( $painter ) = @_;
-    $painter->setPen(Qt::Qt::NoPen());
-    $painter->setBrush(Qt::QBrush(Qt::Qt::black()));
+    $painter->setPen(Qt::NoPen());
+    $painter->setBrush(Qt::Brush(Qt::black()));
     $painter->drawRect(shotRect());
 }
 
 sub paintTarget {
     my( $painter ) = @_;
-    $painter->setPen(Qt::QColor(0, 0, 0));
-    $painter->setBrush(Qt::QBrush(Qt::Qt::red()));
+    $painter->setPen(Qt::Color(0, 0, 0));
+    $painter->setBrush(Qt::Brush(Qt::red()));
     $painter->drawRect(targetRect());
 }
 
 sub paintCannon {
     my( $painter ) = @_;
-    $painter->setPen(Qt::Qt::NoPen());
-    $painter->setBrush(Qt::QBrush(Qt::Qt::blue()));
+    $painter->setPen(Qt::NoPen());
+    $painter->setBrush(Qt::Brush(Qt::blue()));
 
     $painter->translate(0, this->rect()->height());
-    $painter->drawPie(Qt::QRect(-35, -35, 70, 70), 0, 90 * 16);
+    $painter->drawPie(Qt::Rect(-35, -35, 70, 70), 0, 90 * 16);
     $painter->rotate(-(this->{currentAngle}));
     $painter->drawRect($barrelRect);
 }
 
 sub cannonRect {
-    my $result = Qt::QRect(0, 0, 50, 50);
+    my $result = Qt::Rect(0, 0, 50, 50);
     $result->moveBottomLeft(this->rect()->bottomLeft());
     return $result;
 }
@@ -198,15 +198,15 @@ sub shotRect {
     $x = int($x + .5);
     $y = int($y + .5);
 
-    my $result = Qt::QRect(0, 0, 6, 6);
-    $result->moveCenter(Qt::QPoint( $x, this->height() - 1 - $y ));
+    my $result = Qt::Rect(0, 0, 6, 6);
+    $result->moveCenter(Qt::Point( $x, this->height() - 1 - $y ));
     return $result;
 }
 
 sub targetRect {
-    my $result = Qt::QRect(0, 0, 20, 10);
+    my $result = Qt::Rect(0, 0, 20, 10);
     my $target = this->{target};
-    $result->moveCenter(Qt::QPoint($target->x(), this->height() - 1 - $target->y()));
+    $result->moveCenter(Qt::Point($target->x(), this->height() - 1 - $target->y()));
     return $result;
 }
 

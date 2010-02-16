@@ -7,7 +7,7 @@ use blib;
 package MyWidget;
 
 use Qt;
-use Qt::isa qw(Qt::QWidget);
+use Qt::isa qw(Qt::Widget);
 use LCDRange;
 
 my @widgets;
@@ -15,12 +15,12 @@ my @widgets;
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $quit = Qt::QPushButton("Quit");
-    $quit->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $quit = Qt::PushButton("Quit");
+    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
 
-    this->connect($quit, SIGNAL "clicked()", Qt::qapp(), SLOT "quit()");
+    this->connect($quit, SIGNAL "clicked()", qApp, SLOT "quit()");
 
-    my $grid = Qt::QGridLayout();
+    my $grid = Qt::GridLayout();
     my $previousRange;
 
 
@@ -37,7 +37,7 @@ sub NEW {
         }
     }
 
-    my $layout = Qt::QVBoxLayout;
+    my $layout = Qt::VBoxLayout;
     $layout->addWidget($quit);
     $layout->addLayout($grid);
     this->setLayout($layout);
@@ -51,9 +51,10 @@ use Qt;
 use MyWidget;
 
 sub main {
+    my $app = Qt::Application( \@ARGV );
     my $widget = MyWidget();
     $widget->show();
-    return Qt::qapp()->exec();
+    return $app->exec();
 } 
 
 main();

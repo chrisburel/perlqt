@@ -4,23 +4,20 @@
 #ifndef MARSHALL_TYPES_H
 #define MARSHALL_TYPES_H
 
+#include "QtCore/QList"
+#include "QtCore/QObject"
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 #include "ppport.h"
 
-#include "smoke.h"
-
-#include "binding.h"
 #include "marshall.h"
-#include "smokeperl.h"
-#include "Qt.h"
-#include "handlers.h"
+#include "binding.h" // for definition of PerlQt::Binding
+#include "smokeperl.h" // for smokeperl_object
 
-#include "QtCore/QList"
-
-void smokeStackFromQtStack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args);
 void smokeStackToQtStack(Smoke::Stack stack, void ** o, int start, int end, QList<MocArgument*> args);
+void smokeStackFromQtStack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args);
 
 namespace PerlQt {
 
@@ -101,6 +98,10 @@ public:
     SV *var();
 
     inline void callMethod() {
+        if( _called )
+            return;
+        _called = true;
+
         Smoke::Method *method = _smoke->methods + _method;
         Smoke::ClassFn fn = _smoke->classes[method->classId].classFn;
 
@@ -116,7 +117,7 @@ public:
         // Tell the method call what binding to use
         if (method->flags & Smoke::mf_ctor) {
             Smoke::StackItem s[2];
-            s[1].s_voidp = &binding;
+            s[1].s_voidp = (void*)&binding;
             (*fn)(0, _stack[0].s_voidp, s);
         }
 
@@ -192,6 +193,7 @@ protected:
     int _id;
     SV* _retval;
 };
+
 } // End namespace PerlQt
 
-#endif
+#endif // MARSHALL_TYPES_H

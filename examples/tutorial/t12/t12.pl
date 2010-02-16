@@ -7,19 +7,17 @@ use blib;
 package MyWidget;
 
 use Qt;
-use Qt::isa qw(Qt::QWidget);
+use Qt::isa qw(Qt::Widget);
 use CannonField;
 use LCDRange;
-
-my @widgets;
 
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $quit = Qt::QPushButton("&Quit");
-    $quit->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $quit = Qt::PushButton("&Quit");
+    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
 
-    this->connect($quit, SIGNAL "clicked()", Qt::qapp(), SLOT "quit()");
+    this->connect($quit, SIGNAL "clicked()", qApp, SLOT "quit()");
 
     my $angle = LCDRange(undef, "ANGLE");
     $angle->setRange(5, 70);
@@ -39,20 +37,20 @@ sub NEW {
     this->connect($cannonField, SIGNAL 'forceChanged(int)',
                   $force, SLOT 'setValue(int)');
 
-    my $shoot = Qt::QPushButton("&Shoot");
-    $shoot->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $shoot = Qt::PushButton("&Shoot");
+    $shoot->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
 
     this->connect($shoot, SIGNAL 'clicked()', $cannonField, SLOT 'shoot()');
 
-    my $topLayout = Qt::QHBoxLayout();
+    my $topLayout = Qt::HBoxLayout();
     $topLayout->addWidget($shoot);
     $topLayout->addStretch(1);
 
-    my $leftLayout = Qt::QVBoxLayout();
+    my $leftLayout = Qt::VBoxLayout();
     $leftLayout->addWidget($angle);
     $leftLayout->addWidget($force);
 
-    my $gridLayout = Qt::QGridLayout();
+    my $gridLayout = Qt::GridLayout();
     $gridLayout->addWidget($quit, 0, 0);
     $gridLayout->addLayout($topLayout, 0, 1);
     $gridLayout->addLayout($leftLayout, 1, 0);
@@ -63,11 +61,6 @@ sub NEW {
     $angle->setValue(60);
     $force->setValue(25);
     $angle->setFocus();
-
-    push @widgets, $angle;
-    push @widgets, $force;
-    push @widgets, $cannonField;
-    push @widgets, $shoot;
 }
 
 1;
@@ -78,10 +71,11 @@ use Qt;
 use MyWidget;
 
 sub main {
+    my $app = Qt::Application();
     my $widget = MyWidget();
     $widget->setGeometry(100, 100, 500, 355);
     $widget->show();
-    return Qt::qapp->exec();
+    return $app->exec();
 } 
 
 main();

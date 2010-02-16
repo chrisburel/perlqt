@@ -7,16 +7,17 @@ use blib;
 use Qt;
 
 sub main {
-    my $window = Qt::QWidget();
+    my $app = Qt::Application( \@ARGV );
+    my $window = Qt::Widget();
     $window->resize(200, 120);
 
-    my $quit = Qt::QPushButton("Quit", $window);
-    $quit->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $quit = Qt::PushButton("Quit", $window);
+    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
     $quit->setGeometry(10, 40, 180, 40);
-    Qt::QObject::connect($quit, SIGNAL "clicked()", Qt::qapp(), SLOT "quit()");
+    Qt::Object::connect($quit, SIGNAL "clicked()", $app, SLOT "quit()");
 
     $window->show();
-    return Qt::qapp()->exec();
+    return $app->exec();
 } 
 
 main();

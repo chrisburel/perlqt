@@ -1,7 +1,7 @@
 package GameBoard;
 
 use Qt;
-use Qt::isa qw(Qt::QWidget);
+use Qt::isa qw(Qt::Widget);
 use Qt::slots fire    => [],
               hit     => [],
               missed  => [],
@@ -15,10 +15,10 @@ my @widgets;
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $quit = Qt::QPushButton("&Quit");
-    $quit->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $quit = Qt::PushButton("&Quit");
+    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
 
-    this->connect($quit, SIGNAL "clicked()", Qt::qapp(), SLOT "quit()");
+    this->connect($quit, SIGNAL "clicked()", qApp, SLOT "quit()");
 
     my $angle = LCDRange(undef, "ANGLE");
     $angle->setRange(5, 70);
@@ -43,29 +43,29 @@ sub NEW {
     this->connect($cannonField, SIGNAL 'missed()',
                   this, SLOT 'missed()');
 
-    my $shoot = Qt::QPushButton("&Shoot");
-    $shoot->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $shoot = Qt::PushButton("&Shoot");
+    $shoot->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
 
     this->connect($shoot, SIGNAL 'clicked()',
                   this, SLOT 'fire()');
     this->connect($cannonField, SIGNAL 'canShoot(bool)',
                   $shoot, SLOT 'setEnabled(bool)');
 
-    my $restart = Qt::QPushButton("&New Game");
-    $restart->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $restart = Qt::PushButton("&New Game");
+    $restart->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
 
     this->connect($restart, SIGNAL 'clicked()', this, SLOT 'newGame()');
 
-    my $hits = Qt::QLCDNumber(2);
-    $hits->setSegmentStyle(Qt::QLCDNumber::Filled());
+    my $hits = Qt::LCDNumber(2);
+    $hits->setSegmentStyle(Qt::LCDNumber::Filled());
 
-    my $shotsLeft = Qt::QLCDNumber(2);
-    $shotsLeft->setSegmentStyle(Qt::QLCDNumber::Filled());
+    my $shotsLeft = Qt::LCDNumber(2);
+    $shotsLeft->setSegmentStyle(Qt::LCDNumber::Filled());
 
-    my $hitsLabel = Qt::QLabel("HITS");
-    my $shotsLeftLabel = Qt::QLabel("SHOTS LEFT");
+    my $hitsLabel = Qt::Label("HITS");
+    my $shotsLeftLabel = Qt::Label("SHOTS LEFT");
 
-    my $topLayout = Qt::QHBoxLayout();
+    my $topLayout = Qt::HBoxLayout();
     $topLayout->addWidget($shoot);
     $topLayout->addWidget($hits);
     $topLayout->addWidget($hitsLabel);
@@ -74,11 +74,11 @@ sub NEW {
     $topLayout->addStretch(1);
     $topLayout->addWidget($restart);
 
-    my $leftLayout = Qt::QVBoxLayout();
+    my $leftLayout = Qt::VBoxLayout();
     $leftLayout->addWidget($angle);
     $leftLayout->addWidget($force);
 
-    my $gridLayout = Qt::QGridLayout();
+    my $gridLayout = Qt::GridLayout();
     $gridLayout->addWidget($quit, 0, 0);
     $gridLayout->addLayout($topLayout, 0, 1);
     $gridLayout->addLayout($leftLayout, 1, 0);

@@ -13,12 +13,7 @@ template <class T> SV* primitive_to_perl(T);
 
 template <class T>
 static void marshall_from_perl(Marshall *m) {
-    SV* var;
-    if(SvROK(m->var()))
-        var = SvRV(m->var());
-    else 
-        var = m->var();
-    (*smoke_ptr<T>(m)) = perl_to_primitive<T>(var);
+    (*smoke_ptr<T>(m)) = perl_to_primitive<T>(m->var());
 }
 
 template <class T>
@@ -27,5 +22,27 @@ static void marshall_to_perl(Marshall *m) {
 }
 
 #include "marshall_primitives.h"
+#include "marshall_complex.h"
 
+// Special case marshallers
+
+template<>
+void marshall_from_perl<char*>(Marshall* m) {
+    m->item().s_voidp = perl_to_primitive<char*>(m->var());
+}
+
+template<>
+void marshall_to_perl<char*>(Marshall* m) {
+    char* sv = (char*)m->item().s_voidp;
+    SV* obj = newSV(0);
+    if(sv)
+        sv_setpv(obj, sv);
+    else
+        sv_setsv( obj, &PL_sv_undef );
+    
+    if(m->cleanup())
+        delete[] sv;
+
+    sv_setsv_mg(m->var(), obj);
+}
 #endif //MARSHALL_BASETYPES_H

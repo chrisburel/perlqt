@@ -5,7 +5,7 @@ use warnings;
 use blib;
 
 use Qt;
-use Qt::isa qw(Qt::QWidget);
+use Qt::isa qw(Qt::Widget);
 use Qt::slots setValue => ['int'],
               setRange => ['int', 'int'];
 use Qt::signals valueChanged => ['int'];
@@ -22,21 +22,21 @@ sub NEW {
 }
 
 sub init {
-    my $lcd = Qt::QLCDNumber(2);
-    $lcd->setSegmentStyle(Qt::QLCDNumber::Filled());
+    my $lcd = Qt::LCDNumber(2);
+    $lcd->setSegmentStyle(Qt::LCDNumber::Filled());
 
-    my $slider = Qt::QSlider(Qt::Qt::Horizontal());
+    my $slider = Qt::Slider(Qt::Horizontal());
     $slider->setRange(0, 99);
     $slider->setValue(0);
-    my $label = Qt::QLabel();
-    $label->setAlignment(Qt::Qt::AlignHCenter() | Qt::Qt::AlignTop());
+    my $label = Qt::Label();
+    $label->setAlignment(Qt::AlignHCenter() | Qt::AlignTop());
 
     this->connect($slider, SIGNAL "valueChanged(int)",
                   $lcd, SLOT "display(int)");
     this->connect($slider, SIGNAL "valueChanged(int)",
                   this, SIGNAL "valueChanged(int)");
 
-    my $layout = Qt::QVBoxLayout;
+    my $layout = Qt::VBoxLayout;
     $layout->addWidget($lcd);
     $layout->addWidget($slider);
     $layout->addWidget($label);

@@ -1,23 +1,24 @@
 #!/usr/local/bin/perl -w
 
-use lib '/home/chris/src/qt/4/PerlQt/blib/lib';
-use lib '/home/chris/src/qt/4/PerlQt/blib/arch';
-
 use strict;
 use warnings;
+use blib;
+
 use Qt;
 
 sub main {
-    my $quit = Qt::QPushButton("Quit");
+    my $app = Qt::Application(\@ARGV);
+    my $quit = Qt::PushButton("Quit");
     $quit->resize(150, 30);
-    $quit->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $font = Qt::Font("Times", 18, 75);
+    $quit->setFont( $font );
 
-    Qt::QObject::connect( $quit, SIGNAL "clicked()",
-                          Qt::qapp(), SLOT "quit()" );
+    Qt::Object::connect( $quit, SIGNAL "clicked()",
+                         $app,  SLOT "quit()" );
 
     $quit->show();
 
-    return Qt::qapp()->exec();
+    return $app->exec();
 }
 
 main();

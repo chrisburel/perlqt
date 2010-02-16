@@ -4,7 +4,7 @@ use strict;
 use blib;
 
 use Qt;
-use Qt::isa qw(Qt::QWidget);
+use Qt::isa qw(Qt::Widget);
 use Qt::slots fire    => [],
               hit     => [],
               missed  => [],
@@ -18,10 +18,10 @@ my @widgets;
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $quit = Qt::QPushButton("&Quit");
-    $quit->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $quit = Qt::PushButton("&Quit");
+    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
 
-    this->connect($quit, SIGNAL "clicked()", Qt::qapp(), SLOT "quit()");
+    this->connect($quit, SIGNAL "clicked()", qApp, SLOT "quit()");
 
     my $angle = LCDRange(undef, "ANGLE");
     $angle->setRange(5, 70);
@@ -29,8 +29,8 @@ sub NEW {
     my $force = LCDRange(undef, "FORCE");
     $force->setRange(10, 50);
 
-    my $cannonBox = Qt::QFrame();
-    $cannonBox->setFrameStyle(CAST Qt::QFrame::WinPanel() | Qt::QFrame::Sunken(), 'Qt::WindowFlags');
+    my $cannonBox = Qt::Frame();
+    $cannonBox->setFrameStyle(CAST Qt::Frame::WinPanel() | Qt::Frame::Sunken(), 'Qt::WindowFlags');
 
     my $cannonField = CannonField();
 
@@ -49,33 +49,33 @@ sub NEW {
     this->connect($cannonField, SIGNAL 'missed()',
                   this, SLOT 'missed()');
 
-    my $shoot = Qt::QPushButton("&Shoot");
-    $shoot->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $shoot = Qt::PushButton("&Shoot");
+    $shoot->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
 
     this->connect($shoot, SIGNAL 'clicked()',
                   this, SLOT 'fire()');
     this->connect($cannonField, SIGNAL 'canShoot(bool)',
                   $shoot, SLOT 'setEnabled(bool)');
 
-    my $restart = Qt::QPushButton("&New Game");
-    $restart->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+    my $restart = Qt::PushButton("&New Game");
+    $restart->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
 
     this->connect($restart, SIGNAL 'clicked()', this, SLOT 'newGame()');
 
-    my $hits = Qt::QLCDNumber(2);
-    $hits->setSegmentStyle(Qt::QLCDNumber::Filled());
+    my $hits = Qt::LCDNumber(2);
+    $hits->setSegmentStyle(Qt::LCDNumber::Filled());
 
-    my $shotsLeft = Qt::QLCDNumber(2);
-    $shotsLeft->setSegmentStyle(Qt::QLCDNumber::Filled());
+    my $shotsLeft = Qt::LCDNumber(2);
+    $shotsLeft->setSegmentStyle(Qt::LCDNumber::Filled());
 
-    my $hitsLabel = Qt::QLabel("HITS");
-    my $shotsLeftLabel = Qt::QLabel("SHOTS LEFT");
+    my $hitsLabel = Qt::Label("HITS");
+    my $shotsLeftLabel = Qt::Label("SHOTS LEFT");
 
-    Qt::QShortcut(Qt::QKeySequence(Qt::Qt::Key_Enter()), this, SLOT 'fire()');
-    Qt::QShortcut(Qt::QKeySequence(Qt::Qt::Key_Return()), this, SLOT 'fire()');
-    Qt::QShortcut(Qt::QKeySequence(Qt::Qt::CTRL() + Qt::Qt::Key_Q()), this, SLOT 'close()');
+    Qt::Shortcut(Qt::KeySequence(${Qt::Key_Enter()}), this, SLOT 'fire()');
+    Qt::Shortcut(Qt::KeySequence(${Qt::Key_Return()}), this, SLOT 'fire()');
+    Qt::Shortcut(Qt::KeySequence(${Qt::CTRL() + Qt::Key_Q()}), this, SLOT 'close()');
 
-    my $topLayout = Qt::QHBoxLayout();
+    my $topLayout = Qt::HBoxLayout();
     $topLayout->addWidget($shoot);
     $topLayout->addWidget($hits);
     $topLayout->addWidget($hitsLabel);
@@ -84,15 +84,15 @@ sub NEW {
     $topLayout->addStretch(1);
     $topLayout->addWidget($restart);
 
-    my $leftLayout = Qt::QVBoxLayout();
+    my $leftLayout = Qt::VBoxLayout();
     $leftLayout->addWidget($angle);
     $leftLayout->addWidget($force);
 
-    my $cannonLayout = Qt::QVBoxLayout();
+    my $cannonLayout = Qt::VBoxLayout();
     $cannonLayout->addWidget($cannonField);
     $cannonBox->setLayout($cannonLayout);
 
-    my $gridLayout = Qt::QGridLayout();
+    my $gridLayout = Qt::GridLayout();
     $gridLayout->addWidget($quit, 0, 0);
     $gridLayout->addLayout($topLayout, 0, 1);
     $gridLayout->addLayout($leftLayout, 1, 0);

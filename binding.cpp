@@ -1,13 +1,12 @@
+#include "marshall_types.h"
+#include "binding.h"
+#include "Qt.h"
+#include "smokeperl.h"
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 #include "ppport.h"
-
-#include "binding.h"
-#include "perlqt.h"
-#include "smokeperl.h"
-#include "marshall_types.h"
-#include "Qt.h"
 
 extern Q_DECL_EXPORT Smoke *qt_Smoke;
 extern Q_DECL_EXPORT int do_debug;
@@ -18,7 +17,13 @@ Binding::Binding() : SmokeBinding(0) {};
 Binding::Binding(Smoke *s) : SmokeBinding(s) {};
 
 void Binding::deleted(Smoke::Index classId, void *ptr) {
-    // Ignore deletion
+    SV* obj = getPointerObject(ptr);
+    smokeperl_object* o = sv_obj_info(obj);
+    if (!o || !o->ptr) {
+        return;
+    }
+    unmapPointer( o, o->classId, 0 );
+    o->ptr = 0;
 }
 
 bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool isAbstract) {
@@ -67,11 +72,28 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
     return true;
 }
 
+// Args: Smoke::Index classId: the smoke classId to get the perl package name for
+// Returns: char* containing the perl package name
 char* Binding::className(Smoke::Index classId) {
-    const char *className = smoke->className(classId);
-    char *buf = new char[strlen(className) + 12];
-    strcpy(buf, " Qt::");
-    strcat(buf, className);
-    return buf;
+    // Find the classId->package hash
+    HV* classId2package = get_hv( "Qt::_internal::classId2package", FALSE );
+    if( !classId2package ) croak( "Internal error: Unable to find classId2package hash" );
+
+    // Look up the package's name in the hash
+    char* key = new char[4];
+    int klen = sprintf( key, "%d", classId );
+    //*(key + klen) = 0;
+    SV** packagename = hv_fetch( classId2package, key, klen, FALSE );
+    delete[] key;
+
+    if( !packagename ) {
+        // Shouldn't happen
+        croak( "Internal error: Unable to resolve classId %d to perl package",
+               classId );
+    }
+
+    SV* retval = sv_2mortal(newSVpvf(" %s", SvPV_nolen(*packagename)));
+    return SvPV_nolen(retval);
 }
+
 } // End namespace PerlQt
