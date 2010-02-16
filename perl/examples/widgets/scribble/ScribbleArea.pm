@@ -87,7 +87,7 @@ sub saveImage {
     my $visibleImage = this->image;
     this->resizeImage($visibleImage, this->size());
 
-    if (this->visibleImage->save($fileName, $fileFormat)) {
+    if ($visibleImage->save($fileName, $fileFormat)) {
         this->{modified} = 0;
         return 1;
     } else {

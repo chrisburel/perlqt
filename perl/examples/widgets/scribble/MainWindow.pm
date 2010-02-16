@@ -117,7 +117,7 @@ sub open {
 sub save {
 # [5] //! [6]
     my $action = this->sender();
-    my $fileFormat = $action->data()->toByteArray();
+    my $fileFormat = $action->data()->toString();
     this->saveFile($fileFormat);
 }
 # [6]
@@ -260,13 +260,14 @@ sub maybeSave {
 sub saveFile {
 # [19] //! [20]
     my ($fileFormat) = @_;
-    my $initialPath = Qt::Dir::currentPath() . '/untitled.' + $fileFormat;
+    my $initialPath = Qt::Dir::currentPath() . '/untitled.' . $fileFormat;
 
     my $fileName = Qt::FileDialog::getSaveFileName(this, this->tr('Save As'),
                                $initialPath,
                                sprintf( this->tr('%s Files (*.%s);;All Files (*)'),
-                               uc $fileFormat,
-                               $fileFormat ));
+                                   uc $fileFormat,
+                                   $fileFormat )
+                               );
     if (!$fileName) {
         return 0;
     } else {
