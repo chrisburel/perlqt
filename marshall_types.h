@@ -16,43 +16,37 @@
 #include "Qt.h"
 #include "handlers.h"
 
-class MethodReturnValue : public Marshall {
+namespace PerlQt {
+
+class Q_DECL_EXPORT MethodReturnValueBase : public Marshall {
+public:
+    MethodReturnValueBase(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack);
+    const Smoke::Method &method();
+    Smoke::StackItem &item();
+    Smoke *smoke();
+    SmokeType type();
+    void next();
+    bool cleanup();
+    void unsupported();
+    SV* var();
+protected:
     Smoke *_smoke;
     Smoke::Index _methodIndex;
     Smoke::Stack _stack;
     SV *_retval;
-public:
-    MethodReturnValue(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack) :
-      _smoke(smoke), _methodIndex(methodIndex), _stack(stack)  {
-        _retval = newSV(0);
-        Marshall::HandlerFn fn = getMarshallFn(type());
-        (*fn)(this);
-    }
-
-    SmokeType type() { return SmokeType(_smoke, method().ret); }
-
-    // We're passing an SV back to perl
-    Marshall::Action action() { return Marshall::ToSV; }
-    Smoke::StackItem &item() { return _stack[0]; }
-    SV *var() { return _retval; }
-
-    void unsupported() {
-        croak("Cannot handle '%s' as return-type of %s::%s",
-            type().name(),
-            _smoke->className(method().classId),
-            _smoke->methodNames[method().name]);
-    }
-
-        Smoke *smoke() { return _smoke; }
-    void next() {}
-    bool cleanup() { return false; }
-
-    Smoke::Method &method() {
-        return _smoke->methods[_methodIndex];
-    }
 };
 
-namespace PerlQt {
+class Q_DECL_EXPORT VirtualMethodReturnValue : public MethodReturnValueBase {
+public:
+    VirtualMethodReturnValue(Smoke *smoke, Smoke::Index meth, Smoke::Stack stack, SV* retval);
+    Marshall::Action action();
+};
+
+class Q_DECL_EXPORT MethodReturnValue : public MethodReturnValueBase {
+public:
+    MethodReturnValue(Smoke *smoke, Smoke::Index meth, Smoke::Stack stack);
+    Marshall::Action action();
+};
 
 class Q_DECL_EXPORT MethodCallBase : public Marshall {
 public:

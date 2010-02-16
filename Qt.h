@@ -1,6 +1,7 @@
 #ifndef QT_H
 #define QT_H
 
+#include "binding.h"
 #include "smokeperl.h"
 
 #ifdef do_open
@@ -11,17 +12,6 @@
 #undef do_close
 #endif
 #include "QtCore/QHash"
-
-namespace PerlQt {
-class Q_DECL_EXPORT Binding : public SmokeBinding {
-public:
-    Binding();
-    Binding(Smoke *s);
-    void deleted(Smoke::Index classId, void *ptr);
-    bool callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool isAbstract);
-    char *className(Smoke::Index classId);
-};
-}
 
 extern Q_DECL_EXPORT SV *getPointerObject(void *ptr);
 extern Q_DECL_EXPORT void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void *lastptr);

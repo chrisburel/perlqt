@@ -3,36 +3,75 @@
 
 extern SV* sv_this;
 
-class VirtualMethodReturnValue : public Marshall {
-    Smoke *_smoke;
-    Smoke::Index _method;
-    Smoke::Stack _stack;
-    SmokeType _st;
-    SV *_retval;
-public:
-    const Smoke::Method &method() { return _smoke->methods[_method]; }
-    SmokeType type() { return _st; }
-    Marshall::Action action() { return Marshall::FromSV; }
-    Smoke::StackItem &item() { return _stack[0]; }
-    SV *var() { return _retval; }
-    void unsupported() {
-        croak("Cannot handle '%s' as return-type of virtual method %s::%s",
-                type().name(),
-                _smoke->className(method().classId),
-                _smoke->methodNames[method().name]);
+namespace PerlQt {
+
+    MethodReturnValueBase::MethodReturnValueBase(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack) :
+	_smoke(smoke), _methodIndex(methodIndex), _stack(stack) {
     }
-    Smoke *smoke() { return _smoke; }
-    void next() {}
-    bool cleanup() { return false; }
-    VirtualMethodReturnValue(Smoke *smoke, Smoke::Index meth, Smoke::Stack stack, SV *retval) :
-      _smoke(smoke), _method(meth), _stack(stack), _retval(retval) {
-        _st.set(_smoke, method().ret);
+
+    const Smoke::Method &MethodReturnValueBase::method() {
+        return _smoke->methods[_methodIndex];
+    }
+
+    Smoke::StackItem &MethodReturnValueBase::item() {
+        return _stack[0];
+    }
+
+    Smoke *MethodReturnValueBase::smoke() {
+        return _smoke;
+    }
+
+    SmokeType MethodReturnValueBase::type() {
+        return SmokeType(_smoke, method().ret);
+    }
+
+    void MethodReturnValueBase::next() {
+    }
+
+    bool MethodReturnValueBase::cleanup() {
+        return false;
+    }
+
+    void MethodReturnValueBase::unsupported() {
+        croak("Cannot handle '%s' as return-type of %s::%s",
+            type().name(),
+            _smoke->className(method().classId),
+            _smoke->methodNames[method().name]);
+    }
+
+    SV* MethodReturnValueBase::var() {
+        return _retval;
+    }
+
+    //------------------------------------------------
+
+    VirtualMethodReturnValue::VirtualMethodReturnValue(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack, SV *retval) :
+      MethodReturnValueBase(smoke, methodIndex, stack) {
+        _retval = retval;
         Marshall::HandlerFn fn = getMarshallFn(type());
         (*fn)(this);
     }
-};
+    
+    Marshall::Action VirtualMethodReturnValue::action() {
+        return Marshall::FromSV;
+    }
 
-namespace PerlQt {
+    //------------------------------------------------
+
+    MethodReturnValue::MethodReturnValue(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack) :
+      MethodReturnValueBase(smoke, methodIndex, stack)  {
+        _retval = newSV(0);
+        Marshall::HandlerFn fn = getMarshallFn(type());
+        (*fn)(this);
+    }
+
+    // We're passing an SV back to perl
+    Marshall::Action MethodReturnValue::action() {
+        return Marshall::ToSV;
+    }
+
+    //------------------------------------------------
+
     MethodCallBase::MethodCallBase(Smoke *smoke, Smoke::Index meth) :
         _smoke(smoke), _method(meth), _cur(-1), _called(false), _sp(0)  
     {  
@@ -127,7 +166,7 @@ namespace PerlQt {
         SP = _sp + items() - 1;
         PUTBACK;
         // Call the perl sub
-        int count = call_sv((SV*)GvCV(_gv), G_SCALAR);
+        call_sv((SV*)GvCV(_gv), G_SCALAR);
         // Get the stack the perl sub returned
         SPAGAIN;
         // Marshall the return value back to c++, using the top of the stack
