@@ -758,6 +758,7 @@ sub argmatch {
 
     my $argType = getSVt( $args->[$argNum] );
 
+    my $explicitType = 0;
                #index into methodId array
     foreach my $methodIdIdx ( 0..$#{$methodIds} ) {
         my $methodId = $methodIds->[$methodIdIdx];
@@ -812,12 +813,28 @@ sub argmatch {
             if( $typeName =~m/^(?:const )?QString[\*&]?/ ) {
                 return $methodId;
             }
+            else {
+                $explicitType = 1;
+            }
+        }
+        elsif ( $argType eq 'Qt::CString' ) {
+            # This type exists only to resolve ambiguous method calls, so we
+            # can return here.
+            if( $typeName =~m/^(?:const )?char ?\*[\*&]?/ ) {
+                return $methodId;
+            }
+            else {
+                $explicitType = 1;
+            }
         }
         elsif ( $argType eq 'Qt::Int' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName eq 'int' ) {
                 return $methodId;
+            }
+            else {
+                $explicitType = 1;
             }
         }
         elsif ( $argType eq 'Qt::Uint' ) {
@@ -826,6 +843,9 @@ sub argmatch {
             if( $typeName eq 'uint' ) {
                 return $methodId;
             }
+            else {
+                $explicitType = 1;
+            }
         }
         elsif ( $argType eq 'Qt::Bool' ) {
             # This type exists only to resolve ambiguous method calls, so we
@@ -833,8 +853,11 @@ sub argmatch {
             if( $typeName eq 'bool' ) {
                 return $methodId;
             }
+            else {
+                $explicitType = 1;
+            }
         }
-        # objects
+            # objects
         else {
             # Optional const, some words, optional & or *.  Note ?: does not
             # make a backreference, (\w*) is the only thing actually captured.
@@ -845,6 +868,11 @@ sub argmatch {
             }
         }
     }
+
+    if ( !%match && $explicitType ) {
+        return -1;
+    }
+
     return sort { $match{$b}[0] <=> $match{$a}[0] or $match{$a}[1] <=> $match{$b}[1] } keys %match;
 }
 
@@ -932,7 +960,14 @@ sub do_autoload {
     if (@methodIds > 1) {
         foreach my $argNum (0..$#_) {
             my @matching = argmatch( \@methodIds, \@_, $argNum );
-            @methodIds = @matching if @matching;
+            if (@matching) {
+                if ($matching[0] == -1) {
+                    @methodIds = ();
+                }
+                else {
+                    @methodIds = @matching;
+                }
+            }
         }
 
         # Look for the user-defined signature
@@ -1580,6 +1615,10 @@ no strict;
 
 sub String {
     return bless \shift, 'Qt::String';
+}
+
+sub CString {
+    return bless \shift, 'Qt::CString';
 }
 
 sub Int {

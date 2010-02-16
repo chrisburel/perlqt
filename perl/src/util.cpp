@@ -197,6 +197,7 @@ const char* get_SVt(SV* sv) {
                 case SVt_PVMG: {
                     const char * classname = HvNAME(SvSTASH(SvRV(sv)));
                     if ( !strcmp( classname, "Qt::String" ) ||
+                         !strcmp( classname, "Qt::CString" ) ||
                          !strcmp( classname, "Qt::Int" ) ||
                          !strcmp( classname, "Qt::Uint" ) ||
                          !strcmp( classname, "Qt::Bool" ) ) {
