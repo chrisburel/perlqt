@@ -16,6 +16,7 @@ sub import {
     my(%slots) = @_;
     my $meta = \%{ $caller . '::META' };
 
+    Qt::_internal::installqt_metacall( $caller ) unless defined &{$caller."::qt_metacall"};
     foreach my $slotname ( keys %slots ) {
         # Build the signature for this slot
         my $signature = join '', ("$slotname(", join(',', @{$slots{$slotname}}), ')');

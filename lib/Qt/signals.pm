@@ -16,6 +16,7 @@ sub import {
     my(%signals) = @_;
     my $meta = \%{ $caller . '::META' };
 
+    Qt::_internal::installqt_metacall( $caller ) unless defined &{$caller."::qt_metacall"};
     foreach my $signalname ( keys %signals ) {
         # Build the signature for this signal
         my $signature = join '', ("$signalname(", join(',', @{$signals{$signalname}}), ')');

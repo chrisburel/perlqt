@@ -171,11 +171,8 @@ sub makeMetaData {
         push @$data, $nullposition; #tag
         push @$data, $MethodSlot | $AccessPublic; # flags
     }
-    $DB::single=1;
 
     push @$data, 0; #eod
-
-
 
     return ($stringdata, $data);
 }

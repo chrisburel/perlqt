@@ -68,6 +68,18 @@ static void marshall_charP(Marshall *m) {
     }
 }
 
+static void marshall_doubleR(Marshall *m) {
+    fprintf(stderr, "marshalling %f\n", SvNV(m->var()));
+    switch(m->action()) {
+        case Marshall::FromSV:
+            m->item().s_voidp = new double(SvNV(m->var()));
+        break;
+        case Marshall::ToSV:
+            sv_setnv_mg(m->var(), *(double*)m->item().s_voidp);
+        break;
+    }
+}
+
 void marshall_voidP_array(Marshall *m) {
     switch(m->action()) {
         case Marshall::FromSV:
@@ -149,6 +161,9 @@ void marshall_basetype(Marshall *m) {
         break;
       case Smoke::t_uint:
         marshall_it<unsigned int>(m);
+        break;
+      case Smoke::t_double:
+        marshall_it<double>(m);
         break;
       case Smoke::t_enum:
         switch(m->action()) {
@@ -260,12 +275,11 @@ Marshall::HandlerFn getMarshallFn(const SmokeType &type) {
         return marshall_basetype;
     if(!type.name())
         return marshall_void;
-    if(!type_handlers) {
-        return marshall_unknown;
-    }
+
     U32 len = strlen(type.name());
     SV **svp = hv_fetch(type_handlers, type.name(), len, 0);
-    if(!svp && type.isConst() && len > 6)
+
+    if(!svp && type.isConst() && len > strlen("const "))
         svp = hv_fetch(type_handlers, type.name() + 6, len - 6, 0);
     if(svp) {
         TypeHandler *h = (TypeHandler*)SvIV(*svp);

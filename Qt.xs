@@ -25,8 +25,10 @@
 #include "QtCore/QAbstractItemModel"
 #include "QtCore/QHash"
 #include "QtCore/QMetaObject"
+#include "QtCore/QMetaMethod"
 #include "QtCore/QModelIndex"
 #include "QtGui/QApplication"
+#include "QtGui/QPainter"
 #include "QtGui/QWidget"
 
 extern Q_DECL_EXPORT Smoke *qt_Smoke;
@@ -55,8 +57,8 @@ void Binding::deleted(Smoke::Index classId, void *ptr) {
 bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool isAbstract) {
     if( do_debug && (do_debug & qtdb_virtual)){
         Smoke::Method methodobj = qt_Smoke->methods[method];
-        fprintf( stderr, "Looking for virtual method override for %s::%s()\n",
-            qt_Smoke->classes[methodobj.classId].className, qt_Smoke->methodNames[methodobj.name] );
+        //fprintf( stderr, "Looking for virtual method override for %s::%s()\n",
+        //    qt_Smoke->classes[methodobj.classId].className, qt_Smoke->methodNames[methodobj.name] );
     }
     // Look for a perl sv associated with this pointer
     SV *obj = getPointerObject(ptr);
@@ -64,9 +66,9 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
 
     // Didn't find one
     if(!o) {
-        if(!PL_dirty && (do_debug && (do_debug & qtdb_virtual))) // If not in global destruction
+        if(!PL_dirty && (do_debug && (do_debug & qtdb_virtual))){ // If not in global destruction
             //fprintf(stderr, "Cannot find object for virtual method\n");
-            1;
+        }
         return false;
     }
 
@@ -83,7 +85,7 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
     if(!gv) return false;
 
     if( do_debug && ( do_debug | qtdb_virtual ) ) {
-        fprintf(stderr, "In Virtual for %s\n", methodname);
+        fprintf(stderr, "In Virtual override for %s\n", methodname);
     }
 
     VirtualMethodCall call(smoke, method, args, obj, gv);
@@ -282,16 +284,17 @@ XS(XS_Qt__myQTableView_setRootIndex){
     XSRETURN(1);
 }
 
-void callmyfreakinslot( int setValue ){
+void callmyfreakinslot( char* methodname, int setValue ){
+    //fprintf( stderr, "In slot for %s\n", methodname );
     //Call the perl sub
     //Copy the way the VirtualMethodCall does it
     HV *stash = SvSTASH(SvRV(sv_this));
     if(*HvNAME(stash) == ' ' ) // if withObject, look for a diff stash
         stash = gv_stashpv(HvNAME(stash) + 1, TRUE);
 
-    GV *gv = gv_fetchmethod_autoload(stash, "setValue", 0);
+    GV *gv = gv_fetchmethod_autoload(stash, methodname, 0);
     if(!gv) {
-        fprintf( stderr, "DAMNIT\n" );
+        fprintf( stderr, "Found no method to call in slot\n" );
         return;
     }
 
@@ -304,60 +307,78 @@ void callmyfreakinslot( int setValue ){
     call_sv((SV*)GvCV(gv), G_VOID);
 }    
 
-void callmyfreakinsignal(int _t1) {
-    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
-
-    QWidget* sv_this_ptr = (QWidget*)sv_obj_info(sv_this)->ptr;
-
-    HV *stash = gv_stashpv("Qt::_internal", TRUE);
-    GV *gv = gv_fetchmethod_autoload(stash, "getMetaObject", 0);
-    if(!gv) {
-        fprintf( stderr, "DAMNIT\n" );
-        return;
-    }
-
-    // We need the meta object to use
-    dSP;
-    ENTER;
-    SAVETMPS;
-    PUSHMARK(SP);
-    PUSHs( sv_2mortal( newSVpv( "LCDRange", 20 ) ) );
-    PUTBACK;
-    call_sv((SV*)GvCV(gv), G_SCALAR);
-    // Get the return value back
-    SPAGAIN;
-    QMetaObject* myMetaObject = (QMetaObject*)sv_obj_info(POPs)->ptr;
-    PUTBACK;
-    FREETMPS;
-    LEAVE;
-
-    QMetaObject::activate(sv_this_ptr, myMetaObject, 0, _a);
-}
-
-XS(XS_myqt_metacall){
+XS(XS_qt_metacall){
     dXSARGS;
+    PERL_UNUSED_VAR(items);
 
     // Get my arguments off the stack
-    QWidget* sv_this_ptr = (QWidget*)sv_obj_info(sv_this)->ptr;
+    QObject* sv_this_ptr = (QObject*)sv_obj_info(sv_this)->ptr;
     QMetaObject::Call _c = (QMetaObject::Call)SvIV(ST(0));
     int _id = (int)SvIV(ST(1));
     void** _a = (void**)sv_obj_info(ST(2))->ptr;
 
-    // Duplicate code from stock moc_lcdrange.cpp's qt_metacall
-    _id = sv_this_ptr->QWidget::qt_metacall(_c, _id, _a);
+	// Assume the target slot is a C++ one
+	smokeperl_object *o = sv_obj_info(sv_this);
+	Smoke::ModuleIndex nameId = o->smoke->idMethodName("qt_metacall$$?");
+	Smoke::ModuleIndex classIdx = { o->smoke, o->classId };
+	Smoke::ModuleIndex meth = nameId.smoke->findMethod(classIdx, nameId);
+	if (meth.index > 0) {
+		Smoke::Method &m = meth.smoke->methods[meth.smoke->methodMaps[meth.index].method];
+		Smoke::ClassFn fn = meth.smoke->classes[m.classId].classFn;
+		Smoke::StackItem i[4];
+		i[1].s_enum = _c;
+		i[2].s_int = _id;
+		i[3].s_voidp = _a;
+		(*fn)(m.method, o->ptr, i);
+		int ret = i[0].s_int;
+		if (ret < 0) {
+            ST(0) = sv_2mortal(newSViv(ret));
+			XSRETURN(1);
+		}
+	} else {
+		// Should never happen..
+		//rb_raise(rb_eRuntimeError, "Cannot find %s::qt_metacall() method\n", 
+		//	o->smoke->classes[o->classId].className );
+	}
 
-    if(_id >= 0) {
-        if (_c == QMetaObject::InvokeMetaMethod) {
-            switch (_id) {
-            case 0: callmyfreakinsignal( *((int*)_a[1]) ); break;
-            case 1: callmyfreakinslot( *((int*)_a[1]) ); break;
-            }
-            _id -= 2;
+
+    // We need more info about this call.  How many arguments does it take,
+    // what is the name of it.
+
+    // Get the current metaobject with a virtual call
+    const QMetaObject* metaobject = sv_this_ptr->metaObject();
+
+	// get method/property count
+	int count = 0;
+	if (_c == QMetaObject::InvokeMetaMethod) {
+		count = metaobject->methodCount();
+	} else {
+		count = metaobject->propertyCount();
+	}
+
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        QMetaMethod method = metaobject->method(_id);
+
+        // Find the name of the method being called
+        QString name(method.signature());
+        static QRegExp* rx = 0;
+        if (rx == 0) {
+            rx = new QRegExp("\\(.*");
         }
+        name.replace(*rx, "");
+
+        SV* methodname = newSVpv(name.toAscii(), name.size());
+        if (method.methodType() == QMetaMethod::Signal) {
+            //fprintf( stderr, "In signal for %s::%s\n", metaobject->className(), SvPV_nolen(methodname) );
+            metaobject->activate(sv_this_ptr, metaobject, 0, _a);
+            ST(0) = sv_2mortal(newSViv(_id - count));
+            XSRETURN(1);
+        }
+
+        callmyfreakinslot( SvPV_nolen(methodname), *((int*)_a[1]) );
     }
 
-    SV* retval = newSViv(_id);
-    ST(0) = retval;
+    ST(0) = sv_2mortal(newSViv(_id - count));
     XSRETURN(1);
 }
 
@@ -496,6 +517,18 @@ XS(XS_AUTOLOAD){
         if(!strcmp(methodname, "QVariant$")){
             methodid = 18373;
         }
+        else if(!strcmp(methodname, "drawPie#$$")){
+            methodid = 11080;
+        }
+        else if(!strcmp(methodname, "drawRect#")){
+            methodid = 11049;
+        }
+        else if(!strcmp(methodname, "QBrush$")){
+            methodid = 1640;
+        }
+        else if(!strcmp(methodname, "QPalette#")){
+            methodid = 11302;
+        }
         else {
             methodid = getMethod(qt_Smoke, classname, methodname );
         }
@@ -553,6 +586,40 @@ MODULE = Qt   PACKAGE = Qt::_internal
 
 PROTOTYPES: DISABLE
 
+SV*
+gimmePainter(sv_widget)
+        SV* sv_widget
+    CODE:
+        smokeperl_object *o = sv_obj_info(sv_widget);
+
+        //char* package = "Qt::QPainter";
+        //Smoke::Index classid = package_classid(package);
+        //char* classname = (char*)qt_Smoke->className(classid);
+        char* classname = "QPainter";
+        char* methodname = "QPainter#";
+        Smoke::Index methodid = getMethod(qt_Smoke, classname, methodname);
+
+        Smoke::StackItem args[2];
+        args[1].s_class = o->ptr;
+        //callMethod( qt_Smoke, 0, methodid, args );
+        args[0].s_class = new QPainter((QWidget*)o->ptr);
+
+        HV *hv = newHV();
+        RETVAL = newRV_noinc((SV*)hv);
+        sv_bless( RETVAL, gv_stashpv( " Qt::QPainter", TRUE) );
+
+        smokeperl_object o2;
+        o2.smoke = qt_Smoke;
+        o2.classId = qt_Smoke->idClass("QPainter").index;
+        o2.ptr = args[0].s_voidp;
+        o2.allocated = true;
+
+        sv_magic((SV*)hv, 0, '~', (char*)&o2, sizeof(o2));
+
+        mapPointer(RETVAL, &o2, pointer_map, o2.classId, 0);
+    OUTPUT:
+        RETVAL
+
 SV *
 getClassList()
     CODE:
@@ -596,6 +663,16 @@ installautoload(package)
         delete[] autoload;
 
 void
+installqt_metacall(package)
+        char *package
+    CODE:
+        if(!package) XSRETURN_EMPTY;
+        char *qt_metacall = new char[strlen(package) + 13];
+        sprintf(qt_metacall, "%s::qt_metacall", package);
+        newXS(qt_metacall, XS_qt_metacall, __FILE__);
+        delete[] qt_metacall;
+
+void
 installsuper(package)
         char *package
     CODE:
@@ -620,18 +697,17 @@ installthis(package)
         delete[] attr;
 
 SV*
-make_metaObject(obj,parentMeta,stringdata_value,data_value)
-        SV* obj
-        SV* parentMeta
-        SV* stringdata_value
-        SV* data_value
+make_metaObject(obj,parentMeta,stringdata_sv,data_sv)
+        #SV* obj
+        #SV* parentMeta
+        SV* stringdata_sv
+        SV* data_sv
     CODE:
         // Create the qt_meta_data array.
-        int count = av_len((AV*)SvRV(data_value)) + 1;
+        int count = av_len((AV*)SvRV(data_sv)) + 1;
         uint* qt_meta_data = new uint[count];
         for (int i = 0; i < count; i++) {
-            SV** datarow = av_fetch((AV*)SvRV(data_value), i, 0);
-            //fprintf( stderr, "Value for entry %d is %d\n", i, SvIV(*datarow) );
+            SV** datarow = av_fetch((AV*)SvRV(data_sv), i, 0);
             qt_meta_data[i] = (uint)SvIV(*datarow);
         }
 
@@ -640,10 +716,11 @@ make_metaObject(obj,parentMeta,stringdata_value,data_value)
         // null (0) bits, which the string functions will interpret as the end
         // of the string
 
-        // Stole this line from some preprocessed XS code.
-        STRLEN len = ((XPV*)(stringdata_value)->sv_any)->xpv_cur;
+        // Stole this line from some preprocessed XS code.  Gets the length of
+        // stringdata_sv without querying the char* array.
+        STRLEN len = ((XPV*)(stringdata_sv)->sv_any)->xpv_cur;
         char* qt_meta_stringdata = new char[len];
-        memcpy( (void*)(qt_meta_stringdata), (void*)SvPV_nolen(stringdata_value), len );
+        memcpy( (void*)(qt_meta_stringdata), (void*)SvPV_nolen(stringdata_sv), len );
 
         // Define our meta object
         const QMetaObject staticMetaObject = {
@@ -726,5 +803,3 @@ BOOT:
     pointer_map = newHV();
     newXS("myStringListModel::SUPER::flags", XS_Qt__myQAbstractItemModel_flags, file);
     //newXS(" Qt::QTableView::setRootIndex", XS_Qt__myQTableView_setRootIndex, file);
-    newXS("LCDRange::qt_metacall", XS_myqt_metacall, __FILE__);
-    newXS(" LCDRange::qt_metacall", XS_myqt_metacall, __FILE__);
