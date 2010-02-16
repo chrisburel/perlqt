@@ -71,7 +71,7 @@
        <item row="1" column="3" >
         <spacer>
          <property name="orientation" >
-          <enum>Qt4::Horizontal</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeHint" >
           <size>
@@ -157,7 +157,7 @@
        <item row="7" column="2" colspan="2" >
         <widget class="QDialogButtonBox" name="buttonBox" >
          <property name="orientation" >
-          <enum>Qt4::Horizontal</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
          <property name="standardButtons" >
           <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>

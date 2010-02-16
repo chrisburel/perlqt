@@ -25,7 +25,7 @@
       <string>Controller</string>
      </property>
      <property name="alignment" >
-      <set>Qt4::AlignCenter</set>
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>

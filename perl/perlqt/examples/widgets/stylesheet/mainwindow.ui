@@ -51,7 +51,7 @@
           <string>Profession:</string>
          </property>
          <property name="alignment" >
-          <set>Qt4::AlignRight|Qt4::AlignTop|Qt4::AlignTrailing</set>
+          <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
          </property>
          <property name="buddy" >
           <cstring>professionList</cstring>
@@ -64,7 +64,7 @@
           <string>&amp;Name:</string>
          </property>
          <property name="alignment" >
-          <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="buddy" >
           <cstring>nameCombo</cstring>
@@ -87,7 +87,7 @@
           <string>&amp;Password:</string>
          </property>
          <property name="alignment" >
-          <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="buddy" >
           <cstring>passwordEdit</cstring>
@@ -148,7 +148,7 @@
           <string>&amp;Age:</string>
          </property>
          <property name="alignment" >
-          <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="buddy" >
           <cstring>ageSpinBox</cstring>
@@ -161,7 +161,7 @@
           <string>Country:</string>
          </property>
          <property name="alignment" >
-          <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="buddy" >
           <cstring>countryCombo</cstring>
@@ -174,7 +174,7 @@
           <string>Gender:</string>
          </property>
          <property name="alignment" >
-          <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -233,7 +233,7 @@
        <item row="1" column="4" >
         <spacer>
          <property name="orientation" >
-          <enum>Qt4::Horizontal</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeHint" >
           <size>
@@ -246,7 +246,7 @@
        <item row="2" column="3" colspan="2" >
         <spacer>
          <property name="orientation" >
-          <enum>Qt4::Horizontal</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeHint" >
           <size>
@@ -259,7 +259,7 @@
        <item row="7" column="3" colspan="2" >
         <widget class="QDialogButtonBox" name="buttonBox" >
          <property name="orientation" >
-          <enum>Qt4::Horizontal</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
          <property name="standardButtons" >
           <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
