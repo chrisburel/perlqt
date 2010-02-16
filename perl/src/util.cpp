@@ -1495,24 +1495,29 @@ XS(XS_AUTOLOAD) {
     // the value of method off package.
     *( methodname++ - 1 ) = 0;
 
+    // We need to do the same thing again, to look for SUPER
+    char* super = 0;
+    for( char* s = package; *s; s++ ) {
+        if( *s == ':') super = s;
+    }
+    if ( super )
+        super++;
+
     int withObject = ( *package == ' ' ) ? 1 : 0;
-    int isSuper = 0;
     if( withObject ) {
         ++package;
-        if( *package == ' ' ) {
-            isSuper = 1;
-            ++package;
-            char* super = new char[strlen(package) + 8];
-            strcpy( super, package );
-            strcat( super, "::SUPER" );
-            package = super;
-        }
+    }
+    if ( super ) {
+        // We'll only ever get here if we're called on an object.  If we have
+        // $class = 'foo'; $class->SUPER::NEW(), we won't get here.  But if we
+        // have this->SUPER::someMethod(), we will.
+        withObject |= strcmp( super, "SUPER" ) == 0;
     }
 
 #ifdef DEBUG
     if( do_debug && ( do_debug & qtdb_autoload ) ) {
         fprintf(stderr, "In XS Autoload for %s::%s()", package, methodname);
-        if((do_debug & qtdb_verbose) && (withObject || isSuper)) {
+        if((do_debug & qtdb_verbose) && withObject) {
             smokeperl_object *o = sv_obj_info(withObject ? ST(0) : sv_this);
             if(o)
                 fprintf(stderr, " - this: (%s)%p\n", o->smoke->classes[o->classId].className, o->ptr);
@@ -1529,7 +1534,7 @@ XS(XS_AUTOLOAD) {
     // to the first argument on the stack, since that's where perl puts it.
     // Wherever we return, be sure to restore sv_this.
     SV* old_this = 0;
-    if( withObject && !isSuper ) {
+    if( withObject ) {
         old_this = sv_this;
         sv_this = newSVsv(ST(0));
     }
@@ -1563,12 +1568,10 @@ XS(XS_AUTOLOAD) {
         PUTBACK;
 
         // Clean up
-        if(withObject && !isSuper){
+        if(withObject){
             SvREFCNT_dec(sv_this);
             sv_this = old_this;
         }
-        else if(isSuper)
-            delete[] package;
 
         // Error out if necessary
         if(SvTRUE(ERRSV))
@@ -1588,10 +1591,7 @@ XS(XS_AUTOLOAD) {
         // don't really care what happens.
         if( PL_dirty ) {
             // This block will be repeated a lot to clean stuff up.
-            if( isSuper ){
-                delete[] package;
-            }
-            if( withObject && !isSuper ) {
+            if( withObject ) {
                 // Restore sv_this
                 SvREFCNT_dec(sv_this);
                 sv_this = old_this;
@@ -1600,9 +1600,7 @@ XS(XS_AUTOLOAD) {
         }
         if( !(o && o->ptr && (o->allocated || getPointerObject(o->ptr))) ) {
             // This block will be repeated a lot to clean stuff up.
-            if( isSuper )
-                delete[] package;
-            if( withObject && !isSuper ) {
+            if( withObject ) {
                 // Restore sv_this
                 SvREFCNT_dec(sv_this);
                 sv_this = old_this;
@@ -1621,9 +1619,7 @@ XS(XS_AUTOLOAD) {
         }
         if(svp) {
             // Found "has been hidden", so don't do anything, just clean up 
-            if( isSuper )
-                delete[] package;
-            if( withObject && !isSuper ) {
+            if( withObject ) {
                 // Restore sv_this
                 SvREFCNT_dec(sv_this);
                 sv_this = old_this;
@@ -1648,7 +1644,7 @@ XS(XS_AUTOLOAD) {
             int count = call_sv((SV*)GvCV(gv), G_SCALAR|G_NOARGS);
             SPAGAIN;
             if (count != 1) {
-                if( withObject && !isSuper ) {
+                if( withObject ) {
                     // Restore sv_this
                     SvREFCNT_dec(sv_this);
                     sv_this = old_this;
@@ -1666,12 +1662,10 @@ XS(XS_AUTOLOAD) {
 #endif
 
         // Now clean up
-        if( withObject && !isSuper ) {
+        if( withObject ) {
             SvREFCNT_dec(sv_this);
             sv_this = old_this;
         }
-        if( isSuper )
-            delete[] package;
     }
     else {
         // We're calling a c++ method
@@ -1737,24 +1731,20 @@ XS(XS_AUTOLOAD) {
             SPAGAIN;
             // See if getSmokeMethodId die'd
             if (SvTRUE(ERRSV)) {
-                if( withObject && !isSuper) {
+                if( withObject ) {
                     SvREFCNT_dec(sv_this);
                     sv_this = old_this;
                 }
-                else if(isSuper)
-                    delete[] package;
                 delete[] savestack;
                 croak("%s", SvPV_nolen(ERRSV));
             }
 
             if (count != 2) {
                 // Error, clean up our crap
-                if( withObject && !isSuper) {
+                if( withObject ) {
                     SvREFCNT_dec(sv_this);
                     sv_this = old_this;
                 }
-                else if(isSuper)
-                    delete[] package;
 
                 // Error out
                 fprintf( stderr, "How'd I get here?\n" );
@@ -1805,12 +1795,10 @@ XS(XS_AUTOLOAD) {
         if( savestack )
             delete[] savestack;
 
-        if( withObject && !isSuper) {
+        if( withObject ) {
             SvREFCNT_dec(sv_this);
             sv_this = old_this;
         }
-        else if( isSuper )
-            delete[] package;
 
         SV* retval = call.var();
 

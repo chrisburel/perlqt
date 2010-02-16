@@ -50,7 +50,7 @@ sub baz
    # 2) testing further inheritance of sig/slots
    ok( 1, 'Further inheritance of sig/slots' );
    # 3) testing Perl to Perl SUPER
-   SUPER->baz();
+   this->SUPER::baz();
    # 4) 5) 6) testing non-qualified enum calls vs. Perl method/static calls
    ok( eval { Qt::blue } );
    ok( !$@ ) or diag( $@ );

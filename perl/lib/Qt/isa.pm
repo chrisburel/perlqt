@@ -34,13 +34,6 @@ sub import {
         }
     }
 
-    # This hash is used to get an object blessed to the right thing, so that
-    # when we call SUPER(), we get this blessed object back.
-    {
-        my $superthing = bless {}, "  $caller";
-        $ISUB->($caller.'::SUPER', sub {$superthing});
-    }
-
     # Make it so that 'use <packagename>' makes a subroutine called
     # <packagename> that calls ->new
     $ISUB->($caller . '::import', sub {
