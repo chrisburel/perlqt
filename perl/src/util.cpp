@@ -1231,7 +1231,11 @@ XS(XS_qvariant_value) {
 	void * sv_ptr = 0;
 	SV *retval = &PL_sv_undef;
 
-    smokeperl_object *o = sv_obj_info(ST(1));
+    if ( items < 1 ) {
+        croak( "%s", "Usage: Qt::qVariantValue( Qt::Variant, $typeName )" );
+    }
+
+    smokeperl_object *o = sv_obj_info(ST(0));
 	if (o == 0 || o->ptr == 0) {
 		ST(0) = retval;
         XSRETURN(1);
@@ -1239,7 +1243,8 @@ XS(XS_qvariant_value) {
 
 	QVariant * variant = (QVariant*) o->ptr;
 
-	// If the QVariant contains a user type, don't bother to look at the Perl class argument
+    // If the QVariant contains a user type, don't bother to look at the Perl
+    // class argument
     if (variant->type() >= QVariant::UserType) {
 #ifdef QT_QTDBUS 
         if (qstrcmp(variant->typeName(), "QDBusObjectPath") == 0) {
@@ -1274,7 +1279,10 @@ XS(XS_qvariant_value) {
         XSRETURN(1);
     }
 
-	const char * classname = SvPV_nolen(ST(0));
+    if ( items != 2 ) {
+        croak( "%s", "Usage: Qt::qVariantValue( Qt::Variant, $typeName )" );
+    }
+	const char * classname = SvPV_nolen(ST(1));
     Smoke::ModuleIndex * sv_class_id = new Smoke::ModuleIndex;
     sv_class_id->index = package_classId(classname);
     sv_class_id->smoke = qt_Smoke;
@@ -1538,6 +1546,7 @@ XS(XS_AUTOLOAD) {
 #endif            
 
         // Call the found method
+        sv_setsv( ERRSV, &PL_sv_undef );
         ENTER;
         SAVETMPS;
         PUSHMARK(SP - items + withObject);
@@ -1715,6 +1724,7 @@ XS(XS_AUTOLOAD) {
         }
         else {
             // Call getSmokeMethodId to get the methodId
+            sv_setsv( ERRSV, &PL_sv_undef );
             ENTER;
             SAVETMPS;
             PUSHMARK( SP - items + withObject );

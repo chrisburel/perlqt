@@ -114,7 +114,7 @@ sub mimeData
 
     foreach my $index ( @{$indexes} ) {
         if ($index->isValid()) {
-            my $pixmap = Qt::qVariantValue('Qt::Pixmap', this->data($index, Qt::UserRole()));
+            my $pixmap = Qt::qVariantValue( this->data($index, Qt::UserRole()), 'Qt::Pixmap' );
             my $location = this->data($index, Qt::UserRole()+1)->toPoint();
             no warnings qw(void); # Ignore bitshift warning
             $stream << $pixmap << $location;

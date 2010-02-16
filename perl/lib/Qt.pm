@@ -1680,6 +1680,62 @@ This module is a port of the PerlQt3 package to work with Qt version 4.
 
 None by default.
 
+=head2 PERL-SPECIFIC DOCUMENTATION
+
+The following is a list of perl-specific implementation details, broken up by
+class.
+
+=over
+
+=item Qt::Variant
+
+According to the Qt documentation:
+
+    Because QVariant is part of the QtCore library, it cannot provide
+    conversion functions to data types defined in QtGui, such as QColor,
+    QImage, and QPixmap.  In other words, there is no toColor() function.
+    Instead, you can use the QVariant::value() or the qVariantValue() template
+    function.
+
+PerlQt implements this functionality by supplying 2 functions,
+Qt::qVariantValue() and Qt::qVariantFromValue().  These two functions, in
+addition to handling the QtGui types, can also handle Perl hash references and
+array references.  To accomplish this, 2 metatypes have been declared, called
+'HV*' and 'AV*'.
+
+=over
+
+=item Qt::qVariantValue()
+
+Returns:
+An object of type $typename, or undef if the conversion cannot be made.
+
+Args:
+$variant: A Qt::Variant object.
+$typename: The name of the type of data you want out of the Qt::Variant.  This
+parameter is optional if the variant contains a perl hash or array ref.
+
+Description:
+Equivalent to Qt's qVariantValue() function.
+
+=item Qt::qVariantFromValue()
+
+Returns:
+A Qt::Variant object containing a copy of the given value on success, undef on
+failure.
+
+Args:
+$value: The value to place into the Qt::Variant.
+
+Description:
+Equivalent to Qt's qVariantFromValue() function.  If $value is a hash or array
+ref, the resulting Qt::Variant will have it's typeName set to 'HV*' or 'AV*',
+respectively.
+
+=back
+
+=back
+
 =head1 SEE ALSO
 
 The existing Qt documentation is very complete.  Use it for your reference.

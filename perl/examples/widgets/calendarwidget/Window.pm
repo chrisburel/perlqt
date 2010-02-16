@@ -235,8 +235,12 @@ sub maximumDateChanged {
 sub weekdayFormatChanged {
     my $format = Qt::TextCharFormat();
 
-    $format->setForeground( Qt::Brush( Qt::qVariantValue( 'Qt::Color',
-        this->weekdayColorCombo->itemData(this->weekdayColorCombo->currentIndex()))));
+    $format->setForeground( Qt::Brush(
+        Qt::qVariantValue(
+            this->weekdayColorCombo->itemData(this->weekdayColorCombo->currentIndex()),
+            'Qt::Color')
+        )
+    );
     this->calendar->setWeekdayTextFormat(Qt::Monday(), $format);
     this->calendar->setWeekdayTextFormat(Qt::Tuesday(), $format);
     this->calendar->setWeekdayTextFormat(Qt::Wednesday(), $format);
@@ -249,8 +253,12 @@ sub weekdayFormatChanged {
 sub weekendFormatChanged {
     my $format = Qt::TextCharFormat();
 
-    $format->setForeground( Qt::Brush( Qt::qVariantValue( 'Qt::Color',
-        this->weekendColorCombo->itemData(this->weekendColorCombo->currentIndex()))));
+    $format->setForeground( Qt::Brush(
+        Qt::qVariantValue(
+            this->weekendColorCombo->itemData(this->weekendColorCombo->currentIndex()),
+            'Qt::Color')
+        )
+    );
     this->calendar->setWeekdayTextFormat(Qt::Saturday(), $format);
     this->calendar->setWeekdayTextFormat(Qt::Sunday(), $format);
 }

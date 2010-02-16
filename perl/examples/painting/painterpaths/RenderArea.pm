@@ -123,12 +123,12 @@ sub paintEvent
     $painter->translate(-50.0, -50.0);
 
 # [9] //! [10]
-    my $color = Qt::qVariantValue( 'Qt::Color', this->penColor );
+    my $color = Qt::qVariantValue( this->penColor, 'Qt::Color' );
     $painter->setPen(Qt::Pen(Qt::Brush($color), this->penWidth, Qt::SolidLine(), Qt::RoundCap(),
                         Qt::RoundJoin()));
     my $gradient = Qt::LinearGradient(0, 0, 0, 100);
-    my $fillColor1 = Qt::qVariantValue( 'Qt::Color', this->fillColor1 );
-    my $fillColor2 = Qt::qVariantValue( 'Qt::Color', this->fillColor2 );
+    my $fillColor1 = Qt::qVariantValue( this->fillColor1, 'Qt::Color' );
+    my $fillColor2 = Qt::qVariantValue( this->fillColor2, 'Qt::Color' );
     $gradient->setColorAt(0.0, $fillColor1);
     $gradient->setColorAt(1.0, $fillColor2);
     $painter->setBrush(Qt::Brush($gradient));

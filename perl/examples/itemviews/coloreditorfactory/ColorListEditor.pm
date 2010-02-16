@@ -18,7 +18,7 @@ sub NEW
 # [0]
 sub color
 {
-    return qVariantValue( 'Qt::Color', this->itemData(this->currentIndex(), Qt::DecorationRole()));
+    return qVariantValue( this->itemData(this->currentIndex(), Qt::DecorationRole()), 'Qt::Color' );
 }
 # [0]
 
