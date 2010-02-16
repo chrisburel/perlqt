@@ -2,10 +2,10 @@ package DetailsDialog;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Dialog );
-use Qt::slots
+use Qt4::isa qw( Qt4::Dialog );
+use Qt4::slots
     verify => [];
 use List::Util qw(max);
 
@@ -46,27 +46,27 @@ sub NEW
 {
     my ($class, $title, $parent) = @_;
     $class->SUPER::NEW($parent);
-    this->{nameLabel} = Qt::Label(this->tr('Name:'));
-    this->{addressLabel} = Qt::Label(this->tr('Address:'));
-    this->addressLabel->setAlignment(Qt::AlignLeft() | Qt::AlignTop());
+    this->{nameLabel} = Qt4::Label(this->tr('Name:'));
+    this->{addressLabel} = Qt4::Label(this->tr('Address:'));
+    this->addressLabel->setAlignment(Qt4::AlignLeft() | Qt4::AlignTop());
 
-    this->{nameEdit} = Qt::LineEdit();
-    this->{addressEdit} = Qt::TextEdit();
+    this->{nameEdit} = Qt4::LineEdit();
+    this->{addressEdit} = Qt4::TextEdit();
 
-    this->{offersCheckBox} = Qt::CheckBox(this->tr('Send information about products and ' .
+    this->{offersCheckBox} = Qt4::CheckBox(this->tr('Send information about products and ' .
                                       'special offers'));
 
     this->setupItemsTable();
 
-    this->{buttonBox} = Qt::DialogButtonBox(Qt::DialogButtonBox::Ok()
-                                     | Qt::DialogButtonBox::Cancel());
+    this->{buttonBox} = Qt4::DialogButtonBox(Qt4::DialogButtonBox::Ok()
+                                     | Qt4::DialogButtonBox::Cancel());
 
     this->connect(this->buttonBox, SIGNAL 'accepted()', this, SLOT 'verify()');
     this->connect(this->buttonBox, SIGNAL 'rejected()', this, SLOT 'reject()');
 # [0]
 
 # [1]
-    my $mainLayout = Qt::GridLayout();
+    my $mainLayout = Qt4::GridLayout();
     $mainLayout->addWidget(this->nameLabel, 0, 0);
     $mainLayout->addWidget(this->nameEdit, 0, 1);
     $mainLayout->addWidget(this->addressLabel, 1, 0);
@@ -88,13 +88,13 @@ sub setupItemsTable
         this->tr('Coffee cup')
     ];
 
-    this->{itemsTable} = Qt::TableWidget(scalar @{this->items}, 2);
+    this->{itemsTable} = Qt4::TableWidget(scalar @{this->items}, 2);
 
     for (my $row = 0; $row < scalar @{this->items}; ++$row) {
-        my $name = Qt::TableWidgetItem(this->items->[$row]);
-        $name->setFlags(Qt::ItemIsEnabled() | Qt::ItemIsSelectable());
+        my $name = Qt4::TableWidgetItem(this->items->[$row]);
+        $name->setFlags(Qt4::ItemIsEnabled() | Qt4::ItemIsSelectable());
         this->itemsTable->setItem($row, 0, $name);
-        my $quantity = Qt::TableWidgetItem('1');
+        my $quantity = Qt4::TableWidgetItem('1');
         this->itemsTable->setItem($row, 1, $quantity);
     }
 }
@@ -108,7 +108,7 @@ sub orderItems
     for (my $row = 0; $row < scalar @{this->items}; ++$row) {
         my @item;
         $item[0] = this->itemsTable->item($row, 0)->text();
-        my $quantity = this->itemsTable->item($row, 1)->data(Qt::DisplayRole())->toInt();
+        my $quantity = this->itemsTable->item($row, 1)->data(Qt4::DisplayRole())->toInt();
         $item[1] = max(0, $quantity);
         push @orderList, [@item];
     }
@@ -146,12 +146,12 @@ sub verify
         return;
     }
 
-    my $answer = Qt::MessageBox::warning(this, this->tr('Incomplete Form'),
+    my $answer = Qt4::MessageBox::warning(this, this->tr('Incomplete Form'),
         this->tr("The form does not contain all the necessary information.\n" .
            "Do you want to discard it?"),
-        Qt::MessageBox::Yes() | Qt::MessageBox::No());
+        Qt4::MessageBox::Yes() | Qt4::MessageBox::No());
 
-    if ($answer == Qt::MessageBox::Yes()) {
+    if ($answer == Qt4::MessageBox::Yes()) {
         this->reject();
     }
 }
