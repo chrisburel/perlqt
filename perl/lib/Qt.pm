@@ -812,6 +812,27 @@ sub argmatch {
                 return $methodId;
             }
         }
+        elsif ( $argType eq 'Qt::Int' ) {
+            # This type exists only to resolve ambiguous method calls, so we
+            # can return here.
+            if( $typeName eq 'int' ) {
+                return $methodId;
+            }
+        }
+        elsif ( $argType eq 'Qt::Uint' ) {
+            # This type exists only to resolve ambiguous method calls, so we
+            # can return here.
+            if( $typeName eq 'uint' ) {
+                return $methodId;
+            }
+        }
+        elsif ( $argType eq 'Qt::Bool' ) {
+            # This type exists only to resolve ambiguous method calls, so we
+            # can return here.
+            if( $typeName eq 'bool' ) {
+                return $methodId;
+            }
+        }
         # objects
         else {
             # Optional const, some words, optional & or *.  Note ?: does not
@@ -1558,6 +1579,18 @@ no strict;
 
 sub String {
     return bless \shift, 'Qt::String';
+}
+
+sub Int {
+    return bless \shift, 'Qt::Int';
+}
+
+sub Uint {
+    return bless \shift, 'Qt::Uint';
+}
+
+sub Bool {
+    return bless \shift, 'Qt::Bool';
 }
 
 1;

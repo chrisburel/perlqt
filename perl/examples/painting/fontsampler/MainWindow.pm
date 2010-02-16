@@ -5,7 +5,6 @@ use warnings;
 use Qt;
 use Ui_MainWindowBase;
 use Qt::isa qw( Qt::MainWindow );
-#typedef Qt::List<Qt::TreeWidgetItem *> StyleItems;
 use Qt::slots
     on_clearAction_triggered => [],
     on_markAction_triggered => [],
@@ -18,8 +17,6 @@ use Qt::slots
     updateStyles => ['QTreeWidgetItem *', 'int'];
 use List::Util qw(min max);
 
-#Qt::List<int> sampleSizes;
-#Qt::Map<Qt::String, StyleItems> pageMap;
 sub sampleSizes() {
     return this->{sampleSizes};
 }
@@ -73,9 +70,10 @@ sub setupFontTree
             $styleItem->setText(0, $style);
             $styleItem->setCheckState(0, Qt::Unchecked());
             $styleItem->setData(0, Qt::UserRole(),
-                Qt::Variant($database->weight($family, $style)));
+                Qt::Variant(Qt::Int($database->weight($family, $style))));
+            $DB::single=1;
             $styleItem->setData(0, Qt::UserRole() + 1,
-                Qt::Variant($database->italic($family, $style)));
+                Qt::Variant(Qt::Bool($database->italic($family, $style)?1:0)));
         }
     }
 }

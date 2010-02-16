@@ -5,6 +5,8 @@ template <>
 bool perl_to_primitive<bool>(SV* sv) {
     if ( !SvOK(sv) )
         return false;
+    if ( SvROK(sv) ) // Because they could pass in a Qt::Bool
+        return SvTRUE( SvRV(sv) ) ? true : false;
     return SvTRUE(sv) ? true : false;
 }
 template <>
