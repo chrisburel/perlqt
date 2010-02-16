@@ -1,0 +1,25 @@
+#ifndef MARSHALL_BASETYPES_H
+#define MARSHALL_BASETYPES_H
+
+template <class T> T* smoke_ptr(Marshall *m) { return (T*) m->item().s_voidp; }
+
+template<> unsigned int* smoke_ptr<unsigned int>(Marshall *m) { return &m->item().s_uint; }
+
+template <class T> T perl_to_primitive(SV);
+template <class T> SV primitive_to_perl(T);
+
+template <class T>
+static void marshall_from_perl(Marshall *m) {
+    SV obj = *(m->var());
+    (*smoke_ptr<T>(m)) = perl_to_primitive<T>(obj);
+}
+
+template <class T>
+static void marshall_to_perl(Marshall *m) {
+    m->unsupported();
+    *(m->var()) = primitive_to_perl<T>( *smoke_ptr<T>(m) );
+}
+
+#include "marshall_primitives.h"
+
+#endif //MARSHALL_BASETYPES_H

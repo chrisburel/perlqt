@@ -2,6 +2,7 @@
 #include "Qt.h"
 #include "QtCore/qstring.h"
 #include "QtCore/QHash"
+#include "marshall_basetypes.h"
 
 extern HV* pointer_map;
 // The only reason magic is there is to deallocate memory on qt objects when
@@ -25,6 +26,23 @@ void marshall_QString(Marshall *m){
         break;
       default:
         m->unsupported();
+        break;
+    }
+}
+
+template <class T>
+static void marshall_it(Marshall *m) {
+    switch(m->action()) {
+        case Marshall::FromSV:
+            marshall_from_perl<T>(m);
+        break;
+
+        case Marshall::ToSV:
+            marshall_to_perl<T>(m);
+        break;
+
+        default:
+            m->unsupported();
         break;
     }
 }
@@ -53,6 +71,9 @@ void marshall_basetype(Marshall *m) {
             sv_setiv_mg(m->var(), (IV)m->item().s_int);
             break;
         }
+        break;
+      case Smoke::t_uint:
+        marshall_it<unsigned int>(m);
         break;
       case Smoke::t_enum:
         switch(m->action()) {

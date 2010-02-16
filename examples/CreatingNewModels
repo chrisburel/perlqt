@@ -52,13 +52,23 @@ sub headerData {
         return Qt::QVariant();
     }
 
-$DB::single=1;
-    if ( $orientation == 0x01 ) { #Qt::Horizontal
+    if ( $orientation == 1 ) { #Qt::Horizontal
         return Qt::QVariant("Column " . $section);
     }
     else {
         return Qt::QVariant("Row " . $section);
     }
+}
+
+sub flags {
+    my ( $index ) = @_;
+
+    if (!$index->isValid()) {
+        return 32; #Qt::ItemIsEnabled
+    }
+
+    return Qt::QAbstractItemModel::flags($index) | 2; #Qt::ItemIsEditable
+    #return 32;
 }
 
 1;
