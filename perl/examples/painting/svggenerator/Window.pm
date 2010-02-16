@@ -16,6 +16,15 @@ use Qt::slots
 sub path() {
     return this->{path};
 }
+
+sub ui() {
+    return this->{ui};
+}
+
+sub displayWidget {
+    return this->ui->{displayWidget};
+}
+
 # [Window class definition]
 
 
@@ -23,13 +32,13 @@ sub NEW
 {
     my ($class, $parent) = @_;
     $class->SUPER::NEW($parent);
-    Ui_Window->setupUi(this);
+    this->{ui} = Ui_Window->setupUi(this);
 }
 
 sub updateBackground
 {
     my ($background) = @_;
-    this->displayWidget->setBackground(DisplayWidget::Background($background));
+    this->displayWidget->setBackground($background);
 }
 
 sub updateColor

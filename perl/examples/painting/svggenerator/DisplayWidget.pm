@@ -46,7 +46,7 @@ sub NEW
     this->{tree} = Qt::PainterPath();
     this->{moon} = Qt::PainterPath();
 
-    my $file = Qt::File(':resources/shapes.dat');
+    my $file = Qt::File('resources/shapes.dat');
     $file->open(Qt::File::ReadOnly());
     my $stream = Qt::DataStream($file);
     no warnings qw(void);
@@ -55,8 +55,8 @@ sub NEW
     $file->close();
 
     this->{shapeMap} = {
-        Car => $car,
-        House => $house
+        Car() => $car,
+        House() => $house
     };
 
     this->{background} = Sky;
@@ -87,7 +87,7 @@ sub paint
     if (this->background == Trees)
     {
         $painter->fillRect(Qt::Rect(0, 0, 200, 200), Qt::Color(Qt::darkGreen()));
-        $painter->setBrush(Qt::Color(Qt::green()));
+        $painter->setBrush(Qt::Brush(Qt::Color(Qt::green())));
         $painter->setPen(Qt::black());
         for (my $y = -55, my $row = 0; $y < 200; $y += 50, ++$row) {
             my $xs;
@@ -107,19 +107,19 @@ sub paint
     }
     elsif (this->background == Road) {
         $painter->fillRect(Qt::Rect(0, 0, 200, 200), Qt::Color(Qt::gray()));
-        $painter->setPen(Qt::Pen(Qt::Color(Qt::white()), 4, Qt::DashLine()));
+        $painter->setPen(Qt::Pen(Qt::Brush(Qt::Color(Qt::white())), 4, Qt::DashLine()));
         $painter->drawLine(Qt::Line(0, 35, 200, 35));
         $painter->drawLine(Qt::Line(0, 165, 200, 165));
     }
     else {
         $painter->fillRect(Qt::Rect(0, 0, 200, 200), Qt::Color(Qt::darkBlue()));
         $painter->translate(145, 10);
-        $painter->setBrush(Qt::Color(Qt::white()));
+        $painter->setBrush(Qt::Brush(Qt::Color(Qt::white())));
         $painter->drawPath(this->moon);
         $painter->translate(-145, -10);
     }
 
-    $painter->setBrush(this->shapeColor);
+    $painter->setBrush(Qt::Brush(this->shapeColor));
     $painter->setPen(Qt::black());
     $painter->translate(100, 100);
     $painter->drawPath(this->shapeMap->{this->shape});
