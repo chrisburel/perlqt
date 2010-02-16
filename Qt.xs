@@ -241,15 +241,13 @@ void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void
         hv_store(hv, key, len, rv, 0);
         SvREFCNT_dec(keysv);
     }
-    for(Smoke::Index *i = o->smoke->inheritanceList + o->smoke->classes[classId].parents;
-        *i;
-        i++) {
+    for(Smoke::Index *i = o->smoke->inheritanceList + o->smoke->classes[classId].parents; *i; i++) {
         mapPointer(obj, o, hv, *i, lastptr);
     }
 }
 
 void unmapPointer(smokeperl_object *o, Smoke::Index classId, void *lastptr) {
-
+    //For object deletion
 }
 
 SV *prettyPrintMethod(Smoke::Index id) {
@@ -1052,7 +1050,7 @@ BOOT:
 
     install_handlers(Qt_handlers);
     sv_this = newSV(0);
-    pointer_map = newHV();
+    pointer_map = get_hv( "Qt::_internal::pointer_map", FALSE );
 
     myargv[0] = new char[6];
     strcpy( myargv[0], "Hello");

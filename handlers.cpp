@@ -4,8 +4,13 @@
 #include "QtCore/QString"
 #include "QtCore/QStringList"
 #include "marshall_basetypes.h"
-
 extern HV* pointer_map;
+#include "marshall_macros.h"
+
+#if QT_VERSION >= 0X40300
+#include "QtGui/QMdiSubWindow"
+#endif
+
 // The only reason magic is there is to deallocate memory on qt objects when
 // their associated perl scalar goes out of scope
 // struct mgvtbl vtbl_smoke = { 0, 0, 0, 0, smokeperl_free };
@@ -81,6 +86,7 @@ void marshall_QStringList(Marshall *m) {
             AV* list = (AV*)SvRV(listref);
 
             int count = av_len(list) + 1;
+            fprintf(stderr, "Got %d elements\n", count);
             QStringList *stringlist = new QStringList;
 
             for(long i = 0; i < count; i++) {
@@ -258,16 +264,25 @@ void marshall_basetype(Marshall *m) {
             break;
           case Marshall::ToSV:
             {
-                if(!m->item().s_voidp)
+                if(!m->item().s_voidp) {
                     SvSetMagicSV(m->var(), &PL_sv_undef);
+                    return;
+                }
 
                 // Get return value
                 void* cxxptr = m->item().s_voidp;
 
+                // See if we already made a perl object for this pointer
+                SV* var = getPointerObject(cxxptr);
+                if (var) {
+                    SvSetMagicSV(m->var(), var);
+                    break;
+                }
+
                 // The hash
                 HV *hv = newHV();
                 // The hash reference to return
-                SV *var = newRV_noinc((SV*)hv);
+                var = newRV_noinc((SV*)hv);
 
                 // What class does the datatype of the return value belong to?
                 Smoke::Index classid = m->type().classId();
@@ -325,6 +340,10 @@ void install_handlers(TypeHandler *handler) {
     }
 }
 
+#if QT_VERSION >= 0x40300
+DEF_LIST_MARSHALLER( QMdiSubWindowList, QList<QMdiSubWindow*>, QMdiSubWindow )
+#endif
+
 TypeHandler Qt_handlers[] = {
     { "QString", marshall_QString },
     { "QString&", marshall_QString },
@@ -339,6 +358,9 @@ TypeHandler Qt_handlers[] = {
     { "const char*", marshall_charP },
     { "void", marshall_void },
     { "void**", marshall_voidP_array },
+#if QT_VERSION >= 0x40300
+    { "QList<QMdiSubWindow*>", marshall_QMdiSubWindowList },
+#endif
     { 0, 0 }
 };
 

@@ -47,6 +47,7 @@ package Qt::_internal;
 use strict;
 
 our %package2classid;
+our %pointer_map;
 
 sub getMetaObject {
     no strict 'refs';
