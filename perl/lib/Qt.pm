@@ -696,6 +696,8 @@ sub do_autoload {
     }
     my @methodIds = map { findMethod( $classname, $_ ) } @mungedMethods;
 
+    my $cacheLookup = 1;
+
     # If we got more than 1 method id, resolve it
     if (@methodIds > 1) {
         foreach my $argNum (0..$#_) {
@@ -728,6 +730,10 @@ sub do_autoload {
             $msg .= "\nChoosing first one...\n";
             warn $msg;
             @methodIds = $methodIds[0];
+
+            # Since a call to this same method with different args may resolve
+            # differently, don't cache this lookup
+            $cacheLookup = 0;
         }
     }
     elsif ( @methodIds == 1 and @_ ) {
@@ -744,7 +750,7 @@ sub do_autoload {
             $errStr .= "Method call was:\n\t";
             $errStr .= "$classname\::$methodname( " . dumpArgs(@_) . " )\n";
             $errStr .= "C++ signature is:\n\t";
-            $errStr .= dumpCandidates( $classname, $methodname, scalar @_, \@methodIds ) . "\n";
+            $errStr .= (dumpCandidates( $classname, $methodname, scalar @_, \@methodIds ))[0] . "\n";
             @methodIds = ();
             print STDERR $errStr and die;
         }
@@ -760,7 +766,7 @@ sub do_autoload {
             ' line ' . (caller($stackDepth))[2] . "\n" and die;
     }
 
-    return $methodIds[0];
+    return $methodIds[0], $cacheLookup;
 }
 
 sub getMetaObject {

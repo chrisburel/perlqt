@@ -1150,15 +1150,18 @@ XS(XS_AUTOLOAD) {
             PUSHs(sv_2mortal(newSVpv(methodname, 0)));
             PUSHs(sv_2mortal(newSVpv(classname, 0)));
             PUTBACK;
-            int count = call_pv( "Qt::_internal::do_autoload", G_SCALAR|G_EVAL );
+            int count = call_pv( "Qt::_internal::do_autoload", G_ARRAY|G_EVAL );
             SPAGAIN;
-            if (count != 1) {
+            if (count != 2) {
+                // Error, clean up our crap
                 if( withObject && !isSuper) {
                     SvREFCNT_dec(sv_this);
                     sv_this = old_this;
                 }
                 else if(isSuper)
                     delete[] package;
+
+                // Error out
                 croak( "Corrupt do_autoload return value: Got %d value(s), expected 1\n", count );
             }
 
@@ -1173,13 +1176,15 @@ XS(XS_AUTOLOAD) {
                 croak("%s", SvPV_nolen(ERRSV));
             }
 
+            int cacheLookup = POPi;
             methodId = POPi;
             PUTBACK;
             FREETMPS;
             LEAVE;
 
             // Save our lookup
-            methcache.insert(mcid, new Smoke::Index(methodId));
+            if ( cacheLookup ) 
+                methcache.insert(mcid, new Smoke::Index(methodId));
         }
 
         static smokeperl_object nothis = { 0, 0, 0, false };
