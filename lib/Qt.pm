@@ -23,6 +23,7 @@ sub new {
 package Qt::base::_overload;
 use strict;
 
+no strict 'refs';
 use overload
     "fallback" => 1,
     "==" => "Qt::base::_overload::op_equal",
