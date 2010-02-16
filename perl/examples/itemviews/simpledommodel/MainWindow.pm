@@ -2,9 +2,9 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::MainWindow );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::MainWindow );
+use Qt4::slots
     openFile => [];
 use DomModel;
 
@@ -46,12 +46,12 @@ sub NEW
     $class->SUPER::NEW();
     this->setFileMenu( this->menuBar()->addMenu(this->tr('&File')) );
     this->fileMenu->addAction(this->tr('&Open...'), this, SLOT 'openFile()',
-                        Qt::KeySequence(this->tr('Ctrl+O')));
+                        Qt4::KeySequence(this->tr('Ctrl+O')));
     this->fileMenu->addAction(this->tr('E&xit'), this, SLOT 'close()',
-                        Qt::KeySequence(this->tr('Ctrl+Q')));
+                        Qt4::KeySequence(this->tr('Ctrl+Q')));
 
-    this->setModel( DomModel(Qt::DomDocument(), this) );
-    this->setView( Qt::TreeView(this) );
+    this->setModel( DomModel(Qt4::DomDocument(), this) );
+    this->setView( Qt4::TreeView(this) );
     this->view->setModel(this->model);
 
     this->setCentralWidget(this->view);
@@ -60,14 +60,14 @@ sub NEW
 
 sub openFile
 {
-    my $filePath = Qt::FileDialog::getOpenFileName(this, this->tr('Open File'),
+    my $filePath = Qt4::FileDialog::getOpenFileName(this, this->tr('Open File'),
         this->xmlPath, this->tr('XML files (*.xml);;HTML files (*.html);;' .
                     'SVG files (*.svg);;User Interface files (*.ui)'));
 
     if ($filePath) {
-        my $file = Qt::File($filePath);
-        if ($file->open(Qt::IODevice::ReadOnly())) {
-            my $document = Qt::DomDocument();
+        my $file = Qt4::File($filePath);
+        if ($file->open(Qt4::IODevice::ReadOnly())) {
+            my $document = Qt4::DomDocument();
             if ($document->setContent($file)) {
                 my $newModel = DomModel($document, this);
                 this->view->setModel($newModel);

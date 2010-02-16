@@ -2,18 +2,18 @@
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use Window;
 
 sub main
 {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
 
-    my $scene = Qt::GraphicsScene();
+    my $scene = Qt4::GraphicsScene();
 
     my $window = Window();
     $scene->addItem($window);
-    my $view = Qt::GraphicsView($scene);
+    my $view = Qt4::GraphicsView($scene);
     $view->resize(600, 600);
     $view->show();
 

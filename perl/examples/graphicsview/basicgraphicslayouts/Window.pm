@@ -2,9 +2,9 @@ package Window;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::GraphicsWidget );
+use Qt4::isa qw( Qt4::GraphicsWidget );
 # [0]
 use LayoutItem;
 
@@ -13,10 +13,10 @@ my @foo;
 sub NEW
 {
     my ($class, $parent) = @_;
-    $class->SUPER::NEW($parent, Qt::Window());
+    $class->SUPER::NEW($parent, Qt4::Window());
 # [0]
-    my $windowLayout = Qt::GraphicsLinearLayout(Qt::Vertical());
-    my $linear = Qt::GraphicsLinearLayout($windowLayout);
+    my $windowLayout = Qt4::GraphicsLinearLayout(Qt4::Vertical());
+    my $linear = Qt4::GraphicsLinearLayout($windowLayout);
     my $item = LayoutItem();
     push @foo, $item;
     $linear->addItem($item);
@@ -32,18 +32,18 @@ sub NEW
 # [1]
 
 # [2]
-    my $grid = Qt::GraphicsGridLayout($windowLayout);
+    my $grid = Qt4::GraphicsGridLayout($windowLayout);
     $item = LayoutItem();
     push @foo, $item;
     $grid->addItem($item, 0, 0, 4, 1);
     $item = LayoutItem();
     push @foo, $item;
     $item->setMaximumHeight($item->minimumHeight());
-    $grid->addItem($item, 0, 1, 2, 1, Qt::AlignVCenter());
+    $grid->addItem($item, 0, 1, 2, 1, Qt4::AlignVCenter());
     $item = LayoutItem();
     push @foo, $item;
     $item->setMaximumHeight($item->minimumHeight());
-    $grid->addItem($item, 2, 1, 2, 1, Qt::AlignVCenter());
+    $grid->addItem($item, 2, 1, 2, 1, Qt4::AlignVCenter());
     $item = LayoutItem();
     push @foo, $item;
     $grid->addItem($item, 0, 2);

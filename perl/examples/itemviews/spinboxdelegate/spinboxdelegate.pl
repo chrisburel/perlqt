@@ -3,15 +3,15 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 use SpinBoxDelegate;
 
 # [0]
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
 
-    my $model = Qt::StandardItemModel(4, 2);
-    my $tableView = Qt::TableView();
+    my $model = Qt4::StandardItemModel(4, 2);
+    my $tableView = Qt4::TableView();
     $tableView->setModel($model);
 
     my $delegate = SpinBoxDelegate();
@@ -21,15 +21,15 @@ sub main {
 # [1]
     for (my $row = 0; $row < 4; ++$row) {
         for (my $column = 0; $column < 2; ++$column) {
-            my $index = $model->index($row, $column, Qt::ModelIndex());
-            $model->setData($index, Qt::Variant(($row+1) * ($column+1)));
+            my $index = $model->index($row, $column, Qt4::ModelIndex());
+            $model->setData($index, Qt4::Variant(($row+1) * ($column+1)));
         }
 # [1] //! [2]
     }
 # [2]
 
 # [3]
-    $tableView->setWindowTitle(Qt::Object::tr('Spin Box Delegate'));
+    $tableView->setWindowTitle(Qt4::Object::tr('Spin Box Delegate'));
     $tableView->show();
     return $app->exec();
 }

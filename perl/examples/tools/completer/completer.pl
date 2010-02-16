@@ -2,14 +2,14 @@
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 
 use MainWindow;
 
 # [0]
 sub main
 {
-    my $app = Qt::Application(\@ARGV);
+    my $app = Qt4::Application(\@ARGV);
     my $window = MainWindow();
     $window->show();
     return $app->exec();

@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use Mouse;
 
 my $MouseCount = 7;
@@ -10,15 +10,15 @@ my $MouseCount = 7;
 # [0]
 sub main
 {
-    my $app = Qt::Application( \@ARGV );
-    srand(Qt::Time(0,0,0)->secsTo(Qt::Time::currentTime()));
+    my $app = Qt4::Application( \@ARGV );
+    srand(Qt4::Time(0,0,0)->secsTo(Qt4::Time::currentTime()));
 # [0]
 
 # [1]
-    my $scene = Qt::GraphicsScene();
+    my $scene = Qt4::GraphicsScene();
     $scene->setSceneRect(-300, -300, 600, 600);
 # [1] //! [2]
-    $scene->setItemIndexMethod(Qt::GraphicsScene::NoIndex());
+    $scene->setItemIndexMethod(Qt4::GraphicsScene::NoIndex());
 # [2]
 
 # [3]
@@ -31,15 +31,15 @@ sub main
 # [3]
 
 # [4]
-    my $view = Qt::GraphicsView($scene);
-    $view->setRenderHint(Qt::Painter::Antialiasing());
-    $view->setBackgroundBrush(Qt::Pixmap('images/cheese.jpg'));
+    my $view = Qt4::GraphicsView($scene);
+    $view->setRenderHint(Qt4::Painter::Antialiasing());
+    $view->setBackgroundBrush(Qt4::Pixmap('images/cheese.jpg'));
 # [4] //! [5]
-    $view->setCacheMode(Qt::GraphicsView::CacheBackground());
-    $view->setViewportUpdateMode(Qt::GraphicsView::BoundingRectViewportUpdate());
-    $view->setDragMode(Qt::GraphicsView::ScrollHandDrag());
+    $view->setCacheMode(Qt4::GraphicsView::CacheBackground());
+    $view->setViewportUpdateMode(Qt4::GraphicsView::BoundingRectViewportUpdate());
+    $view->setDragMode(Qt4::GraphicsView::ScrollHandDrag());
 # [5] //! [6]
-    $view->setWindowTitle(Qt::GraphicsView::tr('Colliding Mice'));
+    $view->setWindowTitle(Qt4::GraphicsView::tr('Colliding Mice'));
     $view->resize(400, 300);
     $view->show();
 

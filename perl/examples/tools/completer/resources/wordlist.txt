@@ -845,7 +845,7 @@ next
 nicely
 no
 none
-non-Qt
+non-Qt4
 non-trivial
 non-zero
 normally
@@ -1039,9 +1039,9 @@ punch
 punches
 pursuing
 put
-Qt
-Qtopia
-Qt-related
+Qt4
+Qt4opia
+Qt4-related
 quality
 quarter
 quarterly

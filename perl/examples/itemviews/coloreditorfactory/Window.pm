@@ -2,8 +2,8 @@ package Window;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::Widget );
+use Qt4;
+use Qt4::isa qw( Qt4::Widget );
 use ColorListEditor;
 
 # [0]
@@ -11,14 +11,14 @@ sub NEW
 {
     my ($class) = @_;
     $class->SUPER::NEW();
-    my $factory = Qt::ItemEditorFactory();
+    my $factory = Qt4::ItemEditorFactory();
 
     my $colorListCreator =
-        Qt::StandardItemEditorCreator();
+        Qt4::StandardItemEditorCreator();
 
-    $factory->registerEditor(Qt::Variant::Color(), $colorListCreator);
+    $factory->registerEditor(Qt4::Variant::Color(), $colorListCreator);
 
-    Qt::ItemEditorFactory::setDefaultFactory($factory);
+    Qt4::ItemEditorFactory::setDefaultFactory($factory);
 
     this->createGUI();
 }
@@ -27,12 +27,12 @@ sub NEW
 sub createGUI
 {
     my $list = [
-        [this->tr('Alice'), Qt::Color('aliceblue')],
-        [this->tr('Neptun'), Qt::Color('aquamarine')],
-        [this->tr('Ferdinand'), Qt::Color('springgreen')]
+        [this->tr('Alice'), Qt4::Color('aliceblue')],
+        [this->tr('Neptun'), Qt4::Color('aquamarine')],
+        [this->tr('Ferdinand'), Qt4::Color('springgreen')]
     ];
 
-    my $table = Qt::TableWidget(3, 2);
+    my $table = Qt4::TableWidget(3, 2);
     $table->setHorizontalHeaderLabels([this->tr('Name'), this->tr('Hair Color')]);
     $table->verticalHeader()->setVisible(0);
     $table->resize(150, 50);
@@ -40,9 +40,9 @@ sub createGUI
     foreach my $i (0..2) {
         my $pair = $list->[$i];
 
-        my $nameItem = Qt::TableWidgetItem($pair->[0]);
-        my $colorItem = Qt::TableWidgetItem();
-        $colorItem->setData(Qt::DisplayRole(), $pair->[1]);
+        my $nameItem = Qt4::TableWidgetItem($pair->[0]);
+        my $colorItem = Qt4::TableWidgetItem();
+        $colorItem->setData(Qt4::DisplayRole(), $pair->[1]);
 
         $table->setItem($i, 0, $nameItem);
         $table->setItem($i, 1, $colorItem);
@@ -50,7 +50,7 @@ sub createGUI
     $table->resizeColumnToContents(0);
     $table->horizontalHeader()->setStretchLastSection(1);
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget($table, 0, 0);
 
     this->setLayout($layout);

@@ -2,10 +2,10 @@ package Window;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     textFilterChanged => [],
     dateFilterChanged => [];
 
@@ -74,41 +74,41 @@ sub NEW
 # [0]
 
 # [1]
-    this->{sourceView} = Qt::TreeView();
+    this->{sourceView} = Qt4::TreeView();
     this->sourceView->setRootIsDecorated(0);
     this->sourceView->setAlternatingRowColors(1);
 # [1]
 
-    my $sourceLayout = Qt::HBoxLayout();
+    my $sourceLayout = Qt4::HBoxLayout();
 # [2]
     $sourceLayout->addWidget(this->sourceView);
-    this->{sourceGroupBox} = Qt::GroupBox(this->tr('Original Model'));
+    this->{sourceGroupBox} = Qt4::GroupBox(this->tr('Original Model'));
     this->sourceGroupBox->setLayout($sourceLayout);
 # [2]
 
 # [3]
-    this->{filterCaseSensitivityCheckBox} = Qt::CheckBox(this->tr('Case sensitive filter'));
+    this->{filterCaseSensitivityCheckBox} = Qt4::CheckBox(this->tr('Case sensitive filter'));
     this->filterCaseSensitivityCheckBox->setChecked(1);
 
-    this->{filterPatternLineEdit} = Qt::LineEdit();
+    this->{filterPatternLineEdit} = Qt4::LineEdit();
     this->filterPatternLineEdit->setText('Grace|Sports');
 
-    this->{filterPatternLabel} = Qt::Label(this->tr('&Filter pattern:'));
+    this->{filterPatternLabel} = Qt4::Label(this->tr('&Filter pattern:'));
     this->filterPatternLabel->setBuddy(this->filterPatternLineEdit);
 
-    this->{filterSyntaxComboBox} = Qt::ComboBox();
-    this->filterSyntaxComboBox->addItem(this->tr('Regular expression'), Qt::Variant(${Qt::RegExp::RegExp()}));
-    this->filterSyntaxComboBox->addItem(this->tr('Wildcard'), Qt::Variant(${Qt::RegExp::Wildcard()}));
-    this->filterSyntaxComboBox->addItem(this->tr('Fixed string'), Qt::Variant(${Qt::RegExp::FixedString()}));
+    this->{filterSyntaxComboBox} = Qt4::ComboBox();
+    this->filterSyntaxComboBox->addItem(this->tr('Regular expression'), Qt4::Variant(${Qt4::RegExp::RegExp()}));
+    this->filterSyntaxComboBox->addItem(this->tr('Wildcard'), Qt4::Variant(${Qt4::RegExp::Wildcard()}));
+    this->filterSyntaxComboBox->addItem(this->tr('Fixed string'), Qt4::Variant(${Qt4::RegExp::FixedString()}));
 
-    this->{fromDateEdit} = Qt::DateEdit();
-    this->fromDateEdit->setDate(Qt::Date(1970, 01, 01));
-    this->{fromLabel} = Qt::Label(this->tr('F&rom:'));
+    this->{fromDateEdit} = Qt4::DateEdit();
+    this->fromDateEdit->setDate(Qt4::Date(1970, 01, 01));
+    this->{fromLabel} = Qt4::Label(this->tr('F&rom:'));
     this->fromLabel->setBuddy(this->fromDateEdit);
 
-    this->{toDateEdit} = Qt::DateEdit();
-    this->toDateEdit->setDate(Qt::Date(2099, 12, 31));
-    this->{toLabel} = Qt::Label(this->tr('&To:'));
+    this->{toDateEdit} = Qt4::DateEdit();
+    this->toDateEdit->setDate(Qt4::Date(2099, 12, 31));
+    this->{toLabel} = Qt4::Label(this->tr('&To:'));
     this->toLabel->setBuddy(this->toDateEdit);
 
     this->connect(this->filterPatternLineEdit, SIGNAL 'textChanged(const QString &)',
@@ -125,14 +125,14 @@ sub NEW
 # [4]
 
 # [5]
-    this->{proxyView} = Qt::TreeView();
+    this->{proxyView} = Qt4::TreeView();
     this->proxyView->setRootIsDecorated(0);
     this->proxyView->setAlternatingRowColors(1);
     this->proxyView->setModel(this->proxyModel);
     this->proxyView->setSortingEnabled(1);
-    proxyView->sortByColumn(1, Qt::AscendingOrder());
+    proxyView->sortByColumn(1, Qt4::AscendingOrder());
 
-    my $proxyLayout = Qt::GridLayout();
+    my $proxyLayout = Qt4::GridLayout();
     $proxyLayout->addWidget(this->proxyView, 0, 0, 1, 3);
     $proxyLayout->addWidget(this->filterPatternLabel, 1, 0);
     $proxyLayout->addWidget(this->filterPatternLineEdit, 1, 1);
@@ -143,12 +143,12 @@ sub NEW
     $proxyLayout->addWidget(this->toLabel, 4, 0);
     $proxyLayout->addWidget(this->toDateEdit, 4, 1, 1, 2);
 
-    this->{proxyGroupBox} = Qt::GroupBox(this->tr('Sorted/Filtered Model'));
+    this->{proxyGroupBox} = Qt4::GroupBox(this->tr('Sorted/Filtered Model'));
     this->proxyGroupBox->setLayout($proxyLayout);
 # [5]
 
 # [6]
-    my $mainLayout = Qt::VBoxLayout();
+    my $mainLayout = Qt4::VBoxLayout();
     $mainLayout->addWidget(this->sourceGroupBox);
     $mainLayout->addWidget(this->proxyGroupBox);
     this->setLayout($mainLayout);

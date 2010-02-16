@@ -4,10 +4,10 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw(Qt::AbstractTableModel);
+use Qt4;
+use Qt4::isa qw(Qt4::AbstractTableModel);
 
-Qt::_internal::installsignal( 'Qt::AbstractTableModel::dataChanged' );
+Qt4::_internal::installsignal( 'Qt4::AbstractTableModel::dataChanged' );
 
 sub NEW {
     my ( $class, $pairs, $parent ) = @_;
@@ -36,33 +36,33 @@ sub data {
     my ($index, $role) = @_;
     my $listOfPairs = this->{listOfPairs};
     if (!$index->isValid()) {
-        return Qt::Variant();
+        return Qt4::Variant();
     }
     
     if ($index->row() >= scalar @{$listOfPairs} || $index->row() < 0) {
-        return Qt::Variant();
+        return Qt4::Variant();
     }
     
-    if ($role == Qt::DisplayRole()) {
+    if ($role == Qt4::DisplayRole()) {
         my $pair = $listOfPairs->[$index->row()];
         
         if ($index->column() == 0) {
-            return $pair->[0] ? Qt::Variant($pair->[0]) : Qt::Variant();
+            return $pair->[0] ? Qt4::Variant($pair->[0]) : Qt4::Variant();
         }
         elsif ($index->column() == 1) {
-            return $pair->[1] ? Qt::Variant($pair->[1]) : Qt::Variant();
+            return $pair->[1] ? Qt4::Variant($pair->[1]) : Qt4::Variant();
         }
     }
-    return Qt::Variant();
+    return Qt4::Variant();
 }
 
 sub headerData {
     my ($section, $orientation, $role) = @_;
-    if ($role != Qt::DisplayRole()) {
-        return Qt::Variant();
+    if ($role != Qt4::DisplayRole()) {
+        return Qt4::Variant();
     }
     
-    if ($orientation == Qt::Horizontal()) {
+    if ($orientation == Qt4::Horizontal()) {
         if ($section == 0) {
             return this->tr("Name");
         }
@@ -70,16 +70,16 @@ sub headerData {
             return this->tr("Address");
         }
         else {
-            return Qt::Variant();
+            return Qt4::Variant();
         }
     }
-    return Qt::Variant();
+    return Qt4::Variant();
 }
 
 sub insertRows {
     my ($position, $rows, $index) = @_;
     my $listOfPairs = this->{listOfPairs};
-    this->beginInsertRows(Qt::ModelIndex(), $position, $position+$rows-1);
+    this->beginInsertRows(Qt4::ModelIndex(), $position, $position+$rows-1);
     
     foreach my $row (0..$rows-1) {
         if( $position == 0 ) {
@@ -100,7 +100,7 @@ sub insertRows {
 sub removeRows {
     my ($position, $rows, $index) = @_;
     my $listOfPairs = this->{listOfPairs};
-    this->beginRemoveRows(Qt::ModelIndex(), $position, $position+$rows-1);
+    this->beginRemoveRows(Qt4::ModelIndex(), $position, $position+$rows-1);
 
     foreach my $row (0..$rows-1) {
         splice( @{$listOfPairs}, $position, 1 );
@@ -113,7 +113,7 @@ sub removeRows {
 sub setData {
     my ($index, $value, $role) = @_;
     my $listOfPairs = this->{listOfPairs};
-    if ($index->isValid() && $role == Qt::EditRole()) {
+    if ($index->isValid() && $role == Qt4::EditRole()) {
         my $row = $index->row();
 
         my $p = $listOfPairs->[$row];
@@ -129,9 +129,9 @@ sub setData {
         }
 
         $listOfPairs->[$row] = $p;
-        #Qt::_internal::setDebug(0xffffff);
+        #Qt4::_internal::setDebug(0xffffff);
         emit dataChanged($index, $index);
-        #Qt::_internal::setDebug(0);
+        #Qt4::_internal::setDebug(0);
 
         return 1;
     }
@@ -142,10 +142,10 @@ sub setData {
 sub flags {
     my ($index) = @_;
     if (!$index->isValid()) {
-        return Qt::ItemIsEnabled();
+        return Qt4::ItemIsEnabled();
     }
 
-    return bless( \this->SUPER::flags($index), 'Qt::ItemFlag') | Qt::ItemIsEditable();
+    return bless( \this->SUPER::flags($index), 'Qt4::ItemFlag') | Qt4::ItemIsEditable();
 }
 
 sub getList {

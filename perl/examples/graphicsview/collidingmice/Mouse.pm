@@ -2,9 +2,9 @@ package Mouse;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Object );
+use Qt4::isa qw( Qt4::Object );
 use Math::Trig;
 
 sub angle() {
@@ -66,11 +66,11 @@ sub NEW
 {
     my ( $class ) = @_;
     $class->SUPER::NEW();
-    this->{graphicsItem} = Qt::GraphicsItem();
+    this->{graphicsItem} = Qt4::GraphicsItem();
     this->setAngle(0);
     this->setSpeed(0);
     this->setMouseEyeDirection(0);
-    this->setColor(Qt::Color(rand(RAND_MAX) % 256, rand(RAND_MAX) % 256, rand(RAND_MAX) % 256));
+    this->setColor(Qt4::Color(rand(RAND_MAX) % 256, rand(RAND_MAX) % 256, rand(RAND_MAX) % 256));
     this->rotate(rand(RAND_MAX) % (360 * 16));
     this->startTimer(1000 / 33);
 }
@@ -80,7 +80,7 @@ sub NEW
 sub boundingRect
 {
     my $adjust = 0.5;
-    return Qt::RectF(-18 - $adjust, -22 - $adjust,
+    return Qt4::RectF(-18 - $adjust, -22 - $adjust,
                   36 + $adjust, 60 + $adjust);
 }
 # [1]
@@ -88,7 +88,7 @@ sub boundingRect
 # [2]
 sub shape
 {
-    my $path = Qt::PainterPath();
+    my $path = Qt4::PainterPath();
     $path->addRect(-10, -20, 20, 40);
     return $path;
 }
@@ -103,29 +103,29 @@ sub paint
     $painter->drawEllipse(-10, -20, 20, 40);
 
     # Eyes
-    $painter->setBrush(Qt::white());
+    $painter->setBrush(Qt4::white());
     $painter->drawEllipse(-10, -17, 8, 8);
     $painter->drawEllipse(2, -17, 8, 8);
 
     # Nose
-    $painter->setBrush(Qt::black());
-    $painter->drawEllipse(Qt::RectF(-2, -22, 4, 4));
+    $painter->setBrush(Qt4::black());
+    $painter->drawEllipse(Qt4::RectF(-2, -22, 4, 4));
 
     # Pupils
-    $painter->drawEllipse(Qt::RectF(-8.0 + this->mouseEyeDirection, -17, 4, 4));
-    $painter->drawEllipse(Qt::RectF(4.0 + this->mouseEyeDirection, -17, 4, 4));
+    $painter->drawEllipse(Qt4::RectF(-8.0 + this->mouseEyeDirection, -17, 4, 4));
+    $painter->drawEllipse(Qt4::RectF(4.0 + this->mouseEyeDirection, -17, 4, 4));
 
     # Ears
-    $painter->setBrush(this->scene()->collidingItems(this)->isEmpty() ? Qt::darkYellow() : Qt::red());
+    $painter->setBrush(this->scene()->collidingItems(this)->isEmpty() ? Qt4::darkYellow() : Qt4::red());
     $painter->drawEllipse(-17, -12, 16, 16);
     $painter->drawEllipse(1, -12, 16, 16);
 
     # Tail
-    my $path = Qt::PainterPath(Qt::PointF(0, 20));
+    my $path = Qt4::PainterPath(Qt4::PointF(0, 20));
     $path->cubicTo(-5, 22, -5, 22, 0, 25);
     $path->cubicTo(5, 27, 5, 32, 0, 30);
     $path->cubicTo(-5, 32, -5, 42, 0, 35);
-    $painter->setBrush(Qt::NoBrush());
+    $painter->setBrush(Qt4::NoBrush());
     $painter->drawPath($path);
 }
 # [3]
@@ -136,7 +136,7 @@ sub timerEvent
 # [4]
     # Don't move too far away
 # [5]
-    my $lineToCenter = Qt::LineF(Qt::PointF(0, 0), this->mapFromScene(0, 0));
+    my $lineToCenter = Qt4::LineF(Qt4::PointF(0, 0), this->mapFromScene(0, 0));
     if ($lineToCenter->length() > 150) {
         my $angleToCenter = acos($lineToCenter->dx() / $lineToCenter->length());
         if ($lineToCenter->dy() < 0) {
@@ -172,7 +172,7 @@ sub timerEvent
             next;
         }
         
-        my $lineToMouse = Qt::LineF(Qt::PointF(0, 0), this->mapFromItem($item, 0, 0));
+        my $lineToMouse = Qt4::LineF(Qt4::PointF(0, 0), this->mapFromItem($item, 0, 0));
         my $angleToMouse = acos($lineToMouse->dx() / $lineToMouse->length());
         if ($lineToMouse->dy() < 0) {
             $angleToMouse = $TwoPi - $angleToMouse;

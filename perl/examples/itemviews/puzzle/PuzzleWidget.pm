@@ -2,9 +2,9 @@ package PuzzleWidget;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::Widget );
-use Qt::signals
+use Qt4;
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::signals
     puzzleCompleted => [];
 
 sub piecePixmaps() {
@@ -35,7 +35,7 @@ sub NEW
     this->setMinimumSize(400, 400);
     this->setMaximumSize(400, 400);
 
-    this->{highlightedRect} = Qt::Rect();
+    this->{highlightedRect} = Qt4::Rect();
     this->{pieceRects} = [];
     this->{piecePixmaps} = [];
 }
@@ -45,7 +45,7 @@ sub clear
     this->{pieceLocations} = [];
     this->{piecePixmaps} = [];
     this->{pieceRects} = [];
-    this->{highlightedRect} = Qt::Rect();
+    this->{highlightedRect} = Qt4::Rect();
     this->{inPlace} = 0;
     this->update();
 }
@@ -65,7 +65,7 @@ sub dragLeaveEvent
 {
     my ($event) = @_;
     my $updateRect = this->highlightedRect;
-    this->{highlightedRect} = Qt::Rect();
+    this->{highlightedRect} = Qt4::Rect();
     this->update($updateRect);
     $event->accept();
 }
@@ -79,10 +79,10 @@ sub dragMoveEvent
         && this->findPiece(this->targetSquare($event->pos())) == -1) {
 
         this->{highlightedRect} = this->targetSquare($event->pos());
-        $event->setDropAction(Qt::MoveAction());
+        $event->setDropAction(Qt4::MoveAction());
         $event->accept();
     } else {
-        this->{highlightedRect} = Qt::Rect();
+        this->{highlightedRect} = Qt4::Rect();
         $event->ignore();
     }
 
@@ -96,10 +96,10 @@ sub dropEvent
         && this->findPiece(this->targetSquare($event->pos())) == -1) {
 
         my $pieceData = $event->mimeData()->data('image/x-puzzle-piece');
-        my $stream = Qt::DataStream($pieceData, Qt::IODevice::ReadOnly());
+        my $stream = Qt4::DataStream($pieceData, Qt4::IODevice::ReadOnly());
         my $square = this->targetSquare($event->pos());
-        my $pixmap = Qt::Pixmap();
-        my $location = Qt::Point();
+        my $pixmap = Qt4::Pixmap();
+        my $location = Qt4::Point();
         no warnings qw(void); # For bitshift warning;
         $stream >> $pixmap >> $location;
         use warnings;
@@ -108,20 +108,20 @@ sub dropEvent
         push @{this->piecePixmaps}, $pixmap;
         push @{this->pieceRects}, $square;
 
-        this->{highlightedRect} = Qt::Rect();
+        this->{highlightedRect} = Qt4::Rect();
         this->update($square);
 
-        $event->setDropAction(Qt::MoveAction());
+        $event->setDropAction(Qt4::MoveAction());
         $event->accept();
 
-        if ($location == Qt::Point($square->x()/80, $square->y()/80)) {
+        if ($location == Qt4::Point($square->x()/80, $square->y()/80)) {
             this->{inPlace}++;
             if (this->inPlace == 25) {
                 emit this->puzzleCompleted();
             }
         }
     } else {
-        this->{highlightedRect} = Qt::Rect();
+        this->{highlightedRect} = Qt4::Rect();
         $event->ignore();
     }
 }
@@ -153,34 +153,34 @@ sub mousePressEvent
     splice @{this->{piecePixmaps}}, $found, 1;
     splice @{this->{pieceRects}}, $found, 1;
 
-    if ($location == Qt::Point($square->x()/80, $square->y()/80)) {
+    if ($location == Qt4::Point($square->x()/80, $square->y()/80)) {
         this->{inPlace}--;
     }
 
     this->update($square);
 
-    my $itemData = Qt::ByteArray();
-    my $dataStream = Qt::DataStream($itemData, Qt::IODevice::WriteOnly());
+    my $itemData = Qt4::ByteArray();
+    my $dataStream = Qt4::DataStream($itemData, Qt4::IODevice::WriteOnly());
 
     no warnings qw(void); # For bitshift warning;
     $dataStream << $pixmap << $location;
     use warnings;
 
-    my $mimeData = Qt::MimeData();
+    my $mimeData = Qt4::MimeData();
     $mimeData->setData('image/x-puzzle-piece', $itemData);
 
-    my $drag = Qt::Drag(this);
+    my $drag = Qt4::Drag(this);
     $drag->setMimeData($mimeData);
     $drag->setHotSpot($event->pos() - $square->topLeft());
     $drag->setPixmap($pixmap);
 
-    if ($drag->start(Qt::MoveAction()) == 0) {
+    if ($drag->start(Qt4::MoveAction()) == 0) {
         splice @{this->{pieceLocations}}, $found, 0, $location;
         splice @{this->{piecePixmaps}}, $found, 0, $pixmap;
         splice @{this->{pieceRects}}, $found, 0, $square;
         this->update(this->targetSquare($event->pos()));
 
-        if ($location == Qt::Point($square->x()/80, $square->y()/80)) {
+        if ($location == Qt4::Point($square->x()/80, $square->y()/80)) {
             this->{inPlace}++;
         }
     }
@@ -189,13 +189,13 @@ sub mousePressEvent
 sub paintEvent
 {
     my ($event) = @_;
-    my $painter = Qt::Painter();
+    my $painter = Qt4::Painter();
     $painter->begin(this);
-    $painter->fillRect($event->rect(), Qt::Brush(Qt::white()));
+    $painter->fillRect($event->rect(), Qt4::Brush(Qt4::white()));
 
     if (this->highlightedRect->isValid()) {
-        $painter->setBrush(Qt::Brush(Qt::Color(Qt::String('#ffcccc'))));
-        $painter->setPen(Qt::NoPen());
+        $painter->setBrush(Qt4::Brush(Qt4::Color(Qt4::String('#ffcccc'))));
+        $painter->setPen(Qt4::NoPen());
         $painter->drawRect(this->highlightedRect->adjusted(0, 0, -1, -1));
     }
 
@@ -208,7 +208,7 @@ sub paintEvent
 sub targetSquare
 {
     my ($position) = @_;
-    return Qt::Rect(int($position->x()/80) * 80, int($position->y()/80) * 80, 80, 80);
+    return Qt4::Rect(int($position->x()/80) * 80, int($position->y()/80) * 80, 80, 80);
 }
 
 1;

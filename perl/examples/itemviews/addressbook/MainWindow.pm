@@ -4,11 +4,11 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::MainWindow );
+use Qt4;
+use Qt4::isa qw( Qt4::MainWindow );
 use AddressWidget;
 
-use Qt::slots
+use Qt4::slots
     updateActions => ['QItemSelection'],
     openFile      => [],
     saveFile      => [];
@@ -26,32 +26,32 @@ sub createMenus {
     my $addressWidget = this->{addressWidget};
     my $fileMenu = this->menuBar()->addMenu(this->tr("&File"));
     
-    my $openAct = Qt::Action(this->tr("&Open..."), this);
+    my $openAct = Qt4::Action(this->tr("&Open..."), this);
     $fileMenu->addAction($openAct);
     this->connect($openAct, SIGNAL 'triggered()',
         this, SLOT 'openFile()');
 
-    my $saveAct = Qt::Action(this->tr("&Save As..."), this);
+    my $saveAct = Qt4::Action(this->tr("&Save As..."), this);
     $fileMenu->addAction($saveAct);
     this->connect($saveAct, SIGNAL 'triggered()',
         this, SLOT 'saveFile()');
 
     $fileMenu->addSeparator();
 
-    my $exitAct = Qt::Action(this->tr("E&xit"), this);
+    my $exitAct = Qt4::Action(this->tr("E&xit"), this);
     $fileMenu->addAction($exitAct);
     this->connect($exitAct, SIGNAL 'triggered()',
         this, SLOT 'close()');
 
     my $toolMenu = this->menuBar()->addMenu(this->tr("&Tools"));
 
-    my $addAct = Qt::Action(this->tr("&Add Entry..."), this);
+    my $addAct = Qt4::Action(this->tr("&Add Entry..."), this);
     $toolMenu->addAction($addAct);
     this->connect($addAct, SIGNAL 'triggered()',
         $addressWidget, SLOT 'addEntry()');
     
 
-    my $editAct = Qt::Action(this->tr("&Edit Entry..."), this);
+    my $editAct = Qt4::Action(this->tr("&Edit Entry..."), this);
     this->{editAct} = $editAct;
     $editAct->setEnabled(0);
     $toolMenu->addAction($editAct);
@@ -60,7 +60,7 @@ sub createMenus {
 
     $toolMenu->addSeparator();
 
-    my $removeAct = Qt::Action(this->tr("&Remove Entry"), this);
+    my $removeAct = Qt4::Action(this->tr("&Remove Entry"), this);
     this->{removeAct} = $removeAct;
     $removeAct->setEnabled(0);
     $toolMenu->addAction($removeAct);
@@ -72,14 +72,14 @@ sub createMenus {
 }
 
 sub openFile {
-    my $fileName = Qt::FileDialog::getOpenFileName(this);
+    my $fileName = Qt4::FileDialog::getOpenFileName(this);
     if ($fileName) {
         this->{addressWidget}->readFromFile($fileName);
     }
 }
 
 sub saveFile {
-    my $fileName = Qt::FileDialog::getSaveFileName(this);
+    my $fileName = Qt4::FileDialog::getSaveFileName(this);
     if ($fileName) {
         this->{addressWidget}->writeToFile($fileName);
     }

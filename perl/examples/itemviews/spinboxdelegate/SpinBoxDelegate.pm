@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::ItemDelegate );
+use Qt4;
+use Qt4::isa qw( Qt4::ItemDelegate );
 
 # [0]
 sub NEW {
@@ -16,7 +16,7 @@ sub NEW {
 # [1]
 sub createEditor {
     my ( $parent, $option, $index ) = @_;
-    my $editor = Qt::SpinBox($parent);
+    my $editor = Qt4::SpinBox($parent);
     $editor->setMinimum(0);
     $editor->setMaximum(100);
 
@@ -27,7 +27,7 @@ sub createEditor {
 # [2]
 sub setEditorData {
     my ($editor, $index) = @_;
-    my $value = $index->model()->data($index, Qt::EditRole())->toInt();
+    my $value = $index->model()->data($index, Qt4::EditRole())->toInt();
 
     my $spinBox = $editor;
     $spinBox->setValue($value);
@@ -39,9 +39,9 @@ sub setModelData {
     my ($editor, $model, $index) = @_;
     my $spinBox = $editor;
     $spinBox->interpretText();
-    my $value = Qt::Variant($spinBox->value());
+    my $value = Qt4::Variant($spinBox->value());
 
-    $model->setData($index, $value, Qt::EditRole());
+    $model->setData($index, $value, Qt4::EditRole());
 }
 # [3]
 

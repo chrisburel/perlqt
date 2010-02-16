@@ -2,7 +2,7 @@ package DomItem;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use Scalar::Util qw(reftype);
 # [0]
 sub domNode() {

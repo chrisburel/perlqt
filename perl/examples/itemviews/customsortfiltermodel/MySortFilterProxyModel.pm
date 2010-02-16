@@ -2,9 +2,9 @@ package MySortFilterProxyModel;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::SortFilterProxyModel );
+use Qt4::isa qw( Qt4::SortFilterProxyModel );
 sub const() {
     return this->{const};
 }
@@ -77,10 +77,10 @@ sub lessThan
 # [4]
 
 # [6]
-    if ($leftData->type() == Qt::Variant::DateTime()) {
+    if ($leftData->type() == Qt4::Variant::DateTime()) {
         return $leftData->toDateTime() < $rightData->toDateTime();
     } else {
-        my $emailPattern = Qt::RegExp('([\w\.]*@[\w\.]*)');
+        my $emailPattern = Qt4::RegExp('([\w\.]*@[\w\.]*)');
 
         my $leftString = $leftData->toString();
         if($left->column() == 1 && $emailPattern->indexIn($leftString) != -1) {
