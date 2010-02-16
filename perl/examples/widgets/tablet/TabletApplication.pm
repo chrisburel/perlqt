@@ -26,8 +26,6 @@ sub event {
             $event->device());
         return 1;
     }
-    $DB::single=1;
-    Qt::_internal::setDebug(0xffffff);
     return this->SUPER::event($event);
 }
 # [0]

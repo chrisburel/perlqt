@@ -3,11 +3,6 @@ package Qt::base;
 use strict;
 use warnings;
 
-# meta-hackery tools
-my $A = sub {my $n = shift; no strict 'refs'; \@{$n}};
-my $H = sub {my ($n) = @_; no strict 'refs'; no warnings 'once'; \%{$n}};
-my $ISUB = sub {my ($n, $s) = @_; no strict 'refs'; *{$n} = $s};
-
 sub new {
     # Any direct calls to the 'NEW' function will bypass this code.  It's
     # called that way in subclass constructors, thus setting the 'this' value
@@ -688,7 +683,7 @@ sub error() {
 }
 
 # Create the Qt::DBusReply() constructor
-$ISUB->('Qt::DBusReply', sub { Qt::DBusReply->new(@_) });
+Qt::_internal::installSub('Qt::DBusReply', sub { Qt::DBusReply->new(@_) });
 
 1;
 
@@ -750,6 +745,16 @@ my %hashTypes = (
         value2 => [ 'QVariant' ]
     },
 );
+
+# meta-hackery tools
+my $A = sub {my $n = shift; no strict 'refs'; \@{$n}};
+my $H = sub {my ($n) = @_; no strict 'refs'; no warnings 'once'; \%{$n}};
+sub installSub($&) {
+    my ($subname, $subref) = @_;
+    no strict 'refs';
+    *{$subname} = $subref
+};
+
 
 sub unique {
     my %uniq;          # Use keys of this hash to track unique values
@@ -1171,10 +1176,10 @@ sub init_class {
         # the autoload variable
         package Qt::AutoLoad;
         my $autosub = \&{$where . '::_UTOLOAD'};
-        $ISUB->($where.'::AUTOLOAD', sub {&$autosub});
+        installSub( $where.'::AUTOLOAD', $autosub );
     }
 
-    $ISUB->("$perlClassName\::NEW", sub {
+    installSub("$perlClassName\::NEW", sub {
         # Removes $perlClassName from the front of @_
         my $perlClassName = shift;
 
@@ -1187,7 +1192,7 @@ sub init_class {
     }) unless(defined &{"$perlClassName\::NEW"});
 
     # Make the constructor subroutine
-    $ISUB->($perlClassName, sub {
+    installSub($perlClassName, sub {
         # Adds $perlClassName to the front of @_
         $perlClassName->new(@_);
     }) unless(defined &{$perlClassName});
@@ -1491,7 +1496,7 @@ sub Qt::Application::ON_DESTROY {
     return 0;
 }
 
-$ISUB->(' Qt::Variant::value', sub {
+Qt::_internal::installSub(' Qt::Variant::value', sub {
     my $this = shift;
 
     my $type = $this->type();

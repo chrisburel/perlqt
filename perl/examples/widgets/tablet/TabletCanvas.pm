@@ -125,7 +125,7 @@ sub NEW {
 sub initImage {
     my $newImage = Qt::Image(this->width(), this->height(), Qt::Image::Format_ARGB32());
     my $painter = Qt::Painter($newImage);
-    $painter->fillRect(0, 0, $newImage->width(), $newImage->height(), Qt::white());
+    $painter->fillRect(0, 0, $newImage->width(), $newImage->height(), Qt::Brush(Qt::white()));
     if (this->image && !this->image->isNull()) {
         $painter->drawImage(0, 0, this->image);
     }
