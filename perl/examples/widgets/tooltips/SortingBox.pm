@@ -129,7 +129,8 @@ sub event {
 
 # [7]
 sub resizeEvent {
-    my $margin = this->style()->pixelMetric(Qt::Style::PM_DefaultTopLevelMargin());
+    # TODO figure out why the 1 and 2 argument form aren't correct in smoke.
+    my $margin = this->style()->pixelMetric(Qt::Style::PM_DefaultTopLevelMargin(), undef, undef);
     my $x = this->width() - $margin;
     my $y = this->height() - $margin;
 
@@ -247,17 +248,12 @@ sub moveItemTo {
 sub updateButtonGeometry {
     my ($button, $x, $y) = @_;
     my $size = $button->sizeHint();
-    $button->setGeometry($x - $size->width(), $y - $size->height(),
-                        $size->width(), $size->height());
+    $button->setGeometry($x - $size->rwidth(), $y - $size->rheight(),
+                        $size->rwidth(), $size->rheight());
 
-    return $y - $size->height() -
-        this->style()->pixelMetric(Qt::Style::PM_DefaultLayoutSpacing());
-
-    #$button->setGeometry($x - $size->rwidth(), $y - $size->rheight(),
-                        #$size->rwidth(), $size->rheight());
-
-    #return $y - $size->rheight() -
-        #this->style()->pixelMetric(Qt::Style::PM_DefaultLayoutSpacing());
+    # TODO figure out why the 1 and 2 argument form aren't correct in smoke.
+    return $y - $size->rheight() -
+        this->style()->pixelMetric(Qt::Style::PM_DefaultLayoutSpacing(), undef, undef);
 }
 # [20]
 
