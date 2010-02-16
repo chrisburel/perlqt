@@ -1,8 +1,10 @@
 // Include Qt headers first, to avoid weirdness that the perl headers cause
+#include <QtCore/QAbstractItemModel>
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QMetaMethod>
 #include <QtCore/QMetaObject>
+#include <QtCore/QModelIndex>
 #include <QtCore/QRegExp>
 #include <QtGui/QPainter>
 #include <QtGui/QPaintEngine>
@@ -458,6 +460,224 @@ void unmapPointer( smokeperl_object* o, Smoke::Index classId, void* lastptr) {
     for(Smoke::Index *i = o->smoke->inheritanceList + o->smoke->classes[classId].parents; *i; i++) {
         unmapPointer(o, *i, lastptr);
     }
+}
+
+XS(XS_qabstract_item_model_rowcount) {
+    dXSARGS;
+    if (items == 1) {
+        smokeperl_object *o = sv_obj_info(ST(0));
+        QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+		XSRETURN_IV(model->rowCount());
+	}
+	else if (items == 2) {
+        smokeperl_object *o = sv_obj_info(ST(0));
+        QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+		smokeperl_object * mi = sv_obj_info(ST(1));
+		QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
+		XSRETURN_IV(model->rowCount(*modelIndex));
+	}
+    else {
+        croak("%s", "Invalid argument list to Qt::AbstractItemModel::rowCount");
+    }
+}
+
+XS(XS_qabstract_item_model_columncount) {
+    dXSARGS;
+    if (items == 1) {
+        smokeperl_object *o = sv_obj_info(ST(0));
+        QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+		XSRETURN_IV(model->columnCount());
+	}
+	else if (items == 2) {
+        smokeperl_object *o = sv_obj_info(ST(0));
+        QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+		smokeperl_object * mi = sv_obj_info(ST(1));
+		QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
+		XSRETURN_IV(model->columnCount(*modelIndex));
+	}
+    else {
+        croak("%s", "Invalid argument list to Qt::AbstractItemModel::columnCount");
+    }
+}
+
+XS(XS_qabstract_item_model_data) {
+    dXSARGS;
+    smokeperl_object * o = sv_obj_info(ST(0));
+	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+    smokeperl_object * mi = sv_obj_info(ST(1));
+	QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
+	QVariant value;
+	if (items == 2) {
+		value = model->data(*modelIndex);
+	} else if (items == 3) {
+		value = model->data(*modelIndex, SvIV(SvRV(ST(2))));
+	} else {
+		croak("%s", "Invalid argument list to Qt::AbstractItemModel::data");
+	}
+
+    SV* retval = allocSmokePerlSV(
+        new QVariant(value),
+        SmokeType( o->smoke, o->smoke->idType("QVariant") )
+    );
+
+    ST(0) = sv_2mortal( retval );
+    XSRETURN(1);
+}
+
+XS(XS_qabstract_item_model_setdata) {
+    dXSARGS;
+    if ( items < 1 || items > 4 ) {
+        croak("%s\n", "Invalid argument list to Qt::AbstractItemModel::setData");
+    }
+    smokeperl_object *o = sv_obj_info(ST(0));
+	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+    smokeperl_object * mi = sv_obj_info(ST(1));
+	QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
+    smokeperl_object * v = sv_obj_info(ST(2));
+	QVariant * variant = (QVariant *) v->ptr;
+
+	if ( items == 3 ) {
+		if ( model->setData(*modelIndex, *variant) ) {
+            XSRETURN_YES;
+        }
+        else {
+            XSRETURN_NO;
+        }
+	}
+    else if ( items == 4 ) {
+        printf( "Calling setData with displayrole %d\n", SvIV(SvRV(ST(3))) );
+        if ( model->setData( *modelIndex, *variant, SvIV(SvRV(ST(3))) ) ) {
+            XSRETURN_YES;
+        }
+        else {
+            XSRETURN_NO;
+        }
+    }
+}
+
+XS(XS_qabstract_item_model_flags) {
+    dXSARGS;
+    smokeperl_object *o = sv_obj_info(ST(0));
+	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+    smokeperl_object * mi = sv_obj_info(ST(1));
+	const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
+	XSRETURN_IV((IV)model->flags(*modelIndex));
+}
+
+XS(XS_qabstract_item_model_insertrows) {
+    dXSARGS;
+    smokeperl_object *o = sv_obj_info(ST(0));
+	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+
+	if (items == 3) {
+        //bool insertRows( int row, int count )
+		if (model->insertRows(SvIV(ST(1)), SvIV(ST(2)))) {
+            XSRETURN_YES;
+        }
+        else {
+            XSRETURN_NO;
+        }
+	}
+	else if (items == 4) {
+        //bool insertRows( int row, int count, const QModelIndex & parent = QModelIndex() )
+    	smokeperl_object * mi = sv_obj_info(ST(3));
+		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
+		if (model->insertRows(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
+            XSRETURN_YES;
+        }
+        else {
+            XSRETURN_NO;
+        }
+	}
+
+	croak("%s", "Invalid argument list to Qt::AbstractItemModel::insertRows");
+}
+
+XS(XS_qabstract_item_model_insertcolumns) {
+    dXSARGS;
+    smokeperl_object *o = sv_obj_info(ST(0));
+	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+
+	if (items == 3) {
+        //bool insertColumns( int column, int count )
+		if (model->insertColumns(SvIV(ST(1)), SvIV(ST(2)))) {
+            XSRETURN_YES;
+        }
+        else {
+            XSRETURN_NO;
+        }
+	}
+	else if (items == 4) {
+        //bool insertColumns( int column, int count, const QModelIndex & parent = QModelIndex() )
+    	smokeperl_object * mi = sv_obj_info(ST(3));
+		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
+		if (model->insertColumns(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
+            XSRETURN_YES;
+        }
+        else {
+            XSRETURN_NO;
+        }
+	}
+
+	croak("%s", "Invalid argument list to Qt::AbstractItemModel::insertColumns");
+}
+
+XS(XS_qabstract_item_model_removerows) {
+    dXSARGS;
+    smokeperl_object *o = sv_obj_info(ST(0));
+	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+
+	if (items == 3) {
+        //bool removeRows( int row, int count )
+		if (model->removeRows(SvIV(ST(1)), SvIV(ST(2)))) {
+            XSRETURN_YES;
+        }
+        else {
+            XSRETURN_NO;
+        }
+	}
+	else if (items == 4) {
+        //bool removeRows( int row, int count, const QModelIndex & parent = QModelIndex() )
+    	smokeperl_object * mi = sv_obj_info(ST(3));
+		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
+		if (model->removeRows(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
+            XSRETURN_YES;
+        }
+        else {
+            XSRETURN_NO;
+        }
+	}
+
+	croak("%s", "Invalid argument list to Qt::AbstractItemModel::removeRows");
+}
+
+XS(XS_qabstract_item_model_removecolumns) {
+    dXSARGS;
+    smokeperl_object *o = sv_obj_info(ST(0));
+	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+
+	if (items == 3) {
+        //bool removeColumns( int column, int count )
+		if (model->removeColumns(SvIV(ST(1)), SvIV(ST(2)))) {
+            XSRETURN_YES;
+        }
+        else {
+            XSRETURN_NO;
+        }
+	}
+	else if (items == 4) {
+        //bool removeColumns( int column, int count, const QModelIndex & parent = QModelIndex() )
+    	smokeperl_object * mi = sv_obj_info(ST(3));
+		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
+		if (model->removeColumns(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
+            XSRETURN_YES;
+        }
+        else {
+            XSRETURN_NO;
+        }
+	}
+
+	croak("%s", "Invalid argument list to Qt::AbstractItemModel::removeColumns");
 }
 
 XS(XS_qvariant_value) {

@@ -64,6 +64,16 @@ void* sv_to_ptr(SV* sv);
 
 void unmapPointer(smokeperl_object* o, Smoke::Index classId, void* lastptr);
 
+XS(XS_qabstract_item_model_rowcount);
+XS(XS_qabstract_item_model_columncount);
+XS(XS_qabstract_item_model_data);
+XS(XS_qabstract_item_model_setdata);
+XS(XS_qabstract_item_model_flags);
+XS(XS_qabstract_item_model_insertrows);
+XS(XS_qabstract_item_model_insertcolumns);
+XS(XS_qabstract_item_model_removerows);
+XS(XS_qabstract_item_model_removecolumns);
+
 XS(XS_qvariant_value);
 XS(XS_qvariant_from_value);
 XS(XS_AUTOLOAD);
