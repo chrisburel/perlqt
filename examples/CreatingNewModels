@@ -67,8 +67,7 @@ sub flags {
         return 32; #Qt::ItemIsEnabled
     }
 
-    return Qt::QAbstractItemModel::flags($index) | 2; #Qt::ItemIsEditable
-    #return 32;
+    return SUPER->flags($index) | 2; #Qt::ItemIsEditable
 }
 
 1;

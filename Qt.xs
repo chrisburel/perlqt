@@ -11,6 +11,7 @@
 #include "marshall.h"
 #include "Qt.h"
 #include "smokeperl.h"
+#include "perlqt.h"
 #include "handlers.h"
 #include "marshall_types.h"
 
@@ -23,6 +24,8 @@
 #endif
 #include "Qt/qapplication.h"
 #include "QtCore/QHash"
+#include "QtCore/QModelIndex"
+#include "QtCore/QAbstractItemModel"
 
 extern Q_DECL_EXPORT Smoke *qt_Smoke;
 extern Q_DECL_EXPORT void init_qt_Smoke();
@@ -30,6 +33,7 @@ extern TypeHandler Qt_handlers[];
 
 SV *sv_this = 0;
 HV *pointer_map = 0;
+int do_debug = qtdb_none;
 
 char *myargv = "Hello";
 int myargc = 1;
@@ -70,7 +74,9 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
     // Found no autoload function
     if(!gv) return false;
 
-    fprintf(stderr, "In Virtual for %s\n", methodname);
+    if( do_debug && ( do_debug | qtdb_virtual ) ) {
+        fprintf(stderr, "In Virtual for %s\n", methodname);
+    }
 
     VirtualMethodCall call(smoke, method, args, obj, gv);
     call.next();
@@ -209,7 +215,31 @@ void unmapPointer(smokeperl_object *o, Smoke::Index classId, void *lastptr) {
 
 }
 
+XS(XS_Qt__myQAbstractItemModel_flags){
+    dXSARGS;
+    if( do_debug && ( do_debug | qtdb_autoload ) )
+        fprintf( stderr, "In XS Custom   for Qt::QAbstractItemModel::flags\n" );
 
+    QAbstractItemModel* mythis = (QAbstractItemModel*)sv_obj_info(sv_this)->ptr;
+    QModelIndex* modelix = (QModelIndex*)sv_obj_info( ST(0) )->ptr;
+    SV* retval = newSViv(mythis->QAbstractItemModel::flags( *modelix ));
+    /*
+    char *classname = "QAbstractItemModel";
+    char *methodname = "flags#";
+
+    Smoke::StackItem args[items + 1];
+    args[1].s_voidp = sv_obj_info( ST(0) )->ptr;
+
+    Smoke::Index methodIndex = getMethod(qt_Smoke, classname, methodname );
+    fprintf(stderr, "methodIndex: %d\n", methodIndex);
+
+    callMethod( qt_Smoke, sv_this, methodIndex, args );
+    */
+
+    // Put the return value onto perl's stack
+    ST(0) = sv_2mortal(retval);
+    XSRETURN(1);
+}
 
 XS(XS_Qt__myQTableView_setRootIndex){
     dXSARGS;
@@ -261,7 +291,10 @@ XS(XS_AUTOLOAD){
             package = super;
         }
     }
-    fprintf(stderr, "In XS Autoload for %s::%s\n", package, methodname);
+
+    if( do_debug && ( do_debug | qtdb_autoload ) ) {
+        fprintf(stderr, "In XS Autoload for %s::%s\n", package, methodname);
+    }
 
     // Look to see if there's a perl subroutine for this method
     // HV* classcache_ext = get_hv( "Qt::_internal::package2classid", false);
@@ -272,7 +305,8 @@ XS(XS_AUTOLOAD){
         GV *gv = gv_fetchmethod_autoload(stash, methodname, 0);
 
         if(gv){
-            fprintf(stderr, "\tfound in %s's Perl stash\n", package);
+            if(do_debug && (do_debug & qtdb_autoload))
+                fprintf(stderr, "\tfound in %s's Perl stash\n", package);
 
             SV *old_this;
             if(withObject && !isSuper){
@@ -478,6 +512,12 @@ installthis(package)
         delete[] attr;
 
 void
+setDebug(on)
+        int on
+    CODE:
+        do_debug = on;
+
+void
 setThis(obj)
         SV *obj
     CODE:
@@ -495,7 +535,8 @@ this()
 int
 appexec()
     CODE:
-        fprintf( stderr, "In QApplication::exec\n" );
+        if( do_debug && ( do_debug | qtdb_autoload ) )
+            fprintf( stderr, "In QApplication::exec\n" );
         RETVAL = qapp->exec();
     OUTPUT:
         RETVAL
@@ -509,4 +550,5 @@ BOOT:
     install_handlers(Qt_handlers);
     sv_this = newSV(0);
     pointer_map = newHV();
+    newXS("myStringListModel::SUPER::flags", XS_Qt__myQAbstractItemModel_flags, file);
     //newXS(" Qt::QTableView::setRootIndex", XS_Qt__myQTableView_setRootIndex, file);
