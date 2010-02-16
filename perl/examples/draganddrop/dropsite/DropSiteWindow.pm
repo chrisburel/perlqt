@@ -2,10 +2,10 @@ package DropSiteWindow;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [DropSiteWindow header]
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     updateFormatsTable => ['const QMimeData *'];
 use DropArea;
 
@@ -39,7 +39,7 @@ sub NEW
 {
     my ($class) = @_;
     $class->SUPER::NEW();
-    this->{abstractLabel} = Qt::Label(this->tr('This example accepts drags from other ' .
+    this->{abstractLabel} = Qt4::Label(this->tr('This example accepts drags from other ' .
                                   'applications and displays the MIME types ' .
                                   'provided by the drag object.'));
     this->abstractLabel->setWordWrap(1);
@@ -55,27 +55,27 @@ sub NEW
 # [constructor part3]
     my @labels = (this->tr('Format'), this->tr('Content'));
 
-    this->{formatsTable} = Qt::TableWidget();
+    this->{formatsTable} = Qt4::TableWidget();
     this->formatsTable->setColumnCount(2);
-    this->formatsTable->setEditTriggers(Qt::AbstractItemView::NoEditTriggers());
+    this->formatsTable->setEditTriggers(Qt4::AbstractItemView::NoEditTriggers());
     this->formatsTable->setHorizontalHeaderLabels(\@labels);
     this->formatsTable->horizontalHeader()->setStretchLastSection(1);
 # [constructor part3]
 
 # [constructor part4]
-    this->{clearButton} = Qt::PushButton(this->tr('Clear'));
-    this->{quitButton} = Qt::PushButton(this->tr('Quit'));
+    this->{clearButton} = Qt4::PushButton(this->tr('Clear'));
+    this->{quitButton} = Qt4::PushButton(this->tr('Quit'));
 
-    this->{buttonBox} = Qt::DialogButtonBox();
-    this->buttonBox->addButton(this->clearButton, Qt::DialogButtonBox::ActionRole());
-    this->buttonBox->addButton(this->quitButton, Qt::DialogButtonBox::RejectRole());
+    this->{buttonBox} = Qt4::DialogButtonBox();
+    this->buttonBox->addButton(this->clearButton, Qt4::DialogButtonBox::ActionRole());
+    this->buttonBox->addButton(this->quitButton, Qt4::DialogButtonBox::RejectRole());
 
     this->connect(this->quitButton, SIGNAL 'pressed()', this, SLOT 'close()');
     this->connect(this->clearButton, SIGNAL 'pressed()', this->dropArea, SLOT 'clear()');
 # [constructor part4]
 
 # [constructor part5]
-    my $mainLayout = Qt::VBoxLayout();
+    my $mainLayout = Qt4::VBoxLayout();
     $mainLayout->addWidget(this->abstractLabel);
     $mainLayout->addWidget(this->dropArea);
     $mainLayout->addWidget(this->formatsTable);
@@ -99,9 +99,9 @@ sub updateFormatsTable
 
 # [updateFormatsTable() part2]        
     foreach my $format ( @{$mimeData->formats()} ) {
-        my $formatItem = Qt::TableWidgetItem($format);
-        $formatItem->setFlags(Qt::ItemIsEnabled());
-        $formatItem->setTextAlignment(Qt::AlignTop() | Qt::AlignLeft());
+        my $formatItem = Qt4::TableWidgetItem($format);
+        $formatItem->setFlags(Qt4::ItemIsEnabled());
+        $formatItem->setTextAlignment(Qt4::AlignTop() | Qt4::AlignLeft());
 # [updateFormatsTable() part2]
 
 # [updateFormatsTable() part3]
@@ -127,8 +127,8 @@ sub updateFormatsTable
 # [updateFormatsTable() part4]
         my $row = this->formatsTable->rowCount();
         this->formatsTable->insertRow($row);
-        this->formatsTable->setItem($row, 0, Qt::TableWidgetItem($format));
-        this->formatsTable->setItem($row, 1, Qt::TableWidgetItem($text));
+        this->formatsTable->setItem($row, 0, Qt4::TableWidgetItem($format));
+        this->formatsTable->setItem($row, 1, Qt4::TableWidgetItem($text));
     }
     
     this->formatsTable->resizeColumnToContents(0);

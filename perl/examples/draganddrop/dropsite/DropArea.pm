@@ -2,13 +2,13 @@ package DropArea;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [DropArea header part1]
-use Qt::isa qw( Qt::Label );
-use Qt::slots
+use Qt4::isa qw( Qt4::Label );
+use Qt4::slots
     clear => [];
 
-use Qt::signals
+use Qt4::signals
     changed => ['const QMimeData *'];
 # [DropArea header part1]
 use DropArea;
@@ -25,8 +25,8 @@ sub NEW
     my ($class, $parent) = @_;
     $class->SUPER::NEW($parent);
     this->setMinimumSize(200, 200);
-    this->setFrameStyle(Qt::Frame::Sunken() | Qt::Frame::StyledPanel());
-    this->setAlignment(Qt::AlignCenter());
+    this->setFrameStyle(Qt4::Frame::Sunken() | Qt4::Frame::StyledPanel());
+    this->setAlignment(Qt4::AlignCenter());
     this->setAcceptDrops(1);
     this->setAutoFillBackground(1);
     this->clear();
@@ -38,7 +38,7 @@ sub dragEnterEvent
 {
     my ($event) = @_;
     this->setText(this->tr('<drop content>'));
-    this->setBackgroundRole(Qt::Palette::Highlight());
+    this->setBackgroundRole(Qt4::Palette::Highlight());
 
     $event->acceptProposedAction();
     emit this->changed($event->mimeData());
@@ -62,13 +62,13 @@ sub dropEvent
 
 # [dropEvent() function part2]
     if ($mimeData->hasImage()) {
-        this->setPixmap($mimeData->imageData());
+        this->setPixmap(Qt4::Pixmap::fromImage($mimeData->imageData()->value()));
     } elsif ($mimeData->hasHtml()) {
         this->setText($mimeData->html());
-        this->setTextFormat(Qt::RichText());
+        this->setTextFormat(Qt4::RichText());
     } elsif ($mimeData->hasText()) {
         this->setText($mimeData->text());    
-        this->setTextFormat(Qt::PlainText());
+        this->setTextFormat(Qt4::PlainText());
     } elsif ($mimeData->hasUrls()) {
         my $urlList = $mimeData->urls();
         my $text;
@@ -83,7 +83,7 @@ sub dropEvent
 # [dropEvent() function part2]
 
 # [dropEvent() function part3]    
-    this->setBackgroundRole(Qt::Palette::Dark());
+    this->setBackgroundRole(Qt4::Palette::Dark());
     $event->acceptProposedAction();
 }
 # [dropEvent() function part3]
@@ -101,7 +101,7 @@ sub dragLeaveEvent
 sub clear
 {
     this->setText(this->tr('<drop content>'));
-    this->setBackgroundRole(Qt::Palette::Dark());
+    this->setBackgroundRole(Qt4::Palette::Dark());
 
     emit this->changed();
 }

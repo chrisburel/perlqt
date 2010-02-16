@@ -2,13 +2,13 @@
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use DropSiteWindow;
 
 # [main() function]
 sub main
 {
-    my $app = Qt::Application(\@ARGV);
+    my $app = Qt4::Application(\@ARGV);
     my $window = DropSiteWindow();
     $window->show();
     return $app->exec();

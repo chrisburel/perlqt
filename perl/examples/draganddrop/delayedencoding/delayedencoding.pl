@@ -3,11 +3,11 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 use SourceWidget;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
     my $window = SourceWidget();
     $window->show();
     exit $app->exec();

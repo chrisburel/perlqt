@@ -3,22 +3,22 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 
 use DragWidget;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
 
-    my $mainWidget = Qt::Widget();
-    my $horizontalLayout = Qt::HBoxLayout();
+    my $mainWidget = Qt4::Widget();
+    my $horizontalLayout = Qt4::HBoxLayout();
     my $drag1=DragWidget();
     my $drag2=DragWidget();
     $horizontalLayout->addWidget($drag1);
     $horizontalLayout->addWidget($drag2);
 
     $mainWidget->setLayout($horizontalLayout);
-    $mainWidget->setWindowTitle(Qt::Object::tr('Draggable Icons'));
+    $mainWidget->setWindowTitle(Qt4::Object::tr('Draggable Icons'));
     $mainWidget->show();
 
     exit $app->exec();

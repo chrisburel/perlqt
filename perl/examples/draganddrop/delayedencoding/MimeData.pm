@@ -4,11 +4,11 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::MimeData );
+use Qt4;
+use Qt4::isa qw( Qt4::MimeData );
 
 #[0]
-use Qt::signals
+use Qt4::signals
     dataRequested => ['QString'];
 #[0]
 
@@ -27,7 +27,7 @@ sub retrieveData {
     my ($mimeType, $type) = @_;
     emit dataRequested($mimeType);
 
-    return Qt::Variant(this->SUPER::retrieveData($mimeType, $type));
+    return Qt4::Variant(this->SUPER::retrieveData($mimeType, $type));
 }
 #[1]
 
