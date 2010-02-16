@@ -805,8 +805,6 @@ sub init_class {
 
     my ($cxxClassName) = @_;
 
-    #$DB::single=1 if $cxxClassName eq 'QTextEdit::ExtraSelection';
-
     my $perlClassName = normalize_classname($cxxClassName);
     my $classId = idClass($cxxClassName);
 
