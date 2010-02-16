@@ -1466,7 +1466,7 @@ require Exporter;
 require XSLoader;
 use Devel::Peek;
 
-our $VERSION = '0.01';
+our $VERSION = '0.60';
 
 our @EXPORT = qw( SIGNAL SLOT emit CAST qApp );
 

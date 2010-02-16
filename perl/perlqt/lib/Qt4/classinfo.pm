@@ -1,12 +1,16 @@
 package Qt4::classinfo;
-use Carp;
 #
 # Proposed usage:
 #
 # use Qt4::classinfo key => value;
 #
 
+use strict;
+use warnings;
+use Carp;
 use Qt4;
+
+our $VERSION = 0.60;
 
 sub import {
     no strict 'refs';

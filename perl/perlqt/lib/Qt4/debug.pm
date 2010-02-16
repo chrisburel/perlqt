@@ -1,5 +1,10 @@
 package Qt4::debug;
+
+use strict;
+use warnings;
 use Qt4;
+
+our $VERSION = 0.60;
 
 our %channel = (
     'ambiguous' => 0x01,

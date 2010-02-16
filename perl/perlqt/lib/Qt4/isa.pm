@@ -3,6 +3,8 @@ package Qt4::isa;
 use strict;
 use warnings;
 
+our $VERSION = 0.60;
+
 # meta-hackery tools
 my $A = sub {my ($n) = @_; no strict 'refs'; \@{$n}};
 my $H = sub {my ($n) = @_; no strict 'refs'; no warnings 'once'; \%{$n}};
