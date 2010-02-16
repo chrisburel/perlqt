@@ -83,52 +83,70 @@ SV* allocSmokePerlSV ( void* ptr, SmokeType type ) {
     return var;
 }
 
+#ifdef DEBUG
+void catRV( SV *r, SV *sv );
+void catSV( SV *r, SV *sv );
+void catAV( SV *r, AV *av );
+
+void catRV( SV *r, SV *sv ) {
+    smokeperl_object *o = sv_obj_info(sv);
+    if(o)
+        // Got a cxx type.
+        sv_catpvf(r, "(%s*)0x%p",o->smoke->className(o->classId), o->ptr);
+    else if (SvTYPE(SvRV(sv)) == SVt_PVMG)
+        // Got a blessed hash
+        sv_catpvf(r, "%s(%s)", HvNAME(SvSTASH(SvRV(sv))), SvPV_nolen(SvRV(sv)));
+    else if (SvTYPE(SvRV(sv)) == SVt_PVAV) {
+        // got an array ref
+        catAV( r, (AV*)SvRV(sv) );
+    }
+    else
+        sv_catsv(r, sv);
+}
+
+void catAV( SV *r, AV *av ) {
+    long count = av_len( av ) + 1;
+    sv_catpv(r, "[");
+    for( long i = 0; i < count; ++i ) {
+        if(i) sv_catpv(r, ", ");
+        SV** item = av_fetch( av, i, 0 );
+        if( !item )
+            continue;
+        else if(SvROK(*item))
+            catRV(r, *item);
+        else
+            catSV(r, *item);
+    }
+    sv_catpv(r, "]");
+}
+
+void catSV( SV *r, SV *sv ) {
+    bool isString = SvPOK(sv);
+    STRLEN len;
+    char *s = SvPV(sv, len);
+    if(isString) sv_catpv(r, "'");
+    sv_catpvn(r, s, len > 10 ? 10 : len);
+    if(len > 10) sv_catpv(r, "...");
+    if(isString) sv_catpv(r, "'");
+}
+
 // Args: SV** sp: the stack pointer containing the args to display
 //       int n: the number of args
 // Returns: An SV* containing a formatted string describing the arguments on
 //          the stack
-#ifdef DEBUG
 SV* catArguments(SV** sp, int n) {
     SV* r = newSVpv("", 0);
     for(int i = 0; i < n; i++) {
         if(i) sv_catpv(r, ", ");
         if(!SvOK(sp[i])) {
+            // Not a valid sv, print undef
             sv_catpv(r, "undef");
-        } else if(SvROK(sp[i])) {
-            smokeperl_object *o = sv_obj_info(sp[i]);
-            if(o)
-                sv_catpvf(r, "(%s*)0x%p",o->smoke->className(o->classId), o->ptr);
-            else if (SvTYPE(SvRV(sp[i])) == SVt_PVMG)
-                sv_catpvf(r, "%s(%s)", HvNAME(SvSTASH(SvRV(sp[i]))), SvPV_nolen(SvRV(sp[i])));
-            else if (SvTYPE(SvRV(sp[i])) == SVt_PVAV) {
-                AV* av = (AV*)SvRV(sp[i]);
-                long count = av_len( av ) + 1;
-                sv_catpv(r, "[");
-                for( long j = 0; j < count; ++j ) {
-                    if(j) sv_catpv(r, ", ");
-                    SV** item = av_fetch( av, j, 0 );
-                    if( !item || !SvOK(*item) )
-                        sv_catpv(r, "undef");
-                    smokeperl_object *o = sv_obj_info(*item);
-                    if(o)
-                        sv_catpvf(r, "(%s*)0x%p",o->smoke->className(o->classId), o->ptr);
-                    else if (SvTYPE(SvRV(*item)) == SVt_PVMG)
-                        sv_catpvf(r, "%s(%s)", HvNAME(SvSTASH(SvRV(*item))), SvPV_nolen(SvRV(*item)));
-                    else
-                        sv_catsv(r, *item);
-                }
-                sv_catpv(r, "]");
-            }
-            else
-                sv_catsv(r, sp[i]);
-        } else {
-            bool isString = SvPOK(sp[i]);
-            STRLEN len;
-            char *s = SvPV(sp[i], len);
-            if(isString) sv_catpv(r, "'");
-            sv_catpvn(r, s, len > 10 ? 10 : len);
-            if(len > 10) sv_catpv(r, "...");
-            if(isString) sv_catpv(r, "'");
+        }
+        else if(SvROK(sp[i])) {
+            catRV(r, sp[i]);
+        }
+        else {
+            catSV(r, sp[i]);
         }
     }
     return r;
@@ -459,7 +477,6 @@ XS(XS_AUTOLOAD) {
         if( *package == ' ' ) {
             isSuper = 1;
             ++package;
-            //fprintf( stderr, "isSuper = 1 in call to %s::%s\n", package, methodname );
             char* super = new char[strlen(package) + 8];
             strcpy( super, package );
             strcat( super, "::SUPER" );
@@ -929,24 +946,24 @@ XS(XS_super) {
     // Only return the _INTERNAL_STATIC_ hashref if we're in a package that has
     // called SUPER::NEW()
     if(SvROK(sv_this) && SvTYPE(SvRV(sv_this)) == SVt_PVHV){
-        // Get the reference to this object's super hash
-        // Get the name of the current package, based on the current 'control
-        // op', or PL_curcop
-        HV *copstash = (HV*)CopSTASH(PL_curcop);
-        if(!copstash) XSRETURN_UNDEF;
+		// Figure out who's calling us
+        HV *stash = (HV*)SvSTASH(SvRV(sv_this));
+        if(*HvNAME(stash) == ' ') // if withObject, look for a diff stash
+            stash = gv_stashpv(HvNAME(stash) + 1, TRUE);
+        if(!stash) XSRETURN_UNDEF;
         
         // Get the _INTERNAL_STATIC_ hash
-        svp = hv_fetch(copstash, "_INTERNAL_STATIC_", 17, 0);
+        svp = hv_fetch(stash, "_INTERNAL_STATIC_", 17, 0);
         if(!svp) XSRETURN_UNDEF;
         
         // Get the hash value from that hash key, remember it's a hash of
         // hashes
-        copstash = GvHV((GV*)*svp);
-        if(!copstash) XSRETURN_UNDEF;
+        stash = GvHV((GV*)*svp);
+        if(!stash) XSRETURN_UNDEF;
 
         // Now get the value of the 'SUPER' key in the retrieved
         // _INTERNAL_STATIC_ hash
-        svp = hv_fetch(copstash, "SUPER", 5, 0);
+        svp = hv_fetch(stash, "SUPER", 5, 0);
         if(svp) {
             ST(0) = *svp;
             XSRETURN(1);

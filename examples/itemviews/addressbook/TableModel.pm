@@ -139,22 +139,16 @@ sub setData {
     return 0;
 }
 
-=begin
-
 sub flags {
     my ($index) = @_;
     if (!$index->isValid()) {
         return Qt::ItemIsEnabled();
     }
 
-    $DB::single=1;
-    return Qt::AbstractTableModel::flags($index) | Qt::ItemIsEditable();
+    return bless( \this->SUPER->flags($index), 'Qt::ItemFlag') | Qt::ItemIsEditable();
 }
 
-=cut
-
-sub getList()
-{
+sub getList {
     return this->{listOfPairs};
 }
 

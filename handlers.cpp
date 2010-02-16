@@ -623,12 +623,21 @@ void marshall_QStringList(Marshall *m) {
                     stringlist->append(QString());
                     continue;
                 }
-                // TODO: handle different encodings
                 stringlist->append(*(qstringFromPerlString(item)));
             }
 
             m->item().s_voidp = stringlist;
             m->next();
+
+            // After we do the method call, the contents of the stringlist may
+            // have changed.  To support reference-like behavior, we need to
+            // make sure that our perl array matches the current contents of
+            // the qstringlist.
+            if (stringlist != 0 && !m->type().isConst()) {
+                av_clear(list);
+                for(QStringList::Iterator it = stringlist->begin(); it != stringlist->end(); ++it)
+                    av_push( list, perlstringFromQString(&(*it)) );
+            }
 
             if (m->cleanup()) {
                 delete stringlist;
@@ -646,8 +655,6 @@ void marshall_QStringList(Marshall *m) {
             AV* av = newAV();
             SV* sv = newRV_noinc( (SV*)av );
             for (QStringList::Iterator it = stringlist->begin(); it != stringlist->end(); ++it) {
-                // TODO: handle different encodings
-                //av_push( av, newSVpv((*it).toLatin1().data(), 0) );
                 av_push( av, perlstringFromQString(&(*it)) );
             }
 

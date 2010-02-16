@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use blib;
 
+use Devel::Peek;
 use Qt;
 use Qt::isa qw(Qt::TabWidget);
 use TableModel;
@@ -63,8 +64,8 @@ sub addEntry2 {
         $table->setData($index, $address, Qt::EditRole());
         this->removeTab(this->indexOf($newAddressTab));
     } else {
-        Qt::MessageBox::information(this, this->tr('Duplicate Name'),
-            this->tr("The name \"$name\" already exists."));
+        #Qt::MessageBox::information(this, this->tr('Duplicate Name'),
+            #this->tr("The name \"$name\" already exists."));
     }
 }
 
@@ -161,30 +162,32 @@ sub setupTabs {
 sub readFromFile {
     my ($fileName) = @_;
 
-    my $FH;
-    if(!(open $FH, '<', $fileName)) {
-        Qt::MessageBox::information(this, this->tr('Unable to open file'), $!);
+    my $file = Qt::File( $fileName );
+    if(!$file->open(Qt::IODevice::ReadOnly())) {
+        Qt::MessageBox::information(this, this->tr('Unable to open file'),
+            $file->errorString());
         return;
     }
 
-    my $pairs;
-    my $i = 0;
-    while( <$FH> ) {
-        if ( $_ =~ s/\0\n$// ) {
-            $pairs->[sprintf "%d", $i/2]->[$i%2] .= $_;
-            ++$i;
+    my $pairs = [];
+    my $in = Qt::DataStream($file);
+    while( !$file->atEnd() ) {
+        my $pair = [];
+        {
+            no warnings; # For bitshift warning
+            $in >> $pair;
         }
-        else {
-            $pairs->[sprintf "%d", $i/2]->[$i%2] .= $_;
-        }
+        push @{$pairs}, $pair;
     }
+    $file->close();
 
     if (!@{$pairs}) {
         Qt::MessageBox::information(this, this->tr('No contacts in file'),
             this->tr('The file you are attempting to open contains no contacts.'));
-    } else {
-        foreach my $p ( @{$pairs} ) {
-            addEntry2($p->[0], $p->[1]);
+    }
+    else {
+        foreach my $pair ( @{$pairs} ) {
+            addEntry2($pair->[0], $pair->[1]);
         }
     }
 }
@@ -192,18 +195,23 @@ sub readFromFile {
 sub writeToFile {
     my ($fileName) = @_;
 
-    my $FH;
-    if(!(open $FH, '>', $fileName)) {
-        Qt::MessageBox::information(this, this->tr('Unable to open file'), $!);
+    my $file = Qt::File($fileName);
+    if(!$file->open(Qt::IODevice::WriteOnly())) {
+        Qt::MessageBox::information(this, this->tr('Unable to open file'),
+            $file->errorString());
         return;
     }
 
     my $pairs = this->{table}->getList();
+    my $out = Qt::DataStream( $file );
+    # The binding is going to interpret this as a QStringList
     foreach my $pair ( @{$pairs} ) {
-        print $FH $pair->[0] . "\0\n";
-        print $FH $pair->[1] . "\0\n";
+        {
+            no warnings; # For bitshift warning
+            $out << $pair;
+        }
     }
-    close $FH;
+    $file->close();
 }
 
 1;
