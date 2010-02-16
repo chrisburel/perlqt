@@ -833,7 +833,7 @@ sub argmatch {
         elsif ( $argType eq 'Qt::Int' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
-            if( $typeName eq 'int' ) {
+            if( $typeName =~ m/^int[\*&]?/ ) {
                 return $methodId;
             }
             else {
@@ -843,7 +843,7 @@ sub argmatch {
         elsif ( $argType eq 'Qt::Uint' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
-            if( $typeName eq 'uint' ) {
+            if( $typeName =~ m/^unsigned int[\*&]?/ ) {
                 return $methodId;
             }
             else {
