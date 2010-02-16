@@ -2,12 +2,12 @@
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use Server;
 
 sub main
 {
-    my $app = Qt::Application(\@ARGV);
+    my $app = Qt4::Application(\@ARGV);
     my $server = Server();
     $server->show();
     return $server->exec();

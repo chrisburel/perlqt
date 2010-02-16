@@ -2,12 +2,12 @@
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use Receiver;
 
 sub main
 {
-    my $app = Qt::Application(\@ARGV);
+    my $app = Qt4::Application(\@ARGV);
     my $receiver = Receiver();
     $receiver->show();
     return $receiver->exec();

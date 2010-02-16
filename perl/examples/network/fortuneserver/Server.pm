@@ -2,10 +2,10 @@ package Server;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Dialog );
-use Qt::slots
+use Qt4::isa qw( Qt4::Dialog );
+use Qt4::slots
     sendFortune => [];
 
 sub statusLabel() {
@@ -28,14 +28,14 @@ sub NEW
 {
     my ($class, $parent) = @_;
     $class->SUPER::NEW($parent);
-    this->{statusLabel} = Qt::Label();
-    this->{quitButton} = Qt::PushButton(this->tr('Quit'));
+    this->{statusLabel} = Qt4::Label();
+    this->{quitButton} = Qt4::PushButton(this->tr('Quit'));
     this->quitButton->setAutoDefault(0);
 
 # [0] //! [1]
-    this->{tcpServer} = Qt::TcpServer(this);
+    this->{tcpServer} = Qt4::TcpServer(this);
     if (!tcpServer->listen()) {
-        Qt::MessageBox::critical(this, this->tr('Fortune Server'),
+        Qt4::MessageBox::critical(this, this->tr('Fortune Server'),
                          sprintf this->tr('Unable to start the server: %s.'),
                                  this->tcpServer->errorString());
         this->close();
@@ -65,12 +65,12 @@ sub NEW
     this->connect(this->tcpServer, SIGNAL 'newConnection()', this, SLOT 'sendFortune()');
 # [3]
 
-    my $buttonLayout = Qt::HBoxLayout();
+    my $buttonLayout = Qt4::HBoxLayout();
     $buttonLayout->addStretch(1);
     $buttonLayout->addWidget(this->quitButton);
     $buttonLayout->addStretch(1);
 
-    my $mainLayout = Qt::VBoxLayout();
+    my $mainLayout = Qt4::VBoxLayout();
     $mainLayout->addWidget(this->statusLabel);
     $mainLayout->addLayout($buttonLayout);
     this->setLayout($mainLayout);
@@ -83,16 +83,16 @@ sub sendFortune
 {
 # [5]
     $DB::single=1;
-    my $block = Qt::ByteArray();
-    my $out = Qt::DataStream($block, Qt::IODevice::WriteOnly());
-    $out->setVersion(Qt::DataStream::Qt_4_0());
+    my $block = Qt4::ByteArray();
+    my $out = Qt4::DataStream($block, Qt4::IODevice::WriteOnly());
+    $out->setVersion(Qt4::DataStream::Qt_4_0());
     my $shortSize = length( pack 'S', 0 );
 # [4] //! [6]
     no warnings qw(void);
-    $out << Qt::Ushort(0);
-    $out << Qt::String(this->fortunes->[rand($#{this->fortunes})]);
+    $out << Qt4::Ushort(0);
+    $out << Qt4::String(this->fortunes->[rand($#{this->fortunes})]);
     $out->device()->seek(0);
-    $out << Qt::Ushort($block->size() - $shortSize);
+    $out << Qt4::Ushort($block->size() - $shortSize);
     use warnings;
 # [6] //! [7]
 

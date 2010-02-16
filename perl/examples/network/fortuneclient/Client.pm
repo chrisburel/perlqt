@@ -2,10 +2,10 @@ package Client;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Dialog );
-use Qt::slots
+use Qt4::isa qw( Qt4::Dialog );
+use Qt4::slots
     requestNewFortune => [],
     readFortune => [],
     displayError => ['QAbstractSocket::SocketError'],
@@ -61,31 +61,31 @@ sub NEW
     my ($class, $parent) = @_;
 # [0]
     $class->SUPER::NEW($parent);
-    this->{hostLabel} = Qt::Label(this->tr('&Server name:'));
-    this->{portLabel} = Qt::Label(this->tr('S&erver port:'));
+    this->{hostLabel} = Qt4::Label(this->tr('&Server name:'));
+    this->{portLabel} = Qt4::Label(this->tr('S&erver port:'));
 
-    this->{hostLineEdit} = Qt::LineEdit('Localhost');
-    this->{portLineEdit} = Qt::LineEdit();
-    this->portLineEdit->setValidator(Qt::IntValidator(1, 65535, this));
+    this->{hostLineEdit} = Qt4::LineEdit('Localhost');
+    this->{portLineEdit} = Qt4::LineEdit();
+    this->portLineEdit->setValidator(Qt4::IntValidator(1, 65535, this));
 
     this->hostLabel->setBuddy(this->hostLineEdit);
     this->portLabel->setBuddy(this->portLineEdit);
 
-    this->{statusLabel} = Qt::Label(this->tr('This examples requires that you run the ' .
+    this->{statusLabel} = Qt4::Label(this->tr('This examples requires that you run the ' .
                                 'Fortune Server example as well.'));
 
-    this->{getFortuneButton} = Qt::PushButton(this->tr('Get Fortune'));
+    this->{getFortuneButton} = Qt4::PushButton(this->tr('Get Fortune'));
     getFortuneButton->setDefault(1);
     getFortuneButton->setEnabled(0);
 
-    this->{quitButton} = Qt::PushButton(this->tr('Quit'));
+    this->{quitButton} = Qt4::PushButton(this->tr('Quit'));
 
-    this->{buttonBox} = Qt::DialogButtonBox();
-    this->buttonBox->addButton(this->getFortuneButton, Qt::DialogButtonBox::ActionRole());
-    this->buttonBox->addButton(this->quitButton, Qt::DialogButtonBox::RejectRole());
+    this->{buttonBox} = Qt4::DialogButtonBox();
+    this->buttonBox->addButton(this->getFortuneButton, Qt4::DialogButtonBox::ActionRole());
+    this->buttonBox->addButton(this->quitButton, Qt4::DialogButtonBox::RejectRole());
 
 # [1]
-    this->{tcpSocket} = Qt::TcpSocket(this);
+    this->{tcpSocket} = Qt4::TcpSocket(this);
 # [1]
 
     this->connect(this->hostLineEdit, SIGNAL 'textChanged(const QString &)',
@@ -103,7 +103,7 @@ sub NEW
             this, SLOT 'displayError(QAbstractSocket::SocketError)');
 # [4]
 
-    my $mainLayout = Qt::GridLayout();
+    my $mainLayout = Qt4::GridLayout();
     $mainLayout->addWidget(this->hostLabel, 0, 0);
     $mainLayout->addWidget(this->hostLineEdit, 0, 1);
     $mainLayout->addWidget(this->portLabel, 1, 0);
@@ -121,14 +121,12 @@ sub NEW
 # [5]
 
 # [6]
-my $foo = 0;
 sub requestNewFortune
 {
     this->getFortuneButton->setEnabled(0);
     this->{blockSize} = 0;
     this->tcpSocket->abort();
 # [7]
-    print "\n\n\n------Requesting fortune ".$foo++."-----\n\n\n";
     this->tcpSocket->connectToHost(this->hostLineEdit->text(),
                                    this->portLineEdit->text());
 # [7]
@@ -139,8 +137,8 @@ sub requestNewFortune
 sub readFortune
 {
 # [9]
-    my $in = Qt::DataStream(this->tcpSocket);
-    $in->setVersion(Qt::DataStream::Qt_4_0());
+    my $in = Qt4::DataStream(this->tcpSocket);
+    $in->setVersion(Qt4::DataStream::Qt_4_0());
 
     if (this->blockSize == 0) {
         my $shortSize = length( pack 'S', 0 );
@@ -151,24 +149,22 @@ sub readFortune
 
 # [10]
         no warnings qw(void);
-        $in >> Qt::Ushort(this->{blockSize});
+        $in >> Qt4::Ushort(this->{blockSize});
         use warnings;
     }
 
     if (this->tcpSocket->bytesAvailable() < this->blockSize) {
-        print "This fortune too small\n";
         return;
     }
 # [10] //! [11]
 
     my $nextFortune;
     no warnings qw(void);
-    $in >> Qt::String($nextFortune);
+    $in >> Qt4::String($nextFortune);
     use warnings;
 
     if ($nextFortune eq this->currentFortune) {
-        print "This fortune the same\n";
-        Qt::Timer::singleShot(0, this, SLOT 'requestNewFortune()');
+        Qt4::Timer::singleShot(0, this, SLOT 'requestNewFortune()');
         return;
     }
 # [11]
@@ -185,22 +181,22 @@ sub readFortune
 sub displayError
 {
     my ($socketError) = @_;
-    if ($socketError == Qt::AbstractSocket::RemoteHostClosedError()) {
+    if ($socketError == Qt4::AbstractSocket::RemoteHostClosedError()) {
     }
-    elsif ($socketError == Qt::AbstractSocket::HostNotFoundError()) {
-        Qt::MessageBox::information(this, this->tr('Fortune Client'),
+    elsif ($socketError == Qt4::AbstractSocket::HostNotFoundError()) {
+        Qt4::MessageBox::information(this, this->tr('Fortune Client'),
                                  this->tr('The host was not found. Please check the ' .
                                     'host name and port settings.'));
     }
-    elsif ($socketError == Qt::AbstractSocket::ConnectionRefusedError()) {
-        Qt::MessageBox::information(this, this->tr('Fortune Client'),
+    elsif ($socketError == Qt4::AbstractSocket::ConnectionRefusedError()) {
+        Qt4::MessageBox::information(this, this->tr('Fortune Client'),
                                  this->tr('The connection was refused by the peer. ' .
                                     'Make sure the fortune server is running, ' .
                                     'and check that the host name and port ' .
                                     'settings are correct.'));
     }
     else {
-        Qt::MessageBox::information(this, this->tr('Fortune Client'),
+        Qt4::MessageBox::information(this, this->tr('Fortune Client'),
                             sprintf this->tr('The following error occurred: %s.'),
                                     this->tcpSocket->errorString());
     }

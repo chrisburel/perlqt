@@ -2,10 +2,10 @@ package FtpWindow;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::Dialog );
+use Qt4;
+use Qt4::isa qw( Qt4::Dialog );
 #[0]
-use Qt::slots
+use Qt4::slots
     connectOrDisconnect => [],
     downloadFile => [],
     cancelDownload => [],
@@ -80,35 +80,35 @@ sub NEW
     $class->SUPER::NEW($parent);
     this->{ftp} = 0;
     this->{isDirectory} = {};
-    this->{ftpServerLabel} = Qt::Label(this->tr('Ftp &server:'));
-    this->{ftpServerLineEdit} = Qt::LineEdit('ftp.trolltech.com');
+    this->{ftpServerLabel} = Qt4::Label(this->tr('Ftp &server:'));
+    this->{ftpServerLineEdit} = Qt4::LineEdit('ftp.trolltech.com');
     this->ftpServerLabel->setBuddy(this->ftpServerLineEdit);
 
-    this->{statusLabel} = Qt::Label(this->tr('Please enter the name of an FTP server.'));
+    this->{statusLabel} = Qt4::Label(this->tr('Please enter the name of an FTP server.'));
 
-    this->{fileList} = Qt::TreeWidget();
+    this->{fileList} = Qt4::TreeWidget();
     this->fileList->setEnabled(0);
     this->fileList->setRootIsDecorated(0);
     this->fileList->setHeaderLabels( [this->tr('Name'), this->tr('Size'), this->tr('Owner'), this->tr('Group'), this->tr('Time')] );
     this->fileList->header()->setStretchLastSection(0);
 
-    this->{connectButton} = Qt::PushButton(this->tr('Connect'));
+    this->{connectButton} = Qt4::PushButton(this->tr('Connect'));
     this->connectButton->setDefault(1);
     
-    this->{cdToParentButton} = Qt::PushButton();
-    this->cdToParentButton->setIcon(Qt::Icon(Qt::Pixmap('images/cdtoparent.png')));
+    this->{cdToParentButton} = Qt4::PushButton();
+    this->cdToParentButton->setIcon(Qt4::Icon(Qt4::Pixmap('images/cdtoparent.png')));
     this->cdToParentButton->setEnabled(0);
 
-    this->{downloadButton} = Qt::PushButton(this->tr('Download'));
+    this->{downloadButton} = Qt4::PushButton(this->tr('Download'));
     this->downloadButton->setEnabled(0);
 
-    this->{quitButton} = Qt::PushButton(this->tr('Quit'));
+    this->{quitButton} = Qt4::PushButton(this->tr('Quit'));
 
-    this->{buttonBox} = Qt::DialogButtonBox();
-    this->buttonBox->addButton(this->downloadButton, Qt::DialogButtonBox::ActionRole());
-    this->buttonBox->addButton(this->quitButton, Qt::DialogButtonBox::RejectRole());
+    this->{buttonBox} = Qt4::DialogButtonBox();
+    this->buttonBox->addButton(this->downloadButton, Qt4::DialogButtonBox::ActionRole());
+    this->buttonBox->addButton(this->quitButton, Qt4::DialogButtonBox::RejectRole());
 
-    this->{progressDialog} = Qt::ProgressDialog(this);
+    this->{progressDialog} = Qt4::ProgressDialog(this);
 
     this->connect(this->fileList, SIGNAL 'itemActivated(QTreeWidgetItem *, int)',
             this, SLOT 'processItem(QTreeWidgetItem *, int)');
@@ -120,13 +120,13 @@ sub NEW
     this->connect(this->downloadButton, SIGNAL 'clicked()', this, SLOT 'downloadFile()');
     this->connect(this->quitButton, SIGNAL 'clicked()', this, SLOT 'close()');
 
-    my $topLayout = Qt::HBoxLayout();
+    my $topLayout = Qt4::HBoxLayout();
     $topLayout->addWidget(this->ftpServerLabel);
     $topLayout->addWidget(this->ftpServerLineEdit);
     $topLayout->addWidget(this->cdToParentButton);
     $topLayout->addWidget(this->connectButton);
     
-    my $mainLayout = Qt::VBoxLayout();
+    my $mainLayout = Qt4::VBoxLayout();
     $mainLayout->addLayout($topLayout);
     $mainLayout->addWidget(this->fileList);
     $mainLayout->addWidget(this->statusLabel);
@@ -138,7 +138,7 @@ sub NEW
 
 sub sizeHint
 {
-    return Qt::Size(500, 300);
+    return Qt4::Size(500, 300);
 }
 
 #[0]
@@ -154,14 +154,14 @@ sub connectOrDisconnect
         this->downloadButton->setEnabled(0);
         this->connectButton->setEnabled(1);
         this->connectButton->setText(this->tr('Connect'));
-        this->setCursor(Qt::Cursor(Qt::ArrowCursor()));
+        this->setCursor(Qt4::Cursor(Qt4::ArrowCursor()));
         return;
     }
 
-    this->setCursor(Qt::Cursor(Qt::WaitCursor()));
+    this->setCursor(Qt4::Cursor(Qt4::WaitCursor()));
 
 #[1]    
-    this->{ftp} = Qt::Ftp(this);
+    this->{ftp} = Qt4::Ftp(this);
     this->connect(this->ftp, SIGNAL 'commandFinished(int, bool)',
             this, SLOT 'ftpCommandFinished(int, bool)');
     this->connect(this->ftp, SIGNAL 'listInfo(const QUrlInfo &)',
@@ -175,7 +175,7 @@ sub connectOrDisconnect
 #[1]
 
 #[2]
-    my $url = Qt::Url(this->ftpServerLineEdit->text());
+    my $url = Qt4::Url(this->ftpServerLineEdit->text());
     if (!$url->isValid() || lc $url->scheme() ne 'ftp') {
         this->ftp->connectToHost(this->ftpServerLineEdit->text(), 21);
         this->ftp->login();
@@ -183,7 +183,7 @@ sub connectOrDisconnect
         this->ftp->connectToHost($url->host(), $url->port(21));
 
         if (!$url->userName()->isEmpty()) {
-            this->ftp->login(Qt::Url::fromPercentEncoding($url->userName()), $url->password());
+            this->ftp->login(Qt4::Url::fromPercentEncoding($url->userName()), $url->password());
         }
         else {
             this->ftp->login();
@@ -206,8 +206,8 @@ sub downloadFile
 {
     my $fileName = this->fileList->currentItem()->text(0);
 #[3]
-    if (Qt::File::exists($fileName)) {
-        Qt::MessageBox::information(this, this->tr('FTP'),
+    if (Qt4::File::exists($fileName)) {
+        Qt4::MessageBox::information(this, this->tr('FTP'),
                           sprintf this->tr('There already exists a file called %s in ' .
                                     'the current directory.'),
                                   $fileName);
@@ -215,9 +215,9 @@ sub downloadFile
     }
 
 #[4]
-    this->{file} = Qt::File($fileName);
-    if (!this->file->open(Qt::IODevice::WriteOnly())) {
-        Qt::MessageBox::information(this, this->tr('FTP'),
+    this->{file} = Qt4::File($fileName);
+    if (!this->file->open(Qt4::IODevice::WriteOnly())) {
+        Qt4::MessageBox::information(this, this->tr('FTP'),
                             sprintf this->tr('Unable to save the file %s: %s.'),
                                  $fileName, this->file->errorString());
         this->{file} = 0;
@@ -243,11 +243,11 @@ sub cancelDownload
 sub ftpCommandFinished
 {
     my ($int, $error) = @_;
-    this->setCursor(Qt::Cursor(Qt::ArrowCursor()));
+    this->setCursor(Qt4::Cursor(Qt4::ArrowCursor()));
 
-    if (this->ftp->currentCommand() == Qt::Ftp::ConnectToHost()) {
+    if (this->ftp->currentCommand() == Qt4::Ftp::ConnectToHost()) {
         if ($error) {
-            Qt::MessageBox::information(this, this->tr('FTP'),
+            Qt4::MessageBox::information(this, this->tr('FTP'),
                                 sprintf this->tr('Unable to connect to the FTP server ' .
                                         'at %s. Please check that the host ' .
                                         'name is correct.'),
@@ -265,13 +265,13 @@ sub ftpCommandFinished
 #[6]
 
 #[7]
-    if (this->ftp->currentCommand() == Qt::Ftp::Login()) {
+    if (this->ftp->currentCommand() == Qt4::Ftp::Login()) {
         this->ftp->list();
     }
 #[7]
 
 #[8]
-    if (this->ftp->currentCommand() == Qt::Ftp::Get()) {
+    if (this->ftp->currentCommand() == Qt4::Ftp::Get()) {
         if ($error) {
             this->statusLabel->setText(sprintf this->tr('Canceled download of %s.'),
                                  this->file->fileName());
@@ -287,9 +287,9 @@ sub ftpCommandFinished
         this->progressDialog->hide();
 #[8]
 #[9]
-    } elsif (this->ftp->currentCommand() == Qt::Ftp::List()) {
+    } elsif (this->ftp->currentCommand() == Qt4::Ftp::List()) {
         if (!this->isDirectory) {
-            this->fileList->addTopLevelItem(Qt::TreeWidgetItem([this->tr('<empty>')]));
+            this->fileList->addTopLevelItem(Qt4::TreeWidgetItem([this->tr('<empty>')]));
             this->fileList->setEnabled(0);
         }
     }
@@ -300,15 +300,15 @@ sub ftpCommandFinished
 sub addToList
 {
     my ($urlInfo) = @_;
-    my $item = Qt::TreeWidgetItem();
+    my $item = Qt4::TreeWidgetItem();
     $item->setText(0, $urlInfo->name());
     $item->setText(1, $urlInfo->size());
     $item->setText(2, $urlInfo->owner());
     $item->setText(3, $urlInfo->group());
     $item->setText(4, $urlInfo->lastModified()->toString('MMM dd yyyy'));
 
-    my $pixmap = Qt::Pixmap($urlInfo->isDir() ? 'images/dir.png' : 'images/file.png');
-    $item->setIcon(0, Qt::Icon($pixmap));
+    my $pixmap = Qt4::Pixmap($urlInfo->isDir() ? 'images/dir.png' : 'images/file.png');
+    $item->setIcon(0, Qt4::Icon($pixmap));
 
     this->isDirectory->{$urlInfo->name()} = $urlInfo->isDir();
     this->fileList->addTopLevelItem($item);
@@ -331,7 +331,7 @@ sub processItem
         this->ftp->cd($name);
         this->ftp->list();
         this->cdToParentButton->setEnabled(1);
-        this->setCursor(Qt::Cursor(Qt::WaitCursor()));
+        this->setCursor(Qt4::Cursor(Qt4::WaitCursor()));
         return;
     }
 }
@@ -340,7 +340,7 @@ sub processItem
 #[12]
 sub cdToParent
 {
-    this->setCursor(Qt::Cursor(Qt::WaitCursor()));
+    this->setCursor(Qt4::Cursor(Qt4::WaitCursor()));
     this->fileList->clear();
     this->{isDirectory} = {};
     this->{currentPath} =~ s@\/[^/]*$@@g;

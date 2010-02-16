@@ -2,9 +2,9 @@ package SearchBox;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::LineEdit );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::LineEdit );
+use Qt4::slots
     doSearch => [];
 
 sub completer() {
@@ -34,7 +34,7 @@ sub doSearch
 {
     this->completer->preventSuggest();
     my $url = sprintf GSEARCH_URL, this->text();
-    Qt::DesktopServices::openUrl(Qt::Url($url));
+    Qt4::DesktopServices::openUrl(Qt4::Url($url));
 }
 
 1;
