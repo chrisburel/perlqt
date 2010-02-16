@@ -17,17 +17,19 @@ if(PERLQT_ENABLED)
     include_directories( ${QT_INCLUDES} )
 
 # Run doxsubpp.pl to run xsubpp on Qt.xs
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Qt.cpp
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Qt.c
                        COMMAND ${PERL_EXECUTABLE} ARGS ${CMAKE_CURRENT_SOURCE_DIR}/doxsubpp.pl ${PERL_EXECUTABLE}
                        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Qt.xs
                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    # Make sure we build Qt.c as c++ code
+    set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
 
     set(perlqt_LIB_SRCS
         binding.cpp
         handlers.cpp
         marshall_types.cpp
-        Qt.cpp
+        Qt.c
     )
 
     set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/blib/arch/auto/Qt)

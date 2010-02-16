@@ -18,6 +18,6 @@ my $xsubpp = "$xsubppdir/xsubpp";
 
 my $xsubppargs = (map{ my $foo = $_; $foo =~ s/XSUBPPARGS = //; $foo } grep{ m/^XSUBPPARGS =/ } @xsubinfo)[0];
 
-my $cmd = "$perl $xsubpp $xsubppargs Qt.xs > Qt.cpp";
+my $cmd = "$perl $xsubpp $xsubppargs Qt.xs > Qt.c";
 print "cmd is $cmd\n";
 system $cmd;
