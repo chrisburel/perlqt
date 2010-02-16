@@ -43,6 +43,7 @@
 
 
 #if QT_VERSION >= 0x40200
+#include <QtDBus/qdbusreply.h>
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qgraphicsscene.h>
 #include <QtGui/qstandarditemmodel.h>
@@ -377,7 +378,7 @@ void marshall_basetype(Marshall* m) {
                     }
 
                     // Figure out what Perl name this should get
-                    const char* classname = resolve_classname_qt(o);
+                    const char* classname = perlqt_modules[o->smoke].resolve_classname(o);
 
                     // Bless a HV ref into that package name, and shove o into
                     // var
@@ -1872,6 +1873,49 @@ void marshall_voidP_array(Marshall *m) {
     }
 }
 
+#if QT_VERSION >= 0x40200
+void marshall_QDBusReplyQStringList(Marshall *m) {
+    switch(m->action()) {
+        case Marshall::FromSV:
+            m->unsupported();
+        break;
+        case Marshall::ToSV: {
+            QDBusReply<QStringList>* reply = (QDBusReply<QStringList>*)m->item().s_voidp;
+            HV* hv = newHV();
+            SV* sv = newRV_noinc((SV*)hv);
+            sv_bless(sv, gv_stashpv("Qt::DBusReply", TRUE));
+            SvSetMagicSV(m->var(), sv);
+
+            // Make the DBusError object
+            QDBusError* error = new QDBusError(reply->error());
+            smokeperl_object* o = alloc_smokeperl_object(
+                true, m->smoke(), m->smoke()->findClass("QDBusError").index, error );
+            const char* classname = perlqt_modules[o->smoke].resolve_classname(o);
+            SV* errorsv = set_obj_info( classname, o );
+            hv_store(hv, "error", 5, errorsv, 0);
+
+            QVariant* variant;
+            if (reply->isValid()) {
+                QStringList replyValue = reply->value();
+                variant = new QVariant(replyValue);
+            }
+            else {
+                variant = new QVariant();
+            }
+            o = alloc_smokeperl_object(
+                true, m->smoke(), m->smoke()->findClass("QVariant").index, variant );
+            classname = perlqt_modules[o->smoke].resolve_classname(o);
+            SV* variantsv = set_obj_info( classname, o );
+            hv_store(hv, "data", 4, variantsv, 0);
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
+    }
+}
+#endif
+
 DEF_LIST_MARSHALLER( QAbstractButtonList, QList<QAbstractButton*>, QAbstractButton )
 DEF_LIST_MARSHALLER( QActionGroupList, QList<QActionGroup*>, QActionGroup )
 DEF_LIST_MARSHALLER( QActionList, QList<QAction*>, QAction )
@@ -2105,6 +2149,7 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     { "QList<QStandardItem*>&", marshall_QStandardItemList },
     { "QList<QUndoStack*>", marshall_QUndoStackList },
     { "QList<QUndoStack*>&", marshall_QUndoStackList },
+    { "QDBusReply<QStringList>", marshall_QDBusReplyQStringList },
 #endif
 #if QT_VERSION >= 0x40300
     { "QList<QMdiSubWindow*>", marshall_QMdiSubWindowList },

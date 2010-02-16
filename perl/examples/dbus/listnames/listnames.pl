@@ -9,8 +9,8 @@ sub method1
     print "Method 1:\n";
 
     my $reply = Qt::DBusConnection::sessionBus()->interface()->registeredServiceNames();
-    if (!$reply->isValid()) {
-        print 'Error:' . $reply->error()->message() . "\n";
+    if ( !$reply->isValid ) {
+        print 'Error:' . $reply->message() . "\n";
         exit 1;
     }
     foreach my $name ( @{$reply->value()} ) {
@@ -25,13 +25,20 @@ sub method2
     my $bus = Qt::DBusConnection::sessionBus();
     my $dbus_iface = Qt::DBusInterface('org.freedesktop.DBus', '/org/freedesktop/DBus',
                               'org.freedesktop.DBus', $bus);
-    print $dbus_iface->call('ListNames')->arguments()->[0] . "\n";
+    print
+        '("',
+        join( '", "', @{$dbus_iface->call('ListNames')->arguments()->[0]->value()} ),
+        "\")\n";
+    
 }
 
 sub method3
 {
     print "Method 3:\n";
-    print Qt::DBusConnection::sessionBus()->interface()->registeredServiceNames()->value() . "\n";
+    print
+        '("',
+        join( '", "', @{Qt::DBusConnection::sessionBus()->interface()->registeredServiceNames()->value()} ),
+        "\")\n";
 }
 
 sub main
