@@ -267,7 +267,7 @@ make_metaObject(parentClassId,parentMeta,stringdata_sv,data_sv)
             Smoke::ModuleIndex classMId = { qt_Smoke, SvIV(parentClassId) };
             Smoke::ModuleIndex meth = qt_Smoke->findMethod(classMId, nameMId);
             if (meth.index > 0) {
-                Smoke::Method &m = qt_Smoke->methods[qt_Smoke->methodMaps[meth.index].method];
+                Smoke::Method &m = meth.smoke->methods[meth.smoke->methodMaps[meth.index].method];
                 Smoke::ClassFn fn = meth.smoke->classes[m.classId].classFn;
                 Smoke::StackItem args[1];
                 (*fn)(m.method, 0, args);
@@ -276,7 +276,7 @@ make_metaObject(parentClassId,parentMeta,stringdata_sv,data_sv)
             else {
                 // Should never happen...
                 croak( "Cannot find %s::metaObject() method\n",
-                       qt_Smoke->classes[SvIV(parentClassId)].className );
+                       meth.smoke->classes[SvIV(parentClassId)].className );
             }
         }
 

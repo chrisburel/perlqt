@@ -791,26 +791,26 @@ sub argmatch {
         #ints and bools
         if ( $argType eq 'i' ) {
             if( $typeName =~ m/^(?:bool|(?:(?:un)?signed )?(?:int|long)|uint)[*&]?$/ ) {
-                $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
         }
         # floats and doubles
         elsif ( $argType eq 'n' ) {
             if( $typeName =~ m/^(?:float|double)$/ ) {
-                $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
         }
         # enums
         elsif ( $argType eq 'e' ) {
             my $refName = ref $args->[$argNum];
             if( $typeName =~ m/^$refName[s]?$/ ) {
-                $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
         }
         # strings
         elsif ( $argType eq 's' ) {
             if( $typeName =~ m/^(?:(?:const )?u?char\*|(?:const )?(?:(QString)|QByteArray)[\*&]?)$/ ) {
-                $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
         }
         # arrays
@@ -826,11 +826,11 @@ sub argmatch {
                 }
             }
             if( $good ) {
-                $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
         }
         elsif ( $argType eq 'r' or $argType eq 'U' ) {
-            $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
+            $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
         }
         elsif ( $argType eq 'Qt4::String' ) {
             # This type exists only to resolve ambiguous method calls, so we
@@ -967,8 +967,8 @@ sub dumpCandidates {
 sub getSmokeMethodId {
     my $classname = pop;
     my $methodname = pop;
-    my $moduleId = pop;
-    my $smokeId = $moduleId->[0];
+    my $classId = pop;
+    my $smokeId = $classId->[0];
 
     # Loop over the arguments to determine the type of args
     my @mungedMethods = ( $methodname );
@@ -984,7 +984,7 @@ sub getSmokeMethodId {
             @mungedMethods = map { $_ . '$' } @mungedMethods;
         }
     }
-    my @methodIds = map { findMethod( $moduleId, $classname, $_ ) } @mungedMethods;
+    my @methodIds = map { findMethod( $classId, $classname, $_ ) } @mungedMethods;
 
     my $cacheLookup = 1;
 
@@ -993,7 +993,7 @@ sub getSmokeMethodId {
         foreach my $argNum (0..$#_) {
             my @matching = argmatch( \@methodIds, \@_, $argNum );
             if (@matching) {
-                if ($matching[0] == -1) {
+                if ($matching[0]->[1] == -1) {
                     @methodIds = ();
                 }
                 else {
@@ -1064,7 +1064,7 @@ sub getSmokeMethodId {
     }
 
     if ( !@methodIds ) {
-        my $smokeId = $moduleId->[0];
+        my $smokeId = $classId->[0];
         @methodIds = findAnyPossibleMethod( $smokeId, $classname, $methodname, @_ );
         if( @methodIds ) {
             die reportAlternativeMethods( $smokeId, $classname, $methodname, \@methodIds, @_ );
@@ -1089,7 +1089,7 @@ sub getMetaObject {
     # If this is a native Qt4 class, call metaObject() on that class directly
     if ( $package2classId{$class} ) {
         my $moduleId = $package2classId{$class};
-        my $classId = $moduleId&4095;
+        my $classId = $moduleId->[0];
         my $cxxClass = classFromId( $classId );
         my ( $methodId ) = getSmokeMethodId( $classId, 'metaObject', $cxxClass );
         return $meta->{object} = getNativeMetaObject( $methodId );
@@ -1109,7 +1109,7 @@ sub getMetaObject {
     }
     else {
         my $moduleId = $package2classId{$parentClass};
-        $parentClassId = $moduleId&4095;
+        $parentClassId = $moduleId->[1];
     }
 
     # Generate data to create the meta object

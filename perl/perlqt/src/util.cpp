@@ -58,10 +58,10 @@ QHash<QByteArray, Smoke::ModuleIndex *> methcache;
 smokeperl_object * 
 alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr) {
     smokeperl_object * o = new smokeperl_object;
-	o->classId = classId;
-	o->smoke = smoke;
-	o->ptr = ptr;
-	o->allocated = allocated;
+    o->classId = classId;
+    o->smoke = smoke;
+    o->ptr = ptr;
+    o->allocated = allocated;
     return o;
 }
 
@@ -184,7 +184,7 @@ const char* get_SVt(SV* sv) {
             }
         }
         else
-            r = o->smoke->className(o->classId);
+            r = o->smoke->classes[o->classId].className;
     }
     else
         r = "U";
