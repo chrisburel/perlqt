@@ -36,6 +36,7 @@ sub on_inputSpinBox1_valueChanged {
 # [2]
 sub on_inputSpinBox2_valueChanged {
     my ( $value ) = @_;
+    $DB::single=1;
     this->{ui}->outputWidget()->setText( $value + this->{ui}->inputSpinBox1->value() );
 }
 # [2]

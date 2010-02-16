@@ -1,4 +1,4 @@
-use Test::More tests => 13;
+use Test::More tests => 16;
 
 use strict;
 use warnings;
@@ -76,6 +76,17 @@ my $app = Qt::Application( \@ARGV );
     $label->setAlignment(Qt::AlignHCenter() | Qt::AlignTop());
     my $alignment = $label->alignment();
     is( $alignment, $hcenter|$top, 'unsigned int' );
+}
+
+{
+    # Test char and uchar marshalling
+    my $char = Qt::Char( 87 );
+    is ( $char->toAscii(), 87, 'signed char' );
+    $char = Qt::Char( 'f' );
+    is ( $char->toAscii(), ord('f'), 'signed char' );
+    $char = Qt::Char( 'f', 3 );
+    is ( $char->row(), 3, 'unsigned char' );
+    is ( $char->cell(), ord('f'), 'unsigned char' );
 }
 
 {

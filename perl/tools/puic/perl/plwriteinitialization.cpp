@@ -504,13 +504,14 @@ void WriteInitialization::acceptUI(DomUI *node)
         m_output << m_option.indent << "@" << name << ".buddy = @" << buddyName << "\n";
     }
 
+    */
     if (node->elementTabStops())
         acceptTabStops(node->elementTabStops());
 
     if (m_delayedActionInitialization.size())
         m_output << "\n" << m_delayedActionInitialization;
 
-    m_output << "\n" << m_option.indent << "retranslateUi(" << m_mainWidget << ")\n";
+    m_output << "\n" << m_option.indent << "retranslateUi(" << m_mainWidget << ");\n";
 
     if (node->elementConnections())
         acceptConnections(node->elementConnections());
@@ -519,14 +520,14 @@ void WriteInitialization::acceptUI(DomUI *node)
         m_output << "\n" << m_delayedInitialization << "\n";
 
     if (m_option.autoConnection)
-        m_output << "\n" << m_option.indent << "Qt::MetaObject.connectSlotsByName(" << m_mainWidget << ")\n";
-    */
+        m_output << "\n" << m_option.indent << "Qt::MetaObject->connectSlotsByName( " << m_mainWidget << " );\n";
+    m_output << "\n" << m_option.indent << "return bless this, \" " << m_option.prefix << className << "\";\n";
 
     m_output << "} # setupUi\n\n";
 
     m_output << "sub setup_ui {\n";
     m_output << m_option.indent << "my ( " << m_mainWidget << " ) = @_;\n";
-    m_output << m_option.indent << "setupUi( " << m_mainWidget << " );\n";
+    m_output << m_option.indent << "return setupUi( " << m_mainWidget << " );\n";
     m_output << "}\n\n";
 
     m_output << "sub retranslateUi {\n";
@@ -548,7 +549,8 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 {
     m_layoutMarginType = m_widgetChain.count() == 1 ? TopLevelMargin : ChildMargin;
     const QString className = node->attributeClass();
-    QString varName = toPerlIdentifier(m_driver->findOrInsertWidget(node));
+    QString varNameNoSigil = m_driver->findOrInsertWidget(node);
+    QString varName = toPerlIdentifier(varNameNoSigil);
     m_registeredWidgets.insert(varName, node); // register the current widget
 
     //varName = varName.mid(0, 1).toLower() + varName.mid(1);
@@ -567,6 +569,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     if (m_widgetChain.size() != 1) {
         m_output << m_option.indent << "my " << varName << " = " << m_driver->perlClassName(m_uic->customWidgetsInfo()->realClassName(className)) << "( " << parentWidget << " );\n";
+        m_output << m_option.indent << "this->{" << varNameNoSigil << "} = " << varName << ";\n";
     }
 
     parentWidget = savedParentWidget;
@@ -634,7 +637,6 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     m_widgetChain.pop();
     m_layoutWidget = false;
 
-    /*
     const DomPropertyMap attributes = propertyMap(node->elementAttribute());
 
     QString title = QLatin1String("Page");
@@ -657,14 +659,14 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
         if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QMenuBar"))) {
             if (!m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("Q3MainWindow")))
-                m_output << m_option.indent << parentWidget << ".setMenuBar(" << varName <<")\n";
+                m_output << m_option.indent << parentWidget << "->setMenuBar( " << varName <<" )\n";
         } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QToolBar"))) {
-            m_output << m_option.indent << parentWidget << ".addToolBar("
-                     << toolBarAreaStringFromDOMAttributes(attributes) << varName << ")\n";
+            m_output << m_option.indent << parentWidget << "->addToolBar( "
+                     << toolBarAreaStringFromDOMAttributes(attributes) << varName << " )\n";
 
             if (const DomProperty *pbreak = attributes.value(QLatin1String("toolBarBreak"))) {
                 if (pbreak->elementBool() == QLatin1String("true")) {
-                    m_output << m_option.indent << parentWidget << ".insertToolBarBreak(" <<  varName << ")\n";
+                    m_output << m_option.indent << parentWidget << "->insertToolBarBreak( " <<  varName << " )\n";
                 }
             }
 
@@ -676,36 +678,36 @@ void WriteInitialization::acceptWidget(DomWidget *node)
                 area += QLatin1String("), ");
             }
 
-            m_output << m_option.indent << parentWidget << ".addDockWidget(" << area << varName << ")\n";
+            m_output << m_option.indent << parentWidget << "->addDockWidget( " << area << varName << " )\n";
         } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QStatusBar"))) {
-            m_output << m_option.indent << parentWidget << ".statusBar = " << varName << "\n";
+            m_output << m_option.indent << parentWidget << "->statusBar = " << varName << "\n";
         } else if (className == QLatin1String("QWidget")) {
-            m_output << m_option.indent << parentWidget << ".centralWidget = " << varName << "\n";
+            m_output << m_option.indent << parentWidget << "->centralWidget = " << varName << "\n";
         }
     }
 
     // Check for addPageMethod of a custom plugin first
     const QString addPageMethod = m_uic->customWidgetsInfo()->customWidgetAddPageMethod(parentClass);
     if (!addPageMethod.isEmpty()) {
-        m_output << m_option.indent << parentWidget << "." << addPageMethod << '(' << varName << ")\n";
+        m_output << m_option.indent << parentWidget << "->" << addPageMethod << '(' << varName << " )\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QStackedWidget"))) {
-        m_output << m_option.indent << parentWidget << ".addWidget(" << varName << ")\n";
+        m_output << m_option.indent << parentWidget << "->addWidget( " << varName << " )\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QToolBar"))) {
-        m_output << m_option.indent << parentWidget << ".addWidget(" << varName << ")\n";
+        m_output << m_option.indent << parentWidget << "->addWidget( " << varName << " )\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("Q3WidgetStack"))) {
-        m_output << m_option.indent << parentWidget << ".addWidget(" << varName << ", " << id << ")\n";
+        m_output << m_option.indent << parentWidget << "->addWidget( " << varName << ", " << id << " )\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QDockWidget"))) {
-        m_output << m_option.indent << parentWidget << ".setWidget(" << varName << ")\n";
+        m_output << m_option.indent << parentWidget << "->setWidget( " << varName << " )\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QScrollArea"))) {
-        m_output << m_option.indent << parentWidget << ".setWidget(" << varName << ")\n";
+        m_output << m_option.indent << parentWidget << "->setWidget( " << varName << " )\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QSplitter"))) {
-        m_output << m_option.indent << parentWidget << ".addWidget(" << varName << ")\n";
+        m_output << m_option.indent << parentWidget << "->addWidget( " << varName << " )\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QMdiArea"))) {
-        m_output << m_option.indent << parentWidget << ".addSubWindow(" << varName << ")\n";
+        m_output << m_option.indent << parentWidget << "->addSubWindow( " << varName << " )\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QWorkspace"))) {
-        m_output << m_option.indent << parentWidget << ".addWindow(" << varName << ")\n";
+        m_output << m_option.indent << parentWidget << "->addWindow( " << varName << " )\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QWizard"))) {
-        m_output << m_option.indent << parentWidget << ".addPage(" << varName << ")\n";
+        m_output << m_option.indent << parentWidget << "->addPage( " << varName << " )\n";
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QToolBox"))) {
         QString icon;
         if (DomProperty *picon = attributes.value(QLatin1String("icon"))) {
@@ -713,14 +715,14 @@ void WriteInitialization::acceptWidget(DomWidget *node)
             icon += iconCall(picon);
         }
 
-        m_output << m_option.indent << parentWidget << ".addItem(" << varName << icon << ", " << trCall(label) << ")\n";
+        m_output << m_option.indent << parentWidget << "->addItem( " << varName << icon << ", " << trCall(label) << " )\n";
 
-        m_refreshOut << m_option.indent << parentWidget << ".setItemText("
-                   << parentWidget << ".indexOf(" << varName << "), " << trCall(label) << ")\n";
+        m_refreshOut << m_option.indent << parentWidget << "->setItemText( "
+                   << parentWidget << "->indexOf( " << varName << "), " << trCall(label) << " )\n";
 
         if (DomProperty *ptoolTip = attributes.value(QLatin1String("toolTip"))) {
-            m_refreshOut << m_option.indent << parentWidget << ".setItemToolTip("
-                       << parentWidget << ".indexOf(" << varName << "), " << trCall(ptoolTip->elementString()) << ")\n";
+            m_refreshOut << m_option.indent << parentWidget << "->setItemToolTip( "
+                       << parentWidget << "->indexOf( " << varName << "), " << trCall(ptoolTip->elementString()) << " )\n";
         }
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QTabWidget"))) {
         QString icon;
@@ -729,20 +731,20 @@ void WriteInitialization::acceptWidget(DomWidget *node)
             icon += iconCall(picon);
         }
 
-        m_output << m_option.indent << parentWidget << ".addTab(" << varName << icon << ", " << trCall(title) << ")\n";
+        m_output << m_option.indent << parentWidget << "->addTab( " << varName << icon << ", " << trCall(title) << " )\n";
 
-        m_refreshOut << m_option.indent << parentWidget << ".setTabText("
-                   << parentWidget << ".indexOf(" << varName << "), " << trCall(title) << ")\n";
+        m_refreshOut << m_option.indent << parentWidget << "->setTabText( "
+                   << parentWidget << "->indexOf( " << varName << "), " << trCall(title) << " )\n";
 
         if (const DomProperty *ptoolTip = attributes.value(QLatin1String("toolTip"))) {
-            m_refreshOut << m_option.indent << parentWidget << ".setTabToolTip("
-                       << parentWidget << ".indexOf(" << varName << "), " << trCall(ptoolTip->elementString()) << ")\n";
+            m_refreshOut << m_option.indent << parentWidget << "->setTabToolTip( "
+                       << parentWidget << "->indexOf( " << varName << "), " << trCall(ptoolTip->elementString()) << " )\n";
         }
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("Q3Wizard"))) {
-        m_output << m_option.indent << parentWidget << ".addPage(" << varName << ", " << trCall(title) << ")\n";
+        m_output << m_option.indent << parentWidget << "->addPage( " << varName << ", " << trCall(title) << " )\n";
 
-        m_refreshOut << m_option.indent << parentWidget << ".setTitle("
-                   << varName << ", " << trCall(title) << ")\n";
+        m_refreshOut << m_option.indent << parentWidget << "->setTitle( "
+                   << varName << ", " << trCall(title) << " )\n";
 
     }
 
@@ -762,15 +764,15 @@ void WriteInitialization::acceptWidget(DomWidget *node)
             continue;
         }
 
-        m_output << m_option.indent << name << ".raise()\n";
+        m_output << m_option.indent << name << "->raise()\n";
     }
-    */
 }
 
 void WriteInitialization::acceptLayout(DomLayout *node)
 {
     QString className = node->attributeClass();
-    QString varName = toPerlIdentifier(m_driver->findOrInsertLayout(node));
+    QString varNameNoSigil = m_driver->findOrInsertLayout(node);
+    QString varName = toPerlIdentifier(varNameNoSigil);
 
     const DomPropertyMap properties = propertyMap(node->elementProperty());
     const bool oldLayoutProperties = properties.constFind(QLatin1String("margin")) != properties.constEnd();
@@ -808,6 +810,7 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     }
 
     m_output << " );\n";
+    m_output << m_option.indent << "this->{" << varNameNoSigil << "} = " << varName << ";\n";
 
     if (isGroupBox) {
         const QString tempName = m_driver->unique(QLatin1String("boxlayout"));
@@ -1392,7 +1395,15 @@ void WriteInitialization::writeProperties(const QString &varName,
         if (propertyValue.size()) {
             const bool needsTranslation = p->kind() == DomProperty::String && (!p->elementString()->hasAttributeNotr() || !toBool(p->elementString()->attributeNotr()));
         
-            QTextStream &o = needsTranslation ? m_refreshOut : m_output;
+            QTextStream &o = needsTranslation ? m_refreshOut : m_output ;
+            if ( needsTranslation && varNewName != m_mainWidget ) {
+                // This stuff will go into retranslateUi().  retranslateUi()
+                // has 1 argument, that is the object to which the ui belongs.
+                // If this is an operation on that widget, use $varName.
+                // Otherwise, it's a member of the ui implementation file, so
+                // use varName().
+                varNewName = varNewName.mid(1) + "()";
+            }
 
             o << m_option.indent << varNewName << setFunction << propertyValue;
             if (!stdset) {
@@ -1418,7 +1429,7 @@ void WriteInitialization::writeProperties(const QString &varName,
                  << leftMargin << QLatin1String(", ")
                  << topMargin << QLatin1String(", ")
                  << rightMargin << QLatin1String(", ")
-                 << bottomMargin << QLatin1String(")\n");
+                 << bottomMargin << QLatin1String(" )\n");
     }
 }
 
@@ -1435,10 +1446,10 @@ QString  WriteInitialization::writeSizePolicy(const DomSizePolicy *sp)
 
     // insert with new name
     const QString spName = m_driver->unique(QLatin1String("sizePolicy"));
-    const QString spNameD = toPerlIdentifier(spName);
+    const QString spNameSigil = toPerlIdentifier(spName);
     m_sizePolicyNameMap.insert(sizePolicyHandle, spName);
 
-    m_output << m_option.indent << "my " << spNameD << " = Qt::SizePolicy";
+    m_output << m_option.indent << "my " << spNameSigil << " = Qt::SizePolicy";
     do {
         if (sp->hasElementHSizeType() && sp->hasElementVSizeType()) {
             m_output << "( " << sp->elementHSizeType()
@@ -1452,13 +1463,13 @@ QString  WriteInitialization::writeSizePolicy(const DomSizePolicy *sp)
         }
         m_output << "\n";
     } while (false);
-    m_output << m_option.indent << "this->{" << spName << "} = " << spNameD << ";\n";
+    m_output << m_option.indent << "this->{" << spName << "} = " << spNameSigil << ";\n";
 
-    m_output << m_option.indent << spName << "->setHorizontalStretch( "
+    m_output << m_option.indent << spNameSigil << "->setHorizontalStretch( "
         << sp->elementHorStretch() << " );\n";
-    m_output << m_option.indent << spName << "->setVerticalStretch( "
+    m_output << m_option.indent << spNameSigil << "->setVerticalStretch( "
         << sp->elementVerStretch() << " );\n";
-    return spNameD;
+    return spNameSigil;
 }
 // Check for a font with the given properties in the FontPropertiesNameMap
 // or create a new one. Returns the name.
@@ -2294,9 +2305,9 @@ QString WriteInitialization::trCall(const QString &str, const QString &commentHi
     QString comment = commentHint.isEmpty() ? QString::fromUtf8("undef") : fixString(commentHint, m_option.indent);
 
     if (m_option.translateFunction.isEmpty()) {
-        result = QLatin1String("Qt::Application->translate( \"");
+        result = QLatin1String("Qt::Application::translate( '");
         result += m_generatedClass;
-        result += QLatin1String("\"");
+        result += QLatin1String("\'");
         result += QLatin1String(", ");
     } else {
         result = m_option.translateFunction + QLatin1String("(");

@@ -96,7 +96,8 @@ void WriteDeclaration::acceptUI(DomUI *node)
     m_output << "\n";
     m_output << "use strict;\n";
     m_output << "use warnings;\n";
-    m_output << "use Qt;";
+    m_output << "use utf8;\n";
+    m_output << "use Qt;\n";
     m_output << "use Qt::isa qw( " << className << " );\n\n";
 
     const QStringList connections = m_uic->databaseInfo()->connections();
@@ -167,6 +168,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     }
 
 */
+    m_output << "1;";
 }
 
 void WriteDeclaration::acceptWidget(DomWidget *node)

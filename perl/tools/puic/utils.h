@@ -91,7 +91,7 @@ inline QString fixString(const QString &str, const QString &indent)
         result << cursegment;
 
     QString joinstr = QLatin1String("\"\n") + indent + indent + QLatin1Char('\"');
-    return QLatin1String("\"") + result.join(joinstr) + QLatin1String("\"");
+    return QLatin1String("'") + result.join(joinstr) + QLatin1String("'");
 }
 
 inline QHash<QString, DomProperty *> propertyMap(const QList<DomProperty *> &properties)

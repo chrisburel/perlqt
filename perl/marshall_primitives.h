@@ -18,26 +18,26 @@ signed char perl_to_primitive<signed char>(SV *sv) {
     UNTESTED_HANDLER("perl_to_primitive<signed char>");
     if ( !SvOK(sv) )
         return 0;
-    return (char)SvIV(sv);
+    if ( SvIOK( sv ) )
+        return (char)SvIV(sv);
+    return (char)*SvPV_nolen(sv);
 }
 template <>
 SV *primitive_to_perl<signed char>(signed char sv) {
-    UNTESTED_HANDLER("primitive_to_perl<signed char>");
     return newSViv(sv);
 }
 
 //-----------------------------------------------------------------------------
 template <>
 unsigned char perl_to_primitive<unsigned char>(SV *sv) {
-    UNTESTED_HANDLER("perl_to_primitive<unsigned char>");
     if ( !SvOK(sv) )
         return 0;
-    else
+    if ( SvIOK( sv ) )
         return (unsigned char)SvIV(sv);
+    return (unsigned char)*SvPV_nolen(sv);
 }
 template <>
 SV *primitive_to_perl<unsigned char>(unsigned char sv) {
-    UNTESTED_HANDLER("primitive_to_perl<unsigned char>");
     return newSViv(sv);
 }
 
