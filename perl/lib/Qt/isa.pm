@@ -3,8 +3,13 @@ package Qt::isa;
 use strict;
 use warnings;
 
+# $X->($whatever) gives you an assignable symbolic glob for all of your
+# metahackery needs
+my $X = sub :lvalue {
+  my $n = shift; no strict 'refs'; no warnings 'once'; *{"$n"}
+};
+
 sub import {
-    no strict 'refs';
     # Class will be Qt::isa.  Caller is the name of the package doing the use.
     my $class = shift;
     my $caller = (caller)[0];
@@ -20,9 +25,8 @@ sub import {
     # Define the Qt::ISA array
     # Load the file if necessary
     for my $super (@_) {
-        no warnings; # Name "Foo::META" used only once
-        push @{ $caller . '::ISA' }, $super;
-        push @{ ${$caller . '::META'}{'superClass'} }, $super;
+        push @{$X->($caller . '::ISA')}, $super;
+        push @{$X->($caller . '::META')->{'superClass'}}, $super;
 
         # Convert ::'s to a filepath /
         (my $super_pm = $super.'.pm') =~ s!::!/!g;
@@ -33,45 +37,31 @@ sub import {
 
     # This hash is used to get an object blessed to the right thing, so that
     # when we call SUPER(), we get this blessed object back.
-    ${$caller.'::_INTERNAL_STATIC_'}{'SUPER'} = bless {}, "  $caller";
+    $X->($caller.'::_INTERNAL_STATIC_')->{'SUPER'} = bless {}, "  $caller";
     Qt::_internal::installsuper($caller);# unless defined &{ $caller.'::SUPER' };
 
     # Make it so that 'use <packagename>' makes a subroutine called
     # <packagename> that calls ->new
-    *{ $caller . '::import' } = sub {
+    $X->($caller . '::import') = sub {
         # Name is the full package name being loaded, incaller is the package
         # doing the loading
         my $name = shift;    # classname = function-name
         my $incaller = (caller)[0];
         $incaller = (caller(1))[0] if $incaller eq 'if';
-        { 
-            *{ "$name" } = sub {
+        $X->("$incaller\::$name") = sub { $name->new(@_) }
+          unless defined &{"$incaller\::$name"};
 
-                $name->new(@_);
-            } unless defined &{ "$name" };
-        };
-        {
-            *{ "$incaller\::$name" } = sub {
-                $name->new(@_);
-            } unless defined &{ "$incaller\::$name" };
-        };
-
-        if ( grep { $_ eq 'Exporter' } @{"$name\::ISA"} ) {
+        if ( grep { $_ eq 'Exporter' } @{$X->("$name\::ISA")}) {
             $name->export($incaller, @_);
         }
     };
 
-    Qt::_internal::installautoload("  $caller");
-    Qt::_internal::installautoload(" $caller");
-    Qt::_internal::installautoload($caller);
-    {
+    foreach my $sp ('  ', ' ', '') {
+        my $where = $sp . $caller;
+        Qt::_internal::installautoload($where);
         package Qt::AutoLoad;
-        my $autosub = \&{ "  $caller\::_UTOLOAD" };
-        *{ "  $caller\::AUTOLOAD" } = sub { &$autosub };        
-        $autosub = \&{ " $caller\::_UTOLOAD" };
-        *{ " $caller\::AUTOLOAD" } = sub { &$autosub };        
-        $autosub = \&{ "$caller\::_UTOLOAD" };
-        *{ "$caller\::AUTOLOAD" } = sub { &$autosub };
+        my $autosub = \&{$where . '::_UTOLOAD'};
+        $X->($where.'::AUTOLOAD') = sub { &$autosub };
     }
 
     Qt::_internal::installthis($caller);
