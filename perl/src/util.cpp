@@ -1,5 +1,6 @@
 // Include Qt headers first, to avoid weirdness that the perl headers cause
 #include <QtCore/QAbstractItemModel>
+#include <QtCore/QEvent>
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QMetaMethod>
@@ -12,6 +13,8 @@
 #include <QtGui/QIcon>
 #include <QtGui/QBitmap>
 #include <QtGui/QCursor>
+#include <QtGui/QGraphicsItem>
+#include <QtGui/QLayoutItem>
 #include <QtGui/QSizePolicy>
 #include <QtGui/QKeySequence>
 #include <QtGui/QTextLength>
@@ -459,6 +462,283 @@ SV* prettyPrintMethod(Smoke::Index id) {
 #endif
 
 const char* resolve_classname( smokeperl_object* o ) {
+	if (o->smoke->isDerivedFromByName(o->smoke->classes[o->classId].className, "QEvent")) {
+		QEvent * qevent = (QEvent *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QEvent").index);
+		switch (qevent->type()) {
+		case QEvent::Timer:
+			o->classId = o->smoke->idClass("QTimerEvent").index;
+			break;
+		case QEvent::MouseButtonPress:
+		case QEvent::MouseButtonRelease:
+		case QEvent::MouseButtonDblClick:
+		case QEvent::MouseMove:
+			o->classId = o->smoke->idClass("QMouseEvent").index;
+			break;
+		case QEvent::KeyPress:
+		case QEvent::KeyRelease:
+		case QEvent::ShortcutOverride:
+			o->classId = o->smoke->idClass("QKeyEvent").index;
+			break;
+		case QEvent::FocusIn:
+		case QEvent::FocusOut:
+			o->classId = o->smoke->idClass("QFocusEvent").index;
+			break;
+		case QEvent::Enter:
+		case QEvent::Leave:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::Paint:
+			o->classId = o->smoke->idClass("QPaintEvent").index;
+			break;
+		case QEvent::Move:
+			o->classId = o->smoke->idClass("QMoveEvent").index;
+			break;
+		case QEvent::Resize:
+			o->classId = o->smoke->idClass("QResizeEvent").index;
+			break;
+		case QEvent::Create:
+		case QEvent::Destroy:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::Show:
+			o->classId = o->smoke->idClass("QShowEvent").index;
+			break;
+		case QEvent::Hide:
+			o->classId = o->smoke->idClass("QHideEvent").index;
+		case QEvent::Close:
+			o->classId = o->smoke->idClass("QCloseEvent").index;
+			break;
+		case QEvent::Quit:
+		case QEvent::ParentChange:
+		case QEvent::ParentAboutToChange:
+		case QEvent::ThreadChange:
+		case QEvent::WindowActivate:
+		case QEvent::WindowDeactivate:
+		case QEvent::ShowToParent:
+		case QEvent::HideToParent:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::Wheel:
+			o->classId = o->smoke->idClass("QWheelEvent").index;
+			break;
+		case QEvent::WindowTitleChange:
+		case QEvent::WindowIconChange:
+		case QEvent::ApplicationWindowIconChange:
+		case QEvent::ApplicationFontChange:
+		case QEvent::ApplicationLayoutDirectionChange:
+		case QEvent::ApplicationPaletteChange:
+		case QEvent::PaletteChange:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::Clipboard:
+			o->classId = o->smoke->idClass("QClipboardEvent").index;
+			break;
+		case QEvent::Speech:
+		case QEvent::MetaCall:
+		case QEvent::SockAct:
+		case QEvent::WinEventAct:
+		case QEvent::DeferredDelete:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::DragEnter:
+			o->classId = o->smoke->idClass("QDragEnterEvent").index;
+			break;
+		case QEvent::DragLeave:
+			o->classId = o->smoke->idClass("QDragLeaveEvent").index;
+			break;
+		case QEvent::DragMove:
+			o->classId = o->smoke->idClass("QDragMoveEvent").index;
+		case QEvent::Drop:
+			o->classId = o->smoke->idClass("QDropEvent").index;
+			break;
+		case QEvent::DragResponse:
+			o->classId = o->smoke->idClass("QDragResponseEvent").index;
+			break;
+		case QEvent::ChildAdded:
+		case QEvent::ChildRemoved:
+		case QEvent::ChildPolished:
+			o->classId = o->smoke->idClass("QChildEvent").index;
+			break;
+		case QEvent::ShowWindowRequest:
+		case QEvent::PolishRequest:
+		case QEvent::Polish:
+		case QEvent::LayoutRequest:
+		case QEvent::UpdateRequest:
+		case QEvent::EmbeddingControl:
+		case QEvent::ActivateControl:
+		case QEvent::DeactivateControl:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::ContextMenu:
+			o->classId = o->smoke->idClass("QContextMenuEvent").index;
+			break;
+		case QEvent::InputMethod:
+			o->classId = o->smoke->idClass("QInputMethodEvent").index;
+			break;
+		case QEvent::AccessibilityPrepare:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::TabletMove:
+		case QEvent::TabletPress:
+		case QEvent::TabletRelease:
+			o->classId = o->smoke->idClass("QTabletEvent").index;
+			break;
+		case QEvent::LocaleChange:
+		case QEvent::LanguageChange:
+		case QEvent::LayoutDirectionChange:
+		case QEvent::Style:
+		case QEvent::OkRequest:
+		case QEvent::HelpRequest:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::IconDrag:
+			o->classId = o->smoke->idClass("QIconDragEvent").index;
+			break;
+		case QEvent::FontChange:
+		case QEvent::EnabledChange:
+		case QEvent::ActivationChange:
+		case QEvent::StyleChange:
+		case QEvent::IconTextChange:
+		case QEvent::ModifiedChange:
+		case QEvent::MouseTrackingChange:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::WindowBlocked:
+		case QEvent::WindowUnblocked:
+		case QEvent::WindowStateChange:
+			o->classId = o->smoke->idClass("QWindowStateChangeEvent").index;
+			break;
+		case QEvent::ToolTip:
+		case QEvent::WhatsThis:
+			o->classId = o->smoke->idClass("QHelpEvent").index;
+			break;
+		case QEvent::StatusTip:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::ActionChanged:
+		case QEvent::ActionAdded:
+		case QEvent::ActionRemoved:
+			o->classId = o->smoke->idClass("QActionEvent").index;
+			break;
+		case QEvent::FileOpen:
+			o->classId = o->smoke->idClass("QFileOpenEvent").index;
+			break;
+		case QEvent::Shortcut:
+			o->classId = o->smoke->idClass("QShortcutEvent").index;
+			break;
+		case QEvent::WhatsThisClicked:
+			o->classId = o->smoke->idClass("QWhatsThisClickedEvent").index;
+			break;
+		case QEvent::ToolBarChange:
+			o->classId = o->smoke->idClass("QToolBarChangeEvent").index;
+			break;
+		case QEvent::ApplicationActivated:
+		case QEvent::ApplicationDeactivated:
+		case QEvent::QueryWhatsThis:
+		case QEvent::EnterWhatsThisMode:
+		case QEvent::LeaveWhatsThisMode:
+		case QEvent::ZOrderChange:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+		case QEvent::HoverEnter:
+		case QEvent::HoverLeave:
+		case QEvent::HoverMove:
+			o->classId = o->smoke->idClass("QHoverEvent").index;
+			break;
+		case QEvent::AccessibilityHelp:
+		case QEvent::AccessibilityDescription:
+			o->classId = o->smoke->idClass("QEvent").index;
+#if QT_VERSION >= 0x40200
+		case QEvent::GraphicsSceneMouseMove:
+		case QEvent::GraphicsSceneMousePress:
+		case QEvent::GraphicsSceneMouseRelease:
+		case QEvent::GraphicsSceneMouseDoubleClick:
+			o->classId = o->smoke->idClass("QGraphicsSceneMouseEvent").index;
+			break;
+		case QEvent::GraphicsSceneContextMenu:
+			o->classId = o->smoke->idClass("QGraphicsSceneContextMenuEvent").index;
+			break;
+		case QEvent::GraphicsSceneHoverEnter:
+		case QEvent::GraphicsSceneHoverMove:
+		case QEvent::GraphicsSceneHoverLeave:
+			o->classId = o->smoke->idClass("QGraphicsSceneHoverEvent").index;
+			break;
+		case QEvent::GraphicsSceneHelp:
+			o->classId = o->smoke->idClass("QGraphicsSceneHelpEvent").index;
+			break;
+		case QEvent::GraphicsSceneDragEnter:
+		case QEvent::GraphicsSceneDragMove:
+		case QEvent::GraphicsSceneDragLeave:
+		case QEvent::GraphicsSceneDrop:
+			o->classId = o->smoke->idClass("QGraphicsSceneDragDropEvent").index;
+			break;
+		case QEvent::GraphicsSceneWheel:
+			o->classId = o->smoke->idClass("QGraphicsSceneWheelEvent").index;
+			break;
+		case QEvent::KeyboardLayoutChange:
+			o->classId = o->smoke->idClass("QEvent").index;
+			break;
+#endif
+		default:
+			break;
+		}
+	} else if (o->smoke->isDerivedFromByName(o->smoke->classes[o->classId].className, "QObject")) {
+		QObject * qobject = (QObject *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QObject").index);
+		const QMetaObject * meta = qobject->metaObject();
+
+		while (meta != 0) {
+			o->smoke = Smoke::classMap[meta->className()];
+			if (o->smoke != 0) {
+				o->classId = o->smoke->idClass(meta->className()).index;
+				if (o->classId != 0) {
+					return binding.className(o->classId);
+				}
+			}
+
+			meta = meta->superClass();
+		}
+	} else if (o->smoke->isDerivedFromByName(o->smoke->classes[o->classId].className, "QGraphicsItem")) {
+		QGraphicsItem * item = (QGraphicsItem *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QGraphicsItem").index);
+		switch (item->type()) {
+		case 1:
+			o->classId = o->smoke->idClass("QGraphicsItem").index;
+			break;
+		case 2:
+			o->classId = o->smoke->idClass("QGraphicsPathItem").index;
+			break;
+		case 3:
+			o->classId = o->smoke->idClass("QGraphicsRectItem").index;
+		case 4:
+			o->classId = o->smoke->idClass("QGraphicsEllipseItem").index;
+			break;
+		case 5:
+			o->classId = o->smoke->idClass("QGraphicsPolygonItem").index;
+			break;
+		case 6:
+			o->classId = o->smoke->idClass("QGraphicsLineItem").index;
+			break;
+		case 7:
+			o->classId = o->smoke->idClass("QGraphicsItem").index;
+			break;
+		case 8:
+			o->classId = o->smoke->idClass("QGraphicsTextItem").index;
+			break;
+		case 9:
+			o->classId = o->smoke->idClass("QGraphicsSimpleTextItem").index;
+			break;
+		case 10:
+			o->classId = o->smoke->idClass("QGraphicsItemGroup").index;
+			break;
+		}
+	} else if (o->smoke->isDerivedFromByName(o->smoke->classes[o->classId].className, "QLayoutItem")) {
+		QLayoutItem * item = (QLayoutItem *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QLayoutItem").index);
+		if (item->widget() != 0) {
+			o->classId = o->smoke->idClass("QWidgetItem").index;
+		} else if (item->spacerItem() != 0) {
+			o->classId = o->smoke->idClass("QSpacerItem").index;
+		}
+	}
+
     return binding.className( o->classId );
 }
 
