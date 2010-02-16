@@ -114,79 +114,6 @@ SV* catArguments(SV** sp, int n) {
     return r;
 }
 
-STATIC I32
-S_dopoptosub_at(pTHX_ const PERL_CONTEXT *cxstk, I32 startingblock)
-{
-    dVAR;
-    I32 i;
-    for (i = startingblock; i >= 0; i--) {
-	register const PERL_CONTEXT * const cx = &cxstk[i];
-	switch (CxTYPE(cx)) {
-	default:
-	    continue;
-	case CXt_EVAL:
-	case CXt_SUB:
-	case CXt_FORMAT:
-	    DEBUG_l( Perl_deb(aTHX_ "(Found sub #%ld)\n", (long)i));
-	    return i;
-	}
-    }
-    return i;
-}
-#define dopoptosub_at(a,b)      S_dopoptosub_at(aTHX_ a,b)
-#define dopoptosub(plop)	dopoptosub_at(cxstack, (plop))
-
-SV* catCallerInfo( int count ) {
-    SV *retval = newSV(0);
-
-    register I32 cxix = dopoptosub(cxstack_ix);
-    register const PERL_CONTEXT *cx;
-    register const PERL_CONTEXT *ccstack = cxstack;
-    const PERL_SI *top_si = PL_curstackinfo;
-    I32 gimme;
-    const char *stashname;
-
-    for (;;) {
-        /* we may be in a higher stacklevel, so dig down deeper */
-        while (cxix < 0 && top_si->si_type != PERLSI_MAIN) {
-            top_si = top_si->si_prev;
-            ccstack = top_si->si_cxstack;
-            cxix = dopoptosub_at(ccstack, top_si->si_cxix);
-        }
-        if (cxix < 0) {
-            return retval;
-        }
-        /* caller() should not report the automatic calls to &DB::sub */
-        if (PL_DBsub && GvCV(PL_DBsub) && cxix >= 0 &&
-                ccstack[cxix].blk_sub.cv == GvCV(PL_DBsub))
-            count++;
-        if (!count--)
-            break;
-        cxix = dopoptosub_at(ccstack, cxix - 1);
-    }
-
-    cx = &ccstack[cxix];
-    if (CxTYPE(cx) == CXt_SUB || CxTYPE(cx) == CXt_FORMAT) {
-        const I32 dbcxix = dopoptosub_at(ccstack, cxix - 1);
-        /* We expect that ccstack[dbcxix] is CXt_SUB, anyway, the
-           field below is defined for any cx. */
-        /* caller() should not report the automatic calls to &DB::sub */
-        if (PL_DBsub && GvCV(PL_DBsub) && dbcxix >= 0 && ccstack[dbcxix].blk_sub.cv == GvCV(PL_DBsub))
-            cx = &ccstack[dbcxix];
-    }
-
-    stashname = CopSTASHPV(cx->blk_oldcop);
-
-    if (!stashname)
-        sv_catpv( retval, "package: NONE, ");
-    else if ( !strcmp( stashname, "Qt::base" ) )
-        return catCallerInfo( count - 1 );
-    else
-        sv_catpvf( retval, "package: %s, ", stashname);
-    sv_catpvf( retval, "file: %s, ", (OutCopFILE(cx->blk_oldcop)));
-    sv_catpvf( retval, "line: %d", ((I32)CopLINE(cx->blk_oldcop)));
-    return retval;
-}
 #endif
 
 const char* get_SVt(SV* sv) {
@@ -221,6 +148,11 @@ const char* get_SVt(SV* sv) {
     return r;
 }
 
+// The length of the QList returned from this will always be one more than the
+// number of arguments that the signal call takes.  The first spot is the type
+// of the return value of the signal.
+// For custom signals, the first value will always be xmoc_void, because we
+// don't populate a return type for custom signals.
 QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName, QList<QByteArray> methodTypes) {
     static QRegExp * rx = 0;
 	if (rx == 0) {
@@ -688,6 +620,12 @@ XS(XS_AUTOLOAD) {
         // We may call a perl sub to find the methodId.  This will overwrite
         // the current SP pointer, so save a copy
         SV** savestack = new SV*[items+1];
+
+        // The deal with SP - items + 1: SP is a stack.  Arguments get pushed
+        // onto the stack.  Therefore, the position of the stack pointer when
+        // our sub gets it is set to the last argument on the stack.  To get
+        // the position of the first argument, you subtract the # of arguments,
+        // aka items.  +1 because it's an array.
         Copy( SP - items + 1 + withObject, savestack, items + withObject, SV* );
 
         // Look in the cache; if this method was called before with the same
@@ -812,6 +750,7 @@ XS(XS_AUTOLOAD) {
 XS(XS_qt_metacall){
     dXSARGS;
     PERL_UNUSED_VAR(items);
+    PERL_SET_CONTEXT(PL_curinterp);
 
     // Get my arguments off the stack
     QObject* sv_this_ptr = (QObject*)sv_obj_info(sv_this)->ptr;
@@ -861,8 +800,10 @@ XS(XS_qt_metacall){
         // Signals are easy, just activate the meta object
         if (method.methodType() == QMetaMethod::Signal) {
             //fprintf( stderr, "In signal for %s::%s\n", metaobject->className(), method.signature() );
+            fprintf( stderr, "Does it ever get here?\n" );
             metaobject->activate(sv_this_ptr, metaobject, 0, _a);
-            ST(0) = sv_2mortal(newSViv(_id - count));
+            // +1.  Id is 0 based, count is 1 based
+            ST(0) = sv_2mortal(newSViv(_id - count + 1));
             XSRETURN(1);
         }
         else if (method.methodType() == QMetaMethod::Slot) {
@@ -883,7 +824,8 @@ XS(XS_qt_metacall){
         }
     }
 
-    ST(0) = sv_2mortal(newSViv(_id - count));
+    // +1.  Id is 0 based, count is 1 based
+    ST(0) = sv_2mortal(newSViv(_id - count + 1));
     XSRETURN(1);
 }
 
@@ -918,7 +860,7 @@ XS(XS_signal){
     // signature to send to indexOfMethod, but makes it impossible to make 2
     // signals with the same name but different signatures (arguments).
     int index = -1;
-    for (index = metaobject->methodCount() - 1; index > -1; index--) {
+    for (index = metaobject->methodCount() - 1; index > -1; --index) {
 		if (metaobject->method(index).methodType() == QMetaMethod::Signal) {
 			QString name(metaobject->method(index).signature());
             static QRegExp * rx = 0;
@@ -939,9 +881,18 @@ XS(XS_signal){
     QMetaMethod method = metaobject->method(index);
     QList<MocArgument*> args = getMocArguments(o->smoke, method.typeName(), method.parameterTypes());
 
-    SV* retval = sv_2mortal(newSVsv(&PL_sv_undef));
+    SV* retval = sv_2mortal(newSV(0));
 
-    PerlQt::EmitSignal signal(qobj, index, items, args, SP, retval);
+    // Our args here:
+    // qobj: Whoever is emitting the signal, cast to a QObject*
+    // index: The index of the current signal in QMetaObject's array of sig/slots
+    // items: The number of arguments we are calling with
+    // args: A QList, whose length is items + 1, that tell us how to convert the args to ones Qt likes
+    // SP: ...not sure if this is correct.  If items=0, we'll pass sp+1, which
+    // should be out of bounds.  But it doesn't matter, since the signal won't
+    // do anything with those.
+    // retval: Will (at some point, maybe) get populated with the return value from the signal.
+    PerlQt::EmitSignal signal(qobj, index, items, args, SP - items + 1, retval);
     signal.next();
 
     // TODO: Handle signal return value

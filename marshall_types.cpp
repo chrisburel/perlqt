@@ -14,7 +14,7 @@ extern Smoke* qt_Smoke;
 void
 smokeStackToQtStack(Smoke::Stack stack, void ** o, int start, int end, QList<MocArgument*> args)
 {
-    for (int i = start, j = 0; i < end; i++, j++) {
+    for (int i = start, j = 0; i < end; ++i, ++j) {
         Smoke::StackItem *si = stack + j;
         switch(args[i]->argType) {
             case xmoc_bool:
@@ -115,7 +115,7 @@ smokeStackToQtStack(Smoke::Stack stack, void ** o, int start, int end, QList<Moc
 void
 smokeStackFromQtStack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args)
 {
-    for (int i = start, j = 0; i < end; i++, j++) {
+    for (int i = start, j = 0; i < end; ++i, ++j) {
         void *o = _o[j];
         switch(args[i]->argType) {
         case xmoc_bool:
@@ -436,19 +436,17 @@ namespace PerlQt {
     // The rest is modeled after the VirtualMethodCall
     InvokeSlot::InvokeSlot(SV* call_this, char* methodname, QList<MocArgument*> args, void** a) :
       _args(args), _cur(-1), _called(false), _this(call_this), _a(a) {
-        _items = _args.count();
-        _stack = new Smoke::StackItem[_items - 1];
+
+        // _args[0] represents what would be the return value, which isn't an
+        // actual argument.  Subtract 1 to account for this.
+        _items = _args.count() - 1;
+        _stack = new Smoke::StackItem[_items];
         // Create this on the heap.  Just saying _methodname = methodname only
         // leaves enough space for 1 char.
         _methodname = new char[strlen(methodname)+1];
         strcpy(_methodname, methodname);
-        dSP;
-        ENTER;
-        SAVETMPS;
-        PUSHMARK(SP);
-        EXTEND(SP, _items);
-        _sp = SP + 1;
-        for(int i = 0; i < _items-1; i++)
+        _sp = new SV*[_items];
+        for(int i = 0; i < _items; ++i)
             _sp[i] = sv_newmortal();
         copyArguments();
     }
@@ -501,24 +499,30 @@ namespace PerlQt {
         if(do_debug && (do_debug & qtdb_slots)) {
             fprintf( stderr, "In slot call %s::%s\n", HvNAME(stash), _methodname );
             if(do_debug & qtdb_verbose) {
-                fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(_sp, _items-1))));
+                fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(_sp, _items))));
             }
         }
 #endif
         
         dSP;
-        SP = _sp + _items - 1;
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        EXTEND(SP, _items);
+        for(int i=0;i<_items;++i){
+            XPUSHs(_sp[i]);
+        }
         PUTBACK;
         call_sv((SV*)GvCV(gv), G_VOID);
     }
 
     void InvokeSlot::next() {
         int oldcur = _cur;
-        _cur++;
-        while( !_called && _cur < _items - 1 ) {
+        ++_cur;
+        while( !_called && _cur < _items ) {
             Marshall::HandlerFn fn = getMarshallFn(type());
             (*fn)(this);
-            _cur++;
+            ++_cur;
         }
 
         callMethod();
@@ -535,7 +539,7 @@ namespace PerlQt {
     }
 
     void InvokeSlot::copyArguments() {
-        smokeStackFromQtStack( _stack, _a + 1, 1, _items, _args );
+        smokeStackFromQtStack( _stack, _a + 1, 1, _items + 1, _args );
     }
 
     //------------------------------------------------
@@ -577,6 +581,9 @@ namespace PerlQt {
         // Create the stack to send to the slots
         // +1 to _items to accomidate the return value
         void** o = new void*[_items+1];
+
+        // o+1 because o[0] is the return value. _items+1 because we have to
+        // accomidate for the offset of o[0] already being used
         smokeStackToQtStack(_stack, o + 1, 1, _items + 1, _args);
         // The 0 index stores the return value
         void* ptr;
