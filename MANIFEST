@@ -1,0 +1,8 @@
+Changes
+Makefile.PL
+MANIFEST
+QtSimple.xs
+ppport.h
+README
+t/PerlQtSimple.t
+lib/QtSimple.pm

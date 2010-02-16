@@ -1,0 +1,31 @@
+#!/usr/local/bin/perl -w
+
+BEGIN {
+        chdir "$ENV{HOME}/src/qt/4/PerlQtSimple";
+        unshift @INC, 'blib/arch';
+        unshift @INC, 'blib/lib';
+}
+
+use QtSimple;
+use Devel::Peek;
+
+#my $app = QtSimple::QApplication( 1, \@ARGV );
+my $splitter = QtSimple::QSplitter();
+
+my $model = QtSimple::QDirModel();
+my $modelIndex = $model->index('/');
+
+my $table1 = QtSimple::QTableView( $splitter );
+$table1->setModel( $model );
+$table1->setRootIndex( $modelIndex );
+
+my $table2 = QtSimple::QTableView( $splitter );
+$table2->setModel( $model );
+$table2->setRootIndex( $modelIndex );
+
+$table1->setSelectionModel( $table2->selectionModel() );
+
+$splitter->setWindowTitle( 'Two views onto the same directory model' );
+$splitter->show();
+exit QtSimple::appexec();
+#exit $app->exec();

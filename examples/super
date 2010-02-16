@@ -1,0 +1,37 @@
+#!/usr/local/bin/perl -w
+use strict;
+
+BEGIN {
+    chdir "$ENV{HOME}/src/qt/4/PerlQtSimple";
+    unshift @INC, 'blib/arch';
+    unshift @INC, 'blib/lib';
+}
+
+package Button::Hello;
+use QtSimple;
+use QtSimple::isa qw(QtSimple::QPushButton);
+
+my $this;
+
+sub NEW
+{
+  $this = bless( shift->SUPER::NEW(@_[0..2]), ' Button');
+  $this->resize(130, 40);
+  return $this;
+}
+
+sub resize {
+    printf( "In custom resize\n" );
+    $this->resize(130,40);
+}
+
+1;
+
+package main;
+
+use QtSimple;
+use Button::Hello;
+
+my $w = Button::Hello("Hello World!", undef);
+$w->show;
+exit QtSimple::appexec();

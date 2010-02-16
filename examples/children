@@ -1,0 +1,20 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+BEGIN {
+        chdir "$ENV{HOME}/src/qt/4/PerlQtSimple";
+        unshift @INC, 'blib/arch';
+        unshift @INC, 'blib/lib';
+}
+
+use QtSimple;
+use Devel::Peek;
+
+#my $widget = QtSimple::QWidget();
+my $splitter = QtSimple::QSplitter();
+#Dump($widget);
+my $label1 = QtSimple::QLabel("Hello World!", $splitter);
+my $label2 = QtSimple::QLabel("You Rock!", $splitter);
+$splitter->show();
+QtSimple::appexec();
