@@ -23,30 +23,6 @@ use Qt::slots
     warningMessage => [],
     errorMessage => [];
 
-=begin
-
-    Qt::CheckBox *native;
-    Qt::Label *integerLabel;
-    Qt::Label *doubleLabel;
-    Qt::Label *itemLabel;
-    Qt::Label *textLabel;
-    Qt::Label *colorLabel;
-    Qt::Label *fontLabel;
-    Qt::Label *directoryLabel;
-    Qt::Label *openFileNameLabel;
-    Qt::Label *openFileNamesLabel;
-    Qt::Label *saveFileNameLabel;
-    Qt::Label *criticalLabel;
-    Qt::Label *informationLabel;
-    Qt::Label *questionLabel;
-    Qt::Label *warningLabel;
-    Qt::Label *errorLabel;
-    Qt::ErrorMessage *errorMessageDialog;
-
-    Qt::String openFilesPath;
-
-=cut
-
 use constant MESSAGE =>
     Dialog::tr('<p>Message boxes have a caption, a text, ' .
                'and any number of buttons, each with standard or custom texts.' .

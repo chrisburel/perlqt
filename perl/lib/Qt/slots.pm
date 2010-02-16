@@ -27,10 +27,9 @@ sub import {
     foreach my $fullslotname ( keys %slots ) {
 
         # Determine the slot return type, if there is one
-        my $returnType = $fullslotname;
-        my @returnParts = split / +/, $returnType;
+        my @returnParts = split / +/, $fullslotname;
         my $slotname = pop @returnParts; # Remove actual method name
-        $returnType = join ' ', @returnParts;
+        $returnType = @returnParts ? join ' ', @returnParts : undef;
 
         # Build the signature for this slot
         my $signature = join '', ("$slotname(", join(',', @{$slots{$fullslotname}}), ')');

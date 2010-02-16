@@ -1,6 +1,7 @@
 #include "QtCore/QHash"
 #include "QtCore/QMap"
 #include "QtCore/QVector"
+#include <QtDBus>
 
 #include "smoke.h"
 #include "marshall_types.h"
@@ -277,6 +278,69 @@ namespace PerlQt {
 
     //------------------------------------------------
 
+    SlotReturnValue::SlotReturnValue(void ** o, SV * result, QList<MocArgument*> replyType) :
+      _result(result), _replyType(replyType) {
+		_stack = new Smoke::StackItem[1];
+		Marshall::HandlerFn fn = getMarshallFn(type());
+		(*fn)(this);
+		
+		QByteArray t(type().name());
+		t.replace("const ", "");
+		t.replace("&", "");
+		if (t == "QDBusVariant") {
+			*reinterpret_cast<QDBusVariant*>(o[0]) = *(QDBusVariant*) _stack[0].s_class;
+		} else {
+			// Save any address in zeroth element of the arrary of 'void*'s passed to 
+			// qt_metacall()
+			void * ptr = o[0];
+			smokeStackToQtStack(_stack, o, 0, 1, _replyType);
+			// Only if the zeroth element of the array of 'void*'s passed to qt_metacall()
+			// contains an address, is the return value of the slot needed.
+			if (ptr != 0) {
+				*(void**)ptr = *(void**)(o[0]);
+			}
+		}
+    }
+
+    Smoke::StackItem &SlotReturnValue::item() {
+        return _stack[0];
+    }
+
+    Smoke *SlotReturnValue::smoke() {
+        return type().smoke();
+    }
+
+    SmokeType SlotReturnValue::type() {
+        return _replyType[0]->st;
+    }
+
+    Marshall::Action SlotReturnValue::action() {
+         return Marshall::FromSV;
+    }
+
+    void SlotReturnValue::next() {}
+
+    bool SlotReturnValue::cleanup() {
+        return false;
+    }
+
+    void SlotReturnValue::unsupported() {
+        croak("Cannot handle '%s' as return-type of slot", //%s::%s for slot return value",
+            type().name()
+            //smoke()->className(method().classId),
+            //smoke()->methodNames[method().name]);
+        );
+    }
+
+    SV* SlotReturnValue::var() {
+        return _result;
+    }
+
+    SlotReturnValue::~SlotReturnValue() {
+        delete[] _stack;
+    }
+
+    //------------------------------------------------
 
     MethodCallBase::MethodCallBase(Smoke *smoke, Smoke::Index meth) :
         _smoke(smoke), _method(meth), _cur(-1), _called(false), _sp(0)  
@@ -514,49 +578,8 @@ namespace PerlQt {
         }
         PUTBACK;
         int count = call_sv((SV*)GvCV(gv), _args[0]->argType == xmoc_void ? G_VOID : G_SCALAR);
-        if ( count > 0 ) {
-            switch ( _args[0]->argType ) {
-                case xmoc_void:
-                    fprintf( stderr, "Want to return a xmoc_void\n" );
-                    break;
-                case xmoc_QString: {
-                    SV *ret = POPs;
-                    QString *retval = new QString(SvPV_nolen(ret)); 
-                    Smoke::Stack _retstack = new Smoke::StackItem[1];
-                    _retstack[0].s_voidp = (void*)retval;
-                    void *ptr = _a[0];
-                    smokeStackToQtStack( _retstack, _a, 0, 1, _args );
-                    if ( ptr != 0 ) {
-                        *(void**)ptr = *(void**)(_a[0]);
-                    }
-
-                    break;
-                }
-                case xmoc_charstar:
-                    fprintf( stderr, "Want to return a xmoc_charstar\n" );
-                    break;
-                case xmoc_double:
-                    fprintf( stderr, "Want to return a xmoc_double\n" );
-                    break;
-                case xmoc_ulong:
-                    fprintf( stderr, "Want to return a xmoc_ulong\n" );
-                    break;
-                case xmoc_long:
-                    fprintf( stderr, "Want to return a xmoc_long\n" );
-                    break;
-                case xmoc_uint:
-                    fprintf( stderr, "Want to return a xmoc_uint\n" );
-                    break;
-                case xmoc_int:
-                    fprintf( stderr, "Want to return a xmoc_int\n" );
-                    break;
-                case xmoc_bool:
-                    fprintf( stderr, "Want to return a xmoc_bool\n" );
-                    break;
-                case xmoc_ptr:
-                    fprintf( stderr, "Want to return a xmoc_ptr\n" );
-                    break;
-            }
+        if ( count > 0 && _args[0]->argType != xmoc_void ) {
+            SlotReturnValue r(_a, POPs, _args);
         }
     }
 

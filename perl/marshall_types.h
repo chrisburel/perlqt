@@ -51,6 +51,23 @@ public:
     Marshall::Action action();
 };
 
+class Q_DECL_EXPORT SlotReturnValue : public Marshall {
+    QList<MocArgument*> _replyType;
+    Smoke::Stack _stack;
+    SV * _result;
+public:
+    SlotReturnValue(void ** o, SV * result, QList<MocArgument*> replyType);
+    ~SlotReturnValue();
+    Smoke::StackItem &item();
+    Smoke *smoke();
+    SmokeType type();
+    Marshall::Action action();
+    void next();
+    bool cleanup();
+    void unsupported();
+    SV* var();
+};
+
 class Q_DECL_EXPORT MethodCallBase : public Marshall {
 public:
     MethodCallBase(Smoke *smoke, Smoke::Index method);
