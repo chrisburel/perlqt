@@ -5,13 +5,12 @@
 template<>
 void marshall_from_perl<int*>(Marshall* m) {
     SV* sv = m->var();
-    if ( !SvOK(sv) ) {
+    if ( !SvOK(sv) || !SvIOK(sv) ) {
         sv_setiv( sv, 0 );
     }
 
-    // This should give us a pointer to the int stored in the perl var.
-    // XXX May not be portable
-    int* i = (int*)&((xpviv*)sv->sv_any)->xiv_u.xivu_iv;
+    // This gives us a pointer to the int stored in the perl var.
+    int* i = (int*)&SvIVX( sv );
     m->item().s_voidp = i;
     m->next();
 

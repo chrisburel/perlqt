@@ -539,7 +539,7 @@ void marshall_QStringList(Marshall* m) {
             int count = av_len(list) + 1;
             QStringList *stringlist = new QStringList;
 
-            for(long i = 0; i < count; i++) {
+            for(long i = 0; i < count; ++i) {
                 SV** lookup = av_fetch( list, i, 0 );
                 if( !lookup ) {
                     continue;
@@ -622,7 +622,7 @@ void marshall_QByteArrayList(Marshall *m) {
 
             if (!m->type().isConst()) {
                 av_clear(list);
-                for (int i = 0; i < stringlist->size(); i++) {
+                for (int i = 0; i < stringlist->size(); ++i) {
                     av_push(list, newSVpv((const char *) stringlist->at(i), 0));
                 }
             }
@@ -640,7 +640,7 @@ void marshall_QByteArrayList(Marshall *m) {
             }
 
             AV *av = newAV();
-            for (int i = 0; i < stringlist->size(); i++) {
+            for (int i = 0; i < stringlist->size(); ++i) {
                 SV *rv = newSVpv((const char *) stringlist->at(i), 0);
                 av_push(av, rv);
             }
@@ -724,10 +724,9 @@ void marshall_QListInt(Marshall *m) {
             
             int count = av_len(list) + 1;
             QList<int> *valuelist = new QList<int>;
-            long i;
-            for(i = 0; i < count; ++i) {
+            for( long i = 0; i < count; ++i) {
                 SV **item = av_fetch(list, i, 0);
-                if( !item && !SvIOK( *item ) ) {
+                if( !item || !SvIOK( *item ) ) {
                     valuelist->append(0);
                     continue;
                 }
@@ -799,7 +798,7 @@ void marshall_QListUInt(Marshall *m) {
             QList<uint> *valuelist = new QList<uint>;
 
             long i;
-            for(i = 0; i < count; i++) {
+            for(i = 0; i < count; ++i) {
                 SV **item = av_fetch(list, i, 0);
                 if( !item ) {
                     valuelist->append(0);
@@ -943,7 +942,7 @@ void marshall_QVectorqreal(Marshall *m) {
 
             int count = av_len(list) + 1;
             QVector<qreal> *valuelist = new QVector<qreal>;
-            for ( long i = 0; i < count; i++) {
+            for ( long i = 0; i < count; ++i) {
                 SV **item = av_fetch(list, i, 0);
                 if( !item ) {
                     valuelist->append(0.0);
@@ -1016,7 +1015,7 @@ void marshall_QVectorint(Marshall *m) {
 
             int count = av_len(list) + 1;
             QVector<int> *valuelist = new QVector<int>;
-            for ( long i = 0; i < count; i++) {
+            for ( long i = 0; i < count; ++i) {
                 SV **item = av_fetch(list, i, 0);
                 if( !item ) {
                     valuelist->append(0.0);
@@ -1348,7 +1347,7 @@ void marshall_QMapintQVariant(Marshall *m) {
 		// Convert the ruby hash to an array of key/value arrays
 		VALUE temp = rb_funcall(hash, rb_intern("to_a"), 0);
 
-		for (long i = 0; i < RARRAY_LEN(temp); i++) {
+		for (long i = 0; i < RARRAY_LEN(temp); ++i) {
 			VALUE key = rb_ary_entry(rb_ary_entry(temp, i), 0);
 			VALUE value = rb_ary_entry(rb_ary_entry(temp, i), 1);
 			
@@ -1431,109 +1430,123 @@ void marshall_voidP_array(Marshall *m) {
 	break;
     }
 }
+*/
 
 void marshall_QRgb_array(Marshall *m) {
     UNTESTED_HANDLER("marshall_QRgb_array");
     switch(m->action()) {
-      case Marshall::FromSV:
-	{
-	    VALUE list = *(m->var());
-	    if (TYPE(list) != T_ARRAY) {
-		m->item().s_voidp = 0;
-		break;
-	    }
-	    int count = RARRAY_LEN(list);
-	    QRgb *rgb = new QRgb[count + 2];
-	    long i;
-	    for(i = 0; i < count; i++) {
-		VALUE item = rb_ary_entry(list, i);
-		if(TYPE(item) != T_FIXNUM && TYPE(item) != T_BIGNUM) {
-		    rgb[i] = 0;
-		    continue;
-		}
+        case Marshall::FromSV: {
+            SV *listref = m->var();
+            if ( !SvOK( listref ) && !SvROK( listref ) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-		rgb[i] = NUM2UINT(item);
-	    }
-	    m->item().s_voidp = rgb;
-	    m->next();
-	}
-	break;
-      case Marshall::ToSV:
-	// Implement this with a tied array or something
-      default:
-	m->unsupported();
-	break;
+            AV *list = (AV*)SvRV( listref );
+
+            int count = av_len(list) + 1;
+            // Why +2?
+            QRgb *rgb = new QRgb[count + 2];
+            for( long i = 0; i < count; ++i) {
+                SV **item = av_fetch(list, i, 0);
+                if( !item && !SvIOK( *item ) ) {
+                    rgb[i] = 0;
+                    continue;
+                }
+
+                rgb[i] = SvUV(*item);
+            }
+
+            m->item().s_voidp = rgb;
+            m->next();
+        }
+        break;
+        case Marshall::ToSV:
+            // Implement this with a tied array or something
+        default:
+            m->unsupported();
+        break;
     }
 }
 
 void marshall_QPairQStringQStringList(Marshall *m) {
     UNTESTED_HANDLER("marshall_QPairQStringQStringList");
-	switch(m->action()) {
-	case Marshall::FromSV: 
-	{
-		VALUE list = *(m->var());
-		if (TYPE(list) != T_ARRAY) {
-			m->item().s_voidp = 0;
-			break;
-	    }
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *listref = m->var();
+            if ( !SvOK( listref ) && !SvROK( listref ) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-		QList<QPair<QString,QString> > * pairlist = new QList<QPair<QString,QString> >();
-		int count = RARRAY_LEN(list);
+            AV *list = (AV*)SvRV( listref );
 
-		for (long i = 0; i < count; i++) {
-			VALUE item = rb_ary_entry(list, i);
-			if (TYPE(item) != T_ARRAY || RARRAY_LEN(item) != 2) {
-				continue;
-			}
-			VALUE s1 = rb_ary_entry(item, 0);
-			VALUE s2 = rb_ary_entry(item, 1);
-			QPair<QString,QString> * qpair = new QPair<QString,QString>(*(qstringFromRString(s1)),*(qstringFromRString(s2)));
-			pairlist->append(*qpair);
-		}
+            int count = av_len(list) + 1;
+            QList<QPair<QString,QString> > * pairlist = new QList<QPair<QString,QString> >();
 
-		m->item().s_voidp = pairlist;
-		m->next();
-			
-		if (m->cleanup()) {
-			delete pairlist;
-		}
-	   
-		break;
-	}
+            for (long i = 0; i < count; ++i) {
+                AV **item = (AV**)av_fetch(list, i, 0);
+                if( !item || !SvROK( *item ) || SvTYPE(*item) != SVt_PVAV ) {
+                    continue;
+                }
+                AV *perlpair = (AV*)SvRV(*item);
+                if ( av_len(perlpair) != 2 ) {
+                    continue;
+                }
+                SV **s1 = av_fetch(*item, 0, 0);
+                SV **s2 = av_fetch(*item, 1, 0);
+                if( !s1 || !s2 || !SvOK( *s1 ) || !SvOK( *s2 ) ) {
+                    continue;
+                }
+                QPair<QString,QString> * qpair = new QPair<QString,QString>(*(qstringFromPerlString(*s1)),*(qstringFromPerlString(*s2)));
+                pairlist->append(*qpair);
+            }
 
-	case Marshall::ToSV: 
-	{
-		QList<QPair<QString,QString> > *pairlist = static_cast<QList<QPair<QString,QString> > * >(m->item().s_voidp);
-		if (pairlist == 0) {
-			*(m->var()) = Qnil;
-			break;
-		}
+            m->item().s_voidp = pairlist;
+            m->next();
 
-		VALUE av = rb_ary_new();
-		for (QList<QPair<QString,QString> >::Iterator it = pairlist->begin(); it != pairlist->end(); ++it) {
-			QPair<QString,QString> * pair = &(*it);
-			VALUE rv1 = rstringFromQString(&(pair->first));
-			VALUE rv2 = rstringFromQString(&(pair->second));
-			VALUE pv = rb_ary_new();
-			rb_ary_push(pv, rv1);
-			rb_ary_push(pv, rv2);
-			rb_ary_push(av, pv);
-		}
+            if (m->cleanup()) {
+                delete pairlist;
+            }
 
-		*(m->var()) = av;
+        }
+        break;
 
-		if (m->cleanup()) {
-			delete pairlist;
-		}
+        /*
+        case Marshall::ToSV: {
+            QList<QPair<QString,QString> > *pairlist = static_cast<QList<QPair<QString,QString> > * >(m->item().s_voidp);
+            if (pairlist == 0) {
+                *(m->var()) = Qnil;
+                break;
+            }
 
-	}
-	break;
-	default:
-		m->unsupported();
-		break;
+            VALUE av = rb_ary_new();
+            for (QList<QPair<QString,QString> >::Iterator it = pairlist->begin(); it != pairlist->end(); ++it) {
+                QPair<QString,QString> * pair = &(*it);
+                VALUE rv1 = rstringFromQString(&(pair->first));
+                VALUE rv2 = rstringFromQString(&(pair->second));
+                VALUE pv = rb_ary_new();
+                rb_ary_push(pv, rv1);
+                rb_ary_push(pv, rv2);
+                rb_ary_push(av, pv);
+            }
+
+            *(m->var()) = av;
+
+            if (m->cleanup()) {
+                delete pairlist;
+            }
+
+        }
+        break;
+        */
+        default:
+            m->unsupported();
+        break;
     }
 }
 
+/*
 void marshall_QPairqrealQColor(Marshall *m) {
     UNTESTED_HANDLER("marshall_QPairqrealQColor");
 	switch(m->action()) {

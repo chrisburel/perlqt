@@ -1,16 +1,17 @@
 PerlQt version 0.01
 ===================
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+This module provides bindings to the Qt 4 libraries for Perl.
 
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
+PREREQUISITES
+
+The bindings depend on the smokeqt library, which is currently maintained in
+the kdebindings package from kde.org.  You must build and install it first.
+However, you don't need to build the whole package.  The easiest way is to
+follow the instructions listed at the top of the CMakeLists.txt.qtruby file in
+the top-level directory of the kdebindings package.  If you don't have ruby
+installed, there's an option to cmake (I believe it is WITH_RUBY) that you can
+set to 'off'.  This will give you what you need to build the bindings.
 
 INSTALLATION
 
@@ -21,20 +22,14 @@ To install this module type the following:
    make test
    make install
 
-DEPENDENCIES
-
-This module requires these other modules and libraries:
-
-  blah blah blah
+The Makefile.PL uses pkg-config to find Qt.  If you have Qt installed in a
+non-standard location, set your PKG_CONFIG_PATH environment variable to the
+location of Qt's .pc files (e.g. /opt/qt/lib/pkgconfig).
 
 COPYRIGHT AND LICENCE
-
-Put the correct copyright and licence information here.
 
 Copyright (C) 2008 by Chris Burel
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.8 or,
 at your option, any later version of Perl 5 you may have available.
-
-

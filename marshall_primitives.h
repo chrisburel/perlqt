@@ -33,6 +33,8 @@ unsigned int perl_to_primitive<unsigned int>(SV* sv) {
     UNTESTED_HANDLER("perl_to_primitive<unsigned int>");
     if ( !SvOK(sv) )
         return 0;
+    if ( SvROK(sv) )
+        return SvUV( SvRV(sv) );
     return SvUV(sv);
 }
 
