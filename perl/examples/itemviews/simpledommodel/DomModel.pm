@@ -30,7 +30,7 @@ sub NEW {
     my ( $class, $document, $parent ) = @_;
     $class->SUPER::NEW( $parent );
     this->setDomDocument( $document );
-    this->setRootItem( DomItem(this->domDocument, 0) );
+    this->setRootItem( DomItem->new(this->domDocument, 0) );
 }
 # [0]
 
@@ -53,7 +53,7 @@ sub data
         return Qt::Variant();
     }
 
-    my $item = CAST $index->internalPointer(), 'DomItem';
+    my $item = $index->internalPointer();
 
     my $node = $item->node();
 # [3] //! [4]
@@ -61,18 +61,24 @@ sub data
     my $attributeMap = $node->attributes();
 
     if ($index->column() == 0) {
-        return Qt::Variant($node->nodeName());
+        return Qt::Variant(Qt::String($node->nodeName()));
     }
     elsif ($index->column() == 1) {
-        foreach my $i (0..$#{$attributeMap}) {
-            my $attribute = $attributeMap->[$i];
-            push @{$attributes}, $attribute->nodeName() . '="'
-                          .$attribute->nodeValue() . '"';
+        return Qt::Variant() unless $attributeMap->count();
+        foreach my $i (0..$attributeMap->count()) {
+            my $attribute = $attributeMap->item($i);
+            my $nodeName = $attribute->nodeName();
+            my $nodeValue = $attribute->nodeValue();
+            $nodeName = $nodeName ? $nodeName : '';
+            $nodeValue = $nodeValue ? $nodeValue : '';
+            push @{$attributes}, $nodeName . '="'
+                          .$nodeValue . '"';
         }
-        return Qt::Variant(join ' ', @{$attributes});
+        return Qt::Variant(Qt::String(join ' ', @{$attributes}));
     }
     elsif ($index->column() == 2) {
-        return Qt::Variant( join ' ', split "\n", $node->nodeValue() );
+        return Qt::Variant() unless $node->nodeValue();
+        return Qt::Variant(Qt::String(join ' ', split "\n", $node->nodeValue() ));
     }
     else {
         return Qt::Variant();
@@ -98,13 +104,13 @@ sub headerData
     my ($section, $orientation, $role) = @_;
     if ($orientation == Qt::Horizontal() && $role == Qt::DisplayRole()) {
         if ($section == 0) {
-            return Qt::Variant(this->tr('Name'));
+            return Qt::Variant(Qt::String(this->tr('Name')));
         }
         elsif ($section == 1) {
-            return Qt::Variant(this->tr('Attributes'));
+            return Qt::Variant(Qt::String(this->tr('Attributes')));
         }
         elsif ($section == 2) {
-            return Qt::Variant(this->tr('Value'));
+            return Qt::Variant(Qt::String(this->tr('Value')));
         }
         else {
             return Qt::Variant();
@@ -123,20 +129,21 @@ sub index
         return Qt::ModelIndex();
     }
 
-    my $parentItem = DomItem();
+    my $parentItem = DomItem->new();
 
     if (!$parent->isValid()) {
         $parentItem = this->rootItem;
     }
     else {
-        $parentItem = CAST $parent->internalPointer(), 'DomItem';
+        $parentItem = $parent->internalPointer();
     }
 # [7]
 
 # [8]
     my $childItem = $parentItem->child($row);
     if ($childItem) {
-        return this->createIndex($row, $column, $childItem);
+        my $ret = this->createIndex($row, $column, $childItem);
+        return $ret;
     }
     else {
         return Qt::ModelIndex();
@@ -148,12 +155,13 @@ sub index
 sub parent
 {
     my ($child) = @_;
+    return unless $child;
     if (!$child->isValid()) {
         return Qt::ModelIndex();
     }
 
-    my $childItem = CAST $child->internalPointer(), 'DomItem';
-    my $parentItem = CAST $childItem->parent(), 'DomItem';
+    my $childItem = $child->internalPointer();
+    my $parentItem = $childItem->parent();
 
     if (!$parentItem || $parentItem == this->rootItem) {
         return Qt::ModelIndex();
@@ -171,16 +179,16 @@ sub rowCount
         return 0;
     }
 
-    my $parentItem = DomItem();
+    my $parentItem = DomItem->new();
 
     if (!$parent->isValid()) {
         $parentItem = this->rootItem;
     }
     else {
-        $parentItem = CAST $parent->internalPointer(), 'DomItem';
+        $parentItem = $parent->internalPointer();
     }
 
-    return scalar @{$parentItem->node()->childNodes()};
+    return scalar $parentItem->node()->childNodes()->count();
 }
 # [10]
 

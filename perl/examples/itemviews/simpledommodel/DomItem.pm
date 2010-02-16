@@ -3,37 +3,43 @@ package DomItem;
 use strict;
 use warnings;
 use Qt;
+use Scalar::Util qw(reftype);
 # [0]
 sub domNode() {
-    return shift->{domNode};
+    my ( $self ) = @_;
+    return $self->{domNode};
 }
 
-sub setDomNode($) {
-    return shift->{domNode} = shift;
+sub setDomNode {
+    my ( $self, $val ) = @_;
+    return $self->{domNode} = $val;
 }
 
 sub childItems() {
     return shift->{childItems};
 }
 
-sub setChildItems($) {
-    return shift->{childItems} = shift;
+sub setChildItems {
+    my ( $self, $val ) = @_;
+    return $self->{childItems} = $val;
 }
 
 sub parentItem() {
     return shift->{parentItem};
 }
 
-sub setParentItem($) {
-    return shift->{parentItem} = shift;
+sub setParentItem {
+    my ( $self, $val ) = @_;
+    return $self->{parentItem} = $val;
 }
 
 sub rowNumber() {
     return shift->{rowNumber};
 }
 
-sub setRowNumber($) {
-    return shift->{rowNumber} = shift;
+sub setRowNumber {
+    my ( $self, $val ) = @_;
+    return $self->{rowNumber} = $val;
 }
 # [0]
 
@@ -77,8 +83,8 @@ sub child
         return $self->childItems->{$i};
     }
 
-    if ($i >= 0 && $i < scalar @{$self->domNode->childNodes()}) {
-        my $childNode = $self->domNode->childNodes()->[$i];
+    if ($i >= 0 && $i < $self->domNode->childNodes()->count()) {
+        my $childNode = $self->domNode->childNodes()->item($i);
         my $childItem = DomItem->new($childNode, $i, $self);
         $self->childItems->{$i} = $childItem;
         return $childItem;
