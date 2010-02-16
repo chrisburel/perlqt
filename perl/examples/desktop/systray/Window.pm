@@ -316,16 +316,16 @@ sub createMessageGroupBox
     this->setTypeLabel(Qt::Label(this->tr('Type:')));
 
     this->setTypeComboBox(Qt::ComboBox());
-    this->typeComboBox->addItem(this->tr('None'), Qt::Variant(Qt::SystemTrayIcon::NoIcon()));
+    this->typeComboBox->addItem(this->tr('None'), Qt::Variant(Qt::Int(${Qt::SystemTrayIcon::NoIcon()})));
     this->typeComboBox->addItem(this->style()->standardIcon(
             Qt::Style::SP_MessageBoxInformation()), this->tr('Information'),
-            Qt::Variant(Qt::SystemTrayIcon::Information()));
+            Qt::Variant(Qt::Int(${Qt::SystemTrayIcon::Information()})));
     this->typeComboBox->addItem(this->style()->standardIcon(
             Qt::Style::SP_MessageBoxWarning()), this->tr('Warning'),
-            Qt::Variant(Qt::SystemTrayIcon::Warning()));
+            Qt::Variant(Qt::Int(${Qt::SystemTrayIcon::Warning()})));
     this->typeComboBox->addItem(this->style()->standardIcon(
             Qt::Style::SP_MessageBoxCritical()), this->tr('Critical'),
-            Qt::Variant(Qt::SystemTrayIcon::Critical()));
+            Qt::Variant(Qt::Int(${Qt::SystemTrayIcon::Critical()})));
     this->typeComboBox->setCurrentIndex(1);
 
     this->setDurationLabel(Qt::Label(this->tr('Duration:')));
