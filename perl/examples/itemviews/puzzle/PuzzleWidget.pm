@@ -208,7 +208,7 @@ sub paintEvent
 sub targetSquare
 {
     my ($position) = @_;
-    return Qt::Rect($position->x()/80 * 80, $position->y()/80 * 80, 80, 80);
+    return Qt::Rect(int($position->x()/80) * 80, int($position->y()/80) * 80, 80, 80);
 }
 
 1;

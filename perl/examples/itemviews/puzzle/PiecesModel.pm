@@ -58,8 +58,8 @@ sub addPiece
     }
 
     this->beginInsertRows(Qt::ModelIndex(), $row, $row);
-    this->pixmaps->[$row] = $pixmap;
-    this->locations->[$row] = $location;
+    splice @{this->pixmaps}, $row, 0, $pixmap;
+    splice @{this->locations}, $row, 0, $location;
     this->endInsertRows();
 }
 
@@ -114,8 +114,8 @@ sub mimeData
 
     foreach my $index ( @{$indexes} ) {
         if ($index->isValid()) {
-            my $pixmap = this->data($index, Qt::UserRole());
-            my $location = this->data($index, Qt::UserRole()+1);
+            my $pixmap = Qt::qVariantValue('Qt::Pixmap', this->data($index, Qt::UserRole()));
+            my $location = this->data($index, Qt::UserRole()+1)->toPoint();
             no warnings qw(void); # Ignore bitshift warning
             $stream << $pixmap << $location;
             use warnings;
