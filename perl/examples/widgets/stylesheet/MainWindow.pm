@@ -7,6 +7,7 @@ use blib;
 use Qt;
 use Qt::isa qw( Qt::MainWindow );
 
+use StyleSheetEditor;
 use Ui_MainWindow;
 
 use Qt::slots
@@ -20,9 +21,9 @@ sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
 
-    my $ui = Ui_MainWindow::setupUi(this);
+    my $ui = Ui_MainWindow->setupUi(this);
 
-    $ui->nameLabel()->setProperty("class", "mandatory Qt::Label");
+    $ui->nameLabel()->setProperty("class", Qt::Variant("mandatory Qt::Label"));
 
     my $styleSheetEditor = StyleSheetEditor(this);
     this->{styleSheetEditor} = $styleSheetEditor;
@@ -38,8 +39,8 @@ sub styleSheetEditor {
 }
 
 sub on_editStyleAction_triggered {
-    styleSheetEditor()->show();
-    styleSheetEditor()->activateWindow();
+    this->styleSheetEditor()->show();
+    this->styleSheetEditor()->activateWindow();
 }
 
 sub on_aboutAction_triggered {

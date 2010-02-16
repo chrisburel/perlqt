@@ -469,6 +469,7 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     m_output << "sub " << "setupUi {\n";
     m_output << m_option.indent << "my ( $class, " << m_mainWidget << " ) = @_;\n";
+    m_output << m_option.indent << "my $self = bless {}, $class;\n";
 
     /*
     const QStringList connections = m_uic->databaseInfo()->connections();
@@ -511,7 +512,7 @@ void WriteInitialization::acceptUI(DomUI *node)
     if (m_delayedActionInitialization.size())
         m_output << "\n" << m_delayedActionInitialization;
 
-    m_output << "\n" << m_option.indent << "retranslateUi(" << m_mainWidget << ");\n";
+    m_output << "\n" << m_option.indent << "$self->retranslateUi( " << m_mainWidget << " );\n";
 
     if (node->elementConnections())
         acceptConnections(node->elementConnections());
@@ -521,8 +522,9 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     if (m_option.autoConnection)
         m_output << "\n" << m_option.indent << "Qt::MetaObject->connectSlotsByName( " << m_mainWidget << " );\n";
-    m_output << "\n" << m_option.indent << "return bless this, \" $class\";\n";
+    //m_output << "\n" << m_option.indent << "return bless {}, \"shift\";\n";
 
+    m_output << m_option.indent << "return $self;\n";
     m_output << "} # setupUi\n\n";
 
     m_output << "sub setup_ui {\n";
@@ -531,7 +533,7 @@ void WriteInitialization::acceptUI(DomUI *node)
     m_output << "}\n\n";
 
     m_output << "sub retranslateUi {\n";
-    m_output << m_option.indent << "my ( " << m_mainWidget << " ) = @_;\n"
+    m_output << m_option.indent << "my ( $self, " << m_mainWidget << " ) = @_;\n"
            << m_refreshInitialization
            << "} # retranslateUi\n\n";
 
@@ -569,7 +571,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     if (m_widgetChain.size() != 1) {
         m_output << m_option.indent << "my " << varName << " = " << m_driver->perlClassName(m_uic->customWidgetsInfo()->realClassName(className)) << "( " << parentWidget << " );\n";
-        m_output << m_option.indent << "this->{" << varNameNoSigil << "} = " << varName << ";\n";
+        m_output << m_option.indent << "$self->{" << varNameNoSigil << "} = " << varName << ";\n";
     }
 
     parentWidget = savedParentWidget;
@@ -810,7 +812,7 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     }
 
     m_output << " );\n";
-    m_output << m_option.indent << "this->{" << varNameNoSigil << "} = " << varName << ";\n";
+    m_output << m_option.indent << "$self->{" << varNameNoSigil << "} = " << varName << ";\n";
 
     if (isGroupBox) {
         const QString tempName = m_driver->unique(QLatin1String("boxlayout"));
@@ -987,8 +989,8 @@ void WriteInitialization::acceptAction(DomAction *node)
     QString varName = toPerlIdentifier( varNameNoSigil );
     //varName = varName.mid(0, 1).toLower() + varName.mid(1);
 
-    m_output << m_option.indent << "my " << actionName << " = Qt::Action->new(" << varName << ");\n";
-    m_output << m_option.indent << "this->{" << actionNameNoSigil << "} = " << actionName << ";\n";
+    m_output << m_option.indent << "my " << actionName << " = Qt::Action(" << varName << ");\n";
+    m_output << m_option.indent << "$self->{" << actionNameNoSigil << "} = " << actionName << ";\n";
     writeProperties(actionName, QLatin1String("QAction"), node->elementProperty());
 }
 
@@ -1028,7 +1030,7 @@ void WriteInitialization::acceptActionRef(DomActionRef *node)
     }
 
     if (isMenu)
-        perlActionName += QLatin1String(".menuAction()");
+        perlActionName += QLatin1String("->menuAction()");
 
     m_actionOut << m_option.indent << varName << "->addAction( " << perlActionName << " );\n";
 }
@@ -1052,7 +1054,6 @@ void WriteInitialization::writeProperties(const QString &varName,
     DomWidget *buttonGroupWidget = findWidget(QLatin1String("Q3ButtonGroup"));
 
     QString indent;
-    /*
     if (!m_widgetChain.top()) {
         indent = QLatin1String("    ");
         m_output << m_option.indent << "if ( !defined " << varName << "->objectName() ) {\n";
@@ -1065,12 +1066,12 @@ void WriteInitialization::writeProperties(const QString &varName,
     else {
         m_output << m_option.indent << indent << varName << "->setObjectName( " << fixString(varName.mid(0,1).toLower() + varName.mid(1), m_option.indent) << " );\n";
     }
+    */
 
     if (!m_widgetChain.top()) {
         indent = QLatin1String("    ");
         m_output << m_option.indent << "}\n";
     }
-    */
 
     int leftMargin, topMargin, rightMargin, bottomMargin;
     leftMargin = topMargin = rightMargin = bottomMargin = -1;
@@ -1396,11 +1397,11 @@ void WriteInitialization::writeProperties(const QString &varName,
             QTextStream &o = needsTranslation ? m_refreshOut : m_output ;
             if ( needsTranslation && varNewName != m_mainWidget ) {
                 // This stuff will go into retranslateUi().  retranslateUi()
-                // has 1 argument, that is the object to which the ui belongs.
-                // If this is an operation on that widget, use $varName.
-                // Otherwise, it's a member of the ui implementation file, so
-                // use varName().
-                varNewName = varNewName.mid(1) + "()";
+                // has 2 arguments, $self and the object to which the ui
+                // belongs.  If this is an operation on the 2nd argument, use
+                // $varName.  Otherwise, it's a member of the ui implementation
+                // file, so use $self->varName().
+                varNewName = "$self->" + varNewName.mid(1) + "()";
             }
 
             o << m_option.indent << varNewName << setFunction << propertyValue;
@@ -1443,11 +1444,11 @@ QString  WriteInitialization::writeSizePolicy(const DomSizePolicy *sp)
 
 
     // insert with new name
-    const QString spName = m_driver->unique(QLatin1String("sizePolicy"));
-    const QString spNameSigil = toPerlIdentifier(spName);
+    const QString spNameNoSigil = m_driver->unique(QLatin1String("sizePolicy"));
+    const QString spName = toPerlIdentifier(spNameNoSigil);
     m_sizePolicyNameMap.insert(sizePolicyHandle, spName);
 
-    m_output << m_option.indent << "my " << spNameSigil << " = Qt::SizePolicy";
+    m_output << m_option.indent << "my " << spName << " = Qt::SizePolicy";
     do {
         if (sp->hasElementHSizeType() && sp->hasElementVSizeType()) {
             m_output << "( " << sp->elementHSizeType()
@@ -1461,13 +1462,13 @@ QString  WriteInitialization::writeSizePolicy(const DomSizePolicy *sp)
         }
         m_output << "\n";
     } while (false);
-    m_output << m_option.indent << "this->{" << spName << "} = " << spNameSigil << ";\n";
+    m_output << m_option.indent << "$self->{" << spName << "} = " << spName << ";\n";
 
-    m_output << m_option.indent << spNameSigil << "->setHorizontalStretch( "
+    m_output << m_option.indent << spName << "->setHorizontalStretch( "
         << sp->elementHorStretch() << " );\n";
-    m_output << m_option.indent << spNameSigil << "->setVerticalStretch( "
+    m_output << m_option.indent << spName << "->setVerticalStretch( "
         << sp->elementVerStretch() << " );\n";
-    return spNameSigil;
+    return spName;
 }
 // Check for a font with the given properties in the FontPropertiesNameMap
 // or create a new one. Returns the name.
@@ -2021,7 +2022,7 @@ void WriteInitialization::initializeComboBox(DomWidget *w)
     }
 
     if (noIcons) {
-        m_refreshOut << m_option.indent << varNameNoSigil << "()->insertItems(0, [" ;
+        m_refreshOut << m_option.indent << "$self->" << varNameNoSigil << "()->insertItems(0, [" ;
         for (int i = 0; i < list.size(); ++i) {
             m_refreshOut << list.at(i);
             if (i != (list.size() - 1)) {
@@ -2060,8 +2061,8 @@ QString WriteInitialization::disableSorting(DomWidget *w, const QString &varName
         tempName = toPerlIdentifier(m_driver->unique(QLatin1String("__sortingEnabled")));
         m_refreshOut << "\n";
         m_refreshOut << m_option.indent << "my " << tempName
-            << " = " << varName << "()->isSortingEnabled();\n";
-        m_refreshOut << m_option.indent << varName << "()->setSortingEnabled( 0 );\n";
+            << " = " << "$self->" << varName << "()->isSortingEnabled();\n";
+        m_refreshOut << "$self->" << m_option.indent << varName << "()->setSortingEnabled( 0 );\n";
     }
     return tempName;
 }
@@ -2070,7 +2071,7 @@ void WriteInitialization::enableSorting(DomWidget *w, const QString &varName, co
 {
     if (!w->elementItem().isEmpty()) {
         m_refreshOut << "\n";
-        m_refreshOut << m_option.indent << varName << "()->setSortingEnabled( " << tempName << " );\n";
+        m_refreshOut << m_option.indent << "$self->" << varName << "()->setSortingEnabled( " << tempName << " );\n";
     }
 }
 
@@ -2105,7 +2106,7 @@ void WriteInitialization::initializeListWidget(DomWidget *w)
         }
 
         if (!toString(text->elementString()).isEmpty()) {
-            m_refreshOut << m_option.indent << varNameNoSigil << "()->item(" << i << ")->setText( " << trCall(text->elementString()) << " );\n";
+            m_refreshOut << m_option.indent << "$self->" << varNameNoSigil << "()->item(" << i << ")->setText( " << trCall(text->elementString()) << " );\n";
         }
     }
     enableSorting(w, varNameNoSigil, tempName);

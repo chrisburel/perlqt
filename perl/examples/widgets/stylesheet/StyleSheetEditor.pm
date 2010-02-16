@@ -10,8 +10,8 @@ use Qt::isa qw( Qt::Dialog );
 use Ui_StyleSheetEditor;
 
 use Qt::slots
-    on_styleCombo_activated => ['Qt::String'],
-    on_styleSheetCombo_activated => ['Qt::String'],
+    on_styleCombo_activated => ['QString'],
+    on_styleSheetCombo_activated => ['QString'],
     on_styleTextEdit_textChanged => [],
     on_applyButton_clicked => [];
 
@@ -61,9 +61,9 @@ sub on_applyButton_clicked {
 sub loadStyleSheet {
     my ($sheetName) = @_;
     my $ui = this->{ui};
-    my $file = Qt::File('qss/' . $sheetName->toLower() + '.qss');
+    my $file = Qt::File('qss/' . lc($sheetName) . '.qss');
     $file->open(Qt::File::ReadOnly());
-    my $styleSheet = $file->readAll();
+    my $styleSheet = $file->readAll()->data();
 
     $ui->styleTextEdit()->setPlainText($styleSheet);
     qApp->setStyleSheet($styleSheet);

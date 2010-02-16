@@ -98,7 +98,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     m_output << "use warnings;\n";
     m_output << "use utf8;\n";
     m_output << "use Qt;\n";
-    m_output << "use Qt::isa qw( " << className << " );\n\n";
+    m_output << "\n";
 
     const QStringList connections = m_uic->databaseInfo()->connections();
     for (int i=0; i<connections.size(); ++i) {
@@ -180,7 +180,7 @@ void WriteDeclaration::acceptWidget(DomWidget *node)
 	QString item = m_driver->findOrInsertWidget(node);
 	item = item.mid(0, 1).toLower() + item.mid(1);
     m_output << "sub " << item << " {\n";
-    m_output << m_option.indent << "return this->{" << item << "};\n";
+    m_output << m_option.indent << "return shift->{" << item << "};\n";
     m_output << "}\n\n";
 
     TreeWalker::acceptWidget(node);
@@ -195,7 +195,7 @@ void WriteDeclaration::acceptLayout(DomLayout *node)
 	QString item = m_driver->findOrInsertLayout(node);
 	item = item.mid(0, 1).toLower() + item.mid(1);
     m_output << "sub " << item << " {\n";
-    m_output << m_option.indent << "return this->{" << item << "};\n";
+    m_output << m_option.indent << "return shift->{" << item << "};\n";
     m_output << "}\n\n";
 
     TreeWalker::acceptLayout(node);
@@ -206,7 +206,7 @@ void WriteDeclaration::acceptSpacer(DomSpacer *node)
 	QString item = m_driver->findOrInsertSpacer(node);
 	item = item.mid(0, 1).toLower() + item.mid(1);
     m_output << "sub " << item << " {\n";
-    m_output << m_option.indent << "return this->{" << item << "};\n";
+    m_output << m_option.indent << "return shift->{" << item << "};\n";
     m_output << "}\n\n";
 
     TreeWalker::acceptSpacer(node);
@@ -217,7 +217,7 @@ void WriteDeclaration::acceptActionGroup(DomActionGroup *node)
 	QString item = m_driver->findOrInsertActionGroup(node);
 	item = item.mid(0, 1).toLower() + item.mid(1);
     m_output << "sub " << item << " {\n";
-    m_output << m_option.indent << "return this->{" << item << "};\n";
+    m_output << m_option.indent << "return shift->{" << item << "};\n";
     m_output << "}\n\n";
 
     TreeWalker::acceptActionGroup(node);
@@ -228,7 +228,7 @@ void WriteDeclaration::acceptAction(DomAction *node)
 	QString item = m_driver->findOrInsertAction(node);
 	item = item.mid(0, 1).toLower() + item.mid(1);
     m_output << "sub " << item << " {\n";
-    m_output << m_option.indent << "return this->{" << item << "};\n";
+    m_output << m_option.indent << "return shift->{" << item << "};\n";
     m_output << "}\n\n";
 
     TreeWalker::acceptAction(node);
