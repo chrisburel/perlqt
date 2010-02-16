@@ -1791,6 +1791,11 @@ DEF_LIST_MARSHALLER( QTreeWidgetList, QList<QTreeWidget*>, QTreeWidget ) // !! n
 DEF_LIST_MARSHALLER( QWidgetList, QList<QWidget*>, QWidget )
 DEF_LIST_MARSHALLER( QWidgetPtrList, QList<QWidget*>, QWidget )
 
+// QtRuby has this as a VALUELIST, and as QList<QKeySequence> (not a pointer).
+// But having it that way means the keyseq objects get deleted, and causes
+// double free errors.
+DEF_LIST_MARSHALLER( QKeySequenceList, QList<QKeySequence*>, QKeySequence )
+
 #if QT_VERSION >= 0x40200
 DEF_LIST_MARSHALLER( QGraphicsItemList, QList<QGraphicsItem*>, QGraphicsItem )
 DEF_LIST_MARSHALLER( QStandardItemList, QList<QStandardItem*>, QStandardItem )
@@ -1805,7 +1810,6 @@ DEF_VALUELIST_MARSHALLER( QColorVector, QVector<QColor>, QColor )
 DEF_VALUELIST_MARSHALLER( QFileInfoList, QFileInfoList, QFileInfo )
 DEF_VALUELIST_MARSHALLER( QHostAddressList, QList<QHostAddress>, QHostAddress )
 DEF_VALUELIST_MARSHALLER( QImageTextKeyLangList, QList<QImageTextKeyLang>, QImageTextKeyLang )
-DEF_VALUELIST_MARSHALLER( QKeySequenceList, QList<QKeySequence>, QKeySequence )
 DEF_VALUELIST_MARSHALLER( QLineFVector, QVector<QLineF>, QLineF )
 DEF_VALUELIST_MARSHALLER( QLineVector, QVector<QLine>, QLine )
 DEF_VALUELIST_MARSHALLER( QModelIndexList, QList<QModelIndex>, QModelIndex )
