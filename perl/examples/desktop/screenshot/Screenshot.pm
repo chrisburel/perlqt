@@ -2,10 +2,10 @@ package Screenshot;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     newScreenshot => [],
     saveScreenshot => [],
     shootScreen => [],
@@ -114,16 +114,16 @@ sub NEW
     my ($class) = @_;
     $DB::single=1;
     $class->SUPER::NEW();
-    this->setScreenshotLabel( Qt::Label() );
-    this->screenshotLabel->setSizePolicy(Qt::SizePolicy::Expanding(),
-                                         Qt::SizePolicy::Expanding());
-    this->screenshotLabel->setAlignment(Qt::AlignCenter());
+    this->setScreenshotLabel( Qt4::Label() );
+    this->screenshotLabel->setSizePolicy(Qt4::SizePolicy::Expanding(),
+                                         Qt4::SizePolicy::Expanding());
+    this->screenshotLabel->setAlignment(Qt4::AlignCenter());
     this->screenshotLabel->setMinimumSize(240, 160);
 
     this->createOptionsGroupBox();
     this->createButtonsLayout();
 
-    this->setMainLayout( Qt::VBoxLayout() );
+    this->setMainLayout( Qt4::VBoxLayout() );
     this->mainLayout->addWidget(this->screenshotLabel);
     this->mainLayout->addWidget(this->optionsGroupBox);
     this->mainLayout->addLayout(this->buttonsLayout);
@@ -141,7 +141,7 @@ sub NEW
 sub resizeEvent
 {
     my $scaledSize = this->originalPixmap->size();
-    $scaledSize->scale(this->screenshotLabel->size(), Qt::KeepAspectRatio());
+    $scaledSize->scale(this->screenshotLabel->size(), Qt4::KeepAspectRatio());
     if (!this->screenshotLabel->pixmap()
             || $scaledSize != this->screenshotLabel->pixmap()->size()) {
         this->updateScreenshotLabel();
@@ -157,7 +157,7 @@ sub newScreenshot
     }
     this->newScreenshotButton->setDisabled(1);
 
-    Qt::Timer::singleShot(this->delaySpinBox->value() * 1000, this, SLOT 'shootScreen()');
+    Qt4::Timer::singleShot(this->delaySpinBox->value() * 1000, this, SLOT 'shootScreen()');
 }
 # [2]
 
@@ -165,9 +165,9 @@ sub newScreenshot
 sub saveScreenshot
 {
     my $format = 'png';
-    my $initialPath = Qt::Dir::currentPath() . this->tr('/untitled.') . $format;
+    my $initialPath = Qt4::Dir::currentPath() . this->tr('/untitled.') . $format;
 
-    my $fileName = Qt::FileDialog::getSaveFileName(this, this->tr('Save As'),
+    my $fileName = Qt4::FileDialog::getSaveFileName(this, this->tr('Save As'),
                                $initialPath,
                        sprintf this->tr('%s Files (*.%s);;All Files (*)'),
                                uc($format),
@@ -186,9 +186,9 @@ sub shootScreen
     }
 # [4]
      # clear image for low memory situations on embedded devices.
-    this->setOriginalPixmap( Qt::Pixmap() );
+    this->setOriginalPixmap( Qt4::Pixmap() );
 # [5]
-    this->setOriginalPixmap( Qt::Pixmap::grabWindow(Qt::Application::desktop()->winId()) );
+    this->setOriginalPixmap( Qt4::Pixmap::grabWindow(Qt4::Application::desktop()->winId()) );
     this->updateScreenshotLabel();
 
     this->newScreenshotButton->setDisabled(0);
@@ -213,18 +213,18 @@ sub updateCheckBox
 # [7]
 sub createOptionsGroupBox
 {
-    this->setOptionsGroupBox( Qt::GroupBox(this->tr('Options')) );
+    this->setOptionsGroupBox( Qt4::GroupBox(this->tr('Options')) );
 
-    this->setDelaySpinBox( Qt::SpinBox() );
+    this->setDelaySpinBox( Qt4::SpinBox() );
     this->delaySpinBox->setSuffix(this->tr(' s'));
     this->delaySpinBox->setMaximum(60);
     this->connect(this->delaySpinBox, SIGNAL 'valueChanged(int)', this, SLOT 'updateCheckBox()');
 
-    this->setDelaySpinBoxLabel( Qt::Label(this->tr('Screenshot Delay:')) );
+    this->setDelaySpinBoxLabel( Qt4::Label(this->tr('Screenshot Delay:')) );
 
-    this->setHideThisWindowCheckBox( Qt::CheckBox(this->tr('Hide This Window')) );
+    this->setHideThisWindowCheckBox( Qt4::CheckBox(this->tr('Hide This Window')) );
 
-    this->setOptionsGroupBoxLayout( Qt::GridLayout() );
+    this->setOptionsGroupBoxLayout( Qt4::GridLayout() );
     this->optionsGroupBoxLayout->addWidget(this->delaySpinBoxLabel, 0, 0);
     this->optionsGroupBoxLayout->addWidget(this->delaySpinBox, 0, 1);
     this->optionsGroupBoxLayout->addWidget(this->hideThisWindowCheckBox, 1, 0, 1, 2);
@@ -243,7 +243,7 @@ sub createButtonsLayout
 
     this->setQuitScreenshotButton( createButton(this->tr('Quit'), this, SLOT 'close()') );
 
-    this->setButtonsLayout( Qt::HBoxLayout() );
+    this->setButtonsLayout( Qt4::HBoxLayout() );
     this->buttonsLayout->addStretch();
     this->buttonsLayout->addWidget(this->newScreenshotButton);
     this->buttonsLayout->addWidget(this->saveScreenshotButton);
@@ -255,7 +255,7 @@ sub createButtonsLayout
 sub createButton
 {
     my ($text, $receiver, $member) = @_;
-    my $button = Qt::PushButton($text);
+    my $button = Qt4::PushButton($text);
     $button->connect($button, SIGNAL 'clicked()', $receiver, $member);
     return $button;
 }
@@ -265,8 +265,8 @@ sub createButton
 sub updateScreenshotLabel
 {
     this->screenshotLabel->setPixmap(this->originalPixmap->scaled(this->screenshotLabel->size(),
-                                                     Qt::KeepAspectRatio(),
-                                                     Qt::SmoothTransformation()));
+                                                     Qt4::KeepAspectRatio(),
+                                                     Qt4::SmoothTransformation()));
 }
 # [10]
 

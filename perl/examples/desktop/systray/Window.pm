@@ -2,10 +2,10 @@ package Window;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Dialog );
-use Qt::slots
+use Qt4::isa qw( Qt4::Dialog );
+use Qt4::slots
     setIcon => ['int'],
     iconActivated => ['QSystemTrayIcon::ActivationReason'],
     showMessage => [],
@@ -202,7 +202,7 @@ sub NEW
     this->connect(this->trayIcon, SIGNAL 'activated(QSystemTrayIcon::ActivationReason)',
             this, SLOT 'iconActivated(QSystemTrayIcon::ActivationReason)');
 
-    my $mainLayout = Qt::VBoxLayout();
+    my $mainLayout = Qt4::VBoxLayout();
     $mainLayout->addWidget(this->iconGroupBox);
     $mainLayout->addWidget(this->messageGroupBox);
     this->setLayout($mainLayout);
@@ -231,7 +231,7 @@ sub closeEvent
 {
     my ($event) = @_;
     if (this->trayIcon->isVisible()) {
-        Qt::MessageBox::information(this, this->tr('Systray'),
+        Qt4::MessageBox::information(this, this->tr('Systray'),
                                  this->tr('The program will keep running in the ' .
                                     'system tray. To terminate the program, ' .
                                     'choose <b>Quit</b> in the context menu ' .
@@ -258,12 +258,12 @@ sub setIcon
 sub iconActivated
 {
     my ($reason) = @_;
-    if ($reason == Qt::SystemTrayIcon::Trigger() ||
-        $reason == Qt::SystemTrayIcon::DoubleClick()) {
+    if ($reason == Qt4::SystemTrayIcon::Trigger() ||
+        $reason == Qt4::SystemTrayIcon::DoubleClick()) {
         this->iconComboBox->setCurrentIndex((this->iconComboBox->currentIndex() + 1)
                                       % this->iconComboBox->count());
     }
-    elsif ($reason == Qt::SystemTrayIcon::MiddleClick()) {
+    elsif ($reason == Qt4::SystemTrayIcon::MiddleClick()) {
         this->showMessage();
     }
 }
@@ -281,7 +281,7 @@ sub showMessage
 # [6]
 sub messageClicked
 {
-    Qt::MessageBox::information(undef, this->tr('Systray'),
+    Qt4::MessageBox::information(undef, this->tr('Systray'),
                              this->tr("Sorry, I already gave what help I could.\n" .
                                 'Maybe you should try asking a human?'));
 }
@@ -289,19 +289,19 @@ sub messageClicked
 
 sub createIconGroupBox
 {
-    this->setIconGroupBox(Qt::GroupBox(this->tr('Tray Icon')));
+    this->setIconGroupBox(Qt4::GroupBox(this->tr('Tray Icon')));
 
-    this->setIconLabel(Qt::Label('Icon:'));
+    this->setIconLabel(Qt4::Label('Icon:'));
 
-    this->setIconComboBox(Qt::ComboBox());
-    this->iconComboBox->addItem(Qt::Icon('images/bad.svg'), this->tr('Bad'));
-    this->iconComboBox->addItem(Qt::Icon('images/heart.svg'), this->tr('Heart'));
-    this->iconComboBox->addItem(Qt::Icon('images/trash.svg'), this->tr('Trash'));
+    this->setIconComboBox(Qt4::ComboBox());
+    this->iconComboBox->addItem(Qt4::Icon('images/bad.svg'), this->tr('Bad'));
+    this->iconComboBox->addItem(Qt4::Icon('images/heart.svg'), this->tr('Heart'));
+    this->iconComboBox->addItem(Qt4::Icon('images/trash.svg'), this->tr('Trash'));
 
-    this->setShowIconCheckBox(Qt::CheckBox(this->tr('Show icon')));
+    this->setShowIconCheckBox(Qt4::CheckBox(this->tr('Show icon')));
     this->showIconCheckBox->setChecked(1);
 
-    my $iconLayout = Qt::HBoxLayout();
+    my $iconLayout = Qt4::HBoxLayout();
     $iconLayout->addWidget(this->iconLabel);
     $iconLayout->addWidget(this->iconComboBox);
     $iconLayout->addStretch();
@@ -311,48 +311,48 @@ sub createIconGroupBox
 
 sub createMessageGroupBox
 {
-    this->setMessageGroupBox(Qt::GroupBox(this->tr('Balloon Message')));
+    this->setMessageGroupBox(Qt4::GroupBox(this->tr('Balloon Message')));
 
-    this->setTypeLabel(Qt::Label(this->tr('Type:')));
+    this->setTypeLabel(Qt4::Label(this->tr('Type:')));
 
-    this->setTypeComboBox(Qt::ComboBox());
-    this->typeComboBox->addItem(this->tr('None'), Qt::Variant(Qt::Int(${Qt::SystemTrayIcon::NoIcon()})));
+    this->setTypeComboBox(Qt4::ComboBox());
+    this->typeComboBox->addItem(this->tr('None'), Qt4::Variant(Qt4::Int(${Qt4::SystemTrayIcon::NoIcon()})));
     this->typeComboBox->addItem(this->style()->standardIcon(
-            Qt::Style::SP_MessageBoxInformation()), this->tr('Information'),
-            Qt::Variant(Qt::Int(${Qt::SystemTrayIcon::Information()})));
+            Qt4::Style::SP_MessageBoxInformation()), this->tr('Information'),
+            Qt4::Variant(Qt4::Int(${Qt4::SystemTrayIcon::Information()})));
     this->typeComboBox->addItem(this->style()->standardIcon(
-            Qt::Style::SP_MessageBoxWarning()), this->tr('Warning'),
-            Qt::Variant(Qt::Int(${Qt::SystemTrayIcon::Warning()})));
+            Qt4::Style::SP_MessageBoxWarning()), this->tr('Warning'),
+            Qt4::Variant(Qt4::Int(${Qt4::SystemTrayIcon::Warning()})));
     this->typeComboBox->addItem(this->style()->standardIcon(
-            Qt::Style::SP_MessageBoxCritical()), this->tr('Critical'),
-            Qt::Variant(Qt::Int(${Qt::SystemTrayIcon::Critical()})));
+            Qt4::Style::SP_MessageBoxCritical()), this->tr('Critical'),
+            Qt4::Variant(Qt4::Int(${Qt4::SystemTrayIcon::Critical()})));
     this->typeComboBox->setCurrentIndex(1);
 
-    this->setDurationLabel(Qt::Label(this->tr('Duration:')));
+    this->setDurationLabel(Qt4::Label(this->tr('Duration:')));
 
-    this->setDurationSpinBox(Qt::SpinBox());
+    this->setDurationSpinBox(Qt4::SpinBox());
     this->durationSpinBox->setRange(5, 60);
     this->durationSpinBox->setSuffix(' s');
     this->durationSpinBox->setValue(15);
 
-    this->setDurationWarningLabel(Qt::Label(this->tr('(some systems might ignore this '.
+    this->setDurationWarningLabel(Qt4::Label(this->tr('(some systems might ignore this '.
                                          'hint)')));
     this->durationWarningLabel->setIndent(10);
 
-    this->setTitleLabel(Qt::Label(this->tr('Title:')));
+    this->setTitleLabel(Qt4::Label(this->tr('Title:')));
 
-    this->setTitleEdit(Qt::LineEdit(this->tr('Cannot connect to network')));
+    this->setTitleEdit(Qt4::LineEdit(this->tr('Cannot connect to network')));
 
-    this->setBodyLabel(Qt::Label(this->tr('Body:')));
+    this->setBodyLabel(Qt4::Label(this->tr('Body:')));
 
-    this->setBodyEdit(Qt::TextEdit());
+    this->setBodyEdit(Qt4::TextEdit());
     this->bodyEdit->setPlainText(this->tr('Don\'t believe me. Honestly, I don\'t have a ' .
                               "clue.\nClick this balloon for details."));
 
-    this->setShowMessageButton(Qt::PushButton(this->tr('Show Message')));
+    this->setShowMessageButton(Qt4::PushButton(this->tr('Show Message')));
     this->showMessageButton->setDefault(1);
 
-    my $messageLayout = Qt::GridLayout();
+    my $messageLayout = Qt4::GridLayout();
     $messageLayout->addWidget(this->typeLabel, 0, 0);
     $messageLayout->addWidget(this->typeComboBox, 0, 1, 1, 2);
     $messageLayout->addWidget(this->durationLabel, 1, 0);
@@ -370,29 +370,29 @@ sub createMessageGroupBox
 
 sub createActions
 {
-    this->setMinimizeAction(Qt::Action(this->tr('Mi&nimize'), this));
+    this->setMinimizeAction(Qt4::Action(this->tr('Mi&nimize'), this));
     this->connect(this->minimizeAction, SIGNAL 'triggered()', this, SLOT 'hide()');
 
-    this->setMaximizeAction(Qt::Action(this->tr('Ma&ximize'), this));
+    this->setMaximizeAction(Qt4::Action(this->tr('Ma&ximize'), this));
     this->connect(this->maximizeAction, SIGNAL 'triggered()', this, SLOT 'showMaximized()');
 
-    this->setRestoreAction(Qt::Action(this->tr('&Restore'), this));
+    this->setRestoreAction(Qt4::Action(this->tr('&Restore'), this));
     this->connect(this->restoreAction, SIGNAL 'triggered()', this, SLOT 'showNormal()');
 
-    this->setQuitAction(Qt::Action(this->tr('&Quit'), this));
+    this->setQuitAction(Qt4::Action(this->tr('&Quit'), this));
     this->connect(this->quitAction, SIGNAL 'triggered()', qApp, SLOT 'quit()');
 }
 
 sub createTrayIcon
 {
-    this->setTrayIconMenu(Qt::Menu(this));
+    this->setTrayIconMenu(Qt4::Menu(this));
     this->trayIconMenu->addAction(this->minimizeAction);
     this->trayIconMenu->addAction(this->maximizeAction);
     this->trayIconMenu->addAction(this->restoreAction);
     this->trayIconMenu->addSeparator();
     this->trayIconMenu->addAction(this->quitAction);
 
-    this->setTrayIcon(Qt::SystemTrayIcon(this));
+    this->setTrayIcon(Qt4::SystemTrayIcon(this));
     trayIcon->setContextMenu(this->trayIconMenu);
 }
 
