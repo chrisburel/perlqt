@@ -150,8 +150,7 @@ sub highlightCurrentLine {
         my $lineColor = Qt4::Color(Qt4::yellow())->lighter(160);
 
         $selection->format->setBackground( Qt4::Brush( $lineColor ) );
-        Qt4::setSignature( 'QVariant::QVariant( bool )' );
-        $selection->format->setProperty(Qt4::TextFormat::FullWidthSelection(), Qt4::Variant(1));
+        $selection->format->setProperty(Qt4::TextFormat::FullWidthSelection(), Qt4::Variant(Qt4::Bool(1)));
         $selection->setCursor( this->textCursor() );
         $selection->cursor->clearSelection();
         push @{$extraSelections}, $selection;

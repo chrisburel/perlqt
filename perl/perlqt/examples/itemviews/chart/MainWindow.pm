@@ -41,8 +41,8 @@ sub NEW {
 sub setupModel {
     my $model = Qt4::StandardItemModel(8, 2, this);
     this->{model} = $model;
-    $model->setHeaderData(0, Qt4::Horizontal(), Qt4::Variant(this->tr('Label')));
-    $model->setHeaderData(1, Qt4::Horizontal(), Qt4::Variant(this->tr('Quantity')));
+    $model->setHeaderData(0, Qt4::Horizontal(), Qt4::Variant(Qt4::String(this->tr('Label'))));
+    $model->setHeaderData(1, Qt4::Horizontal(), Qt4::Variant(Qt4::String(this->tr('Quantity'))));
 }
 
 sub setupViews {
@@ -100,11 +100,11 @@ sub openFile {
 
                     my @pieces = grep { $_ } split /,/, $line;
                     $model->setData($model->index($row, 0, Qt4::ModelIndex()),
-                                   Qt4::Variant($pieces[0]));
+                                   Qt4::Variant(Qt4::String($pieces[0])));
                     $model->setData($model->index($row, 1, Qt4::ModelIndex()),
-                                   Qt4::Variant($pieces[1]));
+                                   Qt4::Variant(Qt4::String($pieces[1])));
                     $model->setData($model->index($row, 0, Qt4::ModelIndex()),
-                                   Qt4::qVariantFromValue(Qt4::Color($pieces[2])), Qt4::DecorationRole());
+                                   Qt4::qVariantFromValue(Qt4::Color(Qt4::String($pieces[2]))), Qt4::DecorationRole());
                     $row++;
                 }
             } while ($line);

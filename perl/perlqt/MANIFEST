@@ -21,12 +21,10 @@ examples/dbus/remotecontrolledcar/car/car.pl
 examples/dbus/remotecontrolledcar/controller/CarInterface.pm
 examples/dbus/remotecontrolledcar/controller/Controller.pm
 examples/dbus/remotecontrolledcar/controller/Makefile
-examples/dbus/remotecontrolledcar/controller/Ui_Controller.pm
 examples/dbus/remotecontrolledcar/controller/controller.pl
 examples/dbus/remotecontrolledcar/controller/controller.ui
 examples/designer/calculatorform/CalculatorForm.pm
 examples/designer/calculatorform/Makefile
-examples/designer/calculatorform/Ui_CalculatorForm.pm
 examples/designer/calculatorform/calculatorform.pl
 examples/designer/calculatorform/calculatorform.ui
 examples/desktop/screenshot/Screenshot.pm

@@ -15,7 +15,7 @@ our %channel = (
     'verbose' => 0x20,
     'signals' => 0x40,
     'slots' => 0x80,
-    'all' => 0xffff
+    'all' => 0xff
 );
 
 sub dumpMetaMethods {
@@ -54,7 +54,7 @@ sub dumpMetaMethods {
 
 sub import {
     shift;
-    my $db = (@_)? 0x0000 : (0x01|0x80);
+    my $db = (@_) ? 0x00 : 0x01;
     my $usage = 0;
     for my $ch(@_) {
         if( exists $channel{$ch}) {

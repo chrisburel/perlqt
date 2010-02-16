@@ -1016,21 +1016,24 @@ sub getSmokeMethodId {
 
         # If we still have more than 1 match, use the first one.
         if ( @methodIds > 1 ) {
-            # A constructor call will be 4 levels deep on the stack, everything
-            # else will be 2
-            my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
-            my @caller = caller($stackDepth);
-            while ( $caller[1] =~ m/Qt4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
-                ++$stackDepth;
-                @caller = caller($stackDepth);
+            # Keep in sync with debug.pm's $channel{ambiguous} value
+            if ( debug() & 0x01 ) {
+                # A constructor call will be 4 levels deep on the stack, everything
+                # else will be 2
+                my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
+                my @caller = caller($stackDepth);
+                while ( $caller[1] =~ m/Qt4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
+                    ++$stackDepth;
+                    @caller = caller($stackDepth);
+                }
+                my $msg = "--- Ambiguous method ${classname}::$methodname" .
+                    ' called at ' . $caller[1] .
+                    ' line ' . $caller[2] . "\n";
+                $msg .= "Candidates are:\n\t";
+                $msg .= join "\n\t", dumpCandidates( $classname, $methodname, \@methodIds );
+                $msg .= "\nChoosing first one...\n";
+                warn $msg;
             }
-            my $msg = "--- Ambiguous method ${classname}::$methodname" .
-                ' called at ' . $caller[1] .
-                ' line ' . $caller[2] . "\n";
-            $msg .= "Candidates are:\n\t";
-            $msg .= join "\n\t", dumpCandidates( $classname, $methodname, \@methodIds );
-            $msg .= "\nChoosing first one...\n";
-            warn $msg;
             @methodIds = $methodIds[0];
 
             # Since a call to this same method with different args may resolve
@@ -1064,13 +1067,21 @@ sub getSmokeMethodId {
     }
 
     if ( !@methodIds ) {
-        my $smokeId = $classId->[0];
-        @methodIds = findAnyPossibleMethod( $classId, $classname, $methodname, @_ );
-        if( @methodIds ) {
-            die reportAlternativeMethods( $classname, $methodname, \@methodIds, @_ );
+        if ( debug() & 0x01 ) {
+            # The findAnyPossibleMethod is expensive, only do it if debugging is on.
+            my $smokeId = $classId->[0];
+            @methodIds = findAnyPossibleMethod( $classId, $classname, $methodname, @_ );
+            if( @methodIds ) {
+                die reportAlternativeMethods( $classname, $methodname, \@methodIds, @_ );
+            }
+            else {
+                die reportNoMethodFound( $classname, $methodname, @_ );
+            }
         }
         else {
-            die reportNoMethodFound( $classname, $methodname, @_ );
+            my $noMethodFound = reportNoMethodFound( $classname, $methodname, @_ );
+            $noMethodFound .= "'use Qt4::debug qw(ambiguous)' for more information.";
+            die $noMethodFound;
         }
     }
 

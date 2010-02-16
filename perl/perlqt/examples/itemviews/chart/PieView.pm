@@ -349,8 +349,8 @@ sub paintEvent {
                 my $angle = 360*$value/this->{totalValue};
 
                 my $colorIndex = this->model()->index($row, 0, this->rootIndex());
-                my $color = Qt4::Color(this->model()->data($colorIndex,
-                                Qt4::DecorationRole())->toString());
+                my $color = Qt4::Color(Qt4::String(this->model()->data($colorIndex,
+                                Qt4::DecorationRole())->toString()));
 
                 if (this->currentIndex() == $index) {
                     $painter->setBrush(Qt4::Brush($color, Qt4::Dense4Pattern()));

@@ -198,6 +198,13 @@ classFromId( classId )
     OUTPUT:
         RETVAL
 
+int
+debug()
+    CODE:
+        RETVAL = do_debug;
+    OUTPUT:
+        RETVAL
+
 #// Args: char* package: the name of a Perl package
 #// Returns: none
 #// Desc: Makes calls to undefined subroutines for the given package redirect
