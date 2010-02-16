@@ -7,10 +7,12 @@
 #include <stdlib.h>
 
 #include "smoke.h"
-#include "Qt.h"
+
 #include "marshall.h"
+#include "Qt.h"
 #include "smokeperl.h"
 #include "handlers.h"
+#include "marshall_types.h"
 
 #ifdef do_open
 #undef do_open
@@ -35,247 +37,6 @@ QApplication *qapp = new QApplication(myargc, &myargv);
 
 QHash<Smoke*, PerlQtModule> perlqt_modules;
 static PerlQt::Binding binding;
-
-class VirtualMethodReturnValue : public Marshall {
-    Smoke *_smoke;
-    Smoke::Index _method;
-    Smoke::Stack _stack;
-    SmokeType _st;
-    SV *_retval;
-public:
-    const Smoke::Method &method() { return _smoke->methods[_method]; }
-    SmokeType type() { return _st; }
-    Marshall::Action action() { return Marshall::FromSV; }
-    Smoke::StackItem &item() { return _stack[0]; }
-    SV *var() { return _retval; }
-    void unsupported() {
-	croak("Cannot handle '%s' as return-type of virtual method %s::%s",
-		type().name(),
-		_smoke->className(method().classId),
-		_smoke->methodNames[method().name]);
-    }
-    Smoke *smoke() { return _smoke; }
-    void next() {}
-    bool cleanup() { return false; }
-    VirtualMethodReturnValue(Smoke *smoke, Smoke::Index meth, Smoke::Stack stack, SV *retval) :
-	_smoke(smoke), _method(meth), _stack(stack), _retval(retval) {
-	_st.set(_smoke, method().ret);
- 	Marshall::HandlerFn fn = getMarshallFn(type());
-	(*fn)(this);
-   }
-};
-
-class VirtualMethodCall : public Marshall {
-    Smoke *_smoke;
-    Smoke::Index _methodIndex;
-    Smoke::Stack _stack;
-    GV *_gv;
-    int _curArgIndex;
-    Smoke::Index *_args;
-    SV **_sp;
-    bool _called;
-    SV *_savethis;
-
-    void _castArgs() {
-        int oldArgIndex = _curArgIndex;
-        _curArgIndex++; // Start at 0
-        while( _curArgIndex < method().numArgs ) {
-            // We need to know the datatype of each argument
-            Marshall::HandlerFn fn = getMarshallFn(type());
-            (*fn)(this); // Modifies _stack
-            _curArgIndex++;
-        }
-
-        _curArgIndex = oldArgIndex;
-    }
-
-public:
-    VirtualMethodCall(Smoke *smoke, Smoke::Index meth, Smoke::Stack stack, SV *obj, GV *gv) :
-        _smoke(smoke), _methodIndex(meth), _stack(stack), _gv(gv), _curArgIndex(-1), _sp(0), _called(false) {
-        dSP;
-        ENTER;
-        SAVETMPS;
-        PUSHMARK(SP);
-        EXTEND(SP, method().numArgs);
-        _savethis = sv_this;
-        sv_this = newSVsv(obj);
-        _sp = SP + 1;
-        for(int i = 0; i < method().numArgs; i++)
-            _sp[i] = sv_newmortal();
-        _args = _smoke->argumentList + method().args;
-    }
-    ~VirtualMethodCall() {
-        SvREFCNT_dec(sv_this);
-        sv_this = _savethis;
-    }
-    SmokeType type() { return SmokeType(_smoke, _args[_curArgIndex]); }
-    Marshall::Action action() { return Marshall::ToSV; }
-    Smoke::StackItem &item() { return _stack[_curArgIndex + 1]; };
-    SV *var() { return _sp[_curArgIndex]; }
-    const Smoke::Method &method() { return _smoke->methods[_methodIndex]; };
-    void unsupported() {
-        croak("Cannot handle '%s' as argument of virtual method %s::%s",
-                type().name(),
-                _smoke->className(method().classId),
-                _smoke->methodNames[method().name]);
-    }
-    Smoke *smoke() { return _smoke; }
-    void callMethod() {
-        // This is the stack pointer we'll pass to the perl call
-        dSP;
-        SP = _sp + method().numArgs - 1;
-        PUTBACK;
-        // Call the perl sub
-        int count = call_sv((SV*)GvCV(_gv), G_SCALAR);
-        // Get the stack the perl sub returned
-        SPAGAIN;
-        // Marshall the return value back to c++, using the top of the stack
-        VirtualMethodReturnValue r(_smoke, _methodIndex, _stack, POPs);
-        PUTBACK;
-        FREETMPS;
-        LEAVE;
-    }
-    void next() {
-        _castArgs();
-        callMethod();
-    }
-    bool cleanup() { return false; }
-};
-
-class MethodReturnValue : public Marshall {
-    Smoke *_smoke;
-    Smoke::Index _methodIndex;
-    Smoke::Stack _stack;
-    SV *_retval;
-public:
-    MethodReturnValue(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack) :
-      _smoke(smoke), _methodIndex(methodIndex), _stack(stack)  {
-        _retval = newSV(0);
-        Marshall::HandlerFn fn = getMarshallFn(type());
-        (*fn)(this);
-    }
-
-    SmokeType type() { return SmokeType(_smoke, method().ret); }
-
-    // We're passing an SV back to perl
-    Marshall::Action action() { return Marshall::ToSV; }
-    Smoke::StackItem &item() { return _stack[0]; }
-    SV *var() { return _retval; }
-
-    void unsupported() {
-        croak("Cannot handle '%s' as return-type of %s::%s",
-            type().name(),
-            _smoke->className(method().classId),
-            _smoke->methodNames[method().name]);
-    }
-
-        Smoke *smoke() { return _smoke; }
-    void next() {}
-    bool cleanup() { return false; }
-
-    Smoke::Method &method() {
-        return _smoke->methods[_methodIndex];
-    }
-};
-
-class MethodCall : public Marshall {
-    Smoke *_smoke;
-    int _curArgIndex;
-    Smoke::Stack _stack;
-    Smoke::Index _methodIndex;
-    smokeperl_object *_this;
-    Smoke::Index *_args;
-    SV **_sp;
-    SV *_retval;
-    int _items;
-
-    void _castArgs() {
-        int oldArgIndex = _curArgIndex;
-        _curArgIndex++; // Start at 0
-        while( _curArgIndex < _items ) {
-            // We need to know the datatype of each argument
-            Marshall::HandlerFn fn = getMarshallFn(type());
-            (*fn)(this); // Modifies _stack
-            _curArgIndex++;
-        }
-
-        _curArgIndex = oldArgIndex;
-    }
-
-public:
-    MethodCall(Smoke *smoke, Smoke::Index methodIndex, smokeperl_object *call_this, SV **sp, int items):
-      _smoke(smoke), _curArgIndex(-1), _methodIndex(methodIndex), _this(call_this), _sp(sp), _items(items) {
-        _stack = new Smoke::StackItem[items + 1];
-        _args = _smoke->argumentList + _smoke->methods[_methodIndex].args;
-        _retval = newSV(0);
-    }
-
-    ~MethodCall() {
-        delete[] _stack;
-    }
-
-    // Returns the data type of the incoming argument(s)
-    SmokeType type() { return SmokeType(_smoke, _args[_curArgIndex]); }
-
-    // We're converting from an SV from perl
-    Marshall::Action action() { return Marshall::FromSV; }
-
-    Smoke::StackItem &item() { return _stack[_curArgIndex + 1]; }
-
-    SV *var() {
-        if(_curArgIndex < 0)
-            return _retval;
-        return *(_sp + _curArgIndex);
-    }
-
-    void unsupported() { 
-        croak("Cannot handle '%s' as argument to %s::%s",
-            type().name(),
-            _smoke->className(method().classId),
-            _smoke->methodNames[method().name]);
-    }
-
-    Smoke *smoke() { return _smoke; };
-
-    void next() {
-        // Marshall incoming arguments
-        _castArgs();
-        callMethod();
-    }
-
-    bool cleanup() { return true; }
-
-    inline const Smoke::Method &method() {
-        return _smoke->methods[_methodIndex];
-    }
-
-    void callMethod() {
-        Smoke::Method *method = _smoke->methods + _methodIndex;
-        Smoke::ClassFn fn = _smoke->classes[method->classId].classFn;
-
-        void *ptr = _smoke->cast(
-            _this->ptr,
-            _this->classId,
-            _smoke->methods[_methodIndex].classId
-        );
-
-        // Call the method
-        (*fn)(method->method, ptr, _stack);
-
-        // Tell the method call what binding to use
-        if (method->flags & Smoke::mf_ctor) {
-            Smoke::StackItem s[2];
-            s[1].s_voidp = perlqt_modules[_smoke].binding;
-            (*fn)(0, _stack[0].s_voidp, s);
-        }
-
-        // Marshall the return value
-        MethodReturnValue callreturn( _smoke, _methodIndex, _stack );
-
-        // Save the result
-        _retval = callreturn.var();
-    }
-};
 
 namespace PerlQt {
 Binding::Binding() : SmokeBinding(0) {};
@@ -462,7 +223,7 @@ XS(XS_Qt__myQTableView_setRootIndex){
 
     Smoke::Index methodIndex = getMethod(qt_Smoke, classname, methodname );
 
-    MethodCall call( qt_Smoke, methodIndex, sv_obj_info(ST(0)), SP - items + 2, items - 1 );
+    PerlQt::MethodCall call( qt_Smoke, methodIndex, sv_obj_info(ST(0)), SP - items + 2, items - 1 );
     call.next();
 
     SV* retval = call.var();
@@ -598,7 +359,7 @@ XS(XS_AUTOLOAD){
         }
 
         // We need current_object, methodid, and args to call the method
-        MethodCall call( qt_Smoke,
+        PerlQt::MethodCall call( qt_Smoke,
                          methodid,
                          call_this,
                          SP - items + 1 + withObject,
