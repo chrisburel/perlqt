@@ -50,13 +50,15 @@ sub import {
             if(grep { $_ eq 'Exporter' } @{$A->("$name\::ISA")});
     });
 
-    foreach my $sp ('  ', ' ', '') {
+    foreach my $sp (' ', '') {
         my $where = $sp . $caller;
         Qt4::_internal::installautoload($where);
         package Qt4::AutoLoad;
         my $autosub = \&{$where . '::_UTOLOAD'};
         $ISUB->($where.'::AUTOLOAD', sub { &$autosub });
     }
+
+    Qt4::_internal::installSub( " ${caller}::isa", \&Qt4::_internal::isa );
 
     Qt4::_internal::installthis($caller);
 }

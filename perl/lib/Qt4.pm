@@ -711,6 +711,7 @@ package Qt4::_internal;
 
 use strict;
 use warnings;
+use Scalar::Util qw( blessed );
 
 # These 2 hashes provide lookups from a perl package name to a smoke
 # classid, and vice versa
@@ -978,29 +979,6 @@ sub getSmokeMethodId {
     my @methodIds = map { findMethod( $classname, $_ ) } @mungedMethods;
 
     my $cacheLookup = 1;
-
-    # If we didn't get any methodIds, look for alternatives, and try convert
-    # the arguments we have to the kind this method call wants
-    if (!@methodIds) {
-        my @altMethod = findAnyPossibleMethod( $classname, $methodname, @_ );
-
-        # Only try this if there's only one possible alternative
-        if ( @altMethod == 1 ) {
-            my $altMethod = $altMethod[0];
-            foreach my $argId ( 0..$#_ ) {
-                my $wantType = getTypeNameOfArg( $altMethod, $argId );
-                $wantType =~ s/^const\s+//;
-                $wantType =~ s/(?<=\w)[&*]$//g;
-                $wantType = normalize_classname( $wantType );
-                no strict qw( refs );
-                $_[$argId] = $wantType->( $_[$argId] );
-                use strict;
-            }
-            my( $methodId ) = getSmokeMethodId( @_, $classId, $methodname, $classname );
-            # Don't cache this lookup.
-            return $methodId, 0;
-        }
-    }
 
     # If we got more than 1 method id, resolve it
     if (@methodIds > 1) {
@@ -1447,6 +1425,15 @@ sub Qt4::Application::NEW {
     setThis( $retval );
     setQApp( $retval );
     shift @$argv;
+}
+
+sub isa {
+    my ( $class, $baseClass ) = @_;
+    if ( blessed( $class ) ) {
+        $class = ref $class;
+        $class =~ s/^ //;
+    }
+    return $class->isa( $baseClass );
 }
 
 package Qt4;
