@@ -164,7 +164,7 @@ sub recalculateResult
 sub addOp
 {
     my ($mode, $name) = @_;
-    this->operatorComboBox->addItem($name, Qt::Variant(${$mode}));
+    this->operatorComboBox->addItem($name, Qt::Variant(Qt::Int(${$mode})));
 }
 # [9]
 

@@ -172,8 +172,8 @@ sub NEW
 
 # [11]
     this->{fillRuleComboBox} = Qt::ComboBox();
-    this->fillRuleComboBox->addItem(this->tr('Odd Even'), Qt::Variant(${Qt::OddEvenFill()}));
-    this->fillRuleComboBox->addItem(this->tr('Winding'), Qt::Variant(${Qt::WindingFill()}));
+    this->fillRuleComboBox->addItem(this->tr('Odd Even'), Qt::Variant(Qt::Int(${Qt::OddEvenFill()})));
+    this->fillRuleComboBox->addItem(this->tr('Winding'), Qt::Variant(Qt::Int(${Qt::WindingFill()})));
 
     this->{fillRuleLabel} = Qt::Label(this->tr('Fill &Rule:'));
     this->fillRuleLabel->setBuddy(this->fillRuleComboBox);
