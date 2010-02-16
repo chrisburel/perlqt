@@ -30,6 +30,44 @@ void marshall_QString(Marshall *m){
     }
 }
 
+static void marshall_charP(Marshall *m) {
+    switch(m->action()) {
+      case Marshall::FromSV:
+        {
+            SV *sv = m->var();
+            if(!SvOK(sv)) {
+                m->item().s_voidp = 0;
+                break;
+            }
+            if(m->cleanup())
+                m->item().s_voidp = SvPV_nolen(sv);
+            else {
+                STRLEN len;
+                char *svstr = SvPV(sv, len);
+                char *str = new char [len + 1];
+                strncpy(str, svstr, len);
+                str[len] = 0;
+                m->item().s_voidp = str;
+            }
+        }
+        break;
+      case Marshall::ToSV:
+        {
+            char *p = (char*)m->item().s_voidp;
+            if(p)
+                sv_setpv_mg(m->var(), p);
+            else
+                sv_setsv_mg(m->var(), &PL_sv_undef);
+            if(m->cleanup())
+                delete[] p;
+        }
+        break;
+      default:
+        m->unsupported();
+        break;
+    }
+}
+
 template <class T>
 static void marshall_it(Marshall *m) {
     switch(m->action()) {
@@ -173,6 +211,8 @@ TypeHandler Qt_handlers[] = {
     { "const QString", marshall_QString },
     { "const QString&", marshall_QString },
     { "const QString*", marshall_QString },
+    { "char*", marshall_charP },
+    { "const char*", marshall_charP },
     { "void", marshall_void },
     { 0, 0 }
 };

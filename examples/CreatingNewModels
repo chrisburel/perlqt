@@ -38,7 +38,7 @@ sub data {
         return Qt::QVariant();
     }
 
-    if ($role == 0 ) { #Qt::DisplayRole
+    if ($role == Qt::Qt::DisplayRole()) {
         return Qt::QVariant($stringList[$modelRow]);
     }
     else {
@@ -48,11 +48,11 @@ sub data {
 
 sub headerData {
     my ( $section, $orientation, $role ) = @_;
-    if ( $role != 0 ) { #Qt::DisplayRole
+    if ( $role != Qt::Qt::DisplayRole() ) {
         return Qt::QVariant();
     }
 
-    if ( $orientation == 1 ) { #Qt::Horizontal
+    if ( $orientation == Qt::Qt::Horizontal() ) {
         return Qt::QVariant("Column " . $section);
     }
     else {
@@ -64,15 +64,15 @@ sub flags {
     my ( $index ) = @_;
 
     if (!$index->isValid()) {
-        return 32; #Qt::ItemIsEnabled
+        return Qt::Qt::ItemIsEnabled();
     }
 
-    return SUPER->flags(this, $index) | 2; #Qt::ItemIsEditable
+    return SUPER->flags(this, $index) | Qt::Qt::ItemIsEditable();
 }
 
 sub setData {
     my( $index, $value, $role ) = @_;
-    if ($index->isValid() && $role == 2) { #Qt::EditRole
+    if ($index->isValid() && $role == Qt::Qt::EditRole()) { 
         @stringList[$index->row()] = $value->toString();
         this->dataChanged($index, $index); # emit
         return 1;

@@ -9,10 +9,14 @@ use Qt;
 
 sub main {
     my $quit = Qt::QPushButton("Quit");
-    $quit->resize(75, 30);
-    $quit->setFont(Qt::QFont("Times", 18));
+    $quit->resize(150, 30);
+    $quit->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+
+    Qt::QObject::connect( $quit, SIGNAL "clicked()",
+                          Qt::qapp(), SLOT "quit()" );
 
     $quit->show();
+
     return Qt::appexec();
 }
 

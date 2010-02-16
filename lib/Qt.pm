@@ -95,14 +95,17 @@ require Exporter;
 
 our $VERSION = '0.01';
 
-our @EXPORT = qw( &emit );
+our @EXPORT = qw( SIGNAL SLOT emit );
 
 XSLoader::load('Qt', $VERSION);
 
 Qt::_internal::init();
 
+sub SIGNAL ($) { '2' . $_[0] }
+sub SLOT ($) { '1' . $_[0] }
 sub emit (@) { pop @_ }
 
+sub import { goto &Exporter::import }
 # Preloaded methods go here.
 
 1;

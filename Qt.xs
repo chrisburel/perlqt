@@ -552,6 +552,22 @@ appexec()
     OUTPUT:
         RETVAL
 
+SV *
+qapp()
+    CODE:
+        HV *hv = newHV();
+        RETVAL = newRV_noinc((SV*)hv);
+        sv_bless( RETVAL, gv_stashpv(" Qt::QApplication", TRUE));
+        smokeperl_object o;
+        o.smoke = qt_Smoke;
+        o.classId = 46;
+        o.ptr = qapp;
+        o.allocated = true;
+
+        sv_magic((SV*)hv, 0, '~', (char*)&o, sizeof(o));
+    OUTPUT:
+        RETVAL
+
 BOOT:
     init_qt_Smoke();
     binding = PerlQt::Binding(qt_Smoke);
