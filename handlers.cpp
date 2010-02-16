@@ -68,6 +68,43 @@ static void marshall_charP(Marshall *m) {
     }
 }
 
+void marshall_voidP_array(Marshall *m) {
+    switch(m->action()) {
+        case Marshall::FromSV:
+        {
+            SV* sv = m->var();
+            fprintf( stderr, "FromSV\n" );
+            m->unsupported();
+        }
+        break;
+        case Marshall::ToSV:
+        {
+            //fprintf( stderr, "ToSV\n" );
+
+            void* cxxptr = m->item().s_voidp;
+
+            HV *hv = newHV();
+            SV *var = newRV_noinc((SV*)hv);
+            sv_bless( var, gv_stashpv( "voidparray", TRUE ) );
+
+            smokeperl_object o;
+            o.smoke = m->smoke();
+            o.classId = m->type().classId();
+            o.ptr = cxxptr;
+            o.allocated = true;
+
+            sv_magic((SV*)hv, 0, '~', (char*)&o, sizeof(o));
+            SvSetMagicSV(m->var(), var);
+
+            SvREFCNT_dec(var);
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
+    }
+}
+
 template <class T>
 static void marshall_it(Marshall *m) {
     switch(m->action()) {
@@ -214,6 +251,7 @@ TypeHandler Qt_handlers[] = {
     { "char*", marshall_charP },
     { "const char*", marshall_charP },
     { "void", marshall_void },
+    { "void**", marshall_voidP_array },
     { 0, 0 }
 };
 

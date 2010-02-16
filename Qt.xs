@@ -22,10 +22,12 @@
 #ifdef do_close
 #undef do_close
 #endif
-#include "Qt/qapplication.h"
-#include "QtCore/QHash"
-#include "QtCore/QModelIndex"
 #include "QtCore/QAbstractItemModel"
+#include "QtCore/QHash"
+#include "QtCore/QMetaObject"
+#include "QtCore/QModelIndex"
+#include "QtGui/QApplication"
+#include "QtGui/QWidget"
 
 extern Q_DECL_EXPORT Smoke *qt_Smoke;
 extern Q_DECL_EXPORT void init_qt_Smoke();
@@ -51,14 +53,20 @@ void Binding::deleted(Smoke::Index classId, void *ptr) {
 }
 
 bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool isAbstract) {
+    if( do_debug && (do_debug & qtdb_virtual)){
+        Smoke::Method methodobj = qt_Smoke->methods[method];
+        fprintf( stderr, "Looking for virtual method override for %s::%s()\n",
+            qt_Smoke->classes[methodobj.classId].className, qt_Smoke->methodNames[methodobj.name] );
+    }
     // Look for a perl sv associated with this pointer
     SV *obj = getPointerObject(ptr);
     smokeperl_object *o = sv_obj_info(obj);
 
     // Didn't find one
     if(!o) {
-        if(!PL_dirty) // If not in global destruction
-            fprintf(stderr, "Cannot find object for virtual method\n");
+        if(!PL_dirty && (do_debug && (do_debug & qtdb_virtual))) // If not in global destruction
+            //fprintf(stderr, "Cannot find object for virtual method\n");
+            1;
         return false;
     }
 
@@ -274,6 +282,85 @@ XS(XS_Qt__myQTableView_setRootIndex){
     XSRETURN(1);
 }
 
+void callmyfreakinslot( int setValue ){
+    //Call the perl sub
+    //Copy the way the VirtualMethodCall does it
+    HV *stash = SvSTASH(SvRV(sv_this));
+    if(*HvNAME(stash) == ' ' ) // if withObject, look for a diff stash
+        stash = gv_stashpv(HvNAME(stash) + 1, TRUE);
+
+    GV *gv = gv_fetchmethod_autoload(stash, "setValue", 0);
+    if(!gv) {
+        fprintf( stderr, "DAMNIT\n" );
+        return;
+    }
+
+    dSP;
+    ENTER;
+    SAVETMPS;
+    PUSHMARK(SP);
+    PUSHs(sv_2mortal( newSViv( setValue ) ));
+    PUTBACK;
+    call_sv((SV*)GvCV(gv), G_VOID);
+}    
+
+void callmyfreakinsignal(int _t1) {
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+
+    QWidget* sv_this_ptr = (QWidget*)sv_obj_info(sv_this)->ptr;
+
+    HV *stash = gv_stashpv("Qt::_internal", TRUE);
+    GV *gv = gv_fetchmethod_autoload(stash, "getMetaObject", 0);
+    if(!gv) {
+        fprintf( stderr, "DAMNIT\n" );
+        return;
+    }
+
+    // We need the meta object to use
+    dSP;
+    ENTER;
+    SAVETMPS;
+    PUSHMARK(SP);
+    PUSHs( sv_2mortal( newSVpv( "LCDRange", 20 ) ) );
+    PUTBACK;
+    call_sv((SV*)GvCV(gv), G_SCALAR);
+    // Get the return value back
+    SPAGAIN;
+    QMetaObject* myMetaObject = (QMetaObject*)sv_obj_info(POPs)->ptr;
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+
+    QMetaObject::activate(sv_this_ptr, myMetaObject, 0, _a);
+}
+
+XS(XS_myqt_metacall){
+    dXSARGS;
+
+    // Get my arguments off the stack
+    QWidget* sv_this_ptr = (QWidget*)sv_obj_info(sv_this)->ptr;
+    QMetaObject::Call _c = (QMetaObject::Call)SvIV(ST(0));
+    int _id = (int)SvIV(ST(1));
+    void** _a = (void**)sv_obj_info(ST(2))->ptr;
+
+    // Duplicate code from stock moc_lcdrange.cpp's qt_metacall
+    _id = sv_this_ptr->QWidget::qt_metacall(_c, _id, _a);
+
+    if(_id >= 0) {
+        if (_c == QMetaObject::InvokeMetaMethod) {
+            switch (_id) {
+            case 0: callmyfreakinsignal( *((int*)_a[1]) ); break;
+            case 1: callmyfreakinslot( *((int*)_a[1]) ); break;
+            }
+            _id -= 2;
+        }
+    }
+
+    SV* retval = newSViv(_id);
+    ST(0) = retval;
+    XSRETURN(1);
+}
+
 XS(XS_AUTOLOAD){
     dXSARGS;
     SV *autoload = get_sv("Qt::AutoLoad::AUTOLOAD", TRUE);
@@ -304,7 +391,17 @@ XS(XS_AUTOLOAD){
     }
 
     if( do_debug && ( do_debug | qtdb_autoload ) ) {
-        fprintf(stderr, "In XS Autoload for %s::%s\n", package, methodname);
+        fprintf(stderr, "In XS Autoload for %s::%s()", package, methodname);
+        if((do_debug & qtdb_verbose) && (withObject || isSuper)) {
+            smokeperl_object *o = sv_obj_info(withObject ? ST(0) : sv_this);
+            if(o)
+                fprintf(stderr, " - this: (%s)%p\n", o->smoke->classes[o->classId].className, o->ptr);
+            else
+                fprintf(stderr, " - this: (unknown)(nil)\n");
+        }
+        else {
+            fprintf(stderr, "\n");
+        }
     }
 
     // Look to see if there's a perl subroutine for this method
@@ -319,7 +416,7 @@ XS(XS_AUTOLOAD){
             if(do_debug && (do_debug & qtdb_autoload))
                 fprintf(stderr, "\tfound in %s's Perl stash\n", package);
 
-            SV *old_this;
+            SV *old_this = 0;
             if(withObject && !isSuper){
                 old_this = sv_this;
                 sv_this = newSVsv(ST(0));
@@ -522,6 +619,58 @@ installthis(package)
         sv_setpv((SV*)attrsub, ""); // sub this () : lvalue; perldoc perlsub
         delete[] attr;
 
+SV*
+make_metaObject(obj,parentMeta,stringdata_value,data_value)
+        SV* obj
+        SV* parentMeta
+        SV* stringdata_value
+        SV* data_value
+    CODE:
+        // Hard code these values for now
+        // See the moc_lcdrange.cpp file from the Qt4 t7 tutorial.
+        static const uint qt_meta_data_LCDRange[] = {
+         // content:
+               1,       // revision
+               0,       // classname
+               0,    0, // classinfo
+               2,   10, // methods
+               0,    0, // properties
+               0,    0, // enums/sets
+         // signals: signature, parameters, type, tag, flags
+              19,   10,    9,    9, 0x05,
+         // slots: signature, parameters, type, tag, flags
+              43,   37,    9,    9, 0x0a,
+               0        // eod
+        };
+
+        static const char qt_meta_stringdata_LCDRange[] = {
+            "LCDRange\0\0newValue\0valueChanged(int)\0"
+            "value\0setValue(int)\0"
+        };
+
+        const QMetaObject staticMetaObject = {
+            { &QWidget::staticMetaObject, qt_meta_stringdata_LCDRange,
+              qt_meta_data_LCDRange, 0 }
+        };
+        QMetaObject *meta = new QMetaObject;
+        *meta = staticMetaObject;
+
+        //Package up this pointer to be returned to perl
+        smokeperl_object o;
+        o.smoke = qt_Smoke;
+        o.classId = qt_Smoke->idClass("QMetaObject").index,
+        o.ptr = meta;
+        o.allocated = true;
+
+        HV *hv = newHV();
+        RETVAL = newRV_noinc((SV*)hv);
+        sv_bless( RETVAL, gv_stashpv( " Qt::QMetaObject", TRUE ) );
+        sv_magic((SV*)hv, 0, '~', (char*)&o, sizeof(o));
+        //Not sure we need the entry in the pointer_map
+        mapPointer(RETVAL, &o, pointer_map, o.classId, 0);
+    OUTPUT:
+        RETVAL    
+
 void
 setDebug(on)
         int on
@@ -579,3 +728,5 @@ BOOT:
     pointer_map = newHV();
     newXS("myStringListModel::SUPER::flags", XS_Qt__myQAbstractItemModel_flags, file);
     //newXS(" Qt::QTableView::setRootIndex", XS_Qt__myQTableView_setRootIndex, file);
+    newXS("LCDRange::qt_metacall", XS_myqt_metacall, __FILE__);
+    newXS(" LCDRange::qt_metacall", XS_myqt_metacall, __FILE__);

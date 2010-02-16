@@ -15,14 +15,27 @@ sub import {
     }
 
     # Define the Qt::ISA array
+    # Load the file if necessary
     for my $super (@_) {
         push @{ $caller . '::ISA' }, $super;
+        push @{ ${$caller . '::META'}{'superClass'} }, $super;
+        (my $super_pm = $super.'.pm') =~ s!::!/!g;
+        unless( defined $Qt::_internal::package2classid{$super} ){
+            require $super_pm;
+        }
     }
 
     # This hash is used to get an object blessed to the right thing, so that
     # when we call SUPER(), we get this blessed object back.
     ${$caller.'::_INTERNAL_STATIC_'}{'SUPER'} = bless {}, "  $caller";
     Qt::_internal::installsuper($caller) unless defined &{ $caller.'::SUPER' };
+
+    # The perl metaObject holds info about signals and slots, inherited
+    # sig/slots, etc.  This is what actually causes perl-defined sig/slots to
+    # be defined.
+    *{ $caller . '::metaObject' } = sub {
+        return Qt::_internal::getMetaObject($caller);
+    };
 
     # Make it so that 'use <packagename>' makes a subroutine called
     # <packagename> that calls ->new

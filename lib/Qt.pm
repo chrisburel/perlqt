@@ -23,6 +23,26 @@ use strict;
 
 our %package2classid;
 
+sub getMetaObject {
+    no strict 'refs';
+    my $class = shift;
+    my $meta = \%{ $class . '::META' };
+
+    # If no signals/slots/properties have been added since the last time this
+    # was asked for, return the saved one.
+    return $meta->{object} if $meta->{object} and !$meta->{changed};
+
+    # Use hardcoded signals and slots that are defined in the XS module.
+    $meta->{object} = Qt::_internal::make_metaObject(
+        undef,
+        undef,
+        undef,
+        undef );
+
+    $meta->{changed} = 0;
+    return $meta->{object};
+}
+
 sub init_class {
     no strict 'refs';
     my ($cxxClassName) = @_;
