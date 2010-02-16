@@ -5,14 +5,14 @@ package Pong;
 use strict;
 use warnings;
 
-use Qt;
-use Qt::isa qw( Qt::DBusAbstractAdaptor );
-use Qt::classinfo
-    'D-Bus Interface' => 'com.trolltech.QtDBus.ComplexPong.Pong';
+use Qt4;
+use Qt4::isa qw( Qt4::DBusAbstractAdaptor );
+use Qt4::classinfo
+    'D-Bus Interface' => 'com.trolltech.Qt4DBus.ComplexPong.Pong';
 
-use Qt::signals
+use Qt4::signals
     aboutToQuit => [];
-use Qt::slots
+use Qt4::slots
     'QDBusVariant query' => ['const QString&'],
     'QString value' => [],
     setValue => ['QString'],
@@ -33,29 +33,29 @@ sub setValue {
 }
 
 sub quit {
-    Qt::Timer::singleShot(0, Qt::Application::instance(), SLOT 'quit()');
+    Qt4::Timer::singleShot(0, Qt4::Application::instance(), SLOT 'quit()');
 }
 
 sub query {
     my ( $query ) = @_;
     my $q = lc $query;
     if ($q eq 'hello') {
-        return Qt::DBusVariant('World');
+        return Qt4::DBusVariant('World');
     }
     if ($q eq 'ping') {
-        return Qt::DBusVariant('Pong');
+        return Qt4::DBusVariant('Pong');
     }
     if ($q =~ m/the answer to life, the universe and everything/) {
-        return Qt::DBusVariant(42);
+        return Qt4::DBusVariant(42);
     }
     if ($q =~ m/unladen swallow/) {
         if ($q =~ m/european/) {
-            return Qt::DBusVariant(11.0);
+            return Qt4::DBusVariant(11.0);
         }
-        return Qt::DBusVariant('african or european?');
+        return Qt4::DBusVariant('african or european?');
     }
 
-    return Qt::DBusVariant('Sorry, I don\'t know the answer');
+    return Qt4::DBusVariant('Sorry, I don\'t know the answer');
 }
 
 1;
@@ -66,7 +66,7 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
+use Qt4;
 use PingCommon qw( SERVICE_NAME );
 use Pong;
 use IO::Handle;
@@ -76,17 +76,17 @@ sub main {
     STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
     STDERR->fdopen( \*OUTPUT, 'w' ) or die $!;
 
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
 
-    my $obj = Qt::Object();
+    my $obj = Qt4::Object();
     my $pong = Pong($obj);
     $pong->connect($app, SIGNAL 'aboutToQuit()', SIGNAL 'aboutToQuit()' );
-    $pong->setValue(Qt::Variant('initial value'));
-    Qt::DBusConnection::sessionBus()->registerObject('/', $obj);
+    $pong->setValue(Qt4::Variant('initial value'));
+    Qt4::DBusConnection::sessionBus()->registerObject('/', $obj);
 
-    if (!Qt::DBusConnection::sessionBus()->registerService(SERVICE_NAME)) {
+    if (!Qt4::DBusConnection::sessionBus()->registerService(SERVICE_NAME)) {
         printf STDERR "%s\n",
-                Qt::DBusConnection::sessionBus()->lastError()->message();
+                Qt4::DBusConnection::sessionBus()->lastError()->message();
         exit 1;
     }
     

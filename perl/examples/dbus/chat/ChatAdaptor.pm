@@ -2,9 +2,9 @@ package ChatAdaptor;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::DBusAbstractAdaptor );
-use Qt::classinfo
+use Qt4;
+use Qt4::isa qw( Qt4::DBusAbstractAdaptor );
+use Qt4::classinfo
     'D-Bus Interface' => 'com.trolltech.chat',
     'D-Bus Introspection' => '' .
 "  <interface name=\'com.trolltech.chat\' >\n" .
@@ -18,7 +18,7 @@ use Qt::classinfo
 "    </signal>\n" .
 "  </interface>\n" .
         '';
-use Qt::signals
+use Qt4::signals
     action => ['const QString &', 'const QString &'],
     message => ['const QString &', 'const QString &'];
 

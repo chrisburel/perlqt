@@ -2,13 +2,13 @@
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 
 sub method1
 {
     print "Method 1:\n";
 
-    my $reply = Qt::DBusConnection::sessionBus()->interface()->registeredServiceNames();
+    my $reply = Qt4::DBusConnection::sessionBus()->interface()->registeredServiceNames();
     if ( !$reply->isValid ) {
         print 'Error:' . $reply->message() . "\n";
         exit 1;
@@ -22,8 +22,8 @@ sub method2
 {
     print "Method 2:\n";
 
-    my $bus = Qt::DBusConnection::sessionBus();
-    my $dbus_iface = Qt::DBusInterface('org.freedesktop.DBus', '/org/freedesktop/DBus',
+    my $bus = Qt4::DBusConnection::sessionBus();
+    my $dbus_iface = Qt4::DBusInterface('org.freedesktop.DBus', '/org/freedesktop/DBus',
                               'org.freedesktop.DBus', $bus);
     print
         '("',
@@ -37,15 +37,15 @@ sub method3
     print "Method 3:\n";
     print
         '("',
-        join( '", "', @{Qt::DBusConnection::sessionBus()->interface()->registeredServiceNames()->value()} ),
+        join( '", "', @{Qt4::DBusConnection::sessionBus()->interface()->registeredServiceNames()->value()} ),
         "\")\n";
 }
 
 sub main
 {
-    my $app = Qt::CoreApplication(\@ARGV);
+    my $app = Qt4::CoreApplication(\@ARGV);
 
-    if (!Qt::DBusConnection::sessionBus()->isConnected()) {
+    if (!Qt4::DBusConnection::sessionBus()->isConnected()) {
         print STDERR "Cannot connect to the D-Bus session bus.\n" .
                 "To start it, run:\n" .
                 "\teval \`dbus-launch --auto-syntax\`\n";

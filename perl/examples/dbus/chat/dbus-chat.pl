@@ -4,8 +4,8 @@ package NicknameDialog;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::Dialog );
+use Qt4;
+use Qt4::isa qw( Qt4::Dialog );
 use Ui_NicknameDialog;
 
 sub cancelButton {
@@ -31,13 +31,13 @@ package ChatMainWindow;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::MainWindow );
-use Qt::signals
+use Qt4;
+use Qt4::isa qw( Qt4::MainWindow );
+use Qt4::signals
     message => ['const QString &', 'const QString &'],
     action => ['const QString &', 'const QString &'];
 
-use Qt::slots
+use Qt4::slots
     messageSlot => ['const QString &', 'const QString &'],
     actionSlot => ['const QString &', 'const QString &'],
     textChangedSlot => ['const QString &'],
@@ -84,11 +84,11 @@ sub NEW
 
     # add our D-Bus interface and connect to D-Bus
     ChatAdaptor(this);
-    Qt::DBusConnection::sessionBus()->registerObject('/', this);
+    Qt4::DBusConnection::sessionBus()->registerObject('/', this);
 
-    my $iface = ComTrolltechChatInterface('', '', Qt::DBusConnection::sessionBus(), this);
-    #connect(iface, SIGNAL 'message(Qt::String,Qt::String)', this, SLOT 'messageSlot(Qt::String,Qt::String)');
-    Qt::DBusConnection::sessionBus()->connect('', '', 'com.trolltech.chat', 'message', this, SLOT 'messageSlot(QString,QString)');
+    my $iface = ComTrolltechChatInterface('', '', Qt4::DBusConnection::sessionBus(), this);
+    #connect(iface, SIGNAL 'message(Qt4::String,Qt4::String)', this, SLOT 'messageSlot(Qt4::String,Qt4::String)');
+    Qt4::DBusConnection::sessionBus()->connect('', '', 'com.trolltech.chat', 'message', this, SLOT 'messageSlot(QString,QString)');
     this->connect($iface, SIGNAL 'action(QString,QString)', this, SLOT 'actionSlot(QString,QString)');
 
     my $dialog = NicknameDialog();
@@ -137,18 +137,18 @@ sub textChangedSlot
 sub sendClickedSlot
 {
     #emit message(m_nickname, messageLineEdit->text());
-    my $msg = Qt::DBusMessage::createSignal('/', 'com.trolltech.chat', 'message');
+    my $msg = Qt4::DBusMessage::createSignal('/', 'com.trolltech.chat', 'message');
     no warnings qw(void);
-    $msg << Qt::String(this->m_nickname) << Qt::String(this->ui->messageLineEdit->text());
+    $msg << Qt4::String(this->m_nickname) << Qt4::String(this->ui->messageLineEdit->text());
     use warnings;
-    Qt::DBusConnection::sessionBus()->send($msg);
+    Qt4::DBusConnection::sessionBus()->send($msg);
     this->ui->messageLineEdit->setText('');
 }
 
 sub changeNickname
 {
     my $dialog = NicknameDialog(this);
-    if ($dialog->exec() == Qt::Dialog::Accepted()) {
+    if ($dialog->exec() == Qt4::Dialog::Accepted()) {
         my $old = this->m_nickname;
         this->{m_nickname} = $dialog->nickname->text();
         emit this->action($old, 'is now known as ' . this->m_nickname);
@@ -157,7 +157,7 @@ sub changeNickname
 
 sub aboutQt()
 {
-    Qt::MessageBox::aboutQt(this);
+    Qt4::MessageBox::aboutQt(this);
 }
 
 sub exiting
@@ -169,14 +169,14 @@ package main;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use ChatMainWindow;
 
 sub main
 {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
 
-    if (!Qt::DBusConnection::sessionBus()->isConnected()) {
+    if (!Qt4::DBusConnection::sessionBus()->isConnected()) {
         warn "Cannot connect to the D-Bus session bus.\n" .
              "Please check your system settings and try again.\n";
         return 1;

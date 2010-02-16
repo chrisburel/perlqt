@@ -3,23 +3,23 @@
 use strict;
 use warnings;
 
-use Qt;
-use Qt::isa qw( Qt::Object );
+use Qt4;
+use Qt4::isa qw( Qt4::Object );
 
 use PingCommon qw( SERVICE_NAME );
 
 sub main {
-    my $app = Qt::Application(\@ARGV);
+    my $app = Qt4::Application(\@ARGV);
 
-    if (!Qt::DBusConnection::sessionBus()->isConnected()) {
+    if (!Qt4::DBusConnection::sessionBus()->isConnected()) {
         die "Cannot connect to the D-BUS session bus.\n" .
                 "To start it, run:\n" .
                 "\teval `dbus-launch --auto-syntax`\n";
     }
 
-    my $iface = Qt::DBusInterface(SERVICE_NAME, '/', '', Qt::DBusConnection::sessionBus());
+    my $iface = Qt4::DBusInterface(SERVICE_NAME, '/', '', Qt4::DBusConnection::sessionBus());
     if ($iface->isValid()) {
-        my $reply = Qt::DBusReply( $iface->call( 'ping', Qt::Variant(@ARGV > 0 ? $ARGV[0] : '')) );
+        my $reply = Qt4::DBusReply( $iface->call( 'ping', Qt4::Variant(@ARGV > 0 ? $ARGV[0] : '')) );
         if ($reply->isValid()) {
             printf "Reply was: %s\n", $reply->value();
             exit 0;
@@ -30,7 +30,7 @@ sub main {
     }
 
     printf STDERR "%s\n",
-            Qt::DBusConnection::sessionBus()->lastError()->message();
+            Qt4::DBusConnection::sessionBus()->lastError()->message();
     exit 1;
 }
 

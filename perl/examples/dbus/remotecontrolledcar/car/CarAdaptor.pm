@@ -2,9 +2,9 @@ package CarAdaptor;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::DBusAbstractAdaptor );
-use Qt::classinfo
+use Qt4;
+use Qt4::isa qw( Qt4::DBusAbstractAdaptor );
+use Qt4::classinfo
     'D-Bus Interface' => 'com.trolltech.Examples.CarInterface',
     'D-Bus Introspection' => '' .
 "  <interface name=\'com.trolltech.Examples.CarInterface\' >\n" .
@@ -15,12 +15,12 @@ use Qt::classinfo
 "    <signal name=\'crashed\' />\n" .
 "  </interface>\n" .
         '';
-use Qt::slots
+use Qt4::slots
     accelerate => [],
     decelerate => [],
     turnLeft => [],
     turnRight => [];
-use Qt::signals
+use Qt4::signals
     crashed => [];
 
 sub NEW
@@ -35,28 +35,28 @@ sub NEW
 sub accelerate
 {
     # handle method call com.trolltech.Examples.CarInterface.accelerate
-    #Qt::MetaObject::invokeMethod(this->{car}, 'accelerate');
+    #Qt4::MetaObject::invokeMethod(this->{car}, 'accelerate');
     this->{car}->accelerate();
 }
 
 sub decelerate
 {
     # handle method call com.trolltech.Examples.CarInterface.decelerate
-    #Qt::MetaObject::invokeMethod(this->{car}, 'decelerate');
+    #Qt4::MetaObject::invokeMethod(this->{car}, 'decelerate');
     this->{car}->decelerate();
 }
 
 sub turnLeft
 {
     # handle method call com.trolltech.Examples.CarInterface.turnLeft
-    #Qt::MetaObject::invokeMethod(this->{car}, 'turnLeft');
+    #Qt4::MetaObject::invokeMethod(this->{car}, 'turnLeft');
     this->{car}->turnLeft();
 }
 
 sub turnRight
 {
     # handle method call com.trolltech.Examples.CarInterface.turnRight
-    #Qt::MetaObject::invokeMethod(this->{car}, 'turnRight');
+    #Qt4::MetaObject::invokeMethod(this->{car}, 'turnRight');
     this->{car}->turnRight();
 }
 

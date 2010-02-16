@@ -2,10 +2,10 @@ package Controller;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use Ui_Controller;
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     on_accelerate_clicked => [],
     on_decelerate_clicked => [],
     on_left_clicked => [],
@@ -26,7 +26,7 @@ sub NEW
     $class->SUPER::NEW($parent);
     this->{ui} = Ui_Controller->setupUi(this);
     this->{car} = CarInterface('com.trolltech.CarExample', '/Car',
-                           Qt::DBusConnection::sessionBus(), this);
+                           Qt4::DBusConnection::sessionBus(), this);
     this->startTimer(1000);
 }
 

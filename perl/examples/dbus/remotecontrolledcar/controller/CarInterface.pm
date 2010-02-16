@@ -2,20 +2,20 @@ package CarInterface;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::DBusAbstractInterface );
+use Qt4;
+use Qt4::isa qw( Qt4::DBusAbstractInterface );
 
 sub staticInterfaceName {
     return 'com.trolltech.Examples.CarInterface';
 }
 
-use Qt::slots
+use Qt4::slots
     accelerate => [],
     decelerate => [],
     turnLeft => [],
     turnRight => [];
 
-use Qt::signals
+use Qt4::signals
     crashed => [];
 
 sub NEW
@@ -26,22 +26,22 @@ sub NEW
 
 sub accelerate
 {
-    return this->callWithArgumentList(Qt::DBus::Block(), 'accelerate', []);
+    return this->callWithArgumentList(Qt4::DBus::Block(), 'accelerate', []);
 }
 
 sub decelerate()
 {
-    return this->callWithArgumentList(Qt::DBus::Block(), 'decelerate', []);
+    return this->callWithArgumentList(Qt4::DBus::Block(), 'decelerate', []);
 }
 
 sub turnLeft()
 {
-    return this->callWithArgumentList(Qt::DBus::Block(), 'turnLeft', []);
+    return this->callWithArgumentList(Qt4::DBus::Block(), 'turnLeft', []);
 }
 
 sub turnRight()
 {
-    return this->callWithArgumentList(Qt::DBus::Block(), 'turnRight', []);
+    return this->callWithArgumentList(Qt4::DBus::Block(), 'turnRight', []);
 }
 
 1;
