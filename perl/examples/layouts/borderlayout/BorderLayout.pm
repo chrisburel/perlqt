@@ -19,8 +19,8 @@ package BorderLayout;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::Layout );
+use Qt4;
+use Qt4::isa qw( Qt4::Layout );
 
 use constant {
     West => 1,
@@ -63,12 +63,12 @@ sub addItem
 sub addWidget
 {
     my ($widget, $position) = @_;
-    this->add(Qt::WidgetItem($widget), $position);
+    this->add(Qt4::WidgetItem($widget), $position);
 }
 
 sub expandingDirections
 {
-    return Qt::Horizontal() | Qt::Vertical();
+    return Qt4::Horizontal() | Qt4::Vertical();
 }
 
 sub hasHeightForWidth
@@ -117,18 +117,18 @@ sub setGeometry
         my $position = $wrapper->position;
 
         if ($position == North) {
-            $item->setGeometry(Qt::Rect($rect->x(), $northHeight, $rect->width(),
+            $item->setGeometry(Qt4::Rect($rect->x(), $northHeight, $rect->width(),
                                     $item->sizeHint()->height()));
 
             $northHeight += $item->geometry()->height() + this->spacing();
         } elsif ($position == South) {
-            $item->setGeometry(Qt::Rect($item->geometry()->x(),
+            $item->setGeometry(Qt4::Rect($item->geometry()->x(),
                                     $item->geometry()->y(), $rect->width(),
                                     $item->sizeHint()->height()));
 
             $southHeight += $item->geometry()->height() + this->spacing();
 
-            $item->setGeometry(Qt::Rect($rect->x(),
+            $item->setGeometry(Qt4::Rect($rect->x(),
                               $rect->y() + $rect->height() - $southHeight + this->spacing(),
                               $item->geometry()->width(),
                               $item->geometry()->height()));
@@ -145,17 +145,17 @@ sub setGeometry
         my $position = $wrapper->position;
 
         if ($position == West) {
-            $item->setGeometry(Qt::Rect($rect->x() + $westWidth, $northHeight,
+            $item->setGeometry(Qt4::Rect($rect->x() + $westWidth, $northHeight,
                                     $item->sizeHint()->width(), $centerHeight));
 
             $westWidth += $item->geometry()->width() + this->spacing();
         } elsif ($position == East) {
-            $item->setGeometry(Qt::Rect($item->geometry()->x(), $item->geometry()->y(),
+            $item->setGeometry(Qt4::Rect($item->geometry()->x(), $item->geometry()->y(),
                                     $item->sizeHint()->width(), $centerHeight));
 
             $eastWidth += $item->geometry()->width() + this->spacing();
 
-            $item->setGeometry(Qt::Rect(
+            $item->setGeometry(Qt4::Rect(
                               $rect->x() + $rect->width() - $eastWidth + this->spacing(),
                               $northHeight, $item->geometry()->width(),
                               $item->geometry()->height()));
@@ -163,7 +163,7 @@ sub setGeometry
     }
 
     if ($center) {
-        $center->item->setGeometry(Qt::Rect($westWidth, $northHeight,
+        $center->item->setGeometry(Qt4::Rect($westWidth, $northHeight,
                                         $rect->width() - $eastWidth - $westWidth,
                                         $centerHeight));
     }
@@ -193,12 +193,12 @@ sub add
 sub calculateSize
 {
     my ($sizeType) = @_;
-    my $totalSize = Qt::Size();
+    my $totalSize = Qt4::Size();
 
     for (my $i = 0; $i < scalar @{this->list}; ++$i) {
         my $wrapper = this->list->[$i];
         my $position = $wrapper->position;
-        my $itemSize = Qt::Size();
+        my $itemSize = Qt4::Size();
 
         if ($sizeType == MinimumSize) {
             $itemSize = $wrapper->item->minimumSize();
