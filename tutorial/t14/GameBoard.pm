@@ -30,7 +30,7 @@ sub NEW {
     $force->setRange(10, 50);
 
     my $cannonBox = Qt::QFrame();
-    $cannonBox->setFrameStyle(bless( \(${Qt::QFrame::WinPanel()} | ${Qt::QFrame::Sunken()}), 'Qt::WindowFlags' ) );
+    $cannonBox->setFrameStyle(CAST Qt::QFrame::WinPanel() | Qt::QFrame::Sunken(), 'Qt::WindowFlags');
 
     my $cannonField = CannonField();
 
@@ -73,7 +73,7 @@ sub NEW {
 
     Qt::QShortcut(Qt::QKeySequence(Qt::Qt::Key_Enter()), this, SLOT 'fire()');
     Qt::QShortcut(Qt::QKeySequence(Qt::Qt::Key_Return()), this, SLOT 'fire()');
-    Qt::QShortcut(Qt::QKeySequence(bless(\(${Qt::Qt::CTRL()} + ${Qt::Qt::Key_Q()}), 'Qt::Modifier')), this, SLOT 'close()');
+    Qt::QShortcut(Qt::QKeySequence(Qt::Qt::CTRL() + Qt::Qt::Key_Q()), this, SLOT 'close()');
 
     my $topLayout = Qt::QHBoxLayout();
     $topLayout->addWidget($shoot);

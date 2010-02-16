@@ -215,11 +215,11 @@ sub maybeSave {
         my $ret = Qt::QMessageBox::warning(this, "Application",
                         "The document has been modified.\n" .
                         "Do you want to save your changes?",
-                     bless( \(${Qt::QMessageBox::Save()} | ${Qt::QMessageBox::Discard()} | ${Qt::QMessageBox::Cancel()}), 'QMessageBox::StandardButtons'));
-        if ($$ret == ${Qt::QMessageBox::Save()}) {
+                        CAST Qt::QMessageBox::Save() | Qt::QMessageBox::Discard() | Qt::QMessageBox::Cancel(), 'QMessageBox::StandardButtons'); 
+        if ($ret == Qt::QMessageBox::Save()) {
             return save();
         }
-        elsif ($$ret == ${Qt::QMessageBox::Cancel()}) {
+        elsif ($ret == Qt::QMessageBox::Cancel()) {
             return 0;
         }
     }

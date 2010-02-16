@@ -17,6 +17,31 @@ sub new {
     return $ret;
 }
 
+package Qt::enum::_overload;
+
+use strict;
+
+no strict 'refs';
+
+use overload
+    "fallback" => 1,
+    "==" => "Qt::enum::_overload::op_equal",
+    "+"  => "Qt::enum::_overload::op_plus",
+    "|"  => "Qt::enum::_overload::op_or";
+
+sub op_equal {
+    return 1 if ${$_[0]} == ${$_[1]};
+    return 0;
+}
+
+sub op_plus {
+    return bless( \(${$_[0]} + ${$_[1]}), ref $_[0] );
+}
+
+sub op_or {
+    return bless( \(${$_[0]} | ${$_[1]}), ref $_[0] );
+}
+
 package Qt::_internal;
 
 use strict;
@@ -108,7 +133,6 @@ sub init_class {
     *{ $perlClassName } = sub {
         $perlClassName->new(@_);
     } unless defined &{ $perlClassName };
-
 }
 
 sub init {
@@ -116,6 +140,13 @@ sub init {
     my $classes = getClassList();
     foreach my $perlClassName (@$classes) {
         init_class($perlClassName);
+    }
+    my $enums = getEnumList();
+
+    no strict 'refs';
+    foreach my $enumName (@$enums) {
+        $enumName =~ s/^const //;
+        @{$enumName."::ISA"} = ("Qt::enum::_overload");
     }
 }
 
@@ -202,7 +233,7 @@ require Exporter;
 
 our $VERSION = '0.01';
 
-our @EXPORT = qw( SIGNAL SLOT emit );
+our @EXPORT = qw( SIGNAL SLOT emit CAST );
 
 XSLoader::load('Qt', $VERSION);
 
@@ -211,6 +242,15 @@ Qt::_internal::init();
 sub SIGNAL ($) { '2' . $_[0] }
 sub SLOT ($) { '1' . $_[0] }
 sub emit (@) { pop @_ }
+sub CAST ($$) {
+    my( $var, $class ) = @_;
+    if( ref $var ) {
+        return bless( $var, $class );
+    }
+    else {
+        return bless( \$var, $class );
+    }
+}
 
 sub import { goto &Exporter::import }
 # Preloaded methods go here.

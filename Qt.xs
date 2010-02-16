@@ -47,6 +47,8 @@ void* qapp = 0;
 QHash<Smoke*, PerlQtModule> perlqt_modules;
 static PerlQt::Binding binding;
 
+SV *prettyPrintMethod(Smoke::Index id);
+
 Smoke::Index getMethod(Smoke *smoke, const char* c, const char* m) {
     Smoke::Index method = smoke->findMethod(c, m).index;
     Smoke::Index i = smoke->methodMaps[method].method;
@@ -57,81 +59,82 @@ Smoke::Index getMethod(Smoke *smoke, const char* c, const char* m) {
     return i;
 }
 
-Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
-    methodIndex = -methodIndex; // turn into ambiguousMethodList index
-    Smoke::Index retval = 0;
-    while(qt_Smoke->ambiguousMethodList[methodIndex]) {
-        Smoke::Index curIdx = qt_Smoke->ambiguousMethodList[methodIndex];
-        Smoke::Method method = qt_Smoke->methods[curIdx];
-        Smoke::Index* args = qt_Smoke->argumentList + method.args;
+bool argmatch( Smoke::Index methodIndex, SV** _sp ) {
+    Smoke::Method method = qt_Smoke->methods[methodIndex];
+    if( !method.numArgs ) return true;
+    Smoke::Index* args = qt_Smoke->argumentList + method.args;
 
-        //fprintf( stderr, "%s, id %d: ", qt_Smoke->methodNames[method.name], curIdx );
-        // Compare this method's arguments with perl's arguments
-        bool argmatch = false;
-        for(int i=0; i<method.numArgs; i++) {
-            SmokeType curType( qt_Smoke, args[i] );
+    // Compare this method's arguments with perl's arguments
+    bool argmatch = false;
+    for(int i=0; i<method.numArgs; i++) {
+        SmokeType curType( qt_Smoke, args[i] );
 
-            //fprintf( stderr, "arg %d: %s ", i, curType.name() );
 
-            if( curType.isClass() ) {
-                // Test to see if the perl argument is the same class type
-                smokeperl_object *o = sv_obj_info(_sp[i]);
-                SmokeClass perlClass(qt_Smoke, o->classId);
-                SmokeClass curArgClass(qt_Smoke, curType.classId());
-                if(o && (perlClass.isa(curArgClass)) )
-                    argmatch = true;
-                else {
-                    argmatch = false;
-                    break;
-                }
+        if( curType.isClass() ) {
+            // Test to see if the perl argument is the same class type
+            smokeperl_object *o = sv_obj_info(_sp[i]);
+            SmokeClass perlClass(qt_Smoke, o->classId);
+            SmokeClass curArgClass(qt_Smoke, curType.classId());
+            if(o && (perlClass.isa(curArgClass)) )
+                argmatch = true;
+            else {
+                argmatch = false;
+                break;
+            }
+        }
+        else {
+            QString name(curType.name());
+            // Remove leading const and trailing &/*
+            static QRegExp* rx = 0;
+            if (rx == 0) {
+                rx = new QRegExp("const (.*)[*&]");
+            }
+            name.replace(*rx, "\\1");
+
+            // Check for QString validity
+            if(((name == "QString") || (name == "char")) && SvPOK(_sp[i])) {
+                argmatch = true;
+            }
+            // Check for numerical validity
+            else if((name == "double") && SvNOK(_sp[i])) {
+                argmatch = true;
+            }
+            // Valid cases are iok, uok, or it's a ref of type SVt_PVMG
+            else if((name == "int" || name == "uint") &&
+                (SvIOK(_sp[i]) || SvUOK(_sp[i]) || 
+                (SvROK(_sp[i]) && SvTYPE(SvRV(_sp[i])) == SVt_PVMG) )) {
+                argmatch = true;
+            }
+            // Check for enumerations.  They will be blessed into a package
+            // that has the same name as the name of the argument.
+            else if(SvROK(_sp[i]) && (name == HvNAME(SvSTASH(SvRV(_sp[i]))))) {
+                argmatch = true;
             }
             else {
-                int len = strlen(curType.name()) + 1;
-                char* name = new char[len];
-                memcpy( name, curType.name(), len );
-
-                // Remove leading const and trailing &
-                name += strspn( name, "const " );
-                char* ref = strstr(name, "&");
-                if( ref ) {
-                    *ref = 0;
-                }
-
-                // Check for QString validity
-                if(!strcmp(name, "QString") && SvPOK(_sp[i])) {
-                    argmatch = true;
-                }
-                // Check for numerical validity
-                else if(!strcmp(name, "double") && SvNOK(_sp[i])) {
-                    argmatch = true;
-                }
-                // Valid cases are iok, uok, or it's a ref of type SVt_PVMG
-                else if(!strcmp(name, "int") &&
-                    (SvIOK(_sp[i]) || SvUOK(_sp[i]) || 
-                    (SvROK(_sp[i]) && SvTYPE(SvRV(_sp[i])) == SVt_PVMG) )) {
-                    argmatch = true;
-                }
-                // Check for enumerations.  They will be blessed into a package
-                // that has the same name as the name of the argument.
-                else if(SvROK(_sp[i]) && !strcmp(name, HvNAME(SvSTASH(SvRV(_sp[i]))))) {
-                    argmatch = true;
-                }
-                else {
-                    argmatch = false;
-                    break;
-                }
+                argmatch = false;
+                break;
             }
         }
-        if( argmatch ) {
-            retval = curIdx;
+    }
+    return argmatch;
+}
+
+Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
+    methodIndex = -methodIndex; // turn into ambiguousMethodList index
+    while(qt_Smoke->ambiguousMethodList[methodIndex]) {
+        Smoke::Index curIdx = qt_Smoke->ambiguousMethodList[methodIndex];
+        if(do_debug && (do_debug & qtdb_ambiguous)) 
+            fprintf(stderr, "Testing method\t%d\t%s\n", curIdx, SvPV_nolen(sv_2mortal(prettyPrintMethod(curIdx))));
+
+        if( argmatch( curIdx, _sp ) ){
+            if(do_debug && (do_debug & qtdb_ambiguous)) 
+                fprintf( stderr, "Returning %d\n", curIdx );
+            return curIdx;
         }
-        //fprintf( stderr, "\n" );
         ++methodIndex;
     }
 
-    //fprintf( stderr, "Returning id %d\n", retval );
-
-    return retval;
+    return 0;
 }
 
 
@@ -661,12 +664,31 @@ XS(XS_AUTOLOAD){
         }
 
         Smoke::Index methodid = getMethod( qt_Smoke, classname, methodname );
+
+        // The lookup for the methodid resulted in an ambiguous method.  Run
+        // resolveMethod on the returned id to run argMatch on each possible
+        // methodid to find the correct method.
         if(methodid < 0) {
             if(do_debug && (do_debug & qtdb_ambiguous)){
                 fprintf(stderr, "Ambiguous method %s\n", methodname);
+                if(do_debug & qtdb_verbose) {
+                    fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(SP - items + 1 + withObject, items - withObject))));
+                }
             }
             methodid = resolveMethod( methodid, SP - items + 1 + withObject );
         }
+        // Make sure we're good
+        // Not sure we want to do this...
+        /*
+        else {
+            if( !argmatch( methodid, SP - items + 1 + withObject ) )
+                croak( "--- Arguments don't match for %d %s::%s:\n%s\n%s\n", methodid, classname, methodname,
+                           SvPV_nolen(sv_2mortal(prettyPrintMethod(methodid))),
+                           SvPV_nolen(sv_2mortal(catArguments(SP - items + 1 + withObject, items - withObject))) );
+        }
+        */
+
+        // Make sure the resolveMethod resolved the method.
         if(methodid == 0) {
             croak( "--- No method to call for %s::%s\n", classname, methodname );
         }
@@ -827,6 +849,19 @@ getClassList()
         AV *av = newAV();
         for(int i = 1; i < qt_Smoke->numClasses; i++) {
             av_push(av, newSVpv(qt_Smoke->classes[i].className, 0));
+        }
+        RETVAL = newRV((SV*)av);
+    OUTPUT:
+        RETVAL
+
+SV *
+getEnumList()
+    CODE:
+        AV *av = newAV();
+        for(int i = 1; i < qt_Smoke->numTypes; i++) {
+            Smoke::Type curType = qt_Smoke->types[i];
+            if( (curType.flags & Smoke::tf_elem) == Smoke::t_enum )
+                av_push(av, newSVpv(curType.name, 0));
         }
         RETVAL = newRV((SV*)av);
     OUTPUT:
