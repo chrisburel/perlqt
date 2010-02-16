@@ -54,6 +54,22 @@ void marshall_to_perl<char*>(Marshall* m) {
     sv_setsv_mg(m->var(), obj);
 }
 
+template<>
+void marshall_from_perl<char*&>(Marshall* m) {
+    char** buf = new char*;
+    SV* sv = m->var();
+    *buf = perl_to_primitive<char*>(sv);
+    m->item().s_voidp = (void*)buf;
+    m->next();
+    sv_setpv( SvRV(sv), *(char**)buf );
+}
+
+template<>
+void marshall_to_perl<char*&>(Marshall* m) {
+    m->unsupported();
+}
+
+
 template <>
 void marshall_to_perl<unsigned char *>(Marshall *m)
 {

@@ -137,7 +137,6 @@ sub requestNewFortune
 sub readFortune
 {
 # [9]
-    $DB::single=1;
     my $in = Qt::DataStream(this->tcpSocket);
     $in->setVersion(Qt::DataStream::Qt_4_0());
 

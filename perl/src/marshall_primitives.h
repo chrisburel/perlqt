@@ -206,6 +206,8 @@ template<>
 char* perl_to_primitive<char*>( SV* sv ) {
     if( !SvOK(sv) )
         return 0;
+    if( SvROK(sv) )
+        sv = SvRV(sv);
     return SvPV_nolen(sv);
 }
 

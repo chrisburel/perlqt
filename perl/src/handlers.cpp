@@ -1933,6 +1933,7 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     { "bool&", marshall_it<bool *> },
     { "char**", marshall_charP_array },
     { "char*",marshall_it<char *> },
+    { "char*&",marshall_it<char *&> },
     { "DOM::DOMTimeStamp", marshall_it<long long> },
     { "double*", marshall_doubleR },
     { "double&", marshall_doubleR },
