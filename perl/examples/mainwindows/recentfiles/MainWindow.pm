@@ -158,7 +158,7 @@ sub createActions()
     this->connect($saveAct, SIGNAL 'triggered()', this, SLOT 'save()');
 
     my $saveAsAct = this->{saveAsAct} = Qt::Action(this->tr('Save &As...'), this);
-    $saveAsAct->setShortcuts(Qt::KeySequence::SaveAs());
+    $saveAsAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+A')));
     $saveAsAct->setStatusTip(this->tr('Save the document under a name'));
     this->connect($saveAsAct, SIGNAL 'triggered()', this, SLOT 'saveAs()');
 
@@ -211,7 +211,7 @@ sub loadFile
     my $file = Qt::File($fileName);
     if (!$file->open(Qt::File::ReadOnly() | Qt::File::Text())) {
         Qt::MessageBox::warning(this, this->tr('Recent Files'),
-                     sprintf this->tr('Cannot read file %s:\n%s.'),
+                     sprintf this->tr("Cannot read file %s:\n%s."),
                              $fileName,
                              $file->errorString());
         return;
@@ -232,7 +232,7 @@ sub saveFile
     my $file = Qt::File($fileName);
     if (!$file->open(Qt::File::WriteOnly() | Qt::File::Text())) {
         Qt::MessageBox::warning(this, this->tr('Recent Files'),
-                     sprintf this->tr('Cannot write file %s:\n%s.'),
+                     sprintf this->tr("Cannot write file %s:\n%s."),
                              $fileName,
                              $file->errorString());
         return;

@@ -220,7 +220,7 @@ sub createActions
     this->connect(this->saveAct, SIGNAL 'triggered()', this, SLOT 'save()');
 
     this->{saveAsAct} = Qt::Action(this->tr('Save &As...'), this);
-    this->saveAsAct->setShortcuts(Qt::KeySequence::SaveAs());
+    this->saveAsAct->setShortcut(Qt::KeySequence('Ctrl+A'));
     this->saveAsAct->setStatusTip(this->tr('Save the document under a name'));
     this->connect(this->saveAsAct, SIGNAL 'triggered()', this, SLOT 'saveAs()');
 
