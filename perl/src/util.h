@@ -1,3 +1,5 @@
+#ifndef PERLQT_UTIL_H
+#define PERLQT_UTIL_H
 // Include Qt headers first, to avoid weirdness that the perl headers cause
 #include <QtCore/QHash>
 #include <QtCore/QList>
@@ -69,3 +71,5 @@ XS(XS_qt_metacall);
 XS(XS_signal);
 XS(XS_super);
 XS(XS_this);
+
+#endif

@@ -1,3 +1,7 @@
+//util.h brings in all the required Qt headers.  This has to happen before the
+//perl stuff below
+#include "util.h"
+
 // Perl headers
 extern "C" {
 #include "EXTERN.h"
@@ -7,7 +11,6 @@ extern "C" {
 }
 
 // Now my own headers
-#include "util.h"
 #include "smoke.h"
 #include "Qt.h"
 #include "binding.h"

@@ -461,8 +461,7 @@ void unmapPointer( smokeperl_object* o, Smoke::Index classId, void* lastptr) {
 }
 
 XS(XS_qvariant_value) {
-    dAXMARK;
-    PERL_UNUSED_VAR(mark);
+    dXSARGS;
 	void * sv_ptr = 0;
 	SV *retval = &PL_sv_undef;
 
