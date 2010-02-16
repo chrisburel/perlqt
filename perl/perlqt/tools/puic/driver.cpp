@@ -185,9 +185,12 @@ QString Driver::perlClassName(const QString &name)
 		qname = QString("KDE::") + qname.mid(1);
 	}
 
-	if (!qname.contains("|Qt::")) {
+	if (qname.contains("|Qt::")) {
+    	qname.replace("|Qt::", "|Qt4::");
+	} 
+    if (!qname.contains("|Qt4::")) {
     	qname.replace("|Q", "|Qt4::");
-	} else if (!qname.contains("|KDE::")) {
+    } else if (!qname.contains("|KDE::")) {
     	qname.replace("|K", "|KDE::");
 	}
 
