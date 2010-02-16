@@ -72,7 +72,7 @@ use Pong;
 use IO::Handle;
 
 sub main {
-    open OUTPUT, '>', '/home/cburel/dbuslog' or die $!;
+    open OUTPUT, '>', 'dbuslog' or die $!;
     STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
     STDERR->fdopen( \*OUTPUT, 'w' ) or die $!;
 
