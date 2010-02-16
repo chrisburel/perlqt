@@ -1,20 +1,23 @@
-option(ENABLE_PERLQT "build PerlQt4" ON)
+#####################################################################
+# PerlQt4
 
-set(PERLQT_ENABLED "no")
-if(ENABLE_PERLQT)
-    set(PERLQT_ENABLED "yes")
-endif(ENABLE_PERLQT)
+OPTION(ENABLE_PERLQT4 "build PerlQt4" ON)
+OPTION(ENABLE_PERLQTTEST4 "build PerlQtTest4" ON)
 
-if(PERLQT_ENABLED)
-    include (FindPerlMore)
+include (FindPerlMore)
+SET(CUSTOM_PERL_SITE_ARCH_DIR ${PERL_SITE_ARCH_DIR} CACHE DIR "Custom installation directory for perl binary extension" )
 
-    SET(CUSTOM_PERL_SITE_ARCH_DIR ${PERL_SITE_ARCH_DIR} CACHE DIR "Custom installation directory for perl binary extension" )
+set(PERLQT4_ENABLED "no")
+set(PERLQTTEST4_ENABLED "no")
 
-    add_subdirectory(lib)
-    add_subdirectory(src)
-    add_subdirectory(tools)
-    add_subdirectory(t)
+if(ENABLE_PERLQT4)
+    add_subdirectory( perlqt )
+    set(PERLQT4_ENABLED "yes")
+endif(ENABLE_PERLQT4)
+if(ENABLE_PERLQTTEST4)
+    add_subdirectory( qttest )
+    set(PERLQTTEST4_ENABLED "yes")
+endif(ENABLE_PERLQTTEST4)
 
-endif(PERLQT_ENABLED)
-
-message(STATUS "Build PerlQt4... " ${PERLQT_ENABLED})
+message(STATUS "Build PerlQt4... " ${PERLQT4_ENABLED})
+message(STATUS "Build PerlQtTest4... " ${PERLQTTEST4_ENABLED})

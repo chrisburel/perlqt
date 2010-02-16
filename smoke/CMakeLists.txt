@@ -1,9 +1,16 @@
 OPTION(ENABLE_SMOKE "build Smoke" ON)
+OPTION(ENABLE_QTTEST_SMOKE "build QtTestSmoke" ON)
 
 set(SMOKE_ENABLED "no")
 if(ENABLE_SMOKE)
     add_subdirectory(qt)
     set(SMOKE_ENABLED "yes - Qt")
+
+    if(ENABLE_QTTEST_SMOKE)
+        add_subdirectory(qttest)
+        set(SMOKE_ENABLED "${SMOKE_ENABLED}, QtTest")
+    endif(ENABLE_QTTEST_SMOKE)
+
 endif(ENABLE_SMOKE)
 
 # for qtguess.pl
