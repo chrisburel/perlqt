@@ -1714,7 +1714,7 @@ XS(XS_AUTOLOAD) {
             methodId = *rcid;
         }
         else {
-            // Call do_autoload to get the methodId
+            // Call getSmokeMethodId to get the methodId
             ENTER;
             SAVETMPS;
             PUSHMARK( SP - items + withObject );
@@ -1723,9 +1723,9 @@ XS(XS_AUTOLOAD) {
             PUSHs(sv_2mortal(newSVpv(methodname, 0)));
             PUSHs(sv_2mortal(newSVpv(classname, 0)));
             PUTBACK;
-            int count = call_pv( "Qt::_internal::do_autoload", G_ARRAY|G_EVAL );
+            int count = call_pv( "Qt::_internal::getSmokeMethodId", G_ARRAY|G_EVAL );
             SPAGAIN;
-            // See if do_autoload die'd
+            // See if getSmokeMethodId die'd
             if (SvTRUE(ERRSV)) {
                 if( withObject && !isSuper) {
                     SvREFCNT_dec(sv_this);
@@ -1748,7 +1748,7 @@ XS(XS_AUTOLOAD) {
 
                 // Error out
                 fprintf( stderr, "How'd I get here?\n" );
-                croak( "Corrupt do_autoload return value: Got %d value(s), expected 2\n", count );
+                croak( "Corrupt getSmokeMethodId return value: Got %d value(s), expected 2\n", count );
             }
 
             int cacheLookup = POPi;

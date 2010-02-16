@@ -937,7 +937,7 @@ sub dumpCandidates {
 # Returns: A disambiguated method id
 # Desc: Examines the arguments of the method call to build a method signature.
 #       From that signature, it determines the appropriate method id.
-sub do_autoload {
+sub getSmokeMethodId {
     my $classname = pop;
     my $methodname = pop;
     my $classId = pop;
@@ -977,7 +977,7 @@ sub do_autoload {
                 $_[$argId] = $wantType->( $_[$argId] );
                 use strict;
             }
-            my( $methodId ) = do_autoload( @_, $classId, $methodname, $classname );
+            my( $methodId ) = getSmokeMethodId( @_, $classId, $methodname, $classname );
             # Don't cache this lookup.
             return $methodId, 0;
         }
@@ -1084,7 +1084,7 @@ sub getMetaObject {
     if ( $package2classId{$class} ) {
         my $classId = $package2classId{$class};
         my $cxxClass = classFromId( $classId );
-        my ( $methodId ) = do_autoload( $classId, 'metaObject', $cxxClass );
+        my ( $methodId ) = getSmokeMethodId( $classId, 'metaObject', $cxxClass );
         return $meta->{object} = getNativeMetaObject( $methodId );
     }
 
