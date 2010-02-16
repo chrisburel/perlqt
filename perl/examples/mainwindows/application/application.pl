@@ -2,11 +2,11 @@
 
 use strict;
 
-use Qt;
+use Qt4;
 use MainWindow;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
     my $mainWin = MainWindow();
     $mainWin->show();
     exit $app->exec();

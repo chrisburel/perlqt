@@ -2,14 +2,14 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 
 # [0]
-use Qt::isa qw( Qt::MainWindow );
+use Qt4::isa qw( Qt4::MainWindow );
 # [0]
 
 # [1]
-use Qt::slots
+use Qt4::slots
     newFile => [],
     open => [],
     save => [],
@@ -142,23 +142,23 @@ sub getInfoLabel() {
 sub NEW {
     my ( $class ) = @_;
     $class->SUPER::NEW();
-    my $widget = Qt::Widget();
+    my $widget = Qt4::Widget();
     this->setCentralWidget($widget);
 # [0]
 
 # [1]
-    my $topFiller = Qt::Widget();
-    $topFiller->setSizePolicy(Qt::SizePolicy::Expanding(), Qt::SizePolicy::Expanding());
+    my $topFiller = Qt4::Widget();
+    $topFiller->setSizePolicy(Qt4::SizePolicy::Expanding(), Qt4::SizePolicy::Expanding());
 
-    my $infoLabel = this->{infoLabel} = Qt::Label(this->tr('<i>Choose a menu option, or right-click to ' .
+    my $infoLabel = this->{infoLabel} = Qt4::Label(this->tr('<i>Choose a menu option, or right-click to ' .
                               'invoke a context menu</i>'));
-    $infoLabel->setFrameStyle(Qt::Frame::StyledPanel() | Qt::Frame::Sunken());
-    $infoLabel->setAlignment(Qt::AlignCenter());
+    $infoLabel->setFrameStyle(Qt4::Frame::StyledPanel() | Qt4::Frame::Sunken());
+    $infoLabel->setAlignment(Qt4::AlignCenter());
 
-    my $bottomFiller = Qt::Widget();
-    $bottomFiller->setSizePolicy(Qt::SizePolicy::Expanding(), Qt::SizePolicy::Expanding());
+    my $bottomFiller = Qt4::Widget();
+    $bottomFiller->setSizePolicy(Qt4::SizePolicy::Expanding(), Qt4::SizePolicy::Expanding());
 
-    my $layout = Qt::VBoxLayout();
+    my $layout = Qt4::VBoxLayout();
     $layout->setMargin(5);
     $layout->addWidget($topFiller);
     $layout->addWidget($infoLabel);
@@ -182,7 +182,7 @@ sub NEW {
 # [3]
 sub contextMenuEvent {
     my ($event) = @_;
-    my $menu = Qt::Menu(this);
+    my $menu = Qt4::Menu(this);
     $menu->addAction(this->getCutAct);
     $menu->addAction(this->getCopyAct);
     $menu->addAction(this->getPasteAct);
@@ -278,7 +278,7 @@ sub setParagraphSpacing()
 sub about()
 {
     this->getInfoLabel->setText(this->tr('Invoked <b>Help|About</b>'));
-    Qt::MessageBox::about(this, this->tr('About Menu'),
+    Qt4::MessageBox::about(this, this->tr('About Menu'),
             this->tr('The <b>Menu</b> example shows how to create ' .
                'menu-bar menus and context menus.'));
 }
@@ -292,64 +292,64 @@ sub aboutQt()
 sub createActions()
 {
 # [5]
-    my $newAct = this->{newAct} = Qt::Action(this->tr('&New'), this);
-    $newAct->setShortcuts(Qt::KeySequence::New());
+    my $newAct = this->{newAct} = Qt4::Action(this->tr('&New'), this);
+    $newAct->setShortcuts(Qt4::KeySequence::New());
     $newAct->setStatusTip(this->tr('Create a file'));
     this->connect($newAct, SIGNAL 'triggered()', this, SLOT 'newFile()');
 # [4]
 
-    my $openAct = this->{openAct} = Qt::Action(this->tr('&Open...'), this);
-    $openAct->setShortcuts(Qt::KeySequence::Open());
+    my $openAct = this->{openAct} = Qt4::Action(this->tr('&Open...'), this);
+    $openAct->setShortcuts(Qt4::KeySequence::Open());
     $openAct->setStatusTip(this->tr('Open an existing file'));
     this->connect($openAct, SIGNAL 'triggered()', this, SLOT 'open()');
 # [5]
 
-    my $saveAct = this->{saveAct} = Qt::Action(this->tr('&Save'), this);
-    $saveAct->setShortcuts(Qt::KeySequence::Save());
+    my $saveAct = this->{saveAct} = Qt4::Action(this->tr('&Save'), this);
+    $saveAct->setShortcuts(Qt4::KeySequence::Save());
     $saveAct->setStatusTip(this->tr('Save the document to disk'));
     this->connect($saveAct, SIGNAL 'triggered()', this, SLOT 'save()');
 
-    my $printAct = this->{printAct} = Qt::Action(this->tr('&Print...'), this);
-    $printAct->setShortcuts(Qt::KeySequence::Print());
+    my $printAct = this->{printAct} = Qt4::Action(this->tr('&Print...'), this);
+    $printAct->setShortcuts(Qt4::KeySequence::Print());
     $printAct->setStatusTip(this->tr('Print the document'));
     this->connect($printAct, SIGNAL 'triggered()', this, SLOT 'print()');
 
-    my $exitAct = this->{exitAct} = Qt::Action(this->tr('E&xit'), this);
-    $exitAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+Q')));
+    my $exitAct = this->{exitAct} = Qt4::Action(this->tr('E&xit'), this);
+    $exitAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+Q')));
     $exitAct->setStatusTip(this->tr('Exit the application'));
     this->connect($exitAct, SIGNAL 'triggered()', this, SLOT 'close()');
 
-    my $undoAct = this->{undoAct} = Qt::Action(this->tr('&Undo'), this);
-    $undoAct->setShortcuts(Qt::KeySequence::Undo());
+    my $undoAct = this->{undoAct} = Qt4::Action(this->tr('&Undo'), this);
+    $undoAct->setShortcuts(Qt4::KeySequence::Undo());
     $undoAct->setStatusTip(this->tr('Undo the last operation'));
     this->connect($undoAct, SIGNAL 'triggered()', this, SLOT 'undo()');
 
-    my $redoAct = this->{redoAct} = Qt::Action(this->tr('&Redo'), this);
-    $redoAct->setShortcuts(Qt::KeySequence::Redo());
+    my $redoAct = this->{redoAct} = Qt4::Action(this->tr('&Redo'), this);
+    $redoAct->setShortcuts(Qt4::KeySequence::Redo());
     $redoAct->setStatusTip(this->tr('Redo the last operation'));
     this->connect($redoAct, SIGNAL 'triggered()', this, SLOT 'redo()');
 
-    my $cutAct = this->{cutAct} = Qt::Action(this->tr('Cu&t'), this);
-    $cutAct->setShortcuts(Qt::KeySequence::Cut());
+    my $cutAct = this->{cutAct} = Qt4::Action(this->tr('Cu&t'), this);
+    $cutAct->setShortcuts(Qt4::KeySequence::Cut());
     $cutAct->setStatusTip(this->tr('Cut the current selection\'s contents to the ' .
                             'clipboard'));
     this->connect($cutAct, SIGNAL 'triggered()', this, SLOT 'cut()');
 
-    my $copyAct = this->{copyAct} = Qt::Action(this->tr('&Copy'), this);
-    $copyAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+C')));
+    my $copyAct = this->{copyAct} = Qt4::Action(this->tr('&Copy'), this);
+    $copyAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+C')));
     $copyAct->setStatusTip(this->tr('Copy the current selection\'s contents to the ' .
                              'clipboard'));
     this->connect($copyAct, SIGNAL 'triggered()', this, SLOT 'copy()');
 
-    my $pasteAct = this->{pasteAct} = Qt::Action(this->tr('&Paste'), this);
-    $pasteAct->setShortcuts(Qt::KeySequence::Paste());
+    my $pasteAct = this->{pasteAct} = Qt4::Action(this->tr('&Paste'), this);
+    $pasteAct->setShortcuts(Qt4::KeySequence::Paste());
     $pasteAct->setStatusTip(this->tr('Paste the clipboard\'s contents into the current ' .
                               'selection'));
     this->connect($pasteAct, SIGNAL 'triggered()', this, SLOT 'paste()');
 
-    my $boldAct = this->{boldAct} = Qt::Action(this->tr('&Bold'), this);
+    my $boldAct = this->{boldAct} = Qt4::Action(this->tr('&Bold'), this);
     $boldAct->setCheckable(1);
-    $boldAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+B')));
+    $boldAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+B')));
     $boldAct->setStatusTip(this->tr('Make the text bold'));
     this->connect($boldAct, SIGNAL 'triggered()', this, SLOT 'bold()');
 
@@ -357,9 +357,9 @@ sub createActions()
     $boldFont->setBold(1);
     $boldAct->setFont($boldFont);
 
-    my $italicAct = this->{italicAct} = Qt::Action(this->tr('&Italic'), this);
+    my $italicAct = this->{italicAct} = Qt4::Action(this->tr('&Italic'), this);
     $italicAct->setCheckable(1);
-    $italicAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+I')));
+    $italicAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+I')));
     $italicAct->setStatusTip(this->tr('Make the text italic'));
     this->connect($italicAct, SIGNAL 'triggered()', this, SLOT 'italic()');
 
@@ -367,51 +367,51 @@ sub createActions()
     $italicFont->setItalic(1);
     $italicAct->setFont($italicFont);
 
-    my $setLineSpacingAct = this->{setLineSpacingAct} = Qt::Action(this->tr('Set &Line Spacing...'), this);
+    my $setLineSpacingAct = this->{setLineSpacingAct} = Qt4::Action(this->tr('Set &Line Spacing...'), this);
     $setLineSpacingAct->setStatusTip(this->tr('Change the gap between the lines of a ' .
                                        'paragraph'));
     this->connect($setLineSpacingAct, SIGNAL 'triggered()', this, SLOT 'setLineSpacing()');
 
-    my $setParagraphSpacingAct = this->{setParagraphSpacingAct} = Qt::Action(this->tr('Set &Paragraph Spacing...'), this);
+    my $setParagraphSpacingAct = this->{setParagraphSpacingAct} = Qt4::Action(this->tr('Set &Paragraph Spacing...'), this);
     $setLineSpacingAct->setStatusTip(this->tr('Change the gap between paragraphs'));
     this->connect($setParagraphSpacingAct, SIGNAL 'triggered()',
             this, SLOT 'setParagraphSpacing()');
 
-    my $aboutAct = this->{aboutAct} = Qt::Action(this->tr('&About'), this);
+    my $aboutAct = this->{aboutAct} = Qt4::Action(this->tr('&About'), this);
     $aboutAct->setStatusTip(this->tr('Show the application\'s About box'));
     this->connect($aboutAct, SIGNAL 'triggered()', this, SLOT 'about()');
 
-    my $aboutQtAct = this->{aboutQtAct} = Qt::Action(this->tr('About &Qt'), this);
-    $aboutQtAct->setStatusTip(this->tr('Show the Qt library\'s About box'));
+    my $aboutQtAct = this->{aboutQtAct} = Qt4::Action(this->tr('About &Qt'), this);
+    $aboutQtAct->setStatusTip(this->tr('Show the Qt4 library\'s About box'));
     this->connect($aboutQtAct, SIGNAL 'triggered()', qApp, SLOT 'aboutQt()');
     this->connect($aboutQtAct, SIGNAL 'triggered()', this, SLOT 'aboutQt()');
 
-    my $leftAlignAct = this->{leftAlignAct} = Qt::Action(this->tr('&Left Align'), this);
+    my $leftAlignAct = this->{leftAlignAct} = Qt4::Action(this->tr('&Left Align'), this);
     $leftAlignAct->setCheckable(1);
-    $leftAlignAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+L')));
+    $leftAlignAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+L')));
     $leftAlignAct->setStatusTip(this->tr('Left align the selected text'));
     this->connect($leftAlignAct, SIGNAL 'triggered()', this, SLOT 'leftAlign()');
 
-    my $rightAlignAct = this->{rightAlignAct} = Qt::Action(this->tr('&Right Align'), this);
+    my $rightAlignAct = this->{rightAlignAct} = Qt4::Action(this->tr('&Right Align'), this);
     $rightAlignAct->setCheckable(1);
-    $rightAlignAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+R')));
+    $rightAlignAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+R')));
     $rightAlignAct->setStatusTip(this->tr('Right align the selected text'));
     this->connect($rightAlignAct, SIGNAL 'triggered()', this, SLOT 'rightAlign()');
 
-    my $justifyAct = this->{justifyAct} = Qt::Action(this->tr('&Justify'), this);
+    my $justifyAct = this->{justifyAct} = Qt4::Action(this->tr('&Justify'), this);
     $justifyAct->setCheckable(1);
-    $justifyAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+J')));
+    $justifyAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+J')));
     $justifyAct->setStatusTip(this->tr('Justify the selected text'));
     this->connect($justifyAct, SIGNAL 'triggered()', this, SLOT 'justify()');
 
-    my $centerAct = this->{centerAct} = Qt::Action(this->tr('&Center'), this);
+    my $centerAct = this->{centerAct} = Qt4::Action(this->tr('&Center'), this);
     $centerAct->setCheckable(1);
-    $centerAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+E')));
+    $centerAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+E')));
     $centerAct->setStatusTip(this->tr('Center the selected text'));
     this->connect($centerAct, SIGNAL 'triggered()', this, SLOT 'center()');
 
 # [6] //! [7]
-    my $alignmentGroup = this->{alignmentGroup} = Qt::ActionGroup(this);
+    my $alignmentGroup = this->{alignmentGroup} = Qt4::ActionGroup(this);
     $alignmentGroup->addAction($leftAlignAct);
     $alignmentGroup->addAction($rightAlignAct);
     $alignmentGroup->addAction($justifyAct);

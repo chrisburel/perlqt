@@ -4,9 +4,9 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::MainWindow );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::MainWindow );
+use Qt4::slots
     newFile => [''],
     openSlot => [''],
     save => [''],
@@ -25,12 +25,12 @@ use MdiChild;
 
 sub NEW {
     shift->SUPER::NEW(@_);
-    my $mdiArea = Qt::MdiArea();
+    my $mdiArea = Qt4::MdiArea();
     this->{mdiArea} = $mdiArea;
     this->setCentralWidget($mdiArea);
     this->connect($mdiArea, SIGNAL 'subWindowActivated(QMdiSubWindow *)',
                   this, SLOT 'updateMenus()');
-    my $windowMapper = Qt::SignalMapper(this);
+    my $windowMapper = Qt4::SignalMapper(this);
     this->{windowMapper} = $windowMapper;
     this->connect($windowMapper, SIGNAL 'mapped(QObject*)',
                   this, SLOT 'setActiveSubWindow(QObject*)');
@@ -65,7 +65,7 @@ sub newFile {
 }
 
 sub openSlot {
-    my $fileName = Qt::FileDialog::getOpenFileName(this);
+    my $fileName = Qt4::FileDialog::getOpenFileName(this);
     if ($fileName) {
         my $existing = findMdiChild($fileName);
         if ($existing) {
@@ -115,7 +115,7 @@ sub paste {
 }
 
 sub about {
-   Qt::MessageBox::about(this, "About MDI",
+   Qt4::MessageBox::about(this, "About MDI",
             "The <b>MDI</b> example demonstrates how to write multiple " .
             "document interface applications using Qt.");
 }
@@ -186,105 +186,105 @@ sub createMdiChild {
 }
 
 sub createActions {
-    my $newAct = Qt::Action(Qt::Icon("images/new.png"), "&New", this);
+    my $newAct = Qt4::Action(Qt4::Icon("images/new.png"), "&New", this);
     this->{newAct} = $newAct;
-    $newAct->setShortcut(Qt::KeySequence("Ctrl+N"));
+    $newAct->setShortcut(Qt4::KeySequence("Ctrl+N"));
     $newAct->setStatusTip("Create a new file");
     this->connect($newAct, SIGNAL 'triggered()', this, SLOT 'newFile()');
 
-    my $openAct = Qt::Action(Qt::Icon("images/open.png"), "&Open...", this);
+    my $openAct = Qt4::Action(Qt4::Icon("images/open.png"), "&Open...", this);
     this->{openAct} = $openAct;
-    $openAct->setShortcut(Qt::KeySequence("Ctrl+O"));
+    $openAct->setShortcut(Qt4::KeySequence("Ctrl+O"));
     $openAct->setStatusTip("Open an existing file");
     this->connect($openAct, SIGNAL 'triggered()', this, SLOT 'openSlot()');
 
-    my $saveAct = Qt::Action(Qt::Icon("images/save.png"), "&Save", this);
+    my $saveAct = Qt4::Action(Qt4::Icon("images/save.png"), "&Save", this);
     this->{saveAct} = $saveAct;
-    $saveAct->setShortcut(Qt::KeySequence("Ctrl+S"));
+    $saveAct->setShortcut(Qt4::KeySequence("Ctrl+S"));
     $saveAct->setStatusTip("Save the document to disk");
     this->connect($saveAct, SIGNAL 'triggered()', this, SLOT 'save()');
 
-    my $saveAsAct = Qt::Action("Save &As...", this);
+    my $saveAsAct = Qt4::Action("Save &As...", this);
     this->{saveAsAct} = $saveAsAct;
     $saveAsAct->setStatusTip("Save the document under a new name");
     this->connect($saveAsAct, SIGNAL 'triggered()', this, SLOT 'saveAs()');
 
-    my $exitAct = Qt::Action("E&xit", this);
+    my $exitAct = Qt4::Action("E&xit", this);
     this->{exitAct} = $exitAct;
-    $exitAct->setShortcut(Qt::KeySequence("Ctrl+Q"));
+    $exitAct->setShortcut(Qt4::KeySequence("Ctrl+Q"));
     $exitAct->setStatusTip("Exit the application");
-    this->connect($exitAct, SIGNAL 'triggered()', Qt::qApp(), SLOT 'closeAllWindows()');
+    this->connect($exitAct, SIGNAL 'triggered()', Qt4::qApp(), SLOT 'closeAllWindows()');
 
-    my $cutAct = Qt::Action(Qt::Icon("images/cut.png"), "Cu&t", this);
+    my $cutAct = Qt4::Action(Qt4::Icon("images/cut.png"), "Cu&t", this);
     this->{cutAct} = $cutAct;
-    $cutAct->setShortcut(Qt::KeySequence("Ctrl+X"));
+    $cutAct->setShortcut(Qt4::KeySequence("Ctrl+X"));
     $cutAct->setStatusTip("Cut the current selection's contents to the " .
                             "clipboard");
     this->connect($cutAct, SIGNAL 'triggered()', this, SLOT 'cut()');
 
-    my $copyAct = Qt::Action(Qt::Icon("images/copy.png"), "&Copy", this);
+    my $copyAct = Qt4::Action(Qt4::Icon("images/copy.png"), "&Copy", this);
     this->{copyAct} = $copyAct;
-    $copyAct->setShortcut(Qt::KeySequence("Ctrl+C"));
+    $copyAct->setShortcut(Qt4::KeySequence("Ctrl+C"));
     $copyAct->setStatusTip("Copy the current selection's contents to the " .
                              "clipboard");
     this->connect($copyAct, SIGNAL 'triggered()', this, SLOT 'copy()');
 
-    my $pasteAct = Qt::Action(Qt::Icon("images/paste.png"), "&Paste", this);
+    my $pasteAct = Qt4::Action(Qt4::Icon("images/paste.png"), "&Paste", this);
     this->{pasteAct} = $pasteAct;
-    $pasteAct->setShortcut(Qt::KeySequence("Ctrl+V"));
+    $pasteAct->setShortcut(Qt4::KeySequence("Ctrl+V"));
     $pasteAct->setStatusTip("Paste the clipboard's contents into the current " .
                               "selection");
     this->connect($pasteAct, SIGNAL 'triggered()', this, SLOT 'paste()');
 
-    my $closeAct = Qt::Action("Cl&ose", this);
+    my $closeAct = Qt4::Action("Cl&ose", this);
     this->{closeAct} = $closeAct;
-    $closeAct->setShortcut(Qt::KeySequence("Ctrl+F4"));
+    $closeAct->setShortcut(Qt4::KeySequence("Ctrl+F4"));
     $closeAct->setStatusTip("Close the active window");
     this->connect($closeAct, SIGNAL 'triggered()',
             this->{mdiArea}, SLOT 'closeActiveSubWindow()');
 
-    my $closeAllAct = Qt::Action("Close &All", this);
+    my $closeAllAct = Qt4::Action("Close &All", this);
     this->{closeAllAct} = $closeAllAct;
     $closeAllAct->setStatusTip("Close all the windows");
     this->connect($closeAllAct, SIGNAL 'triggered()',
             this->{mdiArea}, SLOT 'closeAllSubWindows()');
 
-    my $tileAct = Qt::Action("&Tile", this);
+    my $tileAct = Qt4::Action("&Tile", this);
     this->{tileAct} = $tileAct;
     $tileAct->setStatusTip("Tile the windows");
     this->connect($tileAct, SIGNAL 'triggered()', this->{mdiArea}, SLOT 'tileSubWindows()');
 
-    my $cascadeAct = Qt::Action("&Cascade", this);
+    my $cascadeAct = Qt4::Action("&Cascade", this);
     this->{cascadeAct} = $cascadeAct;
     $cascadeAct->setStatusTip("Cascade the windows");
     this->connect($cascadeAct, SIGNAL 'triggered()', this->{mdiArea}, SLOT 'cascadeSubWindows()');
 
-    my $nextAct = Qt::Action("Ne&xt", this);
+    my $nextAct = Qt4::Action("Ne&xt", this);
     this->{nextAct} = $nextAct;
     $nextAct->setStatusTip("Move the focus to the next window");
     this->connect($nextAct, SIGNAL 'triggered()',
             this->{mdiArea}, SLOT 'activateNextSubWindow()');
 
-    my $previousAct = Qt::Action("Pre&vious", this);
+    my $previousAct = Qt4::Action("Pre&vious", this);
     this->{previousAct} = $previousAct;
     $previousAct->setStatusTip("Move the focus to the previous " .
                                  "window");
     this->connect($previousAct, SIGNAL 'triggered()',
             this->{mdiArea}, SLOT 'activatePreviousSubWindow()');
 
-    my $separatorAct = Qt::Action(this);
+    my $separatorAct = Qt4::Action(this);
     this->{separatorAct} = $separatorAct;
     $separatorAct->setSeparator(1);
 
-    my $aboutAct = Qt::Action("&About", this);
+    my $aboutAct = Qt4::Action("&About", this);
     this->{aboutAct} = $aboutAct;
     $aboutAct->setStatusTip("Show the application's About box");
     this->connect($aboutAct, SIGNAL 'triggered()', this, SLOT 'about()');
 
-    my $aboutQtAct = Qt::Action("About &Qt", this);
+    my $aboutQtAct = Qt4::Action("About &Qt", this);
     this->{aboutQtAct} = $aboutQtAct;
-    $aboutQtAct->setStatusTip("Show the Qt library's About box");
-    this->connect($aboutQtAct, SIGNAL 'triggered()', Qt::qApp(), SLOT 'aboutQt()');
+    $aboutQtAct->setStatusTip("Show the Qt4 library's About box");
+    this->connect($aboutQtAct, SIGNAL 'triggered()', Qt4::qApp(), SLOT 'aboutQt()');
 }
 
 sub createMenus {
@@ -333,17 +333,17 @@ sub createStatusBar {
 }
 
 sub readSettings {
-    my $settings = Qt::Settings("Trolltech", "MDI Example");
-    my $pos = $settings->value("pos", Qt::Variant(Qt::Point(200, 200)))->toPoint();
-    my $size = $settings->value("size", Qt::Variant(Qt::Size(400, 400)))->toSize();
+    my $settings = Qt4::Settings("Trolltech", "MDI Example");
+    my $pos = $settings->value("pos", Qt4::Variant(Qt4::Point(200, 200)))->toPoint();
+    my $size = $settings->value("size", Qt4::Variant(Qt4::Size(400, 400)))->toSize();
     this->resize($size);
     this->move($pos);
 }
 
 sub writeSettings {
-    my $settings = Qt::Settings("Trolltech", "MDI Example");
-    $settings->setValue("pos", Qt::Variant(this->pos()));
-    $settings->setValue("size", Qt::Variant(this->size()));
+    my $settings = Qt4::Settings("Trolltech", "MDI Example");
+    $settings->setValue("pos", Qt4::Variant(this->pos()));
+    $settings->setValue("size", Qt4::Variant(this->size()));
 }
 
 sub activeMdiChild {
@@ -355,7 +355,7 @@ sub activeMdiChild {
 
 sub findMdiChild {
     my( $fileName ) = @_;
-    my $canonicalFilePath = Qt::FileInfo($fileName)->canonicalFilePath();
+    my $canonicalFilePath = Qt4::FileInfo($fileName)->canonicalFilePath();
 
     foreach my $window ( @{this->{mdiArea}->subWindowList()} ) {
         my $mdiChild = CAST $window->widget(), 'MdiChild';
@@ -367,11 +367,11 @@ sub findMdiChild {
 }
 
 sub switchLayoutDirection {
-    if (this->layoutDirection() == Qt::LeftToRight()) {
-        Qt::qApp()->setLayoutDirection(Qt::RightToLeft());
+    if (this->layoutDirection() == Qt4::LeftToRight()) {
+        Qt4::qApp()->setLayoutDirection(Qt4::RightToLeft());
     }
     else {
-        Qt::qApp()->setLayoutDirection(Qt::LeftToRight());
+        Qt4::qApp()->setLayoutDirection(Qt4::LeftToRight());
     }
 }
 

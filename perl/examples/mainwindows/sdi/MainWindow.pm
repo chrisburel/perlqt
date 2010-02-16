@@ -2,9 +2,9 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::MainWindow );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::MainWindow );
+use Qt4::slots
     newFile => [],
     open => [],
     save => [],
@@ -122,7 +122,7 @@ sub newFile
 
 sub open
 {
-    my $fileName = Qt::FileDialog::getOpenFileName(this);
+    my $fileName = Qt4::FileDialog::getOpenFileName(this);
     if ($fileName) {
         my $existing = findMainWindow($fileName);
         if ($existing) {
@@ -159,7 +159,7 @@ sub save
 
 sub saveAs
 {
-    my $fileName = Qt::FileDialog::getSaveFileName(this, this->tr('Save As'),
+    my $fileName = Qt4::FileDialog::getSaveFileName(this, this->tr('Save As'),
                                                     this->curFile);
     if (!$fileName) {
         return 0;
@@ -170,7 +170,7 @@ sub saveAs
 
 sub about
 {
-   Qt::MessageBox::about(this, this->tr('About SDI'),
+   Qt4::MessageBox::about(this, this->tr('About SDI'),
             this->tr('The <b>SDI</b> example demonstrates how to write single ' .
                'document interface applications using Qt.'));
 }
@@ -182,11 +182,11 @@ sub documentWasModified
 
 sub init
 {
-    this->setAttribute(Qt::WA_DeleteOnClose());
+    this->setAttribute(Qt4::WA_DeleteOnClose());
 
     this->{isUntitled} = 1;
 
-    this->{textEdit} = Qt::TextEdit();
+    this->{textEdit} = Qt4::TextEdit();
     this->setCentralWidget(this->textEdit);
 
     this->createActions();
@@ -204,60 +204,60 @@ sub init
 
 sub createActions
 {
-    this->{newAct} = Qt::Action(Qt::Icon('images/new.png'), this->tr('&New'), this);
-    this->newAct->setShortcuts(Qt::KeySequence::New());
+    this->{newAct} = Qt4::Action(Qt4::Icon('images/new.png'), this->tr('&New'), this);
+    this->newAct->setShortcuts(Qt4::KeySequence::New());
     this->newAct->setStatusTip(this->tr('Create a file'));
     this->connect(this->newAct, SIGNAL 'triggered()', this, SLOT 'newFile()');
 
-    this->{openAct} = Qt::Action(Qt::Icon('images/open.png'), this->tr('&Open...'), this);
-    this->openAct->setShortcuts(Qt::KeySequence::Open());
+    this->{openAct} = Qt4::Action(Qt4::Icon('images/open.png'), this->tr('&Open...'), this);
+    this->openAct->setShortcuts(Qt4::KeySequence::Open());
     this->openAct->setStatusTip(this->tr('Open an existing file'));
     this->connect(this->openAct, SIGNAL 'triggered()', this, SLOT 'open()');
 
-    this->{saveAct} = Qt::Action(Qt::Icon('images/save.png'), this->tr('&Save'), this);
-    this->saveAct->setShortcuts(Qt::KeySequence::Save());
+    this->{saveAct} = Qt4::Action(Qt4::Icon('images/save.png'), this->tr('&Save'), this);
+    this->saveAct->setShortcuts(Qt4::KeySequence::Save());
     this->saveAct->setStatusTip(this->tr('Save the document to disk'));
     this->connect(this->saveAct, SIGNAL 'triggered()', this, SLOT 'save()');
 
-    this->{saveAsAct} = Qt::Action(this->tr('Save &As...'), this);
-    this->saveAsAct->setShortcut(Qt::KeySequence('Ctrl+A'));
+    this->{saveAsAct} = Qt4::Action(this->tr('Save &As...'), this);
+    this->saveAsAct->setShortcut(Qt4::KeySequence('Ctrl+A'));
     this->saveAsAct->setStatusTip(this->tr('Save the document under a name'));
     this->connect(this->saveAsAct, SIGNAL 'triggered()', this, SLOT 'saveAs()');
 
-    this->{closeAct} = Qt::Action(this->tr('&Close'), this);
-    this->closeAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+W')));
+    this->{closeAct} = Qt4::Action(this->tr('&Close'), this);
+    this->closeAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+W')));
     this->closeAct->setStatusTip(this->tr('Close this window'));
     this->connect(this->closeAct, SIGNAL 'triggered()', this, SLOT 'close()');
 
-    this->{exitAct} = Qt::Action(this->tr('E&xit'), this);
-    this->exitAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+Q')));
+    this->{exitAct} = Qt4::Action(this->tr('E&xit'), this);
+    this->exitAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+Q')));
     this->exitAct->setStatusTip(this->tr('Exit the application'));
     this->connect(this->exitAct, SIGNAL 'triggered()', qApp, SLOT 'closeAllWindows()');
 
-    this->{cutAct} = Qt::Action(Qt::Icon('images/cut.png'), this->tr('Cu&t'), this);
-    this->cutAct->setShortcuts(Qt::KeySequence::Cut());
+    this->{cutAct} = Qt4::Action(Qt4::Icon('images/cut.png'), this->tr('Cu&t'), this);
+    this->cutAct->setShortcuts(Qt4::KeySequence::Cut());
     this->cutAct->setStatusTip(this->tr('Cut the current selection\'s contents to the ' .
                             'clipboard'));
     this->connect(this->cutAct, SIGNAL 'triggered()', textEdit, SLOT 'cut()');
 
-    this->{copyAct} = Qt::Action(Qt::Icon('images/copy.png'), this->tr('&Copy'), this);
-    this->copyAct->setShortcuts(Qt::KeySequence::Copy());
+    this->{copyAct} = Qt4::Action(Qt4::Icon('images/copy.png'), this->tr('&Copy'), this);
+    this->copyAct->setShortcuts(Qt4::KeySequence::Copy());
     this->copyAct->setStatusTip(this->tr('Copy the current selection\'s contents to the ' .
                              'clipboard'));
     this->connect(this->copyAct, SIGNAL 'triggered()', textEdit, SLOT 'copy()');
 
-    this->{pasteAct} = Qt::Action(Qt::Icon('images/paste.png'), this->tr('&Paste'), this);
-    this->pasteAct->setShortcuts(Qt::KeySequence::Paste());
+    this->{pasteAct} = Qt4::Action(Qt4::Icon('images/paste.png'), this->tr('&Paste'), this);
+    this->pasteAct->setShortcuts(Qt4::KeySequence::Paste());
     this->pasteAct->setStatusTip(this->tr('Paste the clipboard\'s contents into the current ' .
                               'selection'));
     this->connect(this->pasteAct, SIGNAL 'triggered()', textEdit, SLOT 'paste()');
 
-    this->{aboutAct} = Qt::Action(this->tr('&About'), this);
+    this->{aboutAct} = Qt4::Action(this->tr('&About'), this);
     this->aboutAct->setStatusTip(this->tr('Show the application\'s About box'));
     this->connect(this->aboutAct, SIGNAL 'triggered()', this, SLOT 'about()');
 
-    this->{aboutQtAct} = Qt::Action(this->tr('About &Qt'), this);
-    this->aboutQtAct->setStatusTip(this->tr('Show the Qt library\'s About box'));
+    this->{aboutQtAct} = Qt4::Action(this->tr('About &Qt'), this);
+    this->aboutQtAct->setStatusTip(this->tr('Show the Qt4 library\'s About box'));
     this->connect(this->aboutQtAct, SIGNAL 'triggered()', qApp, SLOT 'aboutQt()');
 
 
@@ -316,32 +316,32 @@ sub createStatusBar
 
 sub readSettings
 {
-    my $settings = Qt::Settings('Trolltech', 'SDI Example');
-    my $pos = $settings->value('pos', Qt::Variant(Qt::Point(200, 200)))->toPoint();
-    my $size = $settings->value('size', Qt::Variant(Qt::Size(400, 400)))->toSize();
+    my $settings = Qt4::Settings('Trolltech', 'SDI Example');
+    my $pos = $settings->value('pos', Qt4::Variant(Qt4::Point(200, 200)))->toPoint();
+    my $size = $settings->value('size', Qt4::Variant(Qt4::Size(400, 400)))->toSize();
     this->move($pos);
     this->resize($size);
 }
 
 sub writeSettings
 {
-    my $settings = Qt::Settings('Trolltech', 'SDI Example');
-    $settings->setValue('pos', Qt::Variant(this->pos()));
-    $settings->setValue('size', Qt::Variant(this->size()));
+    my $settings = Qt4::Settings('Trolltech', 'SDI Example');
+    $settings->setValue('pos', Qt4::Variant(this->pos()));
+    $settings->setValue('size', Qt4::Variant(this->size()));
 }
 
 sub maybeSave
 {
     if (this->textEdit->document()->isModified()) {
-        my $ret = Qt::MessageBox::warning(this, this->tr('SDI'),
+        my $ret = Qt4::MessageBox::warning(this, this->tr('SDI'),
                      this->tr("The document has been modified.\n" .
                         'Do you want to save your changes?'),
-                     Qt::MessageBox::Save() | Qt::MessageBox::Discard()
-		     | Qt::MessageBox::Cancel());
-        if ($ret == Qt::MessageBox::Save()) {
+                     Qt4::MessageBox::Save() | Qt4::MessageBox::Discard()
+		     | Qt4::MessageBox::Cancel());
+        if ($ret == Qt4::MessageBox::Save()) {
             return this->save();
         }
-        elsif ($ret == Qt::MessageBox::Cancel()) {
+        elsif ($ret == Qt4::MessageBox::Cancel()) {
             return 0;
         }
     }
@@ -352,19 +352,19 @@ sub loadFile
 {
     my ($fileName) = @_;
 
-    my $file = Qt::File($fileName);
-    if (!$file->open(Qt::File::ReadOnly() | Qt::File::Text())) {
-        Qt::MessageBox::warning(this, this->tr('SDI'),
+    my $file = Qt4::File($fileName);
+    if (!$file->open(Qt4::File::ReadOnly() | Qt4::File::Text())) {
+        Qt4::MessageBox::warning(this, this->tr('SDI'),
                      sprintf this->tr('Cannot read file %s:\n%s.'),
                              $fileName,
                              $file->errorString());
         return;
     }
 
-    my $in = Qt::TextStream($file);
-    Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
+    my $in = Qt4::TextStream($file);
+    Qt4::Application::setOverrideCursor(Qt4::Cursor(Qt4::WaitCursor()));
     this->textEdit->setPlainText($in->readAll());
-    Qt::Application::restoreOverrideCursor();
+    Qt4::Application::restoreOverrideCursor();
     $file->close();
 
     this->setCurrentFile($fileName);
@@ -374,21 +374,21 @@ sub loadFile
 sub saveFile
 {
     my ($fileName) = @_;
-    my $file = Qt::File($fileName);
-    if (!$file->open(Qt::File::WriteOnly() | Qt::File::Text())) {
-        Qt::MessageBox::warning(this, this->tr('SDI'),
+    my $file = Qt4::File($fileName);
+    if (!$file->open(Qt4::File::WriteOnly() | Qt4::File::Text())) {
+        Qt4::MessageBox::warning(this, this->tr('SDI'),
                      sprintf this->tr('Cannot write file %s:\n%s.'),
                              $fileName,
                              $file->errorString());
         return 0;
     }
 
-    my $out = Qt::TextStream($file);
-    Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
+    my $out = Qt4::TextStream($file);
+    Qt4::Application::setOverrideCursor(Qt4::Cursor(Qt4::WaitCursor()));
     no warnings qw(void); # For bitshift warning
-    $out << Qt::String(this->textEdit->toPlainText());
+    $out << Qt4::String(this->textEdit->toPlainText());
     use warnings;
-    Qt::Application::restoreOverrideCursor();
+    Qt4::Application::restoreOverrideCursor();
     $file->close();
 
     this->setCurrentFile($fileName);
@@ -405,7 +405,7 @@ sub setCurrentFile
     if (this->isUntitled) {
         this->{curFile} = sprintf this->tr('document%d.txt'), $sequenceNumber++;
     } else {
-        this->{curFile} = Qt::FileInfo($fileName)->canonicalFilePath();
+        this->{curFile} = Qt4::FileInfo($fileName)->canonicalFilePath();
     }
 
     this->textEdit->document()->setModified(0);
@@ -418,17 +418,17 @@ sub setCurrentFile
 sub strippedName
 {
     my ($fullFileName) = @_;
-    return Qt::FileInfo($fullFileName)->fileName();
+    return Qt4::FileInfo($fullFileName)->fileName();
 }
 
 sub findMainWindow
 {
     my ($fileName) = @_;
-    my $canonicalFilePath = Qt::FileInfo($fileName)->canonicalFilePath();
+    my $canonicalFilePath = Qt4::FileInfo($fileName)->canonicalFilePath();
 
     foreach my $widget ( @{qApp->topLevelWidgets()} ) {
         next unless ref $widget;
-        my $mainWin = $widget->qobject_cast( 'Qt::MainWindow' );
+        my $mainWin = $widget->qobject_cast( 'Qt4::MainWindow' );
         if ($mainWin && $mainWin->curFile eq $canonicalFilePath) {
             return $mainWin;
         }
