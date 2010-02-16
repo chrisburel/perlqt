@@ -70,6 +70,8 @@ sub NEW
     $class->SUPER::NEW();
     this->{m_nickname} = $m_nickname;
 
+    this->{m_messages} = [];
+
     this->{ui} = Ui_ChatMainWindow->setupUi(this);
     this->ui->sendButton->setEnabled(0);
 
@@ -84,7 +86,6 @@ sub NEW
     ChatAdaptor(this);
     Qt::DBusConnection::sessionBus()->registerObject('/', this);
 
-    # XXX WTF?
     my $iface = ComTrolltechChatInterface('', '', Qt::DBusConnection::sessionBus(), this);
     #connect(iface, SIGNAL 'message(Qt::String,Qt::String)', this, SLOT 'messageSlot(Qt::String,Qt::String)');
     Qt::DBusConnection::sessionBus()->connect('', '', 'com.trolltech.chat', 'message', this, SLOT 'messageSlot(QString,QString)');
@@ -94,7 +95,8 @@ sub NEW
     $dialog->cancelButton->setVisible(0);
     $dialog->exec();
     this->{m_nickname} = $dialog->nickname->text();
-    emit this->action($m_nickname, 'joins the chat');
+    my $msg = ' joins the chat';
+    emit this->action(this->m_nickname, $msg);
 }
 
 sub rebuildHistory
@@ -138,7 +140,7 @@ sub sendClickedSlot
     #emit message(m_nickname, messageLineEdit->text());
     my $msg = Qt::DBusMessage::createSignal('/', 'com.trolltech.chat', 'message');
     no warnings qw(void);
-    $msg << this->m_nickname << this->ui->messageLineEdit->text();
+    $msg << Qt::String(this->m_nickname) << Qt::String(this->ui->messageLineEdit->text());
     use warnings;
     Qt::DBusConnection::sessionBus()->send($msg);
     this->ui->messageLineEdit->setText('');
@@ -161,7 +163,8 @@ sub aboutQt()
 
 sub exiting
 {
-    emit this->action(this->m_nickname, 'leaves the chat');
+    my $msg = ' leaves the chat';
+    emit this->action(this->m_nickname, $msg);
 }
 
 package main;
