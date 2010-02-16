@@ -1,4 +1,6 @@
-perlqt4 is a project developing Perl bindings for the Qt4 Graphical User
+$Id$
+
+PerlQt4 is a project developing Perl bindings for the Qt4 Graphical User
 Interface (GUI) toolkit, as released by the K Desktop Environment (KDE)
 Project. It is based primarily on previous iterations of these bindings,
 particularly PerlQt3.
@@ -10,26 +12,27 @@ or documentation directly to the perlqt4 project:
 - Jonathan Yu <frequency@cpan.org>
 - Eric Wilhelm <ewilhelm@scratchcomputing.com>
 
-The following authors have contributed to other projects upon which this
-software is based. They are all licensed under the GNU General Public License.
-
-For the PerlQt3 bindings:
-
-TODO: Copyright (c) ... add information for Ashley Winters & Germain
-
-This software also contains code inspired by the QtRuby4 project:
-
-TODO: Copyright (c) ...
-
 This project is:
 
-Copyright (C) 2009 Chris Burel
+Copyright (C) 2008-2009 Chris Burel
 Copyright (C) 2009 Contributors to the PerlQt4 project
 
 Some bits of code are written by other authors; they hold the copyright to
 their individual files. However, all authors have expressly permitted their
 code to be licensed under the GNU General Public License, version 2 or
 greater.
+
+The following authors have contributed to other projects upon which this
+software is based. They are all licensed under the GNU General Public License.
+
+For the PerlQt3 bindings:
+
+Copyright (C) 2002, Ashley Winters <jahqueel@yahoo.com>
+Copyright (C) 2003, Germain Garand <germain@ebooksfrance.org>
+
+This software also contains code inspired by the QtRuby4 project:
+
+Copyright (C) 2003-2004, Richard Dale
 
 PerlQt4/perl/ppport.h (from Devel::PPPort) is:
  Copyright 2004-2009, Marcus Holland-Moritz <mhx-cpan@gmx.net>
