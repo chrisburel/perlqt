@@ -131,6 +131,34 @@ private:
     SV *_retval;
     const char *classname();
 };
+
+class Q_DECL_EXPORT InvokeSlot : public Marshall {
+public:
+    InvokeSlot(Smoke *smoke, char* methodname, int count, Smoke::Stack stack);
+    ~InvokeSlot();
+    Smoke *smoke();
+    Marshall::Action action();
+    const MocArgument& arg();
+    SmokeType type();
+    Smoke::StackItem &item();
+    int items();
+    void callMethod();
+    void next();
+    void unsupported();
+    SV* var(){}
+    bool cleanup();
+
+protected:
+    QList<MocArgument*> _args;
+    int _cur;
+    bool _called;
+    Smoke *_smoke;
+    Smoke::Stack _stack;
+    int _items;
+    SV** _sp;
+    char* _methodname;
+};
+
 } // End namespace PerlQt
 
 #endif

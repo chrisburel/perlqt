@@ -4,17 +4,6 @@
 #include "smoke.h"
 #include "marshall.h"
 
-// keep this enum in sync with lib/Qt/debug.pm
-enum SmokeDebugChannel {
-    smokedb_none = 0x00,
-    smokedb_ambiguous = 0x01,
-    smokedb_autoload = 0x02,
-    smokedb_calls = 0x04,
-    smokedb_gc = 0x08,
-    smokedb_virtual = 0x10,
-    smokedb_verbose = 0x20
-};
-
 //extern struct mgvtbl vtbl_smoke;
 
 struct smokeperl_object {
@@ -89,6 +78,42 @@ public:
         const SmokeType &a = *this;
         return !(a == b);
     }
+};
+
+/*
+ * Type handling by moc is simple.
+ *
+ * If the type name matches /^(?:const\s+)?\Q$types\E&?$/, use the
+ * static_QUType, where $types is join('|', qw(bool int double char* QString);
+ *
+ * Everything else is passed as a pointer! There are types which aren't
+ * Smoke::tf_ptr but will have to be passed as a pointer. Make sure to keep
+ * track of what's what.
+ *
+ * Simply using typeids isn't enough for signals/slots. It will be possible
+ * to declare signals and slots which use arguments which can't all be
+ * found in a single smoke object. Instead, we need to store smoke => typeid
+ * pairs. We also need additional informatation, such as whether we're passing
+ * a pointer to the union element.
+ */
+
+enum MocArgumentType {
+    xmoc_ptr,
+    xmoc_bool,
+    xmoc_int,
+    xmoc_uint,
+    xmoc_long,
+    xmoc_ulong,
+    xmoc_double,
+    xmoc_charstar,
+    xmoc_QString,
+    xmoc_void
+};
+
+struct MocArgument {
+    // smoke object and associated typeid
+    SmokeType st;
+    MocArgumentType argType;
 };
 
 #endif //SMOKEPERL_H

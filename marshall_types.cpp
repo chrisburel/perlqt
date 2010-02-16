@@ -214,4 +214,80 @@ namespace PerlQt {
     const char *MethodCall::classname() {
         return MethodCallBase::classname();
     }
+
+    //------------------------------------------------
+
+    InvokeSlot::InvokeSlot(Smoke *smoke, char* methodname, int items, Smoke::Stack stack) :
+      _smoke(smoke), _stack(stack), _methodname(methodname), _cur(-1), _items(items)  {
+        dSP;
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        EXTEND(SP, _items);
+    }
+
+    InvokeSlot::~InvokeSlot() {
+        delete[] _stack;
+    }
+
+    Smoke *InvokeSlot::smoke() {
+        return _smoke;
+    }
+
+    Marshall::Action InvokeSlot::action() {
+        return Marshall::ToSV;
+    }
+
+    const MocArgument& InvokeSlot::arg() {
+        return *(_args[_cur + 1]);
+    }
+
+    SmokeType InvokeSlot::type() {
+        return arg().st;
+    }
+
+    Smoke::StackItem &InvokeSlot::item() {
+        return _stack[_cur];
+    }
+
+    int InvokeSlot::items() {
+        return _items;
+    }
+
+    void InvokeSlot::callMethod() {
+        //Call the perl sub
+        //Copy the way the VirtualMethodCall does it
+        HV *stash = SvSTASH(SvRV(sv_this));
+        if(*HvNAME(stash) == ' ' ) // if withObject, look for a diff stash
+            stash = gv_stashpv(HvNAME(stash) + 1, TRUE);
+
+        GV *gv = gv_fetchmethod_autoload(stash, _methodname, 0);
+        if(!gv) {
+            fprintf( stderr, "Found no method to call in slot\n" );
+            return;
+        }
+
+        dSP;
+
+        if( items() == 1 ) {
+            PUSHs(sv_2mortal( newSViv( _stack[0].s_int ) ));
+        }
+        PUTBACK;
+        call_sv((SV*)GvCV(gv), G_VOID);
+    }
+
+    void InvokeSlot::next() {
+        callMethod();
+    }
+
+    void InvokeSlot::unsupported() {
+        croak("Cannot handle \n");//'%s' as argument of slot call for %s::%s",
+            //type().name(),
+            //_smoke->className(method().classId),
+            //_smoke->methodNames[method().name]);
+    }
+
+    bool InvokeSlot::cleanup() {
+        return false;
+    }
 }
