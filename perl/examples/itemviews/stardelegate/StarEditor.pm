@@ -71,8 +71,10 @@ sub mouseReleaseEvent
 sub starAtPosition
 {
     my ($x) = @_;
-    my $star = ($x / (this->{myStarRating}->sizeHint()->width()
-                     / this->{myStarRating}->maxStarCount())) + 1;
+    # C++ code does operation on ints.  Use sprintf '%d' to emulate this.
+    my $star = sprintf( '%d',
+               ($x / (this->{myStarRating}->sizeHint()->width()
+                     / this->{myStarRating}->maxStarCount()))) + 1;
     if ($star <= 0 || $star > this->{myStarRating}->maxStarCount()) {
         return -1;
     }

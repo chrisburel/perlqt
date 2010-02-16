@@ -26,7 +26,7 @@ sub paint
     my $starRating = $index->data()->value();
     if ( ref $starRating eq 'StarRating') {
 
-        if ($option->state() & Qt4::Style::State_Selected()) {
+        if (${$option->state() & Qt4::Style::State_Selected()}) {
             $painter->fillRect($option->rect(), $option->palette()->highlight());
         }
 

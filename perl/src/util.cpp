@@ -342,6 +342,12 @@ int isDerivedFrom(Smoke *smoke, const char *className, const char *baseClassName
     return isDerivedFrom(smoke, idClass, idBase, cnt);
 }
 
+int isDerivedFrom( smokeperl_object *o, const char *baseClassName ) {
+    Smoke::Index idClass = o->classId;
+    Smoke::Index idBase = o->smoke->idClass(baseClassName).index;
+    return isDerivedFrom(o->smoke, idClass, idBase, 0);
+}
+
 // Enter keys: integer memory address of a cxxptr, values: associated perl sv
 // into pointer_map hash
 // Recurse to store it also as casted to its parent classes, which could (and
@@ -849,7 +855,7 @@ XS(XS_qobject_qt_metacast) {
     XSRETURN(1);
 }
 
-/* Should mimic Qt44's QObject::findChildren method with this syntax:
+/* Should mimic Qt4's QObject::findChildren method with this syntax:
      obj.findChildren("Object Type", "Optional Widget Name")
 */
 XS(XS_find_qobject_children) {
@@ -899,16 +905,30 @@ XS(XS_find_qobject_children) {
 
 XS(XS_qabstract_item_model_rowcount) {
     dXSARGS;
+    smokeperl_object *o = sv_obj_info(ST(0));
+    if(!o)
+        croak( "%s", "Qt4::AbstractItemModel::rowCount called on a non-Qt4"
+            " object");
+    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
+        croak( "%s", "Qt4::AbstractItemModel::rowCount called on a"
+            " non-AbstractItemModel object");
+
+    QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+
     if (items == 1) {
-        smokeperl_object *o = sv_obj_info(ST(0));
-        QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 		XSRETURN_IV(model->rowCount());
 	}
 	else if (items == 2) {
-        smokeperl_object *o = sv_obj_info(ST(0));
-        QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 		smokeperl_object * mi = sv_obj_info(ST(1));
+        if(!mi)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::rowCount is"
+                " not a Qt4 object");
+        if(isDerivedFrom(mi, "QModelIndex") == -1)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::rowCount is"
+                " not a Qt4::ModelIndex" );
+
 		QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
+
 		XSRETURN_IV(model->rowCount(*modelIndex));
 	}
     else {
@@ -918,15 +938,30 @@ XS(XS_qabstract_item_model_rowcount) {
 
 XS(XS_qabstract_item_model_columncount) {
     dXSARGS;
+    smokeperl_object *o = sv_obj_info(ST(0));
+
+    if(!o)
+        croak( "%s", "Qt4::AbstractItemModel::columnCount called on a non-Qt4"
+            " object");
+    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
+        croak( "%s", "Qt4::AbstractItemModel::columnCount called on a"
+            " non-AbstractItemModel object");
+
+    QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+
     if (items == 1) {
-        smokeperl_object *o = sv_obj_info(ST(0));
-        QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 		XSRETURN_IV(model->columnCount());
 	}
 	else if (items == 2) {
-        smokeperl_object *o = sv_obj_info(ST(0));
-        QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 		smokeperl_object * mi = sv_obj_info(ST(1));
+
+        if(!mi)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::columnCount is"
+                " not a Qt4 object");
+        if(isDerivedFrom(mi, "QModelIndex") == -1)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::columnCount is"
+                " not a Qt4::ModelIndex" );
+
 		QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
 		XSRETURN_IV(model->columnCount(*modelIndex));
 	}
@@ -938,14 +973,31 @@ XS(XS_qabstract_item_model_columncount) {
 XS(XS_qabstract_item_model_data) {
     dXSARGS;
     smokeperl_object * o = sv_obj_info(ST(0));
+    if(!o)
+        croak( "%s", "Qt4::AbstractItemModel::data called on a non-Qt4"
+            " object");
+    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
+        croak( "%s", "Qt4::AbstractItemModel::data called on a"
+            " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+
     smokeperl_object * mi = sv_obj_info(ST(1));
+    if(!mi)
+        croak( "%s", "1st argument to Qt4::AbstractItemModel::data is"
+            " not a Qt4 object");
+    if(isDerivedFrom(mi, "QModelIndex") == -1)
+        croak( "%s", "1st argument to Qt4::AbstractItemModel::data is"
+            " not a Qt4::ModelIndex" );
 	QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
+
 	QVariant value;
 	if (items == 2) {
 		value = model->data(*modelIndex);
 	} else if (items == 3) {
-		value = model->data(*modelIndex, SvIV(SvRV(ST(2))));
+        SV* dataRole = ST(2);
+        if(SvROK(dataRole))
+            dataRole = SvRV(dataRole);
+		value = model->data(*modelIndex, SvIV(dataRole));
 	} else {
 		croak("%s", "Invalid argument list to Qt4::AbstractItemModel::data");
 	}
@@ -967,11 +1019,31 @@ XS(XS_qabstract_item_model_setdata) {
     if ( items < 1 || items > 4 ) {
         croak("%s\n", "Invalid argument list to Qt4::AbstractItemModel::setData");
     }
-    smokeperl_object *o = sv_obj_info(ST(0));
+    smokeperl_object * o = sv_obj_info(ST(0));
+    if(!o)
+        croak( "%s", "Qt4::AbstractItemModel::setData called on a non-Qt4"
+            " object");
+    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
+        croak( "%s", "Qt4::AbstractItemModel::setData called on a"
+            " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+
     smokeperl_object * mi = sv_obj_info(ST(1));
+    if(!mi)
+        croak( "%s", "1st argument to Qt4::AbstractItemModel::setData is"
+            " not a Qt4 object");
+    if(isDerivedFrom(mi, "QModelIndex") == -1)
+        croak( "%s", "1st argument to Qt4::AbstractItemModel::setData is"
+            " not a Qt4::ModelIndex" );
 	QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
+
     smokeperl_object * v = sv_obj_info(ST(2));
+    if(!v)
+        croak( "%s", "2nd argument to Qt4::AbstractItemModel::setData is"
+            " not a Qt4 object");
+    if(isDerivedFrom(v, "QVariant") == -1)
+        croak( "%s", "2nd argument to Qt4::AbstractItemModel::setData is"
+            " not a Qt4::Variant" );
 	QVariant * variant = (QVariant *) v->ptr;
 
 	if ( items == 3 ) {
@@ -983,8 +1055,10 @@ XS(XS_qabstract_item_model_setdata) {
         }
 	}
     else if ( items == 4 ) {
-        printf( "Calling setData with displayrole %"IVdf"\n", SvIV(SvRV(ST(3))) );
-        if ( model->setData( *modelIndex, *variant, SvIV(SvRV(ST(3))) ) ) {
+        SV* dataRole = ST(2);
+        if(SvROK(dataRole))
+            dataRole = SvRV(dataRole);
+        if ( model->setData( *modelIndex, *variant, SvIV(dataRole) ) ) {
             XSRETURN_YES;
         }
         else {
@@ -996,15 +1070,35 @@ XS(XS_qabstract_item_model_setdata) {
 XS(XS_qabstract_item_model_flags) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
+    if(!o)
+        croak( "%s", "Qt4::AbstractItemModel::flags called on a non-Qt4"
+            " object");
+    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
+        croak( "%s", "Qt4::AbstractItemModel::flags called on a"
+            " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
+
     smokeperl_object * mi = sv_obj_info(ST(1));
+    if(!mi)
+        croak( "%s", "1st argument to Qt4::AbstractItemModel::flags is"
+            " not a Qt4 object");
+    if(isDerivedFrom(mi, "QModelIndex") == -1)
+        croak( "%s", "1st argument to Qt4::AbstractItemModel::flags is"
+            " not a Qt4::ModelIndex" );
 	const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
+
 	XSRETURN_IV((IV)model->flags(*modelIndex));
 }
 
 XS(XS_qabstract_item_model_insertrows) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
+    if(!o)
+        croak( "%s", "Qt4::AbstractItemModel::insertRows called on a non-Qt4"
+            " object");
+    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
+        croak( "%s", "Qt4::AbstractItemModel::insertRows called on a"
+            " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
 	if (items == 3) {
@@ -1019,7 +1113,14 @@ XS(XS_qabstract_item_model_insertrows) {
 	else if (items == 4) {
         //bool insertRows( int row, int count, const QModelIndex & parent = QModelIndex() )
     	smokeperl_object * mi = sv_obj_info(ST(3));
+        if(!mi)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::insertRows is"
+                " not a Qt4 object");
+        if(isDerivedFrom(mi, "QModelIndex") == -1)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::insertRows is"
+                " not a Qt4::ModelIndex" );
 		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
+
 		if (model->insertRows(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
             XSRETURN_YES;
         }
@@ -1034,6 +1135,12 @@ XS(XS_qabstract_item_model_insertrows) {
 XS(XS_qabstract_item_model_insertcolumns) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
+    if(!o)
+        croak( "%s", "Qt4::AbstractItemModel::insertColumns called on a non-Qt4"
+            " object");
+    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
+        croak( "%s", "Qt4::AbstractItemModel::insertColumns called on a"
+            " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
 	if (items == 3) {
@@ -1048,6 +1155,12 @@ XS(XS_qabstract_item_model_insertcolumns) {
 	else if (items == 4) {
         //bool insertColumns( int column, int count, const QModelIndex & parent = QModelIndex() )
     	smokeperl_object * mi = sv_obj_info(ST(3));
+        if(!mi)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::insertColumns is"
+                " not a Qt4 object");
+        if(isDerivedFrom(mi, "QModelIndex") == -1)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::insertColumns is"
+                " not a Qt4::ModelIndex" );
 		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
 		if (model->insertColumns(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
             XSRETURN_YES;
@@ -1063,6 +1176,12 @@ XS(XS_qabstract_item_model_insertcolumns) {
 XS(XS_qabstract_item_model_removerows) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
+    if(!o)
+        croak( "%s", "Qt4::AbstractItemModel::removeRows called on a non-Qt4"
+            " object");
+    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
+        croak( "%s", "Qt4::AbstractItemModel::removeRows called on a"
+            " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
 	if (items == 3) {
@@ -1077,6 +1196,12 @@ XS(XS_qabstract_item_model_removerows) {
 	else if (items == 4) {
         //bool removeRows( int row, int count, const QModelIndex & parent = QModelIndex() )
     	smokeperl_object * mi = sv_obj_info(ST(3));
+        if(!mi)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::removeRows is"
+                " not a Qt4 object");
+        if(isDerivedFrom(mi, "QModelIndex") == -1)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::removeRows is"
+                " not a Qt4::ModelIndex" );
 		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
 		if (model->removeRows(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
             XSRETURN_YES;
@@ -1092,6 +1217,12 @@ XS(XS_qabstract_item_model_removerows) {
 XS(XS_qabstract_item_model_removecolumns) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
+    if(!o)
+        croak( "%s", "Qt4::AbstractItemModel::removeColumns called on a non-Qt4"
+            " object");
+    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
+        croak( "%s", "Qt4::AbstractItemModel::removeColumns called on a"
+            " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
 	if (items == 3) {
@@ -1106,6 +1237,12 @@ XS(XS_qabstract_item_model_removecolumns) {
 	else if (items == 4) {
         //bool removeColumns( int column, int count, const QModelIndex & parent = QModelIndex() )
     	smokeperl_object * mi = sv_obj_info(ST(3));
+        if(!mi)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::removeColumns is"
+                " not a Qt4 object");
+        if(isDerivedFrom(mi, "QModelIndex") == -1)
+            croak( "%s", "1st argument to Qt4::AbstractItemModel::removeColumns is"
+                " not a Qt4::ModelIndex" );
 		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
 		if (model->removeColumns(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
             XSRETURN_YES;
@@ -1220,11 +1357,11 @@ XS(XS_qvariant_value) {
         }
 #endif
         if(qstrcmp(variant->typeName(), "AV*") == 0) {
-            ST(0) = sv_2mortal( newRV_noinc( (SV*)qVariantValue<AV*>(*variant)) );
+            ST(0) = sv_2mortal( newRV( (SV*)qVariantValue<AV*>(*variant) ) );
             XSRETURN(1);
         }
         else if(qstrcmp(variant->typeName(), "HV*") == 0) {
-            ST(0) = newRV_noinc( (SV*)qVariantValue<HV*>(*variant));
+            ST(0) = sv_2mortal( newRV( (SV*)qVariantValue<HV*>(*variant) ) );
             XSRETURN(1);
         }
         else if (strcmp(variant->typeName(), "QDBusVariant") == 0) {
@@ -1462,7 +1599,6 @@ XS(XS_qvariant_from_value) {
     const char* retclassname = perlqt_modules[reto->smoke].resolve_classname(reto);
     SV* retval = set_obj_info( retclassname, reto );
 
-    //ST(0) = sv_2mortal(retval);
     ST(0) = retval;
     XSRETURN(1);
 }

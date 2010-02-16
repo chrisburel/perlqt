@@ -191,7 +191,7 @@ find(
  
 # Launch kalyptus
 chdir "../smoke/qt";
-system "perl -I@kdebindings_SOURCE_DIR@/kalyptus @kdebindings_SOURCE_DIR@/kalyptus/kalyptus @ARGV --qt4 --globspace -fsmoke --name=qt $macros --no-cache --outputdir=$outdir @headers";
+system "perl -I@perlqt4_SOURCE_DIR@/kalyptus @perlqt4_SOURCE_DIR@/kalyptus/kalyptus @ARGV --qt4 --globspace -fsmoke --name=qt $macros --no-cache --outputdir=$outdir @headers";
 my $exit = $? >> 8;
 exit $exit if ($exit);
 chdir "$kalyptusdir";

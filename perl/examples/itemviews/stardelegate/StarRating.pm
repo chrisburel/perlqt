@@ -15,6 +15,8 @@ sub new
 {
     my ($starCount, $maxStarCount) = (1, 5);
     my ($class) = @_;
+    $starCount = $_[1] if defined $_[1];
+    $maxStarCount = $_[2] if defined $_[2];
     my $self = bless {}, $class;
 
     $self->{myStarCount} = $starCount;
