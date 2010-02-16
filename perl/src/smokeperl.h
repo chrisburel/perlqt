@@ -1,6 +1,8 @@
 #ifndef SMOKEPERL_H
 #define SMOKEPERL_H
 
+#include "QtCore/QHash"
+#include "binding.h"
 #include "smoke.h"
 #include "smokehelp.h"
 
@@ -10,6 +12,18 @@ struct smokeperl_object {
     int classId;
     void* ptr;
 };
+
+typedef const char* (*ResolveClassNameFn)(smokeperl_object * o);
+typedef void (*ClassCreatedFn)(const char* package, SV* module, SV* klass);
+
+struct PerlQtModule {
+    const char *name;
+    ResolveClassNameFn resolve_classname;
+    ClassCreatedFn class_created;
+    PerlQt::Binding *binding;
+};
+
+extern Q_DECL_EXPORT QHash<Smoke*, PerlQtModule> perlqt_modules;
 
 inline smokeperl_object* sv_obj_info(SV* sv) { // ptr on success, null on fail
     if(!sv || !SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVHV)

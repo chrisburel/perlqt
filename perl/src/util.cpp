@@ -2,6 +2,7 @@
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QEvent>
 #include <QtCore/QHash>
+#include <QtCore/qglobal.h>
 #include <QtCore/QList>
 #include <QtCore/QMetaMethod>
 #include <QtCore/QMetaObject>
@@ -40,8 +41,8 @@ extern "C" {
 extern Q_DECL_EXPORT Smoke* qt_Smoke;
 extern Q_DECL_EXPORT void init_qt_Smoke();
 
-// We only have one binding.
 PerlQt::Binding binding;
+QHash<Smoke*, PerlQtModule> perlqt_modules;
 
 // Global variables
 SV* sv_this = 0;
@@ -61,49 +62,6 @@ alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr) {
 	o->ptr = ptr;
 	o->allocated = allocated;
     return o;
-}
-
-SV* allocSmokePerlSV ( void* ptr, SmokeType type ) {
-    // The hash
-    HV* hv = newHV();
-    // The hash reference to return
-    SV* var = newRV_noinc((SV*)hv);
-
-    if ( type.classId() > 0 ) {
-        // What package should I bless as?
-        char *retpackage = binding.className(type.classId());
-        // Bless the sv to that package.
-        sv_bless( var, gv_stashpv(retpackage, TRUE) );
-    }
-
-    // Now we need to associate the pointer to the returned
-    // value with the sv.
-    smokeperl_object o;
-    o.smoke = qt_Smoke;
-    o.classId = type.classId();
-    o.ptr = ptr;
-
-    if(type.isStack())
-        o.allocated = true;
-    else
-        o.allocated = false;
-
-    // For this, we need a magic wand.  This is what actually
-    // stores 'o' into our hash.
-    sv_magic((SV*)hv, 0, '~', (char*)&o, sizeof(o));
-
-    // Associate our vtbl_smoke with our sv, so that
-    // smokeperl_free is called for us when the sv is destroyed
-    MAGIC* mg = mg_find((SV*)hv, '~');
-    mg->mg_virtual = &vtbl_smoke;
-
-    // Store this into the ptr map for reference from virtual
-    // function calls.
-    if( SmokeClass( type ).hasVirtual() )
-        mapPointer(var, &o, pointer_map, o.classId, 0);
-
-    // We're done with our local var
-    return var;
 }
 
 #ifdef DEBUG
@@ -465,7 +423,7 @@ SV* prettyPrintMethod(Smoke::Index id) {
 }
 #endif
 
-const char* resolve_classname( smokeperl_object* o ) {
+const char* resolve_classname_qt( smokeperl_object* o ) {
 	if (o->smoke->isDerivedFromByName(o->smoke->classes[o->classId].className, "QEvent")) {
 		QEvent * qevent = (QEvent *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QEvent").index);
 		switch (qevent->type()) {
@@ -882,7 +840,7 @@ XS(XS_qobject_qt_metacast) {
         smokeperl_object * o_cast = alloc_smokeperl_object(
             o->allocated, qt_Smoke, classId, ret );
 
-        classname = resolve_classname(o);
+        classname = perlqt_modules[o->smoke].resolve_classname(o);
 
         obj = sv_2mortal( set_obj_info( classname, o_cast ) );
         mapPointer(obj, o_cast, pointer_map, o_cast->classId, 0);
@@ -992,10 +950,13 @@ XS(XS_qabstract_item_model_data) {
 		croak("%s", "Invalid argument list to Qt::AbstractItemModel::data");
 	}
 
-    SV* retval = allocSmokePerlSV(
-        new QVariant(value),
-        SmokeType( o->smoke, o->smoke->idType("QVariant") )
-    );
+    smokeperl_object* obj = alloc_smokeperl_object(
+        true,
+        o->smoke,
+        o->smoke->idClass("QVariant").index,
+        new QVariant(value) );
+
+    SV* retval = set_obj_info( " Qt::Variant", obj );
 
     ST(0) = sv_2mortal( retval );
     XSRETURN(1);
@@ -1266,15 +1227,31 @@ XS(XS_qvariant_value) {
             ST(0) = sv_2mortal( newRV_noinc( (SV*)qVariantValue<HV*>(*variant)) );
             XSRETURN(1);
         }
+        else if (strcmp(variant->typeName(), "QDBusVariant") == 0) {
+            void *value_ptr = QMetaType::construct(QMetaType::type(variant->typeName()), (void *) variant->constData());
+            Smoke::ModuleIndex mi = o->smoke->findClass("QVariant");
+
+            smokeperl_object* obj = alloc_smokeperl_object(
+                true,
+                mi.smoke,
+                mi.index,
+                value_ptr );
+
+            SV* retval = set_obj_info( perlqt_modules[mi.smoke].binding->className(mi.index), obj );
+            ST(0) = sv_2mortal(retval);
+            XSRETURN(1);
+        }
 
         void *value_ptr = QMetaType::construct(QMetaType::type(variant->typeName()), (void *) variant->constData());
-        Smoke::ModuleIndex mi = o->smoke->findClass("QVariant");
-        Smoke::Index typeId = mi.smoke->idType(mi.smoke->classes[mi.index].className);
-        retval = allocSmokePerlSV(
-            value_ptr,
-            SmokeType( mi.smoke, typeId )
-        );
-        sv_bless(retval, gv_stashpv( binding.className(mi.index), TRUE ) );
+        Smoke::ModuleIndex mi = o->smoke->findClass(variant->typeName());
+
+        smokeperl_object* obj = alloc_smokeperl_object(
+            true,
+            mi.smoke,
+            mi.index,
+            value_ptr );
+
+        SV* retval = set_obj_info( perlqt_modules[mi.smoke].binding->className(mi.index), obj );
         ST(0) = sv_2mortal(retval);
         XSRETURN(1);
     }
@@ -1357,7 +1334,8 @@ XS(XS_qvariant_value) {
 
     smokeperl_object* reto = alloc_smokeperl_object(
         true, sv_class_id->smoke, sv_class_id->index, sv_ptr);
-    retval = set_obj_info( resolve_classname(reto), reto );
+    const char* retclassname = perlqt_modules[reto->smoke].resolve_classname(reto);
+    retval = set_obj_info( retclassname, reto );
 
     delete sv_class_id;
 
@@ -1470,7 +1448,8 @@ XS(XS_qvariant_from_value) {
 
     smokeperl_object* reto = alloc_smokeperl_object(
         true, qt_Smoke, qt_Smoke->idClass("QVariant").index, v);
-    SV* retval = set_obj_info( resolve_classname(reto), reto );
+    const char* retclassname = perlqt_modules[reto->smoke].resolve_classname(reto);
+    SV* retval = set_obj_info( retclassname, reto );
 
     //ST(0) = sv_2mortal(retval);
     ST(0) = retval;

@@ -21,6 +21,7 @@ extern "C" {
 extern PerlQt::Binding binding;
 extern Q_DECL_EXPORT Smoke* qt_Smoke;
 extern Q_DECL_EXPORT void init_qt_Smoke();
+extern Q_DECL_EXPORT QHash<Smoke*, PerlQtModule> perlqt_modules;
 extern SV* sv_qapp;
 
 MODULE = Qt                PACKAGE = Qt::_internal
@@ -372,7 +373,10 @@ BOOT:
 #endif
 
     init_qt_Smoke();
+
     binding = PerlQt::Binding(qt_Smoke);
+    PerlQtModule module = { "PerlQt", resolve_classname_qt, 0, &binding };
+    perlqt_modules[qt_Smoke] = module;
 
     install_handlers(Qt_handlers);
 

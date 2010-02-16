@@ -377,7 +377,7 @@ void marshall_basetype(Marshall* m) {
                     }
 
                     // Figure out what Perl name this should get
-                    const char* classname = resolve_classname(o);
+                    const char* classname = resolve_classname_qt(o);
 
                     // Bless a HV ref into that package name, and shove o into
                     // var
@@ -576,15 +576,19 @@ void marshall_QDBusVariant(Marshall *m) {
                 sv_setsv_mg( m->var(), obj );
                 break;
             }
-            obj = allocSmokePerlSV(
-                p,
-                SmokeType( m->smoke(), m->smoke()->idType("QVariant") )
-            );
+            smokeperl_object* o = alloc_smokeperl_object(false, m->smoke(), m->smoke()->findClass("QVariant").index, p);
+		
+            obj = set_obj_info(" Qt::DBusVariant", o);
 
-            sv_bless( obj, gv_stashpv( " Qt::DBusVariant", TRUE ) );
             if (do_debug & qtdb_calls) {
                 smokeperl_object *o = sv_obj_info( obj );
                 printf("Allocating %s %p -> %p\n", "Qt::DBusVariant", o->ptr, (void*)obj);
+            }
+
+            if (m->type().isStack()) {
+                o->allocated = true;
+                // Keep a mapping of the pointer so that it is only wrapped once
+                mapPointer(obj, o, pointer_map, o->classId, 0);
             }
 
             sv_setsv(m->var(), obj);
@@ -1375,11 +1379,11 @@ void marshall_QMapQStringQVariant(Marshall *m) {
                 SV *obj = getPointerObject(p);
 
                 if ( !obj || !SvOK(obj) ) {
-                    obj = allocSmokePerlSV( p, 
-                            SmokeType( m->smoke(),
-                                       m->smoke()->idType("QVariant") )
-                    );
-                    //obj = set_obj_info("Qt::Variant", o);
+                    smokeperl_object  * o = alloc_smokeperl_object(	true, 
+                                                                    m->smoke(), 
+                                                                    m->smoke()->idClass("QVariant").index, 
+                                                                    p );
+                    obj = set_obj_info(" Qt::Variant", o);
                 }
 
                 SV *key = perlstringFromQString((QString*)&(it.key()));
@@ -1464,10 +1468,11 @@ void marshall_QMapIntQVariant(Marshall *m) {
                 SV *obj = getPointerObject(p);
 
                 if ( !obj || !SvOK(obj) ) {
-                    obj = allocSmokePerlSV( p, 
-                            SmokeType( m->smoke(),
-                                       m->smoke()->idType("QVariant") )
-                    );
+                    smokeperl_object * o = alloc_smokeperl_object( true, 
+                        m->smoke(), 
+                        m->smoke()->idClass("QVariant").index, 
+                        p );
+                    obj = set_obj_info("Qt::Variant", o);
                 }
 
                 SV *key = newSViv(it.key());
@@ -1764,10 +1769,11 @@ void marshall_QPairqrealQColor(Marshall *m) {
             void *p = (void *) &(qpair->second);
             SV *rv2 = getPointerObject(p);
             if ( !SvOK( rv2 ) ) {
-                rv2 = allocSmokePerlSV(
-                    p, SmokeType( m->smoke(), 
-                                  m->smoke()->idType("QColor") ) );
-                //rv2 = set_obj_info("Qt::Color", o);
+                smokeperl_object * o = alloc_smokeperl_object( true, 
+                    m->smoke(), 
+                    m->smoke()->idClass("QColor").index, 
+                    p );
+                rv2 = set_obj_info("Qt::Color", o);
             }
 
             AV *av = newAV();
@@ -1850,8 +1856,12 @@ void marshall_voidP_array(Marshall *m) {
             // This is ghetto.
             void* cxxptr = m->item().s_voidp;
 
-            SV *var = sv_2mortal(allocSmokePerlSV( cxxptr, m->type() ));
-            sv_bless( var, gv_stashpv( "voidparray", TRUE ) );
+            smokeperl_object* o = alloc_smokeperl_object(
+                false,
+                m->smoke(),
+                0,
+                cxxptr );
+            SV *var = sv_2mortal( set_obj_info( "voidparray", o ) );
 
             SvSetMagicSV(m->var(), var);
         }

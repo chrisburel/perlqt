@@ -55,7 +55,7 @@ sub start {
             my $property = $line =~ s/^value=//;
             this->iface->setValue( Qt::Variant($property) );
         } else {
-            my $reply = Qt::DBusReply( this->iface->call( 'query', Qt::Variant($line)) );
+            my $reply = Qt::DBusReply( this->iface->call( 'query', Qt::Variant(Qt::String($line))) );
             if ($reply->isValid()) {
                 printf "Reply was: %s\n", $reply->value()->value();
             }

@@ -4,7 +4,6 @@
 #include "smokeperl.h"
 #include "smokehelp.h"
 
-SV* allocSmokePerlSV ( void* ptr, SmokeType type );
 #ifdef DEBUG
 SV* catArguments(SV** sp, int n);
 SV* catCallerInfo( int count );

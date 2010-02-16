@@ -746,15 +746,24 @@ my %hashTypes = (
     },
 );
 
-# meta-hackery tools
-my $A = sub {my $n = shift; no strict 'refs'; \@{$n}};
-my $H = sub {my ($n) = @_; no strict 'refs'; no warnings 'once'; \%{$n}};
-sub installSub($&) {
+sub arrayByName {
+    my $name = shift;
+    no strict 'refs';
+    return \@{$name};
+}
+
+sub hashByName {
+    my $name = shift;
+    no strict 'refs';
+    return \%{$name};
+}
+
+sub installSub {
     my ($subname, $subref) = @_;
     no strict 'refs';
-    *{$subname} = $subref
-};
-
+    *{$subname} = $subref;
+    return;
+}
 
 sub unique {
     my %uniq;          # Use keys of this hash to track unique values
@@ -1081,7 +1090,7 @@ sub getSmokeMethodId {
 sub getMetaObject {
     my $class = shift;
 
-    my $meta = $H->($class . '::META');
+    my $meta = hashByName($class . '::META');
 
     # If no signals/slots/properties have been added since the last time this
     # was asked for, return the saved one.
@@ -1101,7 +1110,7 @@ sub getMetaObject {
     my $parentClassId;
 
     # This seems wrong, it won't work with multiple inheritance
-    my $parentClass = $A->($class."::ISA")->[0]; 
+    my $parentClass = arrayByName($class."::ISA")->[0]; 
     if( !$package2classId{$parentClass} ) {
         # The parent class is a custom Perl class whose metaObject was
         # constructed at runtime, so we can get it's metaObject from here.
@@ -1164,10 +1173,10 @@ sub init_class {
     # The root of the tree will be Qt::base, so a call to
     # $className::new() redirects there.
     @isa = ('Qt::base') unless @isa;
-    @{$A->($perlClassName.'::ISA')} =  @isa;
+    @{arrayByName($perlClassName.'::ISA')} = @isa;
 
     # Define overloaded operators
-    @{$A->(" $perlClassName\::ISA")} = ('Qt::base::_overload');
+    @{arrayByName(" $perlClassName\::ISA")} = ('Qt::base::_overload');
 
     foreach my $sp ('', ' ') {
         my $where = $sp . $perlClassName;
@@ -1176,7 +1185,7 @@ sub init_class {
         # the autoload variable
         package Qt::AutoLoad;
         my $autosub = \&{$where . '::_UTOLOAD'};
-        installSub( $where.'::AUTOLOAD', $autosub );
+        Qt::_internal::installSub( $where.'::AUTOLOAD', sub{&$autosub} );
     }
 
     installSub("$perlClassName\::NEW", sub {
@@ -1257,11 +1266,11 @@ sub init {
     my $enums = getEnumList();
     foreach my $enumName (@$enums) {
         $enumName =~ s/^const //;
-        if(@{$A->("${enumName}::ISA")}) {
-            @{$A->("${enumName}Enum::ISA")} = ('Qt::enum::_overload');
+        if(@{arrayByName("${enumName}::ISA")}) {
+            @{arrayByName("${enumName}Enum::ISA")} = ('Qt::enum::_overload');
         }
         else {
-            @{$A->("${enumName}::ISA")} = ('Qt::enum::_overload');
+            @{arrayByName("${enumName}::ISA")} = ('Qt::enum::_overload');
         }
     }
 
@@ -1270,7 +1279,7 @@ sub init {
 sub makeMetaData {
     my ( $classname ) = @_;
 
-    my $meta = $H->($classname . '::META');
+    my $meta = hashByName($classname . '::META');
 
     my $classinfos = $meta->{classinfos};
     my $dbus = $meta->{dbus};

@@ -134,7 +134,7 @@ public:
         // Tell the method call what binding to use
         if (method->flags & Smoke::mf_ctor) {
             Smoke::StackItem s[2];
-            s[1].s_voidp = (void*)&binding;
+            s[1].s_voidp = perlqt_modules[_smoke].binding;
             (*fn)(0, _stack[0].s_voidp, s);
         }
 

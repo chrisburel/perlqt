@@ -36,7 +36,13 @@ static void marshall_to_perl(Marshall *m) {
 
 template<>
 void marshall_from_perl<char*>(Marshall* m) {
-    m->item().s_voidp = perl_to_primitive<char*>(m->var());
+    SV* sv = m->var();
+    char* buf = perl_to_primitive<char*>(sv);
+    m->item().s_voidp = buf;
+    m->next();
+    if(!m->type().isConst() && !SvREADONLY(sv)) {
+        sv_setpv(sv, buf);
+    }
 }
 
 template<>

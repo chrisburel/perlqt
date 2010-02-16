@@ -34,7 +34,6 @@ extern "C" {
 #include "handlers.h" // for install_handlers function
 
 smokeperl_object * alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr);
-SV* allocSmokePerlSV ( void* ptr, SmokeType type );
 
 #ifdef DEBUG
 void catRV( SV *r, SV *sv );
@@ -61,7 +60,7 @@ void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId,
 
 Smoke::Index package_classId( const char *package );
 
-const char* resolve_classname( smokeperl_object* o );
+const char* resolve_classname_qt( smokeperl_object* o );
 
 void* sv_to_ptr(SV* sv);
 

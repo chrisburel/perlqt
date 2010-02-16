@@ -122,7 +122,7 @@ void marshall_ItemList(Marshall *m) {
                         }
                     }
 
-                    const char* classname = resolve_classname(o);
+                    const char* classname = perlqt_modules[o->smoke].resolve_classname(o);
 
                     obj = set_obj_info( classname, o );
                 }
@@ -243,7 +243,7 @@ void marshall_ValueListItem(Marshall *m) {
                         }
                     }
 
-                    const char* classname = resolve_classname(o);
+                    const char* classname = perlqt_modules[o->smoke].resolve_classname(o);
 
                     obj = set_obj_info( classname, o );
                 }
@@ -351,7 +351,8 @@ void marshall_LinkedItemList(Marshall *m) {
                                                                     m->smoke()->idClass(ItemSTR).index, 
                                                                     p );
 
-                    obj = set_obj_info(resolve_classname(o), o);
+                    const char* classname = perlqt_modules[o->smoke].resolve_classname(o);
+                    obj = set_obj_info(classname, o);
                 }
             
                 rb_ary_push(av, obj);
