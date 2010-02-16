@@ -19,7 +19,7 @@ sub main
 
     my $view = Qt4::GraphicsView($scene);
     $view->setRenderHint(Qt4::Painter::Antialiasing());
-    $view->setBackgroundBrush(Qt4::darkGray());
+    $view->setBackgroundBrush(Qt4::Brush(Qt4::darkGray()));
     $view->setWindowTitle(qApp->translate('Qt4::GraphicsView', 'Qt DBus Controlled Car'));
     $view->resize(400, 300);
     $view->show();
