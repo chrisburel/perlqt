@@ -26,15 +26,17 @@ void Binding::deleted(Smoke::Index /*classId*/, void *ptr) {
     }
     unmapPointer( o, o->classId, 0 );
 
-    // Do the same for all children
-    QObject* objptr = (QObject*)o->smoke->cast(
-        ptr,
-        o->classId,
-        o->smoke->idClass("QObject").index
-    );
-    QObjectList mychildren = objptr->children();
-    foreach( QObject* child, mychildren ) {
-        deleted( 0, child );
+    // If it's a QObject, unmap all it's children too.
+    if ( isDerivedFrom( o->smoke, o->classId, o->smoke->idClass("QObject").index, 0 ) >= 0 ) {
+        QObject* objptr = (QObject*)o->smoke->cast(
+            ptr,
+            o->classId,
+            o->smoke->idClass("QObject").index
+        );
+        QObjectList mychildren = objptr->children();
+        foreach( QObject* child, mychildren ) {
+            deleted( 0, child );
+        }
     }
 
     o->ptr = 0;
