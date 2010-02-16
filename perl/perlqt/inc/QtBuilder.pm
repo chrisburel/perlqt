@@ -33,7 +33,7 @@ sub ACTION_puic {
   my $puic = File::Spec->catfile($script_dir, '/puic4');
 
   unless($self->up_to_date(\@objects, [$puic])) {
-    $self->cbuilder->link_executable(
+    $self->_cbuilder->link_executable(
       exe_file => $puic,
       objects => \@objects,
       extra_linker_flags => $p->{extra_linker_flags},

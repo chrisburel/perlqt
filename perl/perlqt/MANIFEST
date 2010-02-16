@@ -502,7 +502,6 @@ lib/Qt4/isa.pm
 lib/Qt4/signals.pm
 lib/Qt4/slots.pm
 src/CMakeLists.txt
-src/Qt4.c
 src/Qt4.h
 src/Qt4.xs
 src/binding.cpp

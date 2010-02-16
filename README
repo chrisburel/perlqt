@@ -6,7 +6,7 @@ This module provides bindings to the Qt 4 libraries for Perl.
 PREREQUISITES
 
 Perl > 5.  I've tested on Perl 5.8.6 and 5.10.0.
-Qt > 4.0.  I've tested on Qt 4.4.3, 4.5.0, and 4.5.1.
+Qt > 4.0.  I've tested on Qt 4.4.3, 4.5.0, 4.5.1, and 4.5.2.
 cmake
 
 INSTALLATION

@@ -60,10 +60,6 @@ foreach my $path ( $userSmokeIncDir, $userQtIncDir ) {
     push(@flags, "-I$path") if $path;
 }
 
-# Find libsmokeqt using pkg-config;
-# Currently there is no .pc file installed, so we guess...
-push(@libs, '-lsmokeqt');
-
 # If the user specified a specific path for Qt or Smoke, make sure that's in
 # the lib path
 foreach my $path ( $userSmokeLibDir, $userQtLibDir ) {
@@ -100,6 +96,24 @@ else {
       '-lQtCore',
     );
   #}
+}
+
+# Try to load Alien::QtSmoke to find the location of the smoke library
+eval{ require Alien::QtSmoke };
+if ( !$@ ) {
+    # load successful
+    push(@flags, '-I' . Alien::QtSmoke->include());
+
+    # Add an rpath to the .so to make sure it can find libsmokeqt after install
+    push(@libs, '-Wl,--rpath,' . Alien::QtSmoke->lib());
+
+    push(@libs, '-L' . Alien::QtSmoke->lib());
+    push(@libs, '-lsmokeqt');
+}
+else {
+    warn "Module Alien::QtSmoke not found.  We'll try to use the system" .
+    " installed libsmokeqt (if it exists).";
+    push(@libs, '-lsmokeqt');
 }
 
 my $builder = QtBuilder->new(
@@ -140,6 +154,7 @@ my $builder = QtBuilder->new(
     'ExtUtils::ParseXS'     => 0,
   },
   recommends => {
+    'Alien::QtSmoke'        => '4.3.3',
   },
   conflicts => {
   },
