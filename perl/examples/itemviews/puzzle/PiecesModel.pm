@@ -33,14 +33,14 @@ sub data
     }
 
     if ($role == Qt::DecorationRole()) {
-        return Qt::Icon(this->pixmaps->[$index->row()]->scaled(60, 60,
-                         Qt::KeepAspectRatio(), Qt::SmoothTransformation()));
+        return Qt::qVariantFromValue(Qt::Icon(this->pixmaps->[$index->row()]->scaled(60, 60,
+                         Qt::KeepAspectRatio(), Qt::SmoothTransformation())));
     }
     elsif ($role == Qt::UserRole()) {
-        return this->pixmaps->[$index->row()];
+        return Qt::qVariantFromValue(this->pixmaps->[$index->row()]);
     }
     elsif ($role == Qt::UserRole() + 1) {
-        return this->locations->[$index->row()];
+        return Qt::Variant(this->locations->[$index->row()]);
     }
 
     return Qt::Variant();
