@@ -979,7 +979,7 @@ XS(XS_AUTOLOAD) {
         // What context are we calling this subroutine in?
         I32 gimme = GIMME_V;
         // Make the call, save number of returned values
-        int count = call_sv((SV*)GvCV(gv), gimme|G_EVAL);
+        int count = call_sv((SV*)GvCV(gv), gimme);
         // Get the return value
         SPAGAIN;
         SP -= count;
