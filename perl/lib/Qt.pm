@@ -20,6 +20,16 @@ sub new {
     return $ret;
 }
 
+# This subroutine is used to set the context for translation correctly for any
+# perl subclasses.  Without it, the context would always be set to the base Qt
+# class.
+sub tr {
+    my $context = ref Qt::this();
+    return unless $context;
+    $context =~ s/^ *//;
+    return Qt::qApp()->translate( $context, @_ );
+}
+
 package Qt::base::_overload;
 use strict;
 
