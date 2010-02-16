@@ -2,10 +2,10 @@ package CircleWidget;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     nextAnimationFrame => [];
 
 sub floatBased() {
@@ -30,8 +30,8 @@ sub NEW
     this->{antialiased} = 0;
     this->{frameNo} = 0;
 
-    this->setBackgroundRole(Qt::Palette::Base());
-    this->setSizePolicy(Qt::SizePolicy::Expanding(), Qt::SizePolicy::Expanding());
+    this->setBackgroundRole(Qt4::Palette::Base());
+    this->setSizePolicy(Qt4::SizePolicy::Expanding(), Qt4::SizePolicy::Expanding());
 }
 # [0]
 
@@ -56,14 +56,14 @@ sub setAntialiased
 # [3]
 sub minimumSizeHint
 {
-    return Qt::Size(50, 50);
+    return Qt4::Size(50, 50);
 }
 # [3]
 
 # [4]
 sub sizeHint
 {
-    return Qt::Size(180, 180);
+    return Qt4::Size(180, 180);
 }
 # [4]
 
@@ -78,8 +78,8 @@ sub nextAnimationFrame
 # [6]
 sub paintEvent
 {
-    my $painter = Qt::Painter(this);
-    $painter->setRenderHint(Qt::Painter::Antialiasing(), this->antialiased);
+    my $painter = Qt4::Painter(this);
+    $painter->setRenderHint(Qt4::Painter::Antialiasing(), this->antialiased);
     $painter->translate(this->width() / 2, this->height() / 2);
 # [6]
 
@@ -89,13 +89,13 @@ sub paintEvent
         my $alpha = 255 - ($delta * $delta) / 4 - $diameter;
 # [7] //! [8]
         if ($alpha > 0) {
-            $painter->setPen(Qt::Pen(Qt::Brush(Qt::Color(0, $diameter / 2, 127, $alpha)), 3));
+            $painter->setPen(Qt4::Pen(Qt4::Brush(Qt4::Color(0, $diameter / 2, 127, $alpha)), 3));
 
             if (this->floatBased) {
-                $painter->drawEllipse(Qt::RectF(-$diameter / 2.0, -$diameter / 2.0,
+                $painter->drawEllipse(Qt4::RectF(-$diameter / 2.0, -$diameter / 2.0,
                                            $diameter, $diameter));
             } else {
-                $painter->drawEllipse(Qt::Rect(-$diameter / 2, -$diameter / 2,
+                $painter->drawEllipse(Qt4::Rect(-$diameter / 2, -$diameter / 2,
                                           $diameter, $diameter));
             }
         }

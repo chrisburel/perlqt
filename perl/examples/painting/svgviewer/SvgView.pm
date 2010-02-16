@@ -2,9 +2,9 @@ package SvgView;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::GraphicsView );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::GraphicsView );
+use Qt4::slots
     setHighQualityAntialiasing => ['bool'],
     setViewBackground => ['bool'],
     setViewOutline => ['bool'];
@@ -48,22 +48,22 @@ sub NEW
     this->{svgItem} = 0;
     this->{backgroundItem} = 0;
     this->{outlineItem} = 0;
-    this->{m_image} = Qt::Image();
+    this->{m_image} = Qt4::Image();
 
-    this->setScene(Qt::GraphicsScene(this));
-    this->setTransformationAnchor(Qt::GraphicsView::AnchorUnderMouse());
-    this->setDragMode(Qt::GraphicsView::ScrollHandDrag());
+    this->setScene(Qt4::GraphicsScene(this));
+    this->setTransformationAnchor(Qt4::GraphicsView::AnchorUnderMouse());
+    this->setDragMode(Qt4::GraphicsView::ScrollHandDrag());
 
     # Prepare background check-board pattern
-    my $tilePixmap = Qt::Pixmap(64, 64);
-    $tilePixmap->fill(Qt::Color(Qt::white()));
-    my $tilePainter = Qt::Painter($tilePixmap);
-    my $color = Qt::Color(220, 220, 220);
-    $tilePainter->fillRect(0, 0, 32, 32, Qt::Brush($color));
-    $tilePainter->fillRect(32, 32, 32, 32, Qt::Brush($color));
+    my $tilePixmap = Qt4::Pixmap(64, 64);
+    $tilePixmap->fill(Qt4::Color(Qt4::white()));
+    my $tilePainter = Qt4::Painter($tilePixmap);
+    my $color = Qt4::Color(220, 220, 220);
+    $tilePainter->fillRect(0, 0, 32, 32, Qt4::Brush($color));
+    $tilePainter->fillRect(32, 32, 32, 32, Qt4::Brush($color));
     $tilePainter->end();
 
-    this->setBackgroundBrush(Qt::Brush($tilePixmap));
+    this->setBackgroundBrush(Qt4::Brush($tilePixmap));
 }
 
 sub drawBackground
@@ -90,24 +90,24 @@ sub openFile
     $s->clear();
     this->resetTransform();
 
-    this->{m_svgItem} = Qt::GraphicsSvgItem($file->fileName());
-    this->m_svgItem->setFlags(Qt::GraphicsItem::ItemClipsToShape());
-    this->m_svgItem->setCacheMode(Qt::GraphicsItem::NoCache());
+    this->{m_svgItem} = Qt4::GraphicsSvgItem($file->fileName());
+    this->m_svgItem->setFlags(Qt4::GraphicsItem::ItemClipsToShape());
+    this->m_svgItem->setCacheMode(Qt4::GraphicsItem::NoCache());
     this->m_svgItem->setZValue(0);
 
-    this->{m_backgroundItem} = Qt::GraphicsRectItem(this->m_svgItem->boundingRect());
-    this->m_backgroundItem->setBrush(Qt::Brush(Qt::white()));
-    this->m_backgroundItem->setPen(Qt::Pen(Qt::NoPen()));
+    this->{m_backgroundItem} = Qt4::GraphicsRectItem(this->m_svgItem->boundingRect());
+    this->m_backgroundItem->setBrush(Qt4::Brush(Qt4::white()));
+    this->m_backgroundItem->setPen(Qt4::Pen(Qt4::NoPen()));
     this->m_backgroundItem->setVisible($drawBackground);
     this->m_backgroundItem->setZValue(-1);
 
-    this->{m_outlineItem} = Qt::GraphicsRectItem(this->m_svgItem->boundingRect());
-    my $outline = Qt::Pen(Qt::Brush(Qt::black()), 2, Qt::DashLine());
+    this->{m_outlineItem} = Qt4::GraphicsRectItem(this->m_svgItem->boundingRect());
+    my $outline = Qt4::Pen(Qt4::Brush(Qt4::black()), 2, Qt4::DashLine());
     $outline->setCosmetic(1);
     this->m_outlineItem->setPen($outline);
     # FIXME This should work with the 1 argument form.  But that has been cached
-    # already as calling the QBrush(Qt::GlobalColor) constructor.
-    this->m_outlineItem->setBrush(Qt::Brush(Qt::white(), Qt::NoBrush()));
+    # already as calling the QBrush(Qt4::GlobalColor) constructor.
+    this->m_outlineItem->setBrush(Qt4::Brush(Qt4::white(), Qt4::NoBrush()));
     this->m_outlineItem->setVisible($drawOutline);
     this->m_outlineItem->setZValue(1);
 
@@ -125,10 +125,10 @@ sub setRenderer
 
     if (this->m_renderer == OpenGL) {
 #ifndef QT_NO_OPENGL
-        this->setViewport(Qt::GLWidget(Qt::GLFormat(Qt::GL::SampleBuffers())));
+        this->setViewport(Qt4::GLWidget(Qt4::GLFormat(Qt4::GL::SampleBuffers())));
 #endif
     } else {
-        this->setViewport(Qt::Widget());
+        this->setViewport(Qt4::Widget());
     }
 }
 
@@ -136,7 +136,7 @@ sub setHighQualityAntialiasing
 {
     my ($highQualityAntialiasing) = @_;
 #ifndef QT_NO_OPENGL
-    this->setRenderHint(Qt::Painter::HighQualityAntialiasing(), $highQualityAntialiasing);
+    this->setRenderHint(Qt4::Painter::HighQualityAntialiasing(), $highQualityAntialiasing);
 #endif
 }
 
@@ -165,14 +165,14 @@ sub paintEvent
     my ($event) = @_;
     if (this->m_renderer == Image) {
         if (this->m_image->size() != this->viewport()->size()) {
-            this->{m_image} = Qt::Image(this->viewport()->size(), Qt::Image::Format_ARGB32_Premultiplied());
+            this->{m_image} = Qt4::Image(this->viewport()->size(), Qt4::Image::Format_ARGB32_Premultiplied());
         }
 
-        my $imagePainter = Qt::Painter(this->m_image);
+        my $imagePainter = Qt4::Painter(this->m_image);
         this->SUPER::render($imagePainter);
         $imagePainter->end();
 
-        my $p = Qt::Painter(this->viewport());
+        my $p = Qt4::Painter(this->viewport());
         $p->drawImage(0, 0, this->m_image);
         $p->end();
 

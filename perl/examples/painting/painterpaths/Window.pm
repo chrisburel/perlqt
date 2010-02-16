@@ -2,10 +2,10 @@ package Window;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     fillRuleChanged => [],
     fillGradientChanged => [],
     penColorChanged => [];
@@ -80,7 +80,7 @@ sub NEW
 {
     my ($class) = @_;
     $class->SUPER::NEW();
-    my $rectPath = Qt::PainterPath();
+    my $rectPath = Qt4::PainterPath();
     $rectPath->moveTo(20.0, 30.0);
     $rectPath->lineTo(80.0, 30.0);
     $rectPath->lineTo(80.0, 70.0);
@@ -89,7 +89,7 @@ sub NEW
 # [1]
 
 # [2]
-    my $roundRectPath = Qt::PainterPath();
+    my $roundRectPath = Qt4::PainterPath();
     $roundRectPath->moveTo(80.0, 35.0);
     $roundRectPath->arcTo(70.0, 30.0, 10.0, 10.0, 0.0, 90.0);
     $roundRectPath->lineTo(25.0, 30.0);
@@ -102,20 +102,20 @@ sub NEW
 # [2]
 
 # [3]
-    my $ellipsePath = Qt::PainterPath();
+    my $ellipsePath = Qt4::PainterPath();
     $ellipsePath->moveTo(80.0, 50.0);
     $ellipsePath->arcTo(20.0, 30.0, 60.0, 40.0, 0.0, 360.0);
 # [3]
 
 # [4]
-    my $piePath = Qt::PainterPath();
+    my $piePath = Qt4::PainterPath();
     $piePath->moveTo(50.0, 50.0);
     $piePath->arcTo(20.0, 30.0, 60.0, 40.0, 60.0, 240.0);
     $piePath->closeSubpath();
 # [4]
 
 # [5]
-    my $polygonPath = Qt::PainterPath();
+    my $polygonPath = Qt4::PainterPath();
     $polygonPath->moveTo(10.0, 80.0);
     $polygonPath->lineTo(20.0, 10.0);
     $polygonPath->lineTo(80.0, 30.0);
@@ -124,7 +124,7 @@ sub NEW
 # [5]
 
 # [6]
-    my $groupPath = Qt::PainterPath();
+    my $groupPath = Qt4::PainterPath();
     $groupPath->moveTo(60.0, 40.0);
     $groupPath->arcTo(20.0, 20.0, 40.0, 40.0, 0.0, 360.0);
     $groupPath->moveTo(40.0, 40.0);
@@ -135,20 +135,20 @@ sub NEW
 # [6]
 
 # [7]
-    my $textPath = Qt::PainterPath();
-    my $timesFont = Qt::Font('Times', 50);
-    $timesFont->setStyleStrategy(Qt::Font::ForceOutline());
+    my $textPath = Qt4::PainterPath();
+    my $timesFont = Qt4::Font('Times', 50);
+    $timesFont->setStyleStrategy(Qt4::Font::ForceOutline());
     $textPath->addText(10, 70, $timesFont, this->tr('Qt'));
 # [7]
 
 # [8]
-    my $bezierPath = Qt::PainterPath();
+    my $bezierPath = Qt4::PainterPath();
     $bezierPath->moveTo(20, 30);
     $bezierPath->cubicTo(80, 0, 50, 50, 80, 80);
 # [8]
 
 # [9]
-    my $starPath = Qt::PainterPath();
+    my $starPath = Qt4::PainterPath();
     $starPath->moveTo(90, 50);
     for (my $i = 1; $i < 5; ++$i) {
         $starPath->lineTo(50 + 40 * cos(0.8 * $i * Pi),
@@ -171,51 +171,51 @@ sub NEW
 # [10]
 
 # [11]
-    this->{fillRuleComboBox} = Qt::ComboBox();
-    this->fillRuleComboBox->addItem(this->tr('Odd Even'), Qt::Variant(Qt::Int(${Qt::OddEvenFill()})));
-    this->fillRuleComboBox->addItem(this->tr('Winding'), Qt::Variant(Qt::Int(${Qt::WindingFill()})));
+    this->{fillRuleComboBox} = Qt4::ComboBox();
+    this->fillRuleComboBox->addItem(this->tr('Odd Even'), Qt4::Variant(Qt4::Int(${Qt4::OddEvenFill()})));
+    this->fillRuleComboBox->addItem(this->tr('Winding'), Qt4::Variant(Qt4::Int(${Qt4::WindingFill()})));
 
-    this->{fillRuleLabel} = Qt::Label(this->tr('Fill &Rule:'));
+    this->{fillRuleLabel} = Qt4::Label(this->tr('Fill &Rule:'));
     this->fillRuleLabel->setBuddy(this->fillRuleComboBox);
 # [11]
 
 # [12]
-    this->{fillColor1ComboBox} = Qt::ComboBox();
+    this->{fillColor1ComboBox} = Qt4::ComboBox();
     this->populateWithColors(this->fillColor1ComboBox);
     this->fillColor1ComboBox->setCurrentIndex(
             this->fillColor1ComboBox->findText('mediumslateblue'));
 
-    this->{fillColor2ComboBox} = Qt::ComboBox();
+    this->{fillColor2ComboBox} = Qt4::ComboBox();
     this->populateWithColors(this->fillColor2ComboBox);
     this->fillColor2ComboBox->setCurrentIndex(
             this->fillColor2ComboBox->findText('cornsilk'));
 
-    this->{fillGradientLabel} = Qt::Label(this->tr('&Fill Gradient:'));
+    this->{fillGradientLabel} = Qt4::Label(this->tr('&Fill Gradient:'));
     this->fillGradientLabel->setBuddy(this->fillColor1ComboBox);
 
-    this->{fillToLabel} = Qt::Label(this->tr('to'));
-    this->fillToLabel->setSizePolicy(Qt::SizePolicy::Fixed(), Qt::SizePolicy::Fixed());
+    this->{fillToLabel} = Qt4::Label(this->tr('to'));
+    this->fillToLabel->setSizePolicy(Qt4::SizePolicy::Fixed(), Qt4::SizePolicy::Fixed());
 
-    this->{penWidthSpinBox} = Qt::SpinBox();
+    this->{penWidthSpinBox} = Qt4::SpinBox();
     this->penWidthSpinBox->setRange(0, 20);
 
-    this->{penWidthLabel} = Qt::Label(this->tr('&Pen Width:'));
+    this->{penWidthLabel} = Qt4::Label(this->tr('&Pen Width:'));
     this->penWidthLabel->setBuddy(this->penWidthSpinBox);
 
-    this->{penColorComboBox} = Qt::ComboBox();
+    this->{penColorComboBox} = Qt4::ComboBox();
     this->populateWithColors(this->penColorComboBox);
     this->penColorComboBox->setCurrentIndex(
             this->penColorComboBox->findText('darkslateblue'));
 
-    this->{penColorLabel} = Qt::Label(this->tr('Pen &Color:'));
+    this->{penColorLabel} = Qt4::Label(this->tr('Pen &Color:'));
     this->penColorLabel->setBuddy(this->penColorComboBox);
 
-    this->{rotationAngleSpinBox} = Qt::SpinBox();
+    this->{rotationAngleSpinBox} = Qt4::SpinBox();
     this->rotationAngleSpinBox->setRange(0, 359);
     this->rotationAngleSpinBox->setWrapping(1);
     this->rotationAngleSpinBox->setSuffix("\xB0");
 
-    this->{rotationAngleLabel} = Qt::Label(this->tr('&Rotation Angle:'));
+    this->{rotationAngleLabel} = Qt4::Label(this->tr('&Rotation Angle:'));
     this->rotationAngleLabel->setBuddy(this->rotationAngleSpinBox);
 # [12]
 
@@ -237,12 +237,12 @@ sub NEW
     }
 
 # [16] //! [17]
-    my $topLayout = Qt::GridLayout();
+    my $topLayout = Qt4::GridLayout();
     for (my $i = 0; $i < NumRenderAreas; ++$i) {
         $topLayout->addWidget(this->renderAreas->[$i], $i / 3, $i % 3);
     }
 
-    my $mainLayout = Qt::GridLayout();
+    my $mainLayout = Qt4::GridLayout();
     $mainLayout->addLayout($topLayout, 0, 0, 1, 4);
     $mainLayout->addWidget(this->fillRuleLabel, 1, 0);
     $mainLayout->addWidget(this->fillRuleComboBox, 1, 1, 1, 3);
@@ -283,8 +283,8 @@ sub fillRuleChanged
 # [20]
 sub fillGradientChanged
 {
-    #my $color1 = qvariant_cast<Qt::Color>(this->currentItemData(this->fillColor1ComboBox));
-    #my $color2 = qvariant_cast<Qt::Color>(this->currentItemData(this->fillColor2ComboBox));
+    #my $color1 = qvariant_cast<Qt4::Color>(this->currentItemData(this->fillColor1ComboBox));
+    #my $color2 = qvariant_cast<Qt4::Color>(this->currentItemData(this->fillColor2ComboBox));
     my $color1 = this->currentItemData(this->fillColor1ComboBox);
     my $color2 = this->currentItemData(this->fillColor2ComboBox);
 
@@ -297,7 +297,7 @@ sub fillGradientChanged
 # [21]
 sub penColorChanged
 {
-    #my $color = qvariant_cast<Qt::Color>(this->currentItemData(this->penColorComboBox));
+    #my $color = qvariant_cast<Qt4::Color>(this->currentItemData(this->penColorComboBox));
     my $color = this->currentItemData(this->penColorComboBox);
 
     for (my $i = 0; $i < NumRenderAreas; ++$i) {
@@ -310,9 +310,9 @@ sub penColorChanged
 sub populateWithColors
 {
     my ($comboBox) = @_;
-    my $colorNames = Qt::Color::colorNames();
+    my $colorNames = Qt4::Color::colorNames();
     foreach my $name ( @{$colorNames} ) {
-        $comboBox->addItem($name, Qt::qVariantFromValue(Qt::Color(Qt::String($name))));
+        $comboBox->addItem($name, Qt4::qVariantFromValue(Qt4::Color(Qt4::String($name))));
     }
 }
 # [22]

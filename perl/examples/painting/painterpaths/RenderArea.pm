@@ -2,10 +2,10 @@ package RenderArea;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     setFillRule => ['QFillRule'],
     setFillGradient => ['QColor &', 'QColor &'],
     setPenWidth => ['int'],
@@ -47,21 +47,21 @@ sub NEW
     this->{path} = $path;
     this->{penWidth} = 1;
     this->{rotationAngle} = 0;
-    this->setBackgroundRole(Qt::Palette::Base());
+    this->setBackgroundRole(Qt4::Palette::Base());
 }
 # [0]
 
 # [1]
 sub minimumSizeHint
 {
-    return Qt::Size(50, 50);
+    return Qt4::Size(50, 50);
 }
 # [1]
 
 # [2]
 sub sizeHint
 {
-    return Qt::Size(100, 100);
+    return Qt4::Size(100, 100);
 }
 # [2]
 
@@ -114,8 +114,8 @@ sub setRotationAngle
 # [8]
 sub paintEvent
 {
-    my $painter = Qt::Painter(this);
-    $painter->setRenderHint(Qt::Painter::Antialiasing());
+    my $painter = Qt4::Painter(this);
+    $painter->setRenderHint(Qt4::Painter::Antialiasing());
 # [8] //! [9]
     $painter->scale(this->width() / 100.0, this->height() / 100.0);
     $painter->translate(50.0, 50.0);
@@ -123,15 +123,15 @@ sub paintEvent
     $painter->translate(-50.0, -50.0);
 
 # [9] //! [10]
-    my $color = Qt::qVariantValue( this->penColor, 'Qt::Color' );
-    $painter->setPen(Qt::Pen(Qt::Brush($color), this->penWidth, Qt::SolidLine(), Qt::RoundCap(),
-                        Qt::RoundJoin()));
-    my $gradient = Qt::LinearGradient(0, 0, 0, 100);
-    my $fillColor1 = Qt::qVariantValue( this->fillColor1, 'Qt::Color' );
-    my $fillColor2 = Qt::qVariantValue( this->fillColor2, 'Qt::Color' );
+    my $color = Qt4::qVariantValue( this->penColor, 'Qt4::Color' );
+    $painter->setPen(Qt4::Pen(Qt4::Brush($color), this->penWidth, Qt4::SolidLine(), Qt4::RoundCap(),
+                        Qt4::RoundJoin()));
+    my $gradient = Qt4::LinearGradient(0, 0, 0, 100);
+    my $fillColor1 = this->fillColor1->value();
+    my $fillColor2 = this->fillColor2->value();
     $gradient->setColorAt(0.0, $fillColor1);
     $gradient->setColorAt(1.0, $fillColor2);
-    $painter->setBrush(Qt::Brush($gradient));
+    $painter->setBrush(Qt4::Brush($gradient));
     $painter->drawPath(this->path);
     $painter->end();
 }

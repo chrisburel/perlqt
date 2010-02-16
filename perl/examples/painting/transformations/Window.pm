@@ -2,11 +2,11 @@ package Window;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use RenderArea;
 # [0]
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     operationChanged => [''],
     shapeSelected => ['int'];
 # [0]
@@ -41,13 +41,13 @@ sub NEW
     $class->SUPER::NEW();
     this->{originalRenderArea} = RenderArea();
 
-    this->{shapeComboBox} = Qt::ComboBox();
+    this->{shapeComboBox} = Qt4::ComboBox();
     this->shapeComboBox->addItem(this->tr('Clock'));
     this->shapeComboBox->addItem(this->tr('House'));
     this->shapeComboBox->addItem(this->tr('Text'));
     this->shapeComboBox->addItem(this->tr('Truck'));
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget(this->originalRenderArea, 0, 0);
     $layout->addWidget(this->shapeComboBox, 1, 0);
 # [0]
@@ -59,7 +59,7 @@ sub NEW
     for (my $i = 0; $i < NumTransformedAreas; ++$i) {
         this->transformedRenderAreas->[$i] = RenderArea();
 
-        this->operationComboBoxes->[$i] = Qt::ComboBox();
+        this->operationComboBoxes->[$i] = Qt4::ComboBox();
         this->operationComboBoxes->[$i]->addItem(this->tr('No transformation'));
         this->operationComboBoxes->[$i]->addItem(this->tr("Rotate by 60\xB0"));
         this->operationComboBoxes->[$i]->addItem(this->tr('Scale to 75%'));
@@ -85,9 +85,9 @@ sub NEW
 # [3]
 sub setupShapes
 {
-    my $truck = Qt::PainterPath();
+    my $truck = Qt4::PainterPath();
 # [3]
-    $truck->setFillRule(Qt::WindingFill());
+    $truck->setFillRule(Qt4::WindingFill());
     $truck->moveTo(0.0, 87.0);
     $truck->lineTo(0.0, 60.0);
     $truck->lineTo(10.0, 60.0);
@@ -104,7 +104,7 @@ sub setupShapes
     $truck->addEllipse(63.0, 75.0, 25.0, 25.0);
 
 # [4]
-    my $clock = Qt::PainterPath();
+    my $clock = Qt4::PainterPath();
 # [4]
     $clock->addEllipse(-50.0, -50.0, 100.0, 100.0);
     $clock->addEllipse(-48.0, -48.0, 96.0, 96.0);
@@ -120,7 +120,7 @@ sub setupShapes
     $clock->lineTo(0.0, 0.0);
 
 # [5]
-    my $house = Qt::PainterPath();
+    my $house = Qt4::PainterPath();
 # [5]
     $house->moveTo(-45.0, -20.0);
     $house->lineTo(0.0, -45.0);
@@ -132,12 +132,12 @@ sub setupShapes
     $house->addRect(-35.0, -15.0, 25.0, 25.0);
 
 # [6]
-    my $text = Qt::PainterPath();
+    my $text = Qt4::PainterPath();
 # [6]
-    my $font = Qt::Font();
+    my $font = Qt4::Font();
     $font->setPixelSize(50);
-    my $fontBoundingRect = Qt::FontMetrics($font)->boundingRect(this->tr('Qt'));
-    $text->addText(-Qt::PointF($fontBoundingRect->center()), $font, this->tr('Qt'));
+    my $fontBoundingRect = Qt4::FontMetrics($font)->boundingRect(this->tr('Qt4'));
+    $text->addText(-Qt4::PointF($fontBoundingRect->center()), $font, this->tr('Qt4'));
 
 # [7]
     push @{this->shapes}, $clock;

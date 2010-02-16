@@ -2,9 +2,9 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::MainWindow );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::MainWindow );
+use Qt4::slots
     openFile => ['const QString &'],
     openFileNoArg => [''],
     setRenderer => ['QAction *'];
@@ -48,15 +48,15 @@ sub NEW
     $class->SUPER::NEW();
     my $m_view = this->{m_view} = SvgView();
 
-    my $fileMenu = Qt::Menu(this->tr('&File'), this);
+    my $fileMenu = Qt4::Menu(this->tr('&File'), this);
     my $openAction = $fileMenu->addAction(this->tr('&Open...'));
-    $openAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+O')));
+    $openAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+O')));
     my $quitAction = $fileMenu->addAction(this->tr('E&xit'));
-    $quitAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+Q')));
+    $quitAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+Q')));
 
     this->menuBar()->addMenu($fileMenu);
 
-    my $viewMenu = Qt::Menu(this->tr('&View'), this);
+    my $viewMenu = Qt4::Menu(this->tr('&View'), this);
     my $m_backgroundAction = this->{m_backgroundAction} = $viewMenu->addAction(this->tr('&Background'));
     $m_backgroundAction->setEnabled(0);
     $m_backgroundAction->setCheckable(1);
@@ -71,7 +71,7 @@ sub NEW
 
     this->menuBar()->addMenu($viewMenu);
 
-    my $rendererMenu = Qt::Menu(this->tr('&Renderer'), this);
+    my $rendererMenu = Qt4::Menu(this->tr('&Renderer'), this);
     my $m_nativeAction = this->{m_nativeAction} = $rendererMenu->addAction(this->tr('&Native'));
     $m_nativeAction->setCheckable(1);
     $m_nativeAction->setChecked(1);
@@ -92,7 +92,7 @@ sub NEW
     this->connect($m_highQualityAntialiasingAction, SIGNAL 'toggled(bool)', $m_view, SLOT 'setHighQualityAntialiasing(bool)');
 #endif
 
-    my $rendererGroup = Qt::ActionGroup(this);
+    my $rendererGroup = Qt4::ActionGroup(this);
     $rendererGroup->addAction($m_nativeAction);
 #ifndef QT_NO_OPENGL
     $rendererGroup->addAction($m_glAction);
@@ -119,7 +119,7 @@ sub openFile
     my ($path) = @_;
     my $fileName;
     if (!$path) {
-        $fileName = Qt::FileDialog::getOpenFileName(this, this->tr('Open SVG File'),
+        $fileName = Qt4::FileDialog::getOpenFileName(this, this->tr('Open SVG File'),
                 this->m_currentPath, 'SVG files (*.svg *.svgz *.svg.gz)');
     }
     else {
@@ -127,9 +127,9 @@ sub openFile
     }
 
     if ($fileName) {
-        my $file = Qt::File($fileName);
+        my $file = Qt4::File($fileName);
         if (!$file->exists()) {
-            Qt::MessageBox::critical(this, this->tr('Open SVG File'),
+            Qt4::MessageBox::critical(this, this->tr('Open SVG File'),
                            "Could not open file '$fileName'.");
 
             this->m_outlineAction->setEnabled(0);
@@ -147,7 +147,7 @@ sub openFile
         this->m_outlineAction->setEnabled(1);
         this->m_backgroundAction->setEnabled(1);
 
-        this->resize(this->m_view->sizeHint() + Qt::Size(80, 80 + this->menuBar()->height()));
+        this->resize(this->m_view->sizeHint() + Qt4::Size(80, 80 + this->menuBar()->height()));
     }
 }
 

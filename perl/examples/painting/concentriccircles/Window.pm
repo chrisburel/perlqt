@@ -2,9 +2,9 @@ package Window;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Widget );
+use Qt4::isa qw( Qt4::Widget );
 use CircleWidget;
 
 sub text() {
@@ -44,7 +44,7 @@ sub NEW
     this->{floatLabel} = this->createLabel(this->tr('Float'));
     this->{circleWidgets} = [];
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget(this->aliasedLabel, 0, 1);
     $layout->addWidget(this->antialiasedLabel, 0, 2);
     $layout->addWidget(this->intLabel, 1, 0);
@@ -52,7 +52,7 @@ sub NEW
 # [0]
 
 # [1]
-    my $timer = Qt::Timer(this);
+    my $timer = Qt4::Timer(this);
 
     for (my $i = 0; $i < 2; ++$i) {
         for (my $j = 0; $j < 2; ++$j) {
@@ -78,10 +78,10 @@ sub NEW
 sub createLabel
 {
     my ($text) = @_;
-    my $label = Qt::Label($text);
-    $label->setAlignment(Qt::AlignCenter());
+    my $label = Qt4::Label($text);
+    $label->setAlignment(Qt4::AlignCenter());
     $label->setMargin(2);
-    $label->setFrameStyle(Qt::Frame::Box() | Qt::Frame::Sunken());
+    $label->setFrameStyle(Qt4::Frame::Box() | Qt4::Frame::Sunken());
     return $label;
 }
 # [3]

@@ -2,10 +2,10 @@ package RenderArea;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     setShape => ['int'],
     setPen => ['const QPen &'],
     setBrush => ['const QBrush &'],
@@ -60,9 +60,9 @@ sub NEW
     this->{shap}  = Polygon;
     this->{antialiase} = 0;
     this->{transformed} = 0;
-    this->{pixmap} = Qt::Pixmap('images/qt-logo.png');
+    this->{pixmap} = Qt4::Pixmap('images/qt-logo.png');
 
-    this->setBackgroundRole(Qt::Palette::Base());
+    this->setBackgroundRole(Qt4::Palette::Base());
     this->setAutoFillBackground(1);
 }
 # [0]
@@ -70,14 +70,14 @@ sub NEW
 # [1]
 sub minimumSizeHint
 {
-    return Qt::Size(100, 100);
+    return Qt4::Size(100, 100);
 }
 # [1]
 
 # [2]
 sub sizeHint
 {
-    return Qt::Size(400, 200);
+    return Qt4::Size(400, 200);
 }
 # [2]
 
@@ -103,7 +103,7 @@ sub setPen
 sub setBrush
 {
     my ($brush) = @_;
-    this->{brush} = Qt::Brush($brush);
+    this->{brush} = Qt4::Brush($brush);
     this->update();
 }
 # [5]
@@ -127,19 +127,19 @@ sub setTransformed
 # [7]
 
 my @points = (
-    Qt::Point(10, 80),
-    Qt::Point(20, 10),
-    Qt::Point(80, 30),
-    Qt::Point(90, 70)
+    Qt4::Point(10, 80),
+    Qt4::Point(20, 10),
+    Qt4::Point(80, 30),
+    Qt4::Point(90, 70)
 );
 
 # [8]
 sub paintEvent
 {
 
-    my $rect = Qt::Rect(10, 20, 80, 60);
+    my $rect = Qt4::Rect(10, 20, 80, 60);
 
-    my $path = Qt::PainterPath();
+    my $path = Qt4::PainterPath();
     $path->moveTo(20, 80);
     $path->lineTo(20, 30);
     $path->cubicTo(80, 0, 50, 50, 80, 80);
@@ -149,11 +149,11 @@ sub paintEvent
 # [8]
 
 # [9]
-    my $painter = Qt::Painter(this);
+    my $painter = Qt4::Painter(this);
     $painter->setPen(this->pen);
     $painter->setBrush(this->brush);
     if (this->antialiased) {
-        $painter->setRenderHint(Qt::Painter::Antialiasing(), 1);
+        $painter->setRenderHint(Qt4::Painter::Antialiasing(), 1);
 # [9]
         $painter->translate(+0.5, +0.5);
     }
@@ -177,19 +177,19 @@ sub paintEvent
                 $painter->drawLine($rect->bottomLeft(), $rect->topRight());
             }
             elsif (this->shape == Points) {
-                $painter->drawPoints(Qt::Polygon(\@points));
+                $painter->drawPoints(Qt4::Polygon(\@points));
             }
             elsif (this->shape == Polyline) {
-                $painter->drawPolyline(Qt::Polygon(\@points));
+                $painter->drawPolyline(Qt4::Polygon(\@points));
             }
             elsif (this->shape == Polygon) {
-                $painter->drawPolygon(Qt::Polygon(\@points));
+                $painter->drawPolygon(Qt4::Polygon(\@points));
             }
             elsif (this->shape == Rect) {
                 $painter->drawRect($rect);
             }
             elsif (this->shape == RoundedRect) {
-                $painter->drawRoundedRect($rect, 25, 25, Qt::RelativeSize());
+                $painter->drawRoundedRect($rect, 25, 25, Qt4::RelativeSize());
             }
             elsif (this->shape == Ellipse) {
                 $painter->drawEllipse($rect);
@@ -207,7 +207,7 @@ sub paintEvent
                 $painter->drawPath($path);
             }
             elsif (this->shape == Text) {
-                $painter->drawText($rect, Qt::AlignCenter(), this->tr("Qt by\nNokia"));
+                $painter->drawText($rect, Qt4::AlignCenter(), this->tr("Qt by\nNokia"));
             }
             elsif (this->shape == Pixmap) {
                 $painter->drawPixmap(10, 10, pixmap);
@@ -218,8 +218,8 @@ sub paintEvent
     }
 
     $painter->setPen(palette()->dark()->color());
-    $painter->setBrush(Qt::NoBrush());
-    $painter->drawRect(Qt::Rect(0, 0, width() - 1, height() - 1));
+    $painter->setBrush(Qt4::NoBrush());
+    $painter->drawRect(Qt4::Rect(0, 0, width() - 1, height() - 1));
     $painter->end();
 }
 # [13]

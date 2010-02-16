@@ -2,13 +2,13 @@
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use ImageComposer;
 
 # [0]
 sub main
 {
-    my $app = Qt::Application(\@ARGV);
+    my $app = Qt4::Application(\@ARGV);
     my $composer = ImageComposer();
     $composer->show();
     return $app->exec();
