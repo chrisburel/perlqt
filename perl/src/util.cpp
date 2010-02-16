@@ -518,43 +518,39 @@ pl_qFindChildren_helper(SV* parent, const QString &name, SV* re,
     strcpy( methodname, classname );
     strcat( methodname, "::children" );
 
-    dSP;
-    ENTER;
-    SAVETMPS;
+    dSP; ENTER; SAVETMPS;
     PUSHMARK(SP);
     XPUSHs(parent);
     PUTBACK;
     int count = call_pv( methodname, G_SCALAR );
     delete[] methodname;
     SPAGAIN;
-	SV* childrenref = POPs;
-	AV* children = (AV*)SvRV(childrenref);
-    PUTBACK;
-    FREETMPS;
-    LEAVE;
+    SV* childrenref = POPs;
+    AV* children = (AV*)SvRV(childrenref);
+    PUTBACK; FREETMPS; LEAVE;
 
     SV* rv = &PL_sv_undef;
     for (int i = 0; i < av_len(children)+1; ++i) {
         rv = *(av_fetch(children, i, 0));
-		smokeperl_object *o = sv_obj_info(rv);
-		QObject * obj = (QObject *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QObject").index);
-		
-		// The original code had 'if (mo.cast(obj))' as a test, but it doesn't work here
+        smokeperl_object *o = sv_obj_info(rv);
+        QObject * obj = (QObject *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QObject").index);
+
+        // The original code had 'if (mo.cast(obj))' as a test, but it doesn't work here
         if (obj->qt_metacast(mo.className()) != 0) {
             if (re != &PL_sv_undef) {
-				//VALUE re_test = rb_funcall(re, rb_intern("=~"), 1, rb_funcall(rv, rb_intern("objectName"), 0));
-				//if (re_test != Qnil && re_test != Qfalse) {
-					//rb_ary_push(list, rv);
-				//}
+                //VALUE re_test = rb_funcall(re, rb_intern("=~"), 1, rb_funcall(rv, rb_intern("objectName"), 0));
+                //if (re_test != Qnil && re_test != Qfalse) {
+                //rb_ary_push(list, rv);
+                //}
             } else {
                 if (name.isNull() || obj->objectName() == name) {
-					av_push(list, rv);
-				}
+                    av_push(list, rv);
+                }
             }
         }
         pl_qFindChildren_helper(rv, name, re, mo, list);
     }
-	return;
+    return;
 }
 
 /* Should mimic Qt4's QObject::findChildren method with this syntax:
@@ -562,30 +558,30 @@ pl_qFindChildren_helper(SV* parent, const QString &name, SV* re,
 */
 XS(XS_find_qobject_children) {
     dXSARGS;
-	if (items != 0) {
+    if (items != 0) {
         croak("Invalid argument list supplied to Qt::Object::findChildren, %d", items);
         XSRETURN_UNDEF;
     }
 
     SV* self = sv_this;
-	QString name;
-	SV* re = &PL_sv_undef;
-	if (items == 1) {
-		// If the second arg isn't a String, assume it's a regular expression
-		if (SvTYPE(ST(0)) == SVt_PV) {
-			name = QString::fromLatin1(SvPV_nolen(ST(0)));
-		} else {
-			re = ST(0);
-		}
-	}
+    QString name;
+    SV* re = &PL_sv_undef;
+    if (items == 1) {
+        // If the second arg isn't a String, assume it's a regular expression
+        if (SvTYPE(ST(0)) == SVt_PV) {
+            name = QString::fromLatin1(SvPV_nolen(ST(0)));
+        } else {
+            re = ST(0);
+        }
+    }
 
     QObject* sv_this_ptr = (QObject*)sv_obj_info(self)->ptr;
-	const QMetaObject* metaobject = sv_this_ptr->metaObject();
-	AV* list = newAV();
-	pl_qFindChildren_helper(self, name, re, *metaobject, list);
-	SV* result = newRV_noinc((SV*)list);
+    const QMetaObject* metaobject = sv_this_ptr->metaObject();
+    AV* list = newAV();
+    pl_qFindChildren_helper(self, name, re, *metaobject, list);
+    SV* result = newRV_noinc((SV*)list);
     ST(0) = result;
-	XSRETURN(1);
+    XSRETURN(1);
 }
 
 XS(XS_qabstract_item_model_rowcount) {
