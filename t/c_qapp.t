@@ -14,8 +14,7 @@ ok( !+$@, 'Qt::Application ctor' );
 
 eval { qApp->libraryPaths() };
 
-ok( !+$@, 'qApp properly set up' );
-diag( $@ );
+ok( !+$@, 'qApp properly set up' ) or diag( $@ );
 
 # One second test of the event loop
 

@@ -1,4 +1,4 @@
-/***************************************************************************
+/***************************************************************************    
   marshall_macros.h  -  Useful template based marshallers for QLists, QVectors
                         and QLinkedLists
                              -------------------
@@ -43,11 +43,10 @@
 
 template <class Item, class ItemList, const char *ItemSTR >
 void marshall_ItemList(Marshall *m) {
-    UNTESTED_HANDLER( "marshall_ItemList" );
     switch(m->action()) {
         case Marshall::FromSV: {
             SV *listref = m->var();
-            if ( !listref || !SvROK( listref ) || SvTYPE( listref ) != SVt_PVAV ) {
+            if ( !listref || !SvROK( listref ) || SvTYPE( SvRV(listref) ) != SVt_PVAV ) {
                 m->item().s_voidp = 0;
                 break;
             }
@@ -75,6 +74,7 @@ void marshall_ItemList(Marshall *m) {
             m->item().s_voidp = cpplist;
             m->next();
 
+            /*
             if (!m->type().isConst()) {
                 av_clear(list);
     
@@ -83,6 +83,7 @@ void marshall_ItemList(Marshall *m) {
                     av_push(list, obj);
                 }
             }
+            */
 
             if (m->cleanup()) {
                 delete cpplist;
@@ -112,7 +113,7 @@ void marshall_ItemList(Marshall *m) {
                 if (!obj) {
                     obj = allocSmokePerlSV( p,
                                             SmokeType( m->smoke(),
-                                                       m->smoke()->idClass(ItemSTR).index ) );
+                                                       m->smoke()->idType(ItemSTR) ) );
 
                 }
             
@@ -136,9 +137,9 @@ void marshall_ItemList(Marshall *m) {
 
 template <class Item, class ItemList, const char *ItemSTR >
 void marshall_ValueListItem(Marshall *m) {
-    UNTESTED_HANDLER( "marshall_ValueListItem" );
     switch(m->action()) {
         case Marshall::FromSV: {
+            UNTESTED_HANDLER( "marshall_ValueListItem FromSV" );
             SV *listref = m->var();
             if ( !listref || !SvROK( listref ) || SvTYPE( listref ) != SVt_PVAV ) {
                 m->item().s_voidp = 0;
@@ -201,6 +202,7 @@ void marshall_ValueListItem(Marshall *m) {
         break;
 
         case Marshall::ToSV: {
+            UNTESTED_HANDLER( "marshall_ValueListItem ToSV" );
             ItemList *valuelist = (ItemList*)m->item().s_voidp;
             if(!valuelist) {
                 sv_setsv(m->var(), &PL_sv_undef);
@@ -225,7 +227,7 @@ void marshall_ValueListItem(Marshall *m) {
                 if( !obj || !SvOK(obj) ) {
                     obj = allocSmokePerlSV( p,
                                             SmokeType( m->smoke(), 
-                                                       m->smoke()->idClass(ItemSTR).index ) );
+                                                       m->smoke()->idType(ItemSTR) ) );
                     //obj = set_obj_info(className, o);
                 }
 
@@ -244,7 +246,7 @@ void marshall_ValueListItem(Marshall *m) {
 
         default:
             m->unsupported();
-            break;
+        break;
     }
 }
 

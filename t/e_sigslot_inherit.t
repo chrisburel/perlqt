@@ -53,8 +53,7 @@ sub baz
    SUPER->baz();
    # 4) 5) 6) testing non-qualified enum calls vs. Perl method/static calls
    ok( eval { Qt::blue } );
-   ok( !$@ );
-   diag( $@ );
+   ok( !$@ ) or diag( $@ );
    coincoin('a','b');
 }
 

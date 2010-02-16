@@ -104,6 +104,76 @@ void invoke_dtor(smokeperl_object* o) {
     }
 }
 
+bool matches_arg(Smoke *smoke, Smoke::Index meth, Smoke::Index argidx, const char *argtype) {
+    Smoke::Index *arg = smoke->argumentList + smoke->methods[meth].args + argidx;
+    SmokeType type = SmokeType(smoke, *arg);
+    if(type.name() && !strcmp(type.name(), argtype))
+	return true;
+    return false;
+}
+
+void *construct_copy(smokeperl_object *o) {
+    Smoke::Index *pccMeth = 0;//cctorcache->find(o->classId);
+    Smoke::Index ccMeth = 0;
+    if(!pccMeth) {
+        const char *className = o->smoke->className(o->classId);
+        int classNameLen = strlen(className);
+        char *ccSig = new char[classNameLen + 2];       // copy constructor signature
+        strcpy(ccSig, className);
+        strcat(ccSig, "#");
+        Smoke::ModuleIndex ccId = o->smoke->idMethodName(ccSig);
+        delete[] ccSig;
+
+        char *ccArg = new char[classNameLen + 8];
+        sprintf(ccArg, "const %s&", className);
+
+        Smoke::ModuleIndex classIdx = { o->smoke, o->classId };
+        ccMeth = o->smoke->findMethod( classIdx, ccId ).index;
+
+        if(!ccMeth) {
+            //cctorcache->insert(o->classId, new Smoke::Index(0));
+            return 0;
+        }
+        Smoke::Index method =  o->smoke->methodMaps[ccMeth].method;
+        if(method > 0) {
+            // Make sure it's a copy constructor
+            if(!matches_arg(o->smoke, method, 0, ccArg)) {
+                delete[] ccArg;
+                //cctorcache->insert(o->classId, new Smoke::Index(0));
+                return 0;
+            }
+            delete[] ccArg;
+            ccMeth = method;
+        } else {
+            // ambiguous method, pick the copy constructor
+            Smoke::Index i = -method;
+            while(o->smoke->ambiguousMethodList[i]) {
+                if(matches_arg(o->smoke, o->smoke->ambiguousMethodList[i], 0, ccArg))
+                    break;
+                i++;
+            }
+            delete[] ccArg;
+            ccMeth = o->smoke->ambiguousMethodList[i];
+            if(!ccMeth) {
+                //cctorcache->insert(o->classId, new Smoke::Index(0));
+                return 0;
+            }
+        }
+        //cctorcache->insert(o->classId, new Smoke::Index(ccMeth));
+    } else {
+        ccMeth = *pccMeth;
+        if(!ccMeth)
+            return 0;
+    }
+    // Okay, ccMeth is the copy constructor. Time to call it.
+    Smoke::StackItem args[2];
+    args[0].s_voidp = 0;
+    args[1].s_voidp = o->ptr;
+    Smoke::ClassFn fn = o->smoke->classes[o->classId].classFn;
+    (*fn)(o->smoke->methods[ccMeth].method, 0, args);
+    return args[0].s_voidp;
+}
+
 template <class T>
 static void marshall_it(Marshall* m) {
     switch( m->action() ) {
@@ -248,7 +318,10 @@ void marshall_basetype(Marshall* m) {
                     void* ptr = o->ptr;
 
                     if( !m->cleanup() && m->type().isStack()) {
-                        fprintf( stderr, "Should construct copy in handler\n" );
+                        ptr = construct_copy( o );
+                        if(ptr) {
+                            o->ptr = ptr;
+                        }
                     }
 
                     const Smoke::Class& c = m->smoke()->classes[m->type().classId()];
@@ -277,7 +350,7 @@ void marshall_basetype(Marshall* m) {
                         break;
                     }
 
-                    var = allocSmokePerlSV( cxxptr, m->type() );
+                    var = sv_2mortal(allocSmokePerlSV( cxxptr, m->type() ));
 
                     // Copy our local var into the marshaller's var, and make
                     // sure to copy our magic with it
@@ -1019,7 +1092,7 @@ void marshall_QVectorint(Marshall *m) {
             for ( long i = 0; i < count; ++i) {
                 SV **item = av_fetch(list, i, 0);
                 if( !item ) {
-                    valuelist->append(0.0);
+                    valuelist->append(0);
                     continue;
                 }
 
@@ -1220,7 +1293,7 @@ void marshall_QMapQStringQVariant(Marshall *m) {
                 if ( !obj || !SvOK(obj) ) {
                     obj = allocSmokePerlSV( p, 
                             SmokeType( m->smoke(),
-                                       m->smoke()->idClass("QVariant").index )
+                                       m->smoke()->idType("QVariant") )
                     );
                     //obj = set_obj_info("Qt::Variant", o);
                 }
@@ -1309,7 +1382,7 @@ void marshall_QMapIntQVariant(Marshall *m) {
                 if ( !obj || !SvOK(obj) ) {
                     obj = allocSmokePerlSV( p, 
                             SmokeType( m->smoke(),
-                                       m->smoke()->idClass("QVariant").index )
+                                       m->smoke()->idType("QVariant") )
                     );
                 }
 
@@ -1609,7 +1682,7 @@ void marshall_QPairqrealQColor(Marshall *m) {
             if ( !SvOK( rv2 ) ) {
                 rv2 = allocSmokePerlSV(
                     p, SmokeType( m->smoke(), 
-                                  m->smoke()->idClass("QColor").index ) );
+                                  m->smoke()->idType("QColor") ) );
                 //rv2 = set_obj_info("Qt::Color", o);
             }
 
@@ -1693,7 +1766,7 @@ void marshall_voidP_array(Marshall *m) {
             // This is ghetto.
             void* cxxptr = m->item().s_voidp;
 
-            SV *var = allocSmokePerlSV( cxxptr, m->type() );
+            SV *var = sv_2mortal(allocSmokePerlSV( cxxptr, m->type() ));
             sv_bless( var, gv_stashpv( "voidparray", TRUE ) );
 
             SvSetMagicSV(m->var(), var);

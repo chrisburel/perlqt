@@ -6,13 +6,13 @@ $CC = 'g++';
 #$build = 'release';
 $build = 'debug';
 
-$QT_DIR = "/opt/qt";
+$QT_DIR = '/pts/testPipe/share/Qt4/def/dat/usr';
 $QT_INCLUDE = "$QT_DIR/include";
 $QT_LIB = "$QT_DIR/lib";
 
-$SMOKE_DIR = "/home/cburel/src/kdebindings-4.2.0/smoke";
-$SMOKE_INCLUDE = $SMOKE_DIR;
-$SMOKE_LIB = "/opt/kde-4.2/lib";
+$SMOKE_DIR = '/pts/testPipe/share/Qt4/def/dat/usr';
+$SMOKE_INCLUDE = "$SMOKE_DIR/include";
+$SMOKE_LIB = "$SMOKE_DIR/lib";
 
 $CXX_FLAGS = "-Wall";
 $CXX_LIBS = "-L$QT_LIB -L$SMOKE_LIB -lQtCore -lQtGui -lsmokeqt";

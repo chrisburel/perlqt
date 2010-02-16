@@ -1,11 +1,10 @@
-use Test::More tests => 9;
+use Test::More tests => 10;
 
 use strict;
 use warnings;
 use Qt;
 
 my $app = Qt::Application( \@ARGV );
-
 
 {
     my $widget = Qt::Widget();
@@ -78,4 +77,25 @@ my $app = Qt::Application( \@ARGV );
     $label->setAlignment(Qt::AlignHCenter() | Qt::AlignTop());
     my $alignment = $label->alignment();
     is( $alignment, $hcenter|$top, 'unsigned int' );
+}
+
+{
+    # Test some QLists
+    my $action1 = Qt::Action( 'foo', undef );
+    my $action2 = Qt::Action( 'bar', undef );
+    my $action3 = Qt::Action( 'baz', undef );
+
+    # Add some stuff to them...
+    $action1->{The} = 'quick';
+    $action2->{brown} = 'fox';
+    $action3->{jumped} = 'over';
+
+    my $actions = [ $action1, $action2, $action3 ]; 
+
+    my $widget = Qt::Widget();
+    $widget->addActions( $actions );
+
+    my $gotactions = $widget->actions();
+
+    is_deeply( $actions, $gotactions, 'marshall_ItemList<>' );
 }

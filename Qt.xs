@@ -79,7 +79,7 @@ SV* allocSmokePerlSV ( void* ptr, SmokeType type ) {
         mapPointer(var, &o, pointer_map, o.classId, 0);
 
     // We're done with our local var
-    return sv_2mortal(var);
+    return var;
 }
 
 // Args: SV** sp: the stack pointer containing the args to display
@@ -88,7 +88,7 @@ SV* allocSmokePerlSV ( void* ptr, SmokeType type ) {
 //          the stack
 #ifdef DEBUG
 SV* catArguments(SV** sp, int n) {
-    SV* r = newSV(0);
+    SV* r = newSVpv("", 0);
     for(int i = 0; i < n; i++) {
         if(i) sv_catpv(r, ", ");
         if(!SvOK(sp[i])) {
@@ -371,7 +371,7 @@ Smoke::Index package_classId( const char *package ) {
 // Args: Smoke::Index id: a smoke method id to print
 // Returns: an SV* containing a formatted method signature string
 SV* prettyPrintMethod(Smoke::Index id) {
-    SV* r = newSV(0);
+    SV* r = newSVpv("", 0);
     Smoke::Method& meth = qt_Smoke->methods[id];
     const char* tname = qt_Smoke->types[meth.ret].name;
     if(meth.flags & Smoke::mf_static) sv_catpv(r, "static ");
