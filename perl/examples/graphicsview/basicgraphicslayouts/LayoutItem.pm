@@ -35,10 +35,10 @@ sub paint
 # [2]
     # paint a background rect (with gradient)
     my $gradient = Qt::LinearGradient($frame->topLeft(), $frame->topLeft() + Qt::PointF(200,200));
-    push @stops, Qt::GradientStop(0.0, Qt::Color(60, 60,  60));
-    push @stops, Qt::GradientStop($frame->height()/2/$frame->height(), Qt::Color(102, 176, 54));
+    push @stops, [0.0, Qt::Color(60, 60,  60)];
+    push @stops, [$frame->height()/2/$frame->height(), Qt::Color(102, 176, 54)];
 
-    push @stops, Qt::GradientStop(1.0, Qt::Color(215, 215, 215));
+    push @stops, [1.0, Qt::Color(215, 215, 215)];
     $gradient->setStops(\@stops);
     $painter->setBrush(Qt::Brush($gradient));
     $painter->drawRoundedRect($frame, 10.0, 10.0);
@@ -50,9 +50,9 @@ sub paint
     $gradient->setStart($innerFrame->topLeft());
     $gradient->setFinalStop($innerFrame->bottomRight());
     @stops = ();
-    push @stops, Qt::GradientStop(0.0, Qt::Color(215, 255, 200));
-    push @stops, Qt::GradientStop(0.5, Qt::Color(102, 176, 54));
-    push @stops, Qt::GradientStop(1.0, Qt::Color(0, 0,  0));
+    push @stops, [0.0, Qt::Color(215, 255, 200)];
+    push @stops, [0.5, Qt::Color(102, 176, 54)];
+    push @stops, [1.0, Qt::Color(0, 0,  0)];
     $gradient->setStops(\@stops);
     $painter->setBrush(Qt::Brush($gradient));
     $painter->drawRoundedRect($innerFrame, 10.0, 10.0);
