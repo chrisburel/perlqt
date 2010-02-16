@@ -140,12 +140,14 @@ getTypeNameOfArg( smokeId, methodId, argnum )
         RETVAL
 
 SV*
-getNativeMetaObject( methodId )
+getNativeMetaObject( smokeId, methodId )
+        int smokeId
         int methodId
     CODE:
         smokeperl_object* nothis = alloc_smokeperl_object( false, 0, 0, 0 );
+        Smoke* smoke = smokeList[smokeId];
         PerlQt4::MethodCall call(
-            qt_Smoke,
+            smoke,
             methodId,
             nothis,
             0,

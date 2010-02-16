@@ -1100,10 +1100,10 @@ sub getMetaObject {
     # If this is a native Qt4 class, call metaObject() on that class directly
     if ( $package2classId{$class} ) {
         my $moduleId = $package2classId{$class};
-        my $classId = $moduleId->[0];
+        my $classId = $moduleId->[1];
         my $cxxClass = classFromId( $classId );
-        my ( $methodId ) = getSmokeMethodId( $classId, 'metaObject', $cxxClass );
-        return $meta->{object} = getNativeMetaObject( $methodId );
+        my ( $smokeId, $methodId ) = getSmokeMethodId( $moduleId, 'metaObject', $cxxClass );
+        return $meta->{object} = getNativeMetaObject( $smokeId, $methodId );
     }
 
     # Get the super class's meta object for sig/slot inheritance
@@ -1113,6 +1113,11 @@ sub getMetaObject {
 
     # This seems wrong, it won't work with multiple inheritance
     my $parentClass = arrayByName($class."::ISA")->[0]; 
+
+    if ( !$parentClass ) {
+        die "Request for metaObject for class $class, which has no base class";
+    }
+
     if( !$package2classId{$parentClass} ) {
         # The parent class is a custom Perl class whose metaObject was
         # constructed at runtime, so we can get it's metaObject from here.
