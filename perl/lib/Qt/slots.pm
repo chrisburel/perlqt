@@ -24,17 +24,25 @@ sub import {
     } unless defined &{ "${caller}::metaObject" };
 
     Qt::_internal::installqt_metacall( $caller ) unless defined &{$caller."::qt_metacall"};
-    foreach my $slotname ( keys %slots ) {
+    foreach my $fullslotname ( keys %slots ) {
+
+        # Determine the slot return type, if there is one
+        my $returnType = $fullslotname;
+        my @returnParts = split / +/, $returnType;
+        my $slotname = pop @returnParts; # Remove actual method name
+        $returnType = join ' ', @returnParts;
+
         # Build the signature for this slot
-        my $signature = join '', ("$slotname(", join(',', @{$slots{$slotname}}), ')');
+        my $signature = join '', ("$slotname(", join(',', @{$slots{$fullslotname}}), ')');
 
         # Normalize the signature, might not be necessary
         $signature = Qt::MetaObject::normalizedSignature(
-           $signature )->data();
+            $signature )->data();
 
         my $slot = {
             name => $slotname,
             signature => $signature,
+            returnType => $returnType,
         };
 
         push @{$meta->{slots}}, $slot;

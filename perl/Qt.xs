@@ -1086,8 +1086,8 @@ XS(XS_qt_metacall){
         }
     }
 
-    // +1.  Id is 0 based, count is 1 based
-    ST(0) = sv_2mortal(newSViv(_id - count + 1));
+    // This should return -1 when we're the one that handled the call
+    ST(0) = sv_2mortal(newSViv(_id - count));
     XSRETURN(1);
 }
 

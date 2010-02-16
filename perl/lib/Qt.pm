@@ -852,10 +852,18 @@ sub makeMetaData {
 
         # Add this slot to the stringdata
         $stringdata .= $slot->{signature} . "\0" ;
-
         push @$data, $curPosition; #signature
+
         push @$data, $nullposition; #parameter names
-        push @$data, $nullposition; #return type, void
+
+        if ( defined $slot->{returnType} ) {
+            $curPosition = length $stringdata;
+            $stringdata .= $slot->{returnType};
+            push @$data, $curPosition; #return type
+        }
+        else {
+            push @$data, $nullposition; #return type, void
+        }
         push @$data, $nullposition; #tag
         push @$data, $MethodSlot | $AccessPublic; # flags
     }

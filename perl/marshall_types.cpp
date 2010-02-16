@@ -510,10 +510,54 @@ namespace PerlQt {
         PUSHMARK(SP);
         EXTEND(SP, _items);
         for(int i=0;i<_items;++i){
-            XPUSHs(_sp[i]);
+            PUSHs(_sp[i]);
         }
         PUTBACK;
-        call_sv((SV*)GvCV(gv), G_VOID);
+        int count = call_sv((SV*)GvCV(gv), _args[0]->argType == xmoc_void ? G_VOID : G_SCALAR);
+        if ( count > 0 ) {
+            switch ( _args[0]->argType ) {
+                case xmoc_void:
+                    fprintf( stderr, "Want to return a xmoc_void\n" );
+                    break;
+                case xmoc_QString: {
+                    SV *ret = POPs;
+                    QString *retval = new QString(SvPV_nolen(ret)); 
+                    Smoke::Stack _retstack = new Smoke::StackItem[1];
+                    _retstack[0].s_voidp = (void*)retval;
+                    void *ptr = _a[0];
+                    smokeStackToQtStack( _retstack, _a, 0, 1, _args );
+                    if ( ptr != 0 ) {
+                        *(void**)ptr = *(void**)(_a[0]);
+                    }
+
+                    break;
+                }
+                case xmoc_charstar:
+                    fprintf( stderr, "Want to return a xmoc_charstar\n" );
+                    break;
+                case xmoc_double:
+                    fprintf( stderr, "Want to return a xmoc_double\n" );
+                    break;
+                case xmoc_ulong:
+                    fprintf( stderr, "Want to return a xmoc_ulong\n" );
+                    break;
+                case xmoc_long:
+                    fprintf( stderr, "Want to return a xmoc_long\n" );
+                    break;
+                case xmoc_uint:
+                    fprintf( stderr, "Want to return a xmoc_uint\n" );
+                    break;
+                case xmoc_int:
+                    fprintf( stderr, "Want to return a xmoc_int\n" );
+                    break;
+                case xmoc_bool:
+                    fprintf( stderr, "Want to return a xmoc_bool\n" );
+                    break;
+                case xmoc_ptr:
+                    fprintf( stderr, "Want to return a xmoc_ptr\n" );
+                    break;
+            }
+        }
     }
 
     void InvokeSlot::next() {
