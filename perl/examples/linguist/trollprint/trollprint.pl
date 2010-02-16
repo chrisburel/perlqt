@@ -2,17 +2,17 @@
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use MainWindow;
 
 sub main
 {
-    my $app = Qt::Application(\@ARGV);
+    my $app = Qt4::Application(\@ARGV);
 
-    my $locale = Qt::Locale::system()->name();
+    my $locale = Qt4::Locale::system()->name();
 
 # [0]
-    my $translator = Qt::Translator();
+    my $translator = Qt4::Translator();
     $translator->load('trollprint_' . $locale);
     $app->installTranslator($translator);
 # [0]

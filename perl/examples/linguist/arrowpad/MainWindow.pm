@@ -2,8 +2,8 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::MainWindow );
+use Qt4;
+use Qt4::isa qw( Qt4::MainWindow );
 use ArrowPad;
 
 sub arrowPad() {
@@ -28,7 +28,7 @@ sub NEW
     this->setCentralWidget(this->arrowPad);
 
 # [1]
-    this->{exitAct} = Qt::Action(MainWindow::tr("E&xit"), this);
+    this->{exitAct} = Qt4::Action(MainWindow::tr("E&xit"), this);
     this->exitAct->setShortcut(MainWindow::tr("Ctrl+Q"));
     this->connect(this->exitAct, SIGNAL 'triggered()', this, SLOT 'close()');
 # [1]

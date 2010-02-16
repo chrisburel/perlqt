@@ -7,7 +7,7 @@ Run "linguist hellotr_la.ts"
     Click the "?" to change it to a check mark to mark it done.
     Save the file.
 Then either
-    Choose "File|Release" in Qt Linguist
+    Choose "File|Release" in Qt4 Linguist
     Run "lrelease hellotr_la.ts"
 
 Now when you run the example, you'll see the translated text in the PushButton.

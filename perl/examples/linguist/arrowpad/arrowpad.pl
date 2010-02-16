@@ -2,19 +2,19 @@
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use MainWindow;
 
 # [0]
 sub main
 # [0] //! [1]
 {
-    my $app = Qt::Application(\@ARGV);
+    my $app = Qt4::Application(\@ARGV);
 
-    my $locale = Qt::Locale::system()->name();
+    my $locale = Qt4::Locale::system()->name();
 
 # [2]
-    my $translator = Qt::Translator();
+    my $translator = Qt4::Translator();
 # [2] //! [3]
     $translator->load('arrowpad_' . $locale . '.qm');
     $app->installTranslator($translator);

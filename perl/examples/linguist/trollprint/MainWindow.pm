@@ -2,9 +2,9 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::MainWindow );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::MainWindow );
+use Qt4::slots
     about => [];
 use PrintPanel;
 
@@ -50,7 +50,7 @@ sub NEW
 
 sub about
 {
-    Qt::MessageBox::information(this, MainWindow::tr("About Troll Print 1.0"),
+    Qt4::MessageBox::information(this, MainWindow::tr("About Troll Print 1.0"),
                       MainWindow::tr("Troll Print 1.0.\n\n" .
                       "Copyright 1999 Software, Inc."));
 }
@@ -59,16 +59,16 @@ sub about
 sub createActions
 {
 # [2]
-    this->{exitAct} = Qt::Action(MainWindow::tr("E&xit"), this);
+    this->{exitAct} = Qt4::Action(MainWindow::tr("E&xit"), this);
     this->exitAct->setShortcut(MainWindow::tr("Ctrl+Q", "Quit"));
 # [2]
     this->connect(this->exitAct, SIGNAL 'triggered()', this, SLOT 'close()');
 
-    this->{aboutAct} = Qt::Action(MainWindow::tr("&About"), this);
-    this->aboutAct->setShortcut(Qt::KeySequence(${Qt::Key_F1()}));
+    this->{aboutAct} = Qt4::Action(MainWindow::tr("&About"), this);
+    this->aboutAct->setShortcut(Qt4::KeySequence(${Qt4::Key_F1()}));
     this->connect(this->aboutAct, SIGNAL 'triggered()', this, SLOT 'about()');
 
-    this->{aboutQtAct} = Qt::Action(MainWindow::tr("About &Qt"), this);
+    this->{aboutQtAct} = Qt4::Action(MainWindow::tr("About &Qt"), this);
     this->connect(this->aboutQtAct, SIGNAL 'triggered()', qApp, SLOT 'aboutQt()');
 }
 
