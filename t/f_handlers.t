@@ -1,4 +1,4 @@
-use Test::More tests => 8;
+use Test::More tests => 9;
 
 use strict;
 use warnings;
@@ -6,9 +6,9 @@ use Qt;
 
 my $app = Qt::Application( \@ARGV );
 
-my $widget = Qt::Widget();
 
 {
+    my $widget = Qt::Widget();
     # Test Qt::String marshalling
     my $wt = 'Qt::String marshalling works!';
     $widget->setWindowTitle( $wt );
@@ -16,6 +16,7 @@ my $widget = Qt::Widget();
 }
 
 {
+    my $widget = Qt::Widget();
     # Test a string that has non-latin characters
     use utf8;
     my $wt = 'ターミナル';
@@ -26,6 +27,7 @@ my $widget = Qt::Widget();
 
 {
     # Test int marshalling
+    my $widget = Qt::Widget();
     my $int = 341;
     $widget->resize( $int, $int );
     is ( $widget->height(), $int, 'int' );
@@ -46,6 +48,7 @@ my $widget = Qt::Widget();
 
 {
     # Test bool marshalling
+    my $widget = Qt::Widget();
     my $bool = !$widget->isEnabled();
     $widget->setEnabled( $bool );
     is ( $widget->isEnabled(), $bool, 'bool' );
@@ -67,3 +70,12 @@ my $widget = Qt::Widget();
          'int*' );
 }
 
+{
+    # Test unsigned int marshalling
+    my $label = Qt::Label();
+    my $hcenter = ${Qt::AlignHCenter()};
+    my $top = ${Qt::AlignTop()};
+    $label->setAlignment(Qt::AlignHCenter() | Qt::AlignTop());
+    my $alignment = $label->alignment();
+    is( $alignment, $hcenter|$top, 'unsigned int' );
+}

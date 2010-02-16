@@ -88,7 +88,7 @@ SV* allocSmokePerlSV ( void* ptr, SmokeType type ) {
 //          the stack
 #ifdef DEBUG
 SV* catArguments(SV** sp, int n) {
-    SV* r=newSVpvf("");
+    SV* r = newSV(0);
     for(int i = 0; i < n; i++) {
         if(i) sv_catpv(r, ", ");
         if(!SvOK(sp[i])) {
@@ -113,10 +113,105 @@ SV* catArguments(SV** sp, int n) {
     }
     return r;
 }
+
+STATIC I32
+S_dopoptosub_at(pTHX_ const PERL_CONTEXT *cxstk, I32 startingblock)
+{
+    dVAR;
+    I32 i;
+    for (i = startingblock; i >= 0; i--) {
+	register const PERL_CONTEXT * const cx = &cxstk[i];
+	switch (CxTYPE(cx)) {
+	default:
+	    continue;
+	case CXt_EVAL:
+	case CXt_SUB:
+	case CXt_FORMAT:
+	    DEBUG_l( Perl_deb(aTHX_ "(Found sub #%ld)\n", (long)i));
+	    return i;
+	}
+    }
+    return i;
+}
+#define dopoptosub_at(a,b)      S_dopoptosub_at(aTHX_ a,b)
+#define dopoptosub(plop)	dopoptosub_at(cxstack, (plop))
+
+/*
+SV* catCallerInfo( int count ) {
+    SV *retval = newSV(0);
+
+    register I32 cxix = dopoptosub(cxstack_ix);
+    register const PERL_CONTEXT *cx;
+    register const PERL_CONTEXT *ccstack = cxstack;
+    const PERL_SI *top_si = PL_curstackinfo;
+    I32 gimme;
+    const char *stashname;
+
+    cx = &ccstack[cxix];
+
+    stashname = CopSTASHPV(cx->blk_oldcop);
+
+    sv_setpv(retval, stashname);
+
+    return retval;
+}
+*/
+
+SV* catCallerInfo( int count ) {
+    SV *retval = newSV(0);
+
+    register I32 cxix = dopoptosub(cxstack_ix);
+    register const PERL_CONTEXT *cx;
+    register const PERL_CONTEXT *ccstack = cxstack;
+    const PERL_SI *top_si = PL_curstackinfo;
+    I32 gimme;
+    const char *stashname;
+
+    for (;;) {
+        /* we may be in a higher stacklevel, so dig down deeper */
+        while (cxix < 0 && top_si->si_type != PERLSI_MAIN) {
+            top_si = top_si->si_prev;
+            ccstack = top_si->si_cxstack;
+            cxix = dopoptosub_at(ccstack, top_si->si_cxix);
+        }
+        if (cxix < 0) {
+            return retval;
+        }
+        /* caller() should not report the automatic calls to &DB::sub */
+        if (PL_DBsub && GvCV(PL_DBsub) && cxix >= 0 &&
+                ccstack[cxix].blk_sub.cv == GvCV(PL_DBsub))
+            count++;
+        if (!count--)
+            break;
+        cxix = dopoptosub_at(ccstack, cxix - 1);
+    }
+
+    cx = &ccstack[cxix];
+    if (CxTYPE(cx) == CXt_SUB || CxTYPE(cx) == CXt_FORMAT) {
+        const I32 dbcxix = dopoptosub_at(ccstack, cxix - 1);
+        /* We expect that ccstack[dbcxix] is CXt_SUB, anyway, the
+           field below is defined for any cx. */
+        /* caller() should not report the automatic calls to &DB::sub */
+        if (PL_DBsub && GvCV(PL_DBsub) && dbcxix >= 0 && ccstack[dbcxix].blk_sub.cv == GvCV(PL_DBsub))
+            cx = &ccstack[dbcxix];
+    }
+
+    stashname = CopSTASHPV(cx->blk_oldcop);
+
+    if (!stashname)
+        sv_catpv( retval, "package: NONE, ");
+    else if ( !strcmp( stashname, "Qt::base" ) )
+        return catCallerInfo( count - 1 );
+    else
+        sv_catpvf( retval, "package: %s, ", stashname);
+    sv_catpvf( retval, "file: %s, ", (OutCopFILE(cx->blk_oldcop)));
+    sv_catpvf( retval, "line: %d", ((I32)CopLINE(cx->blk_oldcop)));
+    return retval;
+}
 #endif
 
-char* get_SVt(SV* sv) {
-    char* r;
+const char* get_SVt(SV* sv) {
+    const char* r;
     if(!SvOK(sv))
         r = "u";
     else if(SvIOK(sv))
@@ -140,7 +235,7 @@ char* get_SVt(SV* sv) {
             }
         }
         else
-            r = (char*)o->smoke->className(o->classId);
+            r = o->smoke->className(o->classId);
     }
     else
         r = "U";
@@ -365,7 +460,7 @@ Smoke::Index package_classId( const char *package ) {
 // Args: Smoke::Index id: a smoke method id to print
 // Returns: an SV* containing a formatted method signature string
 SV* prettyPrintMethod(Smoke::Index id) {
-    SV* r = newSVpvf("");
+    SV* r = newSV(0);
     Smoke::Method& meth = qt_Smoke->methods[id];
     const char* tname = qt_Smoke->types[meth.ret].name;
     if(meth.flags & Smoke::mf_static) sv_catpv(r, "static ");
@@ -634,7 +729,7 @@ XS(XS_AUTOLOAD) {
         // args
         for(int i = withObject; i < items; i++) {
             *(ptr++) = ';';
-            char *type = get_SVt(ST(i));
+            const char *type = get_SVt(ST(i));
             int typelen = strlen(type);
             strncpy(ptr, type, typelen );
             ptr += typelen;
@@ -1015,7 +1110,7 @@ getTypeNameOfArg( methodId, argnum )
     OUTPUT:
         RETVAL
 
-char*
+const char*
 getSVt( sv )
         SV* sv
     CODE:

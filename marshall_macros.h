@@ -32,7 +32,7 @@
 #define DEF_LIST_MARSHALLER(ListIdent,ItemList,Item) /*namespace {*/ char ListIdent##STR[] = #Item; /*}*/  \
         Marshall::HandlerFn marshall_##ListIdent = marshall_ItemList<Item,ItemList,ListIdent##STR>;
 
-#define DEF_VALUELIST_MARSHALLER(ListIdent,ItemList,Item) namespace { char ListIdent##STR[] = #Item; }  \
+#define DEF_VALUELIST_MARSHALLER(ListIdent,ItemList,Item) /*namespace {*/ char ListIdent##STR[] = #Item; /*}*/  \
         Marshall::HandlerFn marshall_##ListIdent = marshall_ValueListItem<Item,ItemList,ListIdent##STR>;
 
 #define DEF_LINKED_LIST_MARSHALLER(ListIdent,ItemList,Item) namespace { char ListIdent##STR[] = #Item; }  \
@@ -46,21 +46,21 @@ void marshall_ItemList(Marshall *m) {
     UNTESTED_HANDLER( "marshall_ItemList" );
     switch(m->action()) {
         case Marshall::FromSV: {
-            m->unsupported();
-            /*
-            VALUE list = *(m->var());
-            if (TYPE(list) != T_ARRAY) {
+            SV *listref = m->var();
+            if ( !listref || !SvROK( listref ) || SvTYPE( listref ) != SVt_PVAV ) {
                 m->item().s_voidp = 0;
                 break;
             }
 
-            int count = RARRAY(list)->len;
+            AV *list = (AV*)SvRV(listref);
+            int count = av_len(list) + 1;
             ItemList *cpplist = new ItemList;
-            long i;
-            for(i = 0; i < count; i++) {
-                VALUE item = rb_ary_entry(list, i);
+            for( long i = 0; i < count; ++i) {
+                SV **item = av_fetch(list, i, 0);
                 // TODO do type checking!
-                smokeruby_object *o = value_obj_info(item);
+                if(!item || !SvOK(*item))
+                    continue;
+                smokeperl_object *o = sv_obj_info(*item);
                 if(!o || !o->ptr)
                     continue;
                 void *ptr = o->ptr;
@@ -76,18 +76,17 @@ void marshall_ItemList(Marshall *m) {
             m->next();
 
             if (!m->type().isConst()) {
-                rb_ary_clear(list);
+                av_clear(list);
     
                 for(int i = 0; i < cpplist->size(); ++i ) {
-                    VALUE obj = getPointerObject( (void *) cpplist->at(i) );
-                    rb_ary_push(list, obj);
+                    SV *obj = getPointerObject( (void *) cpplist->at(i) );
+                    av_push(list, obj);
                 }
             }
 
             if (m->cleanup()) {
                 delete cpplist;
             }
-            */
         }
         break;
       
@@ -104,59 +103,28 @@ void marshall_ItemList(Marshall *m) {
             for (int i=0;i<valuelist->size();++i) {
                 void *p = (void *) valuelist->at(i);
 
-                /*
                 if (m->item().s_voidp == 0) {
                     sv_setsv(m->var(), &PL_sv_undef);
                     break;
                 }
-                */
 
-                //fprintf( stderr, "Looking for %p in ptr map\n", p );
                 SV* obj = getPointerObject(p);
                 if (!obj) {
-                    //smokeruby_object  * o = alloc_smokeperl_object( false, 
-                                                                    //m->smoke(), 
-                                                                    //m->smoke()->idClass(ItemSTR).index, 
-                                                                    //p );
+                    obj = allocSmokePerlSV( p,
+                                            SmokeType( m->smoke(),
+                                                       m->smoke()->idClass(ItemSTR).index ) );
 
-                    //obj = set_obj_info(resolve_classname(o), o);
-                    HV* hv = newHV();
-                    obj = newRV_noinc((SV*)hv);
-                    Smoke::Index classid = m->smoke()->idClass(ItemSTR).index;
-
-                    /*
-                    fprintf( stderr, "I am     %p->%s\n", p, m->smoke()->classes[classid].className );
-    for(Smoke::Index *i = m->smoke()->inheritanceList + m->smoke()->classes[classid].parents; *i; i++) {
-        if(i)
-            fprintf( stderr, "Super is %p->%s, from %d to %d\n", m->smoke()->cast(p, *i, classid ),  m->smoke()->classes[*i].className, *i, classid );
-    }
-                    */
-
-                    char* retpackage = binding.className(classid);
-                    sv_bless( obj, gv_stashpv(retpackage, TRUE) );
-
-                    smokeperl_object o;
-                    o.smoke = m->smoke();
-                    o.classId = classid;
-                    o.ptr = p;
-                    o.allocated = false;
-
-                    sv_magic((SV*)hv, 0, '~', (char*)&o, sizeof(o));
-
-                    mapPointer(obj, &o, pointer_map, o.classId, 0);
                 }
             
                 av_push(av, obj);
             }
 
             sv_setsv(m->var(), avref);
-            /*
             m->next();
 
             if (m->cleanup()) {
                 delete valuelist;
             }
-            */
         }
         break;
 
@@ -166,48 +134,52 @@ void marshall_ItemList(Marshall *m) {
    }
 }
 
-/*
 template <class Item, class ItemList, const char *ItemSTR >
 void marshall_ValueListItem(Marshall *m) {
     UNTESTED_HANDLER( "marshall_ValueListItem" );
     switch(m->action()) {
-        case Marshall::FromVALUE:
-        {
-            VALUE list = *(m->var());
-            if (TYPE(list) != T_ARRAY) {
+        case Marshall::FromSV: {
+            SV *listref = m->var();
+            if ( !listref || !SvROK( listref ) || SvTYPE( listref ) != SVt_PVAV ) {
                 m->item().s_voidp = 0;
                 break;
             }
-            int count = RARRAY(list)->len;
+            AV *list = (AV*)SvRV(listref);
+            int count = av_len(list) + 1;
             ItemList *cpplist = new ItemList;
-            long i;
-            for(i = 0; i < count; i++) {
-                VALUE item = rb_ary_entry(list, i);
+            for(long i = 0; i < count; ++i) {
+                SV **item = av_fetch(list, i, 0);
                 // TODO do type checking!
-                smokeruby_object *o = value_obj_info(item);
+                if(!item || !SvOK(*item))
+                    continue;
+                smokeperl_object *o = sv_obj_info(*item);
 
                 // Special case for the QList<QVariant> type
-                if (    qstrcmp(ItemSTR, "QVariant") == 0 
-                        && (!o || !o->ptr || o->classId != o->smoke->idClass("QVariant").index) ) 
+                if (    qstrcmp(ItemSTR, "QVariant") == 0 &&
+                        (!o || !o->ptr || o->classId != o->smoke->idClass("QVariant").index) ) 
                 {
+                    UNTESTED_HANDLER( "marshall_ValueListItem for QVariant" );
                     // If the value isn't a Qt::Variant, then try and construct
                     // a Qt::Variant from it
+                    // XXX How to do this?
+                    /*
                     item = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, item);
                     if (item == Qnil) {
                         continue;
                     }
                     o = value_obj_info(item);
+                    */
                 }
 
                 if (!o || !o->ptr)
                     continue;
-                
+
                 void *ptr = o->ptr;
                 ptr = o->smoke->cast(
-                    ptr,                // pointer
-                    o->classId,                // from
-                    o->smoke->idClass(ItemSTR).index            // to
-                );
+                        ptr,                // pointer
+                        o->classId,                // from
+                        o->smoke->idClass(ItemSTR).index            // to
+                        );
                 cpplist->append(*(Item*)ptr);
             }
 
@@ -215,10 +187,10 @@ void marshall_ValueListItem(Marshall *m) {
             m->next();
 
             if (!m->type().isConst()) {
-                rb_ary_clear(list);
+                av_clear(list);
                 for(int i=0; i < cpplist->size(); ++i) {
-                    VALUE obj = getPointerObject((void*)&(cpplist->at(i)));
-                    rb_ary_push(list, obj);
+                    SV *obj = getPointerObject((void*)&(cpplist->at(i)));
+                    av_push(list, obj);
                 }
             }
 
@@ -227,41 +199,40 @@ void marshall_ValueListItem(Marshall *m) {
             }
         }
         break;
-      
-        case Marshall::ToVALUE:
-        {
+
+        case Marshall::ToSV: {
             ItemList *valuelist = (ItemList*)m->item().s_voidp;
             if(!valuelist) {
-                *(m->var()) = Qnil;
+                sv_setsv(m->var(), &PL_sv_undef);
                 break;
             }
 
-            VALUE av = rb_ary_new();
+            AV* av = newAV();
+            SV* avref = newRV_noinc((SV*)av);
 
-            int ix = m->smoke()->idClass(ItemSTR).index;
-            const char * className = qtruby_modules[m->smoke()].binding->className(ix);
+            //int ix = m->smoke()->idClass(ItemSTR).index;
+            //const char * className = binding.className(ix);
 
             for(int i=0; i < valuelist->size() ; ++i) {
                 void *p = (void *) &(valuelist->at(i));
 
                 if(m->item().s_voidp == 0) {
-                *(m->var()) = Qnil;
-                break;
+                    sv_setsv(m->var(), &PL_sv_undef);
+                    break;
                 }
 
-                VALUE obj = getPointerObject(p);
-                if(obj == Qnil) {
-                    smokeruby_object  * o = alloc_smokeruby_object(    false, 
-                                                                    m->smoke(), 
-                                                                    m->smoke()->idClass(ItemSTR).index, 
-                                                                    p );
-                    obj = set_obj_info(className, o);
+                SV *obj = getPointerObject(p);
+                if( !obj || !SvOK(obj) ) {
+                    obj = allocSmokePerlSV( p,
+                                            SmokeType( m->smoke(), 
+                                                       m->smoke()->idClass(ItemSTR).index ) );
+                    //obj = set_obj_info(className, o);
                 }
-        
-                rb_ary_push(av, obj);
+
+                av_push(av, obj);
             }
 
-            *(m->var()) = av;
+            sv_setsv(m->var(), avref);
             m->next();
 
             if (m->cleanup()) {
@@ -270,18 +241,21 @@ void marshall_ValueListItem(Marshall *m) {
 
         }
         break;
-      
+
         default:
             m->unsupported();
-        break;
+            break;
     }
 }
 
+/*
 ---*
     The code for the QLinkedList marshallers is identical to the QList and QVector marshallers apart
     from the use of iterators instead of at(), and so it really should be possible to code one marshaller
     to work with all three types.
 ---*
+
+// These guys don't seem to be used at all in QtRuby.  wtf.
 
 template <class Item, class ItemList, const char *ItemSTR >
 void marshall_LinkedItemList(Marshall *m) {
@@ -298,7 +272,7 @@ void marshall_LinkedItemList(Marshall *m) {
             int count = RARRAY(list)->len;
             ItemList *cpplist = new ItemList;
             long i;
-            for (i = 0; i < count; i++) {
+            for (i = 0; i < count; ++i) {
                 VALUE item = rb_ary_entry(list, i);
                 // TODO do type checking!
                 smokeruby_object *o = value_obj_info(item);
@@ -393,7 +367,7 @@ void marshall_LinkedValueListItem(Marshall *m) {
             int count = RARRAY(list)->len;
             ItemList *cpplist = new ItemList;
             long i;
-            for(i = 0; i < count; i++) {
+            for(i = 0; i < count; ++i) {
                 VALUE item = rb_ary_entry(list, i);
                 // TODO do type checking!
                 smokeruby_object *o = value_obj_info(item);
@@ -509,7 +483,7 @@ void marshall_Hash(Marshall *m) {
         // Convert the ruby hash to an array of key/value arrays
         VALUE temp = rb_funcall(hv, rb_intern("to_a"), 0);
 
-        for (long i = 0; i < RARRAY(temp)->len; i++) {
+        for (long i = 0; i < RARRAY(temp)->len; ++i) {
             VALUE key = rb_ary_entry(rb_ary_entry(temp, i), 0);
             VALUE value = rb_ary_entry(rb_ary_entry(temp, i), 1);
             

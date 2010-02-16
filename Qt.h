@@ -7,8 +7,9 @@
 SV* allocSmokePerlSV ( void* ptr, SmokeType type );
 #ifdef DEBUG
 SV* catArguments(SV** sp, int n);
+SV* catCallerInfo( int count );
 #endif
-char* get_SVt(SV* sv);
+const char* get_SVt(SV* sv);
 SV* getPointerObject(void* ptr);
 int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke::Index baseId, int cnt);
 int isDerivedFrom(Smoke *smoke, const char *className, const char *baseClassName, int cnt);

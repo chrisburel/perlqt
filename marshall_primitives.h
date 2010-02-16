@@ -30,7 +30,6 @@ SV* primitive_to_perl<int>(int sv) {
 //-----------------------------------------------------------------------------
 template <>
 unsigned int perl_to_primitive<unsigned int>(SV* sv) {
-    UNTESTED_HANDLER("perl_to_primitive<unsigned int>");
     if ( !SvOK(sv) )
         return 0;
     if ( SvROK(sv) )
@@ -40,7 +39,6 @@ unsigned int perl_to_primitive<unsigned int>(SV* sv) {
 
 template <>
 SV* primitive_to_perl<unsigned int>(unsigned int sv) {
-    UNTESTED_HANDLER("primitive_to_perl<unsigned int>");
     return newSVuv(sv);
 }
 
