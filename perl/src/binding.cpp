@@ -1,3 +1,5 @@
+#include "QtCore/QObject"
+
 #include "marshall_types.h"
 #include "binding.h"
 #include "Qt.h"
@@ -16,13 +18,25 @@ namespace PerlQt {
 Binding::Binding() : SmokeBinding(0) {};
 Binding::Binding(Smoke *s) : SmokeBinding(s) {};
 
-void Binding::deleted(Smoke::Index classId, void *ptr) {
+void Binding::deleted(Smoke::Index /*classId*/, void *ptr) {
     SV* obj = getPointerObject(ptr);
     smokeperl_object* o = sv_obj_info(obj);
     if (!o || !o->ptr) {
         return;
     }
     unmapPointer( o, o->classId, 0 );
+
+    // Do the same for all children
+    QObject* objptr = (QObject*)o->smoke->cast(
+        ptr,
+        o->classId,
+        o->smoke->idClass("QObject").index
+    );
+    QObjectList mychildren = objptr->children();
+    foreach( QObject* child, mychildren ) {
+        deleted( 0, child );
+    }
+
     o->ptr = 0;
 }
 

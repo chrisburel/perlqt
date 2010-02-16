@@ -117,7 +117,7 @@ my $app = Qt::Application( \@ARGV );
     my $strings = [ qw( The quick brown fox jumped over the lazy dog ) ];
     my $var = Qt::Variant( $strings );
     my $newStrings = $var->toStringList();
-    is_deeply( $strings, $newStrings );
+    is_deeply( $strings, $newStrings, 'Ambiguous list resolution' );
 }
 
 {

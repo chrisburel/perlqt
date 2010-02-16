@@ -124,7 +124,7 @@ void marshall_ItemList(Marshall *m) {
 
                     const char* classname = resolve_classname(o);
 
-                    obj = sv_2mortal( set_obj_info( classname, o ) );
+                    obj = set_obj_info( classname, o );
                 }
             
                 av_push(av, obj);
@@ -245,7 +245,7 @@ void marshall_ValueListItem(Marshall *m) {
 
                     const char* classname = resolve_classname(o);
 
-                    obj = sv_2mortal( set_obj_info( classname, o ) );
+                    obj = set_obj_info( classname, o );
                 }
 
                 av_push(av, obj);

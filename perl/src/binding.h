@@ -13,7 +13,7 @@ class Q_DECL_EXPORT Binding : public SmokeBinding {
 public:
     Binding();
     Binding(Smoke* s);
-    void deleted(Smoke::Index classId, void* ptr);
+    void deleted(Smoke::Index /*classId*/, void* ptr);
     bool callMethod(Smoke::Index method, void* ptr, Smoke::Stack args, bool isAbstract);
     char* className(Smoke::Index classId);
 };
