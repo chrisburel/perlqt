@@ -5,6 +5,17 @@ use warnings;
 use Qt;
 use PreviewWindow;
 
+# FIXME
+use constant {
+    Window=>0x00000001
+};
+
+use constant {
+    Dialog=>0x00000002 | Window,
+    SplashScreen=>0x0000000e | Window,
+    ToolTip=>0x0000000c | Window
+};
+
 # [0]
 use Qt::isa qw( Qt::Widget );
 use Qt::slots
@@ -148,7 +159,7 @@ sub updatePreview {
     if (this->windowRadioButton->isChecked()) {
         $flags = Qt::Window();
     } elsif (this->dialogRadioButton->isChecked()) {
-        $flags = Qt::Dialog();
+        $flags = Dialog;
     } elsif (this->sheetRadioButton->isChecked()) {
         $flags = Qt::Sheet();
     } elsif (this->drawerRadioButton->isChecked()) {
@@ -158,9 +169,9 @@ sub updatePreview {
     } elsif (this->toolRadioButton->isChecked()) {
         $flags = Qt::Tool();
     } elsif (this->toolTipRadioButton->isChecked()) {
-        $flags = Qt::ToolTip();
+        $flags = ToolTip;
     } elsif (this->splashScreenRadioButton->isChecked()) {
-        $flags = Qt::SplashScreen();
+        $flags = SplashScreen;
 # [1] //! [2]
     }
 # [2] //! [3]
