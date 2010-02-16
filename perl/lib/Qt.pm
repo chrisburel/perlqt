@@ -495,6 +495,76 @@ sub op_increment {
 sub op_decrement {
     return --${$_[0]};
 }
+
+package Qt::DBusReply;
+
+use strict;
+use warnings;
+
+sub new {
+    my ( $class, $reply ) = @_;
+    my $this = bless {}, $class;
+
+    my $error = Qt::DBusError($reply);
+    $this->{error} = $error;
+    if ( $error->isValid() ) {
+        $this->{data} = Qt::Variant();
+        return $this;
+    }
+
+    my $arguments = $reply->arguments();
+    if ( ref $arguments eq 'ARRAY' && scalar @{$arguments} >= 1 ) {
+        $this->{data} = $arguments->[0];
+        return $this;
+    }
+
+    # This only gets called if the 2 previous ifs weren't
+    $this->{error} = Qt::DBusError( Qt::DBusError::InvalidSignature(),
+                                    'Unexpected reply signature' );
+    $this->{data} = Qt::Variant();
+    return $this;
+}
+
+sub isValid {
+    my ( $this ) = @_;
+    return !$this->{error}->isValid();
+}
+
+sub value() {
+    my ( $this ) = @_;
+    return $this->{data}->value();
+}
+
+sub error() {
+    my ( $this ) = @_;
+    return $this->{error};
+}
+
+# Create the Qt::DBusReply() constructor
+no strict;
+*{'Qt::DBusReply'} = sub {
+    Qt::DBusReply->new(@_);
+};
+
+1;
+
+package Qt::DBusVariant;
+
+use strict;
+use warnings;
+
+sub NEW {
+    my ( $class, $value ) = @_;
+    if ( ref $value eq ' Qt::Variant' ) {
+        $class->SUPER::NEW( $value );
+    }
+    else {
+        $class->SUPER::NEW( $value );
+    }
+}
+
+1;
+
 package Qt::_internal;
 
 use strict;
@@ -510,6 +580,10 @@ our %classId2package;
 # the object who's method is being called.  Made visible here for debugging
 # purposes.
 our %pointer_map;
+
+my %customClasses = (
+    'Qt::DBusVariant' => 'Qt::Variant',
+);
 
 sub argmatch {
     my ( $methodIds, $args, $argNum ) = @_;
@@ -724,6 +798,8 @@ sub init_class {
 
     # Define the inheritance array for this class.
     my @isa = getIsa($classId);
+    @isa = $customClasses{$perlClassName}
+        if defined $customClasses{$perlClassName};
 
     # We want the isa array to be the names of perl packages, not c++ class
     # names
@@ -776,6 +852,7 @@ sub init_class {
 # Desc: sets up each class
 sub init {
     my $classes = getClassList();
+    push @{$classes}, keys %customClasses;
     foreach my $cxxClassName (@{$classes}) {
         init_class($cxxClassName);
     }
@@ -791,6 +868,7 @@ sub init {
             @{"${enumName}Enum::ISA"} = ('Qt::enum::_overload');
         }
     }
+
 }
 
 sub makeMetaData {
@@ -802,8 +880,9 @@ sub makeMetaData {
     my $signals = $meta->{signals};
     my $slots = $meta->{slots};
 
-    @$signals = () if !defined @$signals;
-    @$slots = () if !defined @$slots;
+    @{$classinfos} = () if !defined @{$classinfos};
+    @{$signals} = () if !defined @{$signals};
+    @{$slots} = () if !defined @{$slots};
 
     # Each entry in 'stringdata' corresponds to a string in the
     # qt_meta_stringdata_<classname> structure.
@@ -821,19 +900,33 @@ sub makeMetaData {
     my $MethodCloned = 0x20;
     my $MethodScriptable = 0x40;
 
-    my $data = [1,               #revision
-                0,               #str index of classname
-                0, 0,            #don't have classinfo
-                scalar @$signals + scalar @$slots, #number of sig/slots
-                10,              #do have methods
-                0, 0,            #no properties
-                0, 0,            #no enums/sets
+    my $numClassInfos = scalar @{$classinfos};
+    my $numSignals = scalar @{$signals};
+    my $numSlots = scalar @{$slots};
+
+    my $data = [
+        1,                           #revision
+        0,                           #str index of classname
+        $numClassInfos,              #number of classinfos
+        $numClassInfos > 0 ? 10 : 0, #have classinfo?
+        $numSignals + $numSlots,     #number of sig/slots
+        10 + (2*$numClassInfos),     #have methods?
+        0, 0,                        #no properties
+        0, 0,                        #no enums/sets
     ];
 
-    my $stringdata = "$classname\0\0";
+    my $stringdata = "$classname\0";
     my $nullposition = length( $stringdata ) - 1;
 
     # Build the stringdata string, storing the indexes in data
+    foreach my $classinfo ( @{$classinfos} ) {
+        foreach my $keyval ( %{$classinfo} ) {
+            my $curPosition = length $stringdata;
+            push @{$data}, $curPosition;
+            $stringdata .= $keyval . "\0";
+        }
+    }
+
     foreach my $signal ( @$signals ) {
         my $curPosition = length $stringdata;
 
@@ -844,21 +937,26 @@ sub makeMetaData {
         push @$data, $nullposition; #parameter names
         push @$data, $nullposition; #return type, void
         push @$data, $nullposition; #tag
-        push @$data, $MethodSignal | $AccessProtected; # flags
+        if ( $dbus ) {
+            push @$data, $MethodScriptable | $MethodSignal | $AccessPublic; # flags
+        }
+        else {
+            push @$data, $MethodSignal | $AccessProtected; # flags
+        }
     }
 
     foreach my $slot ( @$slots ) {
         my $curPosition = length $stringdata;
 
         # Add this slot to the stringdata
-        $stringdata .= $slot->{signature} . "\0" ;
+        $stringdata .= $slot->{signature} . "\0";
         push @$data, $curPosition; #signature
 
         push @$data, $nullposition; #parameter names
 
         if ( defined $slot->{returnType} ) {
             $curPosition = length $stringdata;
-            $stringdata .= $slot->{returnType};
+            $stringdata .= $slot->{returnType} . "\0";
             push @$data, $curPosition; #return type
         }
         else {
@@ -930,58 +1028,6 @@ sub Qt::Application::NEW {
     shift @$argv;
 }
 
-package Qt::DBusReply;
-
-use strict;
-use warnings;
-
-sub new {
-    my ( $class, $reply ) = @_;
-    my $this = bless {}, $class;
-
-    my $error = Qt::DBusError($reply);
-    $this->{error} = $error;
-    if ( $error->isValid() ) {
-        $this->{data} = Qt::Variant();
-        return $this;
-    }
-
-    my $arguments = $reply->arguments();
-    if ( ref $arguments eq 'ARRAY' && scalar @{$arguments} >= 1 ) {
-        $this->{data} = $arguments->[0];
-        return $this;
-    }
-
-    # This only gets called if the 2 previous ifs weren't
-    $this->{error} = Qt::DBusError( Qt::DBusError::InvalidSignature(),
-                                    'Unexpected reply signature' );
-    $this->{data} = Qt::Variant();
-    return $this;
-}
-
-sub isValid {
-    my ( $this ) = @_;
-    return !$this->{error}->isValid();
-}
-
-sub value() {
-    my ( $this ) = @_;
-    return $this->{data}->value();
-}
-
-sub error() {
-    my ( $this ) = @_;
-    return $this->{error};
-}
-
-# Create the Qt::DBusReply() constructor
-no strict;
-*{'Qt::DBusReply'} = sub {
-    Qt::DBusReply->new(@_);
-};
-
-1;
-
 package Qt;
 
 use 5.008006;
@@ -1002,7 +1048,7 @@ Qt::_internal::init();
 
 sub SIGNAL ($) { '2' . $_[0] }
 sub SLOT ($) { '1' . $_[0] }
-sub emit (@) { pop @_ }
+sub emit (@) { return pop @_ }
 sub CAST ($$) {
     my( $var, $class ) = @_;
     if( ref $var ) {

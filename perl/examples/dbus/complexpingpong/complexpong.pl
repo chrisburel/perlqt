@@ -8,6 +8,8 @@ use blib;
 
 use Qt;
 use Qt::isa qw( Qt::DBusAbstractAdaptor );
+use Qt::classinfo
+    'D-Bus Interface' => 'com.trolltech.QtDBus.ComplexPong.Pong';
 
 use Qt::signals
     aboutToQuit => [];
@@ -51,7 +53,7 @@ sub query {
         if ($q =~ m/european/) {
             return Qt::DBusVariant(11.0);
         }
-        return Qt::DBusVariant(Qt::ByteArray('african or european?'));
+        return Qt::DBusVariant('african or european?');
     }
 
     return Qt::DBusVariant('Sorry, I don\'t know the answer');
@@ -68,11 +70,15 @@ use blib;
 use Qt;
 use PingCommon qw( SERVICE_NAME );
 use Pong;
+use IO::Handle;
 
 sub main {
+    open OUTPUT, '>', '/home/cburel/dbuslog' or die $!;
+    STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
+    STDERR->fdopen( \*OUTPUT, 'w' ) or die $!;
+
     my $app = Qt::Application( \@ARGV );
 
-    print "Running complexpong\n";
     my $obj = Qt::Object();
     my $pong = Pong($obj);
     $pong->connect($app, SIGNAL 'aboutToQuit()', SIGNAL 'aboutToQuit()' );

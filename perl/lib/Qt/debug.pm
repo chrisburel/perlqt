@@ -16,14 +16,33 @@ our %channel = (
 sub dumpMetaMethods {
     my ( $object ) = @_;
 
-    my $objName = ref $object;
-    $objName =~ s/^ *//;
-    my $meta = Qt::_internal::getMetaObject( $objName );
+    # Did we get an object in, or just a class name?
+    my $className = ref $object ? ref $object : $object;
+    $className =~ s/^ *//;
+    my $meta = Qt::_internal::getMetaObject( $className );
 
-    print "Methods for ".$meta->className().":\n";
+    if ( $meta->methodCount() ) {
+        print join '', 'Methods for ', $meta->className(), ":\n"
+    }
+    else {
+        print join '', 'No methods for ', $meta->className(), ".\n";
+    }
     foreach my $index ( 0..$meta->methodCount()-1 ) {
         my $metaMethod = $meta->method($index);
+        print $metaMethod->typeName . ' ' if $metaMethod->typeName;
         print $metaMethod->signature() . "\n";
+    }
+    print "\n";
+
+    if ( $meta->classInfoCount() ) {
+        print join '', 'Class info for ', $meta->className(), ":\n"
+    }
+    else {
+        print join '', 'No class info for ', $meta->className(), ".\n";
+    }
+    foreach my $index ( 0..$meta->classInfoCount()-1 ) {
+        my $classInfo = $meta->classInfo($index);
+        print join '', '\'', $classInfo->name, '\' => \'', $classInfo->value, "'\n";
     }
     print "\n";
 }

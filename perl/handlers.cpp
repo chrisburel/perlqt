@@ -501,66 +501,60 @@ static void marshall_QByteArray(Marshall *m) {
     }
 }
 
-/*
 void marshall_QDBusVariant(Marshall *m) {
     UNTESTED_HANDLER("marshall_QDBusVariant");
-	switch(m->action()) {
-	case Marshall::FromSV: 
-	{
-		VALUE v = *(m->var());
-		if (v == Qnil) {
-			m->item().s_voidp = 0;
-			break;
-		}
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *v = m->var();
+            if (!SvOK(v)) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-		smokeruby_object *o = value_obj_info(v);
-		if (!o || !o->ptr) {
-			if (m->type().isRef()) {
-				m->unsupported();
-			}
-		    m->item().s_class = 0;
-		    break;
-		}
-		m->item().s_class = o->ptr;
-		break;
-	}
+            smokeperl_object *o = sv_obj_info(v);
+            if (!o || !o->ptr) {
+                if (m->type().isRef()) {
+                    m->unsupported();
+                }
+                m->item().s_class = 0;
+                break;
+            }
+            m->item().s_class = o->ptr;
+            break;
+        }
 
-	case Marshall::ToSV: 
-	{
-		if (m->item().s_voidp == 0) {
-			*(m->var()) = Qnil;
-		    break;
-		}
+        case Marshall::ToSV: {
+            if (m->item().s_voidp == 0) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
 
-		void *p = m->item().s_voidp;
-		VALUE obj = getPointerObject(p);
-		if(obj != Qnil) {
-			*(m->var()) = obj;
-		    break;
-		}
-		smokeruby_object * o = alloc_smokeruby_object(false, m->smoke(), m->smoke()->findClass("QVariant").index, p);
-		
-		obj = set_obj_info("Qt::DBusVariant", o);
-		if (do_debug & qtdb_calls) {
-			printf("allocating %s %p -> %p\n", "Qt::DBusVariant", o->ptr, (void*)obj);
-		}
+            void *p = m->item().s_voidp;
+            SV *obj = getPointerObject(p);
+            if(obj != &PL_sv_undef) {
+                sv_setsv_mg( m->var(), obj );
+                break;
+            }
+            obj = allocSmokePerlSV(
+                p,
+                SmokeType( m->smoke(), m->smoke()->idType("QVariant") )
+            );
 
-		if (m->type().isStack()) {
-		    o->allocated = true;
-			// Keep a mapping of the pointer so that it is only wrapped once
-		    mapPointer(obj, o, o->classId, 0);
-		}
-		
-		*(m->var()) = obj;
-		break;
-	}
-	
-	default:
-		m->unsupported();
-		break;
+            sv_bless( obj, gv_stashpv( " Qt::DBusVariant", TRUE ) );
+            if (do_debug & qtdb_calls) {
+                smokeperl_object *o = sv_obj_info( obj );
+                printf("Allocating %s %p -> %p\n", "Qt::DBusVariant", o->ptr, (void*)obj);
+            }
+
+            sv_setsv(m->var(), obj);
+            break;
+        }
+
+        default:
+            m->unsupported();
+            break;
     }
 }
-*/
 
 static void marshall_charP_array(Marshall* m) {
     switch( m->action() ) {
@@ -1905,8 +1899,8 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     { "KIO::filesize_t", marshall_it<long long> },
     { "long long int", marshall_it<long long> },
     { "long long int&", marshall_it<long long> },
-    //{ "QDBusVariant", marshall_QDBusVariant },
-    //{ "QDBusVariant&", marshall_QDBusVariant },
+    { "QDBusVariant", marshall_QDBusVariant },
+    { "QDBusVariant&", marshall_QDBusVariant },
     { "QList<QFileInfo>", marshall_QFileInfoList },
     { "QFileInfoList", marshall_QFileInfoList },
     { "QGradiantStops", marshall_QPairqrealQColor },

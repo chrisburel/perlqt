@@ -474,27 +474,31 @@ XS(XS_qvariant_value) {
 
 	QVariant * variant = (QVariant*) o->ptr;
 
-	// If the QVariant contains a user type, don't bother to look at the Ruby class argument
-	if (variant->type() >= QVariant::UserType) { 
-        fprintf( stderr, "User types in QVariant unsupported\n" );
-        XSRETURN_UNDEF;
-        /*
+	// If the QVariant contains a user type, don't bother to look at the Perl class argument
+    if (variant->type() >= QVariant::UserType) {
 #ifdef QT_QTDBUS 
-		if (qstrcmp(variant->typeName(), "QDBusObjectPath") == 0) {
-			QString s = qVariantValue<QDBusObjectPath>(*variant).path();
-			return rb_str_new2(s.toLatin1());
-		} else if (qstrcmp(variant->typeName(), "QDBusSignature") == 0) {
-			QString s = qVariantValue<QDBusSignature>(*variant).signature();
-			return rb_str_new2(s.toLatin1());
-		}
+        if (qstrcmp(variant->typeName(), "QDBusObjectPath") == 0) {
+            QString s = qVariantValue<QDBusObjectPath>(*variant).path();
+            ST(0) = sv_2mortal( newSVpv( s.toLatin1(), s.size() ) );
+            XSRETURN(1);
+        } else if (qstrcmp(variant->typeName(), "QDBusSignature") == 0) {
+            QString s = qVariantValue<QDBusSignature>(*variant).signature();
+            ST(0) = sv_2mortal( newSVpv( s.toLatin1(), s.size() ) );
+            XSRETURN(1);
+        }
 #endif
 
-		value_ptr = QMetaType::construct(QMetaType::type(variant->typeName()), (void *) variant->constData());
-		Smoke::ModuleIndex mi = o->smoke->findClass(variant->typeName());
-		vo = alloc_smokeruby_object(true, mi.smoke, mi.index, value_ptr);
-		return set_obj_info(qtruby_modules[mi.smoke].binding->className(mi.index), vo);
-        */
-	}
+        void *value_ptr = QMetaType::construct(QMetaType::type(variant->typeName()), (void *) variant->constData());
+        Smoke::ModuleIndex mi = o->smoke->findClass("QVariant");
+        Smoke::Index typeId = mi.smoke->idType(mi.smoke->classes[mi.index].className);
+        retval = allocSmokePerlSV(
+            value_ptr,
+            SmokeType( mi.smoke, typeId )
+        );
+        sv_bless(retval, gv_stashpv( binding.className(mi.index), TRUE ) );
+        ST(0) = sv_2mortal(retval);
+        XSRETURN(1);
+    }
 
 	const char * classname = SvPV_nolen(ST(0));
     Smoke::ModuleIndex * sv_class_id = new Smoke::ModuleIndex;

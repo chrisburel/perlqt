@@ -12,18 +12,20 @@ use Qt::slots
     start => ['const QString&', 'const QString&', 'const QString&'];
 use PingCommon qw( SERVICE_NAME );
 
-sub iface() {
-    return this->{iface};
-}
-
 sub NEW {
     shift->SUPER::NEW( @_ );
 }
 
+sub iface() {
+    return this->{iface};
+}
+
+my $foo = 0;
+
 sub start {
     my ($name, $oldValue, $newValue) = @_;
 
-    if ($name eq SERVICE_NAME || !$newValue) {
+    if ($name ne SERVICE_NAME || !$newValue) {
         return;
     }
 
@@ -39,7 +41,6 @@ sub start {
     this->connect(this->iface, SIGNAL 'aboutToQuit()', Qt::Application::instance(), SLOT 'quit()');
 
     while (1) {
-        $DB::single=1;
         printf 'Ask your question: ';
 
         chop( my $line = <STDIN> );
@@ -53,9 +54,9 @@ sub start {
             }
         } elsif ($line =~ m/^value=/) {
             my $property = $line =~ s/^value=//;
-            this->iface->setValue( Qt::Variant($property));
+            this->iface->setValue( Qt::Variant($property) );
         } else {
-            my $reply = Qt::DBusReply( this->iface->call('query', $line) );
+            my $reply = Qt::DBusReply( this->iface->call( 'query', Qt::Variant($line)) );
             if ($reply->isValid()) {
                 printf "Reply was: %s\n", $reply->value()->value();
             }
