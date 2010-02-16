@@ -64,7 +64,8 @@ sub setModelData {
         return;
     }
 
-    $model->setData($index, Qt::Variant($comboBox->currentText()));
+    $model->setData($index,
+        Qt::Variant(Qt::String($comboBox->currentText())));
 }
 # [3]
 

@@ -1137,7 +1137,7 @@ XS(XS_AUTOLOAD) {
             *(ptr++) = ';';
             const char *type = get_SVt(ST(i));
             int typelen = strlen(type);
-            strncpy(ptr, type, typelen );
+            strncpy( ptr, type, typelen );
             ptr += typelen;
         }
         *ptr = 0; // Don't forget to null-terminate the string
@@ -1160,6 +1160,18 @@ XS(XS_AUTOLOAD) {
             PUTBACK;
             int count = call_pv( "Qt::_internal::do_autoload", G_ARRAY|G_EVAL );
             SPAGAIN;
+            // See if do_autoload die'd
+            if (SvTRUE(ERRSV)) {
+                if( withObject && !isSuper) {
+                    SvREFCNT_dec(sv_this);
+                    sv_this = old_this;
+                }
+                else if(isSuper)
+                    delete[] package;
+                delete[] savestack;
+                croak("%s", SvPV_nolen(ERRSV));
+            }
+
             if (count != 2) {
                 // Error, clean up our crap
                 if( withObject && !isSuper) {
@@ -1170,18 +1182,8 @@ XS(XS_AUTOLOAD) {
                     delete[] package;
 
                 // Error out
-                croak( "Corrupt do_autoload return value: Got %d value(s), expected 1\n", count );
-            }
-
-            if (SvTRUE(ERRSV)) {
-                if( withObject && !isSuper) {
-                    SvREFCNT_dec(sv_this);
-                    sv_this = old_this;
-                }
-                else if(isSuper)
-                    delete[] package;
-                delete[] savestack;
-                croak("%s", SvPV_nolen(ERRSV));
+                fprintf( stderr, "How'd I get here?\n" );
+                croak( "Corrupt do_autoload return value: Got %d value(s), expected 2\n", count );
             }
 
             int cacheLookup = POPi;

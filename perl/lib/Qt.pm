@@ -631,7 +631,6 @@ sub argmatch {
         elsif ( $argType eq 'Qt::String' ) {
             # This type exists only to resolve ambiguous method calls, so we can return here.
             if( $typeName =~m/^(?:const )?QString[\*&]?/ ) {
-                $args->[$argNum] = ${$args->[$argNum]};
                 return $methodId;
             }
         }
@@ -768,9 +767,11 @@ sub do_autoload {
         while ( (caller($stackDepth))[1] =~ m/Qt\.pm$/ ) {
             ++$stackDepth;
         }
-        print STDERR "--- No method found in lookup for $classname\::$methodname,".
+        my $errStr = '--- No method found in lookup for ' .
+            "$classname\::$methodname," .
             ' called at ' . (caller($stackDepth))[1] .
-            ' line ' . (caller($stackDepth))[2] . "\n" and die;
+            ' line ' . (caller($stackDepth))[2] . "\n";
+        die $errStr;
     }
 
     return $methodIds[0], $cacheLookup;

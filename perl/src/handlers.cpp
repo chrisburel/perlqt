@@ -200,6 +200,9 @@ QString* qstringFromPerlString( SV* perlstring ) {
     // call stack to find the correct caller.
     // Forget that crap for now.
     // What's blk_oldcop?
+    if( SvROK( perlstring ) )
+        perlstring = SvRV( perlstring );
+
     COP *cop = cxstack[cxstack_ix].blk_oldcop;
     if ( SvUTF8( perlstring ) )
         return new QString(QString::fromUtf8(SvPV_nolen(perlstring)));

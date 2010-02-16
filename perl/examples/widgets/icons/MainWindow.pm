@@ -366,7 +366,7 @@ sub changeIcon {
 
 # [8]
             my $fileName = $item0->data(Qt::UserRole())->toString();
-            my $image = Qt::Image($fileName);
+            my $image = Qt::Image(Qt::String($fileName));
             if ($image) {
                 $icon->addPixmap(Qt::Pixmap::fromImage($image), $mode, $state);
             }
@@ -397,7 +397,7 @@ sub addImages {
             my $imageName = Qt::FileInfo($fileName)->baseName();
 # [13] //! [14]
             my $item0 = Qt::TableWidgetItem($imageName);
-            $item0->setData(Qt::UserRole(), Qt::Variant($fileName));
+            $item0->setData(Qt::UserRole(), Qt::Variant(Qt::String($fileName)));
             $item0->setFlags($item0->flags()&~${Qt::ItemIsEditable()});
 # [14]
 
@@ -560,7 +560,7 @@ sub createActions {
         utf8::encode( $styleName );
         my $action = Qt::Action(this->styleActionGroup);
         $action->setText( sprintf this->tr('%s Style'), $styleName );
-        $action->setData(Qt::Variant($styleName));
+        $action->setData(Qt::Variant(Qt::String($styleName)));
         $action->setCheckable(1);
         this->connect($action, SIGNAL 'triggered(bool)', this, SLOT 'changeStyle(bool)');
     }
