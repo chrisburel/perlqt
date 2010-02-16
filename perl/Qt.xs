@@ -1512,6 +1512,16 @@ qApp()
         RETVAL
 
 BOOT:
+    /* same as -DUSE_SAFE_PUTENV in compile. prevents a "free from wrong
+     * pool during global destruction" error with debugperl; and a segfault
+     * otherwise (due to invalid free)
+     *
+     * see also:
+     * http://www.nntp.perl.org/group/perl.perl5.porters/2008/06/msg137726.html
+     * http://www.qtsoftware.com/developer/task-tracker/index_html?id=217782&method=entry
+     */
+    PL_use_safe_putenv = 1;
+
     init_qt_Smoke();
     binding = PerlQt::Binding(qt_Smoke);
 
