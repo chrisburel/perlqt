@@ -3,6 +3,11 @@ package Qt::base;
 use strict;
 use warnings;
 
+# meta-hackery tool 
+my $X = sub :lvalue {
+  my $n = shift; no strict 'refs'; no warnings 'once'; *{"$n"}
+};
+
 sub new {
     # Any direct calls to the 'NEW' function will bypass this code.  It's
     # called that way in subclass constructors, thus setting the 'this' value
@@ -683,10 +688,7 @@ sub error() {
 }
 
 # Create the Qt::DBusReply() constructor
-no strict;
-*{'Qt::DBusReply'} = sub {
-    Qt::DBusReply->new(@_);
-};
+$X->('Qt::DBusReply') = sub { Qt::DBusReply->new(@_) };
 
 1;
 
@@ -1072,9 +1074,9 @@ sub getSmokeMethodId {
 }
 
 sub getMetaObject {
-    no strict 'refs';
     my $class = shift;
-    my $meta = \%{ $class . '::META' };
+
+    my $meta = \%{$X->($class . '::META')};
 
     # If no signals/slots/properties have been added since the last time this
     # was asked for, return the saved one.
@@ -1094,7 +1096,7 @@ sub getMetaObject {
     my $parentClassId;
 
     # This seems wrong, it won't work with multiple inheritance
-    my $parentClass = (@{$class."::ISA"})[0]; 
+    my $parentClass = (@{$X->($class."::ISA")})[0]; 
     if( !$package2classId{$parentClass} ) {
         # The parent class is a custom Perl class whose metaObject was
         # constructed at runtime, so we can get it's metaObject from here.
@@ -1133,9 +1135,6 @@ sub findAnyPossibleMethod {
     return map { findMethod( $classname, $_ ) } @mungedMethods;
 }
 
-my $X = sub :lvalue {
-  my $n = shift; no strict 'refs'; no warnings 'once'; *{"$n"}
-};
 sub init_class {
     my ($cxxClassName) = @_;
 
@@ -1266,9 +1265,9 @@ sub init {
 }
 
 sub makeMetaData {
-    no strict 'refs';
     my ( $classname ) = @_;
-    my $meta = \%{ $classname . '::META' };
+
+    my $meta = \%{$X->($classname . '::META')};
     my $classinfos = $meta->{classinfos};
     my $dbus = $meta->{dbus};
     my $signals = $meta->{signals};
@@ -1495,10 +1494,9 @@ sub Qt::Application::ON_DESTROY {
 
 # Unfortunately this has to be here, since you can't say
 # 'package " Qt::Variant"'.  The leading space causes problems.
-no strict;
-*{' Qt::Variant::value'} = sub {
-    use strict;
+$X->(' Qt::Variant::value') = sub {
     my $this = shift;
+
     my $type = $this->type();
     if( $type == Qt::Variant::Invalid() ) {
         return;
@@ -1704,3 +1702,5 @@ it under the same terms as Perl itself, either Perl version 5.8.8 or,
 at your option, any later version of Perl 5 you may have available.
 
 =cut
+
+# vim:ts=4:sw=4:et:sta
