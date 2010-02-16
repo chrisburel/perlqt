@@ -19,9 +19,8 @@ sub NEW {
     $pathValueLabel->setFrameStyle(Qt::Frame::Panel() | Qt::Frame::Sunken());
 
     my $sizeLabel = Qt::Label(this->tr('Size:'));
-    # TODO: add qint64 marshaller
-    my $size = 0;#$fileInfo->size()/1024;
-    my $sizeValueLabel = Qt::Label(this->tr("$size K"));
+    my $size = $fileInfo->size()/1024;
+    my $sizeValueLabel = Qt::Label(this->tr(sprintf '%d K', $size));
     $sizeValueLabel->setFrameStyle(Qt::Frame::Panel() | Qt::Frame::Sunken());
 
     my $lastReadLabel = Qt::Label(this->tr('Last Read:'));
