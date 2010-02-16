@@ -36,6 +36,9 @@ tutorial/t10/t10.pl
 tutorial/t11/CannonField.pm
 tutorial/t11/LCDRange.pm
 tutorial/t11/t11.pl
+tutorial/t12/CannonField.pm
+tutorial/t12/LCDRange.pm
+tutorial/t12/t12.pl
 tutorial/t1/t1.pl
 tutorial/t2/t2.pl
 tutorial/t3/t3.pl

@@ -3,6 +3,102 @@
 
 extern SV* sv_this;
 
+void
+smokeStackFromQtStack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args)
+{
+	for (int i = start, j = 0; i < end; i++, j++) {
+		void *o = _o[j];
+		switch(args[i]->argType) {
+		case xmoc_bool:
+			stack[j].s_bool = *(bool*)o;
+			break;
+		case xmoc_int:
+			stack[j].s_int = *(int*)o;
+			break;
+		case xmoc_uint:
+			stack[j].s_uint = *(uint*)o;
+			break;
+		case xmoc_long:
+			stack[j].s_long = *(long*)o;
+			break;
+		case xmoc_ulong:
+			stack[j].s_ulong = *(ulong*)o;
+			break;
+		case xmoc_double:
+			stack[j].s_double = *(double*)o;
+			break;
+		case xmoc_charstar:
+			stack[j].s_voidp = o;
+			break;
+		case xmoc_QString:
+			stack[j].s_voidp = o;
+			break;
+		default:	// case xmoc_ptr:
+		{
+			const SmokeType &t = args[i]->st;
+			void *p = o;
+			switch(t.elem()) {
+			case Smoke::t_bool:
+			stack[j].s_bool = **(bool**)o;
+			break;
+			case Smoke::t_char:
+			stack[j].s_char = **(char**)o;
+			break;
+			case Smoke::t_uchar:
+			stack[j].s_uchar = **(unsigned char**)o;
+			break;
+			case Smoke::t_short:
+			stack[j].s_short = **(short**)p;
+			break;
+			case Smoke::t_ushort:
+			stack[j].s_ushort = **(unsigned short**)p;
+			break;
+			case Smoke::t_int:
+			stack[j].s_int = **(int**)p;
+			break;
+			case Smoke::t_uint:
+			stack[j].s_uint = **(unsigned int**)p;
+			break;
+			case Smoke::t_long:
+			stack[j].s_long = **(long**)p;
+			break;
+			case Smoke::t_ulong:
+			stack[j].s_ulong = **(unsigned long**)p;
+			break;
+			case Smoke::t_float:
+			stack[j].s_float = **(float**)p;
+			break;
+			case Smoke::t_double:
+			stack[j].s_double = **(double**)p;
+			break;
+			case Smoke::t_enum:
+			{
+				//Smoke::EnumFn fn = SmokeClass(t).enumFn();
+                Smoke::Class* _c = t.smoke()->classes + t.classId();
+                Smoke::EnumFn fn = _c->enumFn;
+				if (!fn) {
+					croak("Unknown enumeration %s\n", t.name());
+					stack[j].s_enum = **(int**)p;
+					break;
+				}
+				Smoke::Index id = t.typeId();
+				(*fn)(Smoke::EnumToLong, id, p, stack[j].s_enum);
+			}
+			break;
+			case Smoke::t_class:
+			case Smoke::t_voidp:
+				if (strchr(t.name(), '*') != 0) {
+					stack[j].s_voidp = *(void **)p;
+				} else {
+					stack[j].s_voidp = p;
+				}
+			break;
+			}
+		}
+		}
+	}
+}
+
 namespace PerlQt {
 
     MethodReturnValueBase::MethodReturnValueBase(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack) :
@@ -217,13 +313,25 @@ namespace PerlQt {
 
     //------------------------------------------------
 
-    InvokeSlot::InvokeSlot(Smoke *smoke, char* methodname, int items, Smoke::Stack stack) :
-      _smoke(smoke), _stack(stack), _methodname(methodname), _cur(-1), _items(items)  {
+    // The steps are:
+    // Copy Qt stack to Smoke Stack
+    // use next() to marshall the smoke stack
+    // callMethod()
+    // The rest is modeled after the VirtualMethodCall
+    InvokeSlot::InvokeSlot(SV* call_this, char* methodname, QList<MocArgument*> args, void** a) :
+      _cur(-1), _called(false), _methodname(methodname), _this(call_this), _a(a) {
+        _items = args.count();
+        _args = args;
+        _stack = new Smoke::StackItem[_items - 1];
         dSP;
         ENTER;
         SAVETMPS;
         PUSHMARK(SP);
         EXTEND(SP, _items);
+        _sp = SP + 1;
+        for(int i = 0; i < _items-1; i++)
+            _sp[i] = sv_newmortal();
+        copyArguments();
     }
 
     InvokeSlot::~InvokeSlot() {
@@ -231,7 +339,7 @@ namespace PerlQt {
     }
 
     Smoke *InvokeSlot::smoke() {
-        return _smoke;
+        return type().smoke();
     }
 
     Marshall::Action InvokeSlot::action() {
@@ -250,14 +358,14 @@ namespace PerlQt {
         return _stack[_cur];
     }
 
-    int InvokeSlot::items() {
-        return _items;
+    SV* InvokeSlot::var() {
+        return _sp[_cur];
     }
 
     void InvokeSlot::callMethod() {
         //Call the perl sub
         //Copy the way the VirtualMethodCall does it
-        HV *stash = SvSTASH(SvRV(sv_this));
+        HV *stash = SvSTASH(SvRV(_this));
         if(*HvNAME(stash) == ' ' ) // if withObject, look for a diff stash
             stash = gv_stashpv(HvNAME(stash) + 1, TRUE);
 
@@ -268,26 +376,34 @@ namespace PerlQt {
         }
 
         dSP;
-
-        if( items() == 1 ) {
-            PUSHs(sv_2mortal( newSViv( _stack[0].s_int ) ));
-        }
+        SP = _sp + _items - 1;
         PUTBACK;
         call_sv((SV*)GvCV(gv), G_VOID);
     }
 
     void InvokeSlot::next() {
+        int oldcur = _cur;
+        _cur++;
+        while( _cur < _items - 1 ) {
+            Marshall::HandlerFn fn = getMarshallFn(type());
+            (*fn)(this);
+            _cur++;
+        }
+
         callMethod();
+        _cur = oldcur;
     }
 
     void InvokeSlot::unsupported() {
-        croak("Cannot handle \n");//'%s' as argument of slot call for %s::%s",
-            //type().name(),
-            //_smoke->className(method().classId),
-            //_smoke->methodNames[method().name]);
+        croak("Cannot handle '%s' as argument of slot call",
+              type().name() );
     }
 
     bool InvokeSlot::cleanup() {
         return false;
+    }
+
+    void InvokeSlot::copyArguments() {
+        smokeStackFromQtStack( _stack, _a + 1, 1, _items, _args );
     }
 }

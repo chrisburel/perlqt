@@ -16,6 +16,8 @@
 #include "Qt.h"
 #include "handlers.h"
 
+extern void smokeStackFromQtStack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args);
+
 namespace PerlQt {
 
 class Q_DECL_EXPORT MethodReturnValueBase : public Marshall {
@@ -134,29 +136,30 @@ private:
 
 class Q_DECL_EXPORT InvokeSlot : public Marshall {
 public:
-    InvokeSlot(Smoke *smoke, char* methodname, int count, Smoke::Stack stack);
+    InvokeSlot(SV* call_this, char* methodname, QList<MocArgument*> args, void** a);
     ~InvokeSlot();
-    Smoke *smoke();
     Marshall::Action action();
     const MocArgument& arg();
     SmokeType type();
     Smoke::StackItem &item();
-    int items();
+    SV* var();
+    Smoke *smoke();
     void callMethod();
-    void next();
     void unsupported();
-    SV* var(){}
+    void next();
     bool cleanup();
+    void copyArguments();
 
 protected:
     QList<MocArgument*> _args;
     int _cur;
     bool _called;
-    Smoke *_smoke;
     Smoke::Stack _stack;
     int _items;
     SV** _sp;
     char* _methodname;
+    SV* _this;
+    void** _a; // The Qt metacall stack
 };
 
 } // End namespace PerlQt

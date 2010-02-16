@@ -24,6 +24,7 @@
 #endif
 #include "QtCore/QAbstractItemModel"
 #include "QtCore/QHash"
+#include "QtCore/QList"
 #include "QtCore/QMetaObject"
 #include "QtCore/QMetaMethod"
 #include "QtCore/QModelIndex"
@@ -232,6 +233,109 @@ XS(XS_Qt__myQTableView_setRootIndex){
     XSRETURN(1);
 }
 
+QList<MocArgument*> get_moc_arguments(Smoke* smoke, const char * typeName, QList<QByteArray> methodTypes) {
+    static QRegExp * rx = 0;
+	if (rx == 0) {
+		rx = new QRegExp("^(bool|int|uint|long|ulong|double|char\\*|QString)&?$");
+	}
+	methodTypes.prepend(QByteArray(typeName));
+	QList<MocArgument*> result;
+
+	foreach (QByteArray name, methodTypes) {
+		MocArgument *arg = new MocArgument;
+		Smoke::Index typeId = 0;
+
+		if (name.isEmpty()) {
+			arg->argType = xmoc_void;
+			result.append(arg);
+		} else {
+			name.replace("const ", "");
+			QString staticType = (rx->indexIn(name) != -1 ? rx->cap(1) : "ptr");
+			if (staticType == "ptr") {
+				arg->argType = xmoc_ptr;
+				QByteArray targetType = name;
+				typeId = smoke->idType(targetType.constData());
+				if (typeId == 0 && !name.contains('*')) {
+					if (!name.contains("&")) {
+						targetType += "&";
+					}
+					typeId = smoke->idType(targetType.constData());
+				}
+
+				// This shouldn't be necessary because the type of the slot arg should always be in the 
+				// smoke module of the slot being invoked. However, that isn't true for a dataUpdated()
+				// slot in a PlasmaScripting::Applet
+				if (typeId == 0) {
+					QHash<Smoke*, PerlQtModule>::const_iterator it;
+					for (it = perlqt_modules.constBegin(); it != perlqt_modules.constEnd(); ++it) {
+						smoke = it.key();
+						targetType = name;
+						typeId = smoke->idType(targetType.constData());
+						if (typeId != 0) {
+							break;
+						}
+	
+						if (typeId == 0 && !name.contains('*')) {
+							if (!name.contains("&")) {
+								targetType += "&";
+							}
+
+							typeId = smoke->idType(targetType.constData());
+	
+							if (typeId != 0) {
+								break;
+							}
+						}
+					}
+				}			
+			} else if (staticType == "bool") {
+				arg->argType = xmoc_bool;
+				smoke = qt_Smoke;
+				typeId = smoke->idType(name.constData());
+			} else if (staticType == "int") {
+				arg->argType = xmoc_int;
+				smoke = qt_Smoke;
+				typeId = smoke->idType(name.constData());
+			} else if (staticType == "uint") {
+				arg->argType = xmoc_uint;
+				smoke = qt_Smoke;
+				typeId = smoke->idType(name.constData());
+			} else if (staticType == "long") {
+				arg->argType = xmoc_long;
+				smoke = qt_Smoke;
+				typeId = smoke->idType(name.constData());
+			} else if (staticType == "ulong") {
+				arg->argType = xmoc_ulong;
+				smoke = qt_Smoke;
+				typeId = smoke->idType(name.constData());
+			} else if (staticType == "double") {
+				arg->argType = xmoc_double;
+				smoke = qt_Smoke;
+				typeId = smoke->idType(name.constData());
+			} else if (staticType == "char*") {
+				arg->argType = xmoc_charstar;
+				smoke = qt_Smoke;
+				typeId = smoke->idType(name.constData());
+			} else if (staticType == "QString") {
+				arg->argType = xmoc_QString;
+				name += "*";
+				smoke = qt_Smoke;
+				typeId = smoke->idType(name.constData());
+			}
+
+			if (typeId == 0) {
+				croak("Cannot handle '%s' as slot argument\n", name.constData());
+				return result;
+			}
+
+			arg->st.set(smoke, typeId);
+			result.append(arg);
+		}
+	}
+
+	return result;
+}
+
 void callmyfreakinslot( char* methodname, int setValue ){
     //fprintf( stderr, "In slot for %s\n", methodname );
     //Call the perl sub
@@ -311,6 +415,10 @@ XS(XS_qt_metacall){
             XSRETURN(1);
         }
         else if (method.methodType() == QMetaMethod::Slot) {
+
+            // Get the smoke to type id relationship args
+            QList<MocArgument*> mocArgs = get_moc_arguments(o->smoke, method.typeName(), method.parameterTypes());
+
             // Find the name of the method being called
             QString name(method.signature());
             static QRegExp* rx = 0;
@@ -318,17 +426,8 @@ XS(XS_qt_metacall){
                 rx = new QRegExp("\\(.*");
             }
             name.replace(*rx, "");
-            SV* methodname = newSVpv(name.toAscii(), name.size());
 
-            // Find out how many arguments this method takes
-            int items = method.parameterTypes().size();
-            Smoke::StackItem *args = new Smoke::StackItem[items];
-
-            for(int i=0; i<items; i++){
-                args[i].s_int = *((int*)_a[i+1]);
-            }
-
-            PerlQt::InvokeSlot slot( qt_Smoke, SvPV_nolen(methodname), items, args );
+            PerlQt::InvokeSlot slot( sv_this, name.toLatin1().data(), mocArgs, _a );
             slot.next();
         }
     }
