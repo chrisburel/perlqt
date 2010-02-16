@@ -1697,7 +1697,7 @@ sub Uchar {
 
 1;
 
-=begin
+=pod
 
 =head1 NAME
 
@@ -1721,6 +1721,8 @@ This module provides a Perl interface to the Qt version 4 library.
 
 Each of the exported subroutines is prototyped.
 
+=over
+
 =item qApp
 
 Returns a reference to the Qt4::CoreApplication/Qt4::Application object.  This
@@ -1738,6 +1740,8 @@ following subroutine call is activating a signal.
 =item CAST REF,CLASSNAME
 
 Serves a similar function to bless(), but takes care of Qt4's specific quirks.
+
+=back
 
 =back
 
