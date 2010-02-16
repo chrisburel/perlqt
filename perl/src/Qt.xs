@@ -366,6 +366,8 @@ BOOT:
 
     newXS("Qt::qVariantFromValue", XS_qvariant_from_value, __FILE__);
     newXS("Qt::qVariantValue", XS_qvariant_value, __FILE__);
+    newXS(" Qt::Object::findChildren", XS_find_qobject_children, __FILE__);
+    newXS("Qt::Object::findChildren", XS_find_qobject_children, __FILE__);
     newXS(" Qt::AbstractItemModel::rowCount", XS_qabstract_item_model_rowcount, __FILE__);
     newXS(" Qt::AbstractItemModel::columnCount", XS_qabstract_item_model_columncount, __FILE__);
     newXS(" Qt::AbstractItemModel::data", XS_qabstract_item_model_data, __FILE__);

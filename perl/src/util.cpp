@@ -343,7 +343,9 @@ SV* getPointerObject(void* ptr) {
     }
     // Corrupt entry, not sure how this would happen
     if(!SvOK(*svp)){
-        hv_delete(hv, key, len, G_DISCARD);
+        if( !PL_dirty ) {
+            hv_delete(hv, key, len, G_DISCARD);
+        }
         SvREFCNT_dec(keysv);
         return 0;
     }
@@ -504,6 +506,86 @@ void unmapPointer( smokeperl_object* o, Smoke::Index classId, void* lastptr) {
     for(Smoke::Index *i = o->smoke->inheritanceList + o->smoke->classes[classId].parents; *i; i++) {
         unmapPointer(o, *i, lastptr);
     }
+}
+
+/* Adapted from the internal function qt_qFindChildren() in qobject.cpp */
+static void 
+pl_qFindChildren_helper(SV* parent, const QString &name, SV* re,
+                         const QMetaObject &mo, AV* list)
+{
+    char* classname = HvNAME((HV*)SvSTASH(SvRV(parent)));
+    char* methodname = new char[ strlen(classname) + 11 ];
+    strcpy( methodname, classname );
+    strcat( methodname, "::children" );
+
+    dSP;
+    ENTER;
+    SAVETMPS;
+    PUSHMARK(SP);
+    XPUSHs(parent);
+    PUTBACK;
+    int count = call_pv( methodname, G_SCALAR );
+    delete[] methodname;
+    SPAGAIN;
+	SV* childrenref = POPs;
+	AV* children = (AV*)SvRV(childrenref);
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+
+    SV* rv = &PL_sv_undef;
+    for (int i = 0; i < av_len(children)+1; ++i) {
+        rv = *(av_fetch(children, i, 0));
+		smokeperl_object *o = sv_obj_info(rv);
+		QObject * obj = (QObject *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QObject").index);
+		
+		// The original code had 'if (mo.cast(obj))' as a test, but it doesn't work here
+        if (obj->qt_metacast(mo.className()) != 0) {
+            if (re != &PL_sv_undef) {
+				//VALUE re_test = rb_funcall(re, rb_intern("=~"), 1, rb_funcall(rv, rb_intern("objectName"), 0));
+				//if (re_test != Qnil && re_test != Qfalse) {
+					//rb_ary_push(list, rv);
+				//}
+            } else {
+                if (name.isNull() || obj->objectName() == name) {
+					av_push(list, rv);
+				}
+            }
+        }
+        pl_qFindChildren_helper(rv, name, re, mo, list);
+    }
+	return;
+}
+
+/* Should mimic Qt4's QObject::findChildren method with this syntax:
+     obj.findChildren(Qt::Widget, "Optional Widget Name")
+*/
+XS(XS_find_qobject_children) {
+    dXSARGS;
+	if (items != 0) {
+        croak("Invalid argument list supplied to Qt::Object::findChildren, %d", items);
+        XSRETURN_UNDEF;
+    }
+
+    SV* self = sv_this;
+	QString name;
+	SV* re = &PL_sv_undef;
+	if (items == 1) {
+		// If the second arg isn't a String, assume it's a regular expression
+		if (SvTYPE(ST(0)) == SVt_PV) {
+			name = QString::fromLatin1(SvPV_nolen(ST(0)));
+		} else {
+			re = ST(0);
+		}
+	}
+
+    QObject* sv_this_ptr = (QObject*)sv_obj_info(self)->ptr;
+	const QMetaObject* metaobject = sv_this_ptr->metaObject();
+	AV* list = newAV();
+	pl_qFindChildren_helper(self, name, re, *metaobject, list);
+	SV* result = newRV_noinc((SV*)list);
+    ST(0) = result;
+	XSRETURN(1);
 }
 
 XS(XS_qabstract_item_model_rowcount) {

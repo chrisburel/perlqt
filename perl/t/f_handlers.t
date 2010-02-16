@@ -1,4 +1,4 @@
-use Test::More tests => 17;
+use Test::More tests => 18;
 
 use strict;
 use warnings;
@@ -157,3 +157,11 @@ my $app = Qt::Application( \@ARGV );
                'marshall_ValueListItem<> ToSV' );
 }
 
+{
+    # Test Qt::Object::findChildren
+    my $widget = Qt::Widget();
+    my $widget2 = Qt::Widget($widget);
+    my $widget3 = Qt::Widget($widget2);
+    my $children = $widget->findChildren();
+    is_deeply( $children, [$widget2, $widget3], 'Qt::Object::findChildren' );
+}
