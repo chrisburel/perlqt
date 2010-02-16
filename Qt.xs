@@ -289,10 +289,6 @@ XS(XS_qt_metacall){
 		//	o->smoke->classes[o->classId].className );
 	}
 
-
-    // We need more info about this call.  How many arguments does it take,
-    // what is the name of it.
-
     // Get the current metaobject with a virtual call
     const QMetaObject* metaobject = sv_this_ptr->metaObject();
 
@@ -307,23 +303,34 @@ XS(XS_qt_metacall){
     if (_c == QMetaObject::InvokeMetaMethod) {
         QMetaMethod method = metaobject->method(_id);
 
-        // Find the name of the method being called
-        QString name(method.signature());
-        static QRegExp* rx = 0;
-        if (rx == 0) {
-            rx = new QRegExp("\\(.*");
-        }
-        name.replace(*rx, "");
-
-        SV* methodname = newSVpv(name.toAscii(), name.size());
+        // Signals are easy, just activate the meta object
         if (method.methodType() == QMetaMethod::Signal) {
             //fprintf( stderr, "In signal for %s::%s\n", metaobject->className(), SvPV_nolen(methodname) );
             metaobject->activate(sv_this_ptr, metaobject, 0, _a);
             ST(0) = sv_2mortal(newSViv(_id - count));
             XSRETURN(1);
         }
+        else if (method.methodType() == QMetaMethod::Slot) {
+            // Find the name of the method being called
+            QString name(method.signature());
+            static QRegExp* rx = 0;
+            if (rx == 0) {
+                rx = new QRegExp("\\(.*");
+            }
+            name.replace(*rx, "");
+            SV* methodname = newSVpv(name.toAscii(), name.size());
 
-        callmyfreakinslot( SvPV_nolen(methodname), *((int*)_a[1]) );
+            // Find out how many arguments this method takes
+            int items = method.parameterTypes().size();
+            Smoke::StackItem *args = new Smoke::StackItem[items];
+
+            for(int i=0; i<items; i++){
+                args[i].s_int = *((int*)_a[i+1]);
+            }
+
+            PerlQt::InvokeSlot slot( qt_Smoke, SvPV_nolen(methodname), items, args );
+            slot.next();
+        }
     }
 
     ST(0) = sv_2mortal(newSViv(_id - count));
