@@ -16,8 +16,11 @@
 #include "Qt.h"
 #include "handlers.h"
 
+#include "QtCore/QList"
+
 extern void smokeStackFromQtStack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args);
 
+extern void smokeStackToQtStack(Smoke::Stack stack, void ** o, int start, int end, QList<MocArgument*> args);
 namespace PerlQt {
 
 class Q_DECL_EXPORT MethodReturnValueBase : public Marshall {
@@ -151,17 +154,43 @@ public:
     void copyArguments();
 
 protected:
+    char* _methodname;
     QList<MocArgument*> _args;
     int _cur;
     bool _called;
     Smoke::Stack _stack;
     int _items;
     SV** _sp;
-    char* _methodname;
     SV* _this;
     void** _a; // The Qt metacall stack
 };
 
+class Q_DECL_EXPORT EmitSignal : public Marshall {
+public:
+    EmitSignal(QObject *obj, int id, int items, QList<MocArgument*> args, SV** sp, SV* retval);
+    Marshall::Action action();
+    const MocArgument& arg();
+    SmokeType type();
+    Smoke::StackItem &item();
+    SV* var();
+    Smoke *smoke();
+    void callMethod();
+    void unsupported();
+    void next();
+    bool cleanup();
+    void prepareReturnValue(void** o);
+
+protected:
+    QList<MocArgument*> _args;
+    int _cur;
+    bool _called;
+    Smoke::Stack _stack;
+    int _items;
+    SV** _sp;
+    QObject *_obj;
+    int _id;
+    SV* _retval;
+};
 } // End namespace PerlQt
 
 #endif

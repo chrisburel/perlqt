@@ -263,6 +263,31 @@ void unmapPointer(smokeperl_object *o, Smoke::Index classId, void *lastptr) {
 
 }
 
+SV *catArguments(SV** sp, int n) {
+    SV* r=newSVpvf("");
+    for(int i = 0; i < n; i++) {
+        if(i) sv_catpv(r, ", ");
+        if(!SvOK(sp[i])) {
+            sv_catpv(r, "undef");
+        } else if(SvROK(sp[i])) {
+            smokeperl_object *o = sv_obj_info(sp[i]);
+            if(o)
+                sv_catpv(r, o->smoke->className(o->classId));
+            else
+                sv_catsv(r, sp[i]);
+        } else {
+            bool isString = SvPOK(sp[i]);
+            STRLEN len;
+            char *s = SvPV(sp[i], len);
+            if(isString) sv_catpv(r, "'");
+            sv_catpvn(r, s, len > 10 ? 10 : len);
+            if(len > 10) sv_catpv(r, "...");
+            if(isString) sv_catpv(r, "'");
+        }
+    }
+    return r;
+}
+
 XS(XS_Qt__myQAbstractItemModel_flags){
     dXSARGS;
     if( do_debug && ( do_debug | qtdb_autoload ) )
@@ -533,7 +558,7 @@ XS(XS_AUTOLOAD){
         }
     }
 
-    if( do_debug && ( do_debug | qtdb_autoload ) ) {
+    if( do_debug && ( do_debug & qtdb_autoload ) ) {
         fprintf(stderr, "In XS Autoload for %s::%s()", package, methodname);
         if((do_debug & qtdb_verbose) && (withObject || isSuper)) {
             smokeperl_object *o = sv_obj_info(withObject ? ST(0) : sv_this);
@@ -548,7 +573,6 @@ XS(XS_AUTOLOAD){
     }
 
     HV *stash = gv_stashpv(package, TRUE);
-    //fprintf(stderr, "Looking in stash %s\n", HvNAME(stash));
     GV *gv = gv_fetchmethod_autoload(stash, methodname, 0);
 
     if(gv){
@@ -650,6 +674,15 @@ XS(XS_AUTOLOAD){
             }
         }
 
+        if(do_debug && (do_debug & qtdb_calls)) {
+            fprintf(stderr, "Calling method\t\n" );
+            if(do_debug & qtdb_verbose) {
+                fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(SP - items + 1 + withObject, items - withObject))));
+                // See cop.h in the perl src for more info on Control ops
+                fprintf(stderr, "called at line %d in %s\n", (int)CopLINE(PL_curcop), GvNAME(CopFILEGV(PL_curcop))+2 );
+            }
+        }
+
         // We need current_object, methodid, and args to call the method
         PerlQt::MethodCall call( qt_Smoke,
                          methodid,
@@ -678,7 +711,15 @@ XS(XS_signal){
     // called.
     GV* gv = CvGV(cv);
     QLatin1String signalname( GvNAME(gv) );
-    fprintf(stderr, "In signal call %s\t", signalname.latin1());
+    if(do_debug && (do_debug & qtdb_signals)){
+        char* package = HvNAME( GvSTASH(gv) );
+        fprintf( stderr, "In signal call %s::%s\n", package, GvNAME(gv) );
+        if(do_debug & qtdb_verbose) {
+            fprintf(stderr, "with arguments (%s) ", SvPV_nolen(sv_2mortal(catArguments(SP - items + 1, items ))));
+            // See cop.h in the perl src for more info on Control ops
+            fprintf(stderr, "called at line %d in %s\n", (int)CopLINE(PL_curcop), GvNAME(CopFILEGV(PL_curcop))+2 );
+        }
+    }
 
     // Get the current metaobject with a virtual call
     const QMetaObject* metaobject = qobj->metaObject();
@@ -705,10 +746,13 @@ XS(XS_signal){
 	if (index == -1) {
 		XSRETURN_UNDEF;
 	}
-    fprintf(stderr, " id: %d\n", index);
-    
-    // Activate the metaobject with the found index
-    metaobject->activate(qobj, index, index, 0);
+    QMetaMethod method = metaobject->method(index);
+    QList<MocArgument*> args = get_moc_arguments(o->smoke, method.typeName(), method.parameterTypes());
+
+    SV* retval = &PL_sv_undef;
+
+    PerlQt::EmitSignal signal(qobj, index, items, args, SP, retval);
+    signal.next();
 }
 
 XS(XS_super) {

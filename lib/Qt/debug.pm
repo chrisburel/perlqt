@@ -8,12 +8,14 @@ our %channel = (
     'gc' => 0x08,
     'virtual' => 0x10,
     'verbose' => 0x20,
+    'signals' => 0x40,
+    'slots' => 0x80,
     'all' => 0xffff
 );
 
 sub import {
     shift;
-    my $db = (@_)? 0x0000 : (0x01|0x20);
+    my $db = (@_)? 0x0000 : (0x01|0x80);
     my $usage = 0;
     for my $ch(@_) {
         if( exists $channel{$ch}) {

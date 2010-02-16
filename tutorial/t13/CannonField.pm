@@ -91,10 +91,11 @@ sub newTarget {
 
 sub setGameOver {
     return if (this->{gameEnded});
-    if (this->{isShooting}()) {
+    if (this->isShooting()) {
         this->{autoShootTimer}->stop();
     }
     this->{gameEnded} = 1;
+    emit canShoot(0);
     this->update();
 }
 
@@ -115,14 +116,13 @@ sub moveShot {
 
     if ($shotR->intersects(targetRect())) {
         this->{autoShootTimer}->stop();
-        print "Hit cannonfield\n";
-        emit hit();
         emit canShoot( 1 );
+        emit hit();
     }
     elsif ($shotR->x() > this->width() || $shotR->y() > this->height()) {
         this->{autoShootTimer}->stop();
-        emit missed();
         emit canShoot( 1 );
+        emit missed();
     }
     else {
         $region = $region->unite($shotR);
@@ -138,7 +138,7 @@ sub paintEvent {
     if (this->{gameEnded}) {
         $painter->setPen(Qt::QColor(0, 0, 0));
         $painter->setFont(Qt::QFont("Courier", 48, Qt::QFont::Bold()));
-        $painter->drawText(rect(), Qt::Qt::AlignCenter(), "Game Over");
+        $painter->drawText(this->rect(), Qt::Qt::AlignCenter(), "Game Over");
     }
     if (isShooting()){
         paintShot($painter);

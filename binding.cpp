@@ -51,7 +51,7 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
     // Found no autoload function
     if(!gv) return false;
 
-    if( do_debug && ( do_debug | qtdb_virtual ) ) {
+    if( do_debug && ( do_debug & qtdb_virtual ) ) {
         fprintf(stderr, "In Virtual override for %s\n", methodname);
     }
 

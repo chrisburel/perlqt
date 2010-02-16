@@ -10,7 +10,9 @@ enum QtDebugChannel {
     qtdb_calls = 0x04,
     qtdb_gc = 0x08,
     qtdb_virtual = 0x10,
-    qtdb_verbose = 0x20
+    qtdb_verbose = 0x20,
+    qtdb_signals = 0x40,
+    qtdb_slots = 0x80,
 };
 
 #endif //PERLQT_H

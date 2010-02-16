@@ -2,107 +2,215 @@
 #include "handlers.h"
 
 extern SV* sv_this;
+extern Smoke* qt_Smoke;
+
+#include "QtCore/QList"
+#include "QtCore/QHash"
+#include "QtCore/QVector"
+#include "QtCore/QMap"
+//#include "QtCore/QDBusVariant"
+
+void
+smokeStackToQtStack(Smoke::Stack stack, void ** o, int start, int end, QList<MocArgument*> args)
+{
+    for (int i = start, j = 0; i < end; i++, j++) {
+        Smoke::StackItem *si = stack + j;
+        switch(args[i]->argType) {
+            case xmoc_bool:
+                o[j] = &si->s_bool;
+                break;
+            case xmoc_int:
+                o[j] = &si->s_int;
+                break;
+            case xmoc_uint:
+                o[j] = &si->s_uint;
+                break;
+            case xmoc_long:
+                o[j] = &si->s_long;
+                break;
+            case xmoc_ulong:
+                o[j] = &si->s_ulong;
+                break;
+            case xmoc_double:
+                o[j] = &si->s_double;
+                break;
+            case xmoc_charstar:
+                o[j] = &si->s_voidp;
+                break;
+            case xmoc_QString:
+                o[j] = si->s_voidp;
+                break;
+            default: {
+                const SmokeType &t = args[i]->st;
+                void *p;
+                switch(t.elem()) {
+                    case Smoke::t_bool:
+                        p = &si->s_bool;
+                        break;
+                    case Smoke::t_char:
+                        p = &si->s_char;
+                        break;
+                    case Smoke::t_uchar:
+                        p = &si->s_uchar;
+                        break;
+                    case Smoke::t_short:
+                        p = &si->s_short;
+                        break;
+                    case Smoke::t_ushort:
+                        p = &si->s_ushort;
+                        break;
+                    case Smoke::t_int:
+                        p = &si->s_int;
+                        break;
+                    case Smoke::t_uint:
+                        p = &si->s_uint;
+                        break;
+                    case Smoke::t_long:
+                        p = &si->s_long;
+                        break;
+                    case Smoke::t_ulong:
+                        p = &si->s_ulong;
+                        break;
+                    case Smoke::t_float:
+                        p = &si->s_float;
+                        break;
+                    case Smoke::t_double:
+                        p = &si->s_double;
+                        break;
+                    case Smoke::t_enum: {
+                        // allocate a new enum value
+                        //Smoke::EnumFn fn = SmokeClass(t).enumFn();
+                        Smoke::Class* _c = t.smoke()->classes + t.classId();
+                        Smoke::EnumFn fn = _c->enumFn;
+                        if (!fn) {
+                            croak("Unknown enumeration %s\n", t.name());
+                            p = new int((int)si->s_enum);
+                            break;
+                        }
+                        Smoke::Index id = t.typeId();
+                        (*fn)(Smoke::EnumNew, id, p, si->s_enum);
+                        (*fn)(Smoke::EnumFromLong, id, p, si->s_enum);
+                        // FIXME: MEMORY LEAK
+                        break;
+                    }
+                    case Smoke::t_class:
+                    case Smoke::t_voidp:
+                        if (strchr(t.name(), '*') != 0) {
+                            p = &si->s_voidp;
+                        } else {
+                            p = si->s_voidp;
+                        }
+                        break;
+                    default:
+                        p = 0;
+                        break;
+                }
+                o[j] = p;
+            }
+        }
+    }
+}
 
 void
 smokeStackFromQtStack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args)
 {
-	for (int i = start, j = 0; i < end; i++, j++) {
-		void *o = _o[j];
-		switch(args[i]->argType) {
-		case xmoc_bool:
-			stack[j].s_bool = *(bool*)o;
-			break;
-		case xmoc_int:
-			stack[j].s_int = *(int*)o;
-			break;
-		case xmoc_uint:
-			stack[j].s_uint = *(uint*)o;
-			break;
-		case xmoc_long:
-			stack[j].s_long = *(long*)o;
-			break;
-		case xmoc_ulong:
-			stack[j].s_ulong = *(ulong*)o;
-			break;
-		case xmoc_double:
-			stack[j].s_double = *(double*)o;
-			break;
-		case xmoc_charstar:
-			stack[j].s_voidp = o;
-			break;
-		case xmoc_QString:
-			stack[j].s_voidp = o;
-			break;
-		default:	// case xmoc_ptr:
-		{
-			const SmokeType &t = args[i]->st;
-			void *p = o;
-			switch(t.elem()) {
-			case Smoke::t_bool:
-			stack[j].s_bool = **(bool**)o;
-			break;
-			case Smoke::t_char:
-			stack[j].s_char = **(char**)o;
-			break;
-			case Smoke::t_uchar:
-			stack[j].s_uchar = **(unsigned char**)o;
-			break;
-			case Smoke::t_short:
-			stack[j].s_short = **(short**)p;
-			break;
-			case Smoke::t_ushort:
-			stack[j].s_ushort = **(unsigned short**)p;
-			break;
-			case Smoke::t_int:
-			stack[j].s_int = **(int**)p;
-			break;
-			case Smoke::t_uint:
-			stack[j].s_uint = **(unsigned int**)p;
-			break;
-			case Smoke::t_long:
-			stack[j].s_long = **(long**)p;
-			break;
-			case Smoke::t_ulong:
-			stack[j].s_ulong = **(unsigned long**)p;
-			break;
-			case Smoke::t_float:
-			stack[j].s_float = **(float**)p;
-			break;
-			case Smoke::t_double:
-			stack[j].s_double = **(double**)p;
-			break;
-			case Smoke::t_enum:
-			{
-				//Smoke::EnumFn fn = SmokeClass(t).enumFn();
+    for (int i = start, j = 0; i < end; i++, j++) {
+        void *o = _o[j];
+        switch(args[i]->argType) {
+        case xmoc_bool:
+            stack[j].s_bool = *(bool*)o;
+            break;
+        case xmoc_int:
+            stack[j].s_int = *(int*)o;
+            break;
+        case xmoc_uint:
+            stack[j].s_uint = *(uint*)o;
+            break;
+        case xmoc_long:
+            stack[j].s_long = *(long*)o;
+            break;
+        case xmoc_ulong:
+            stack[j].s_ulong = *(ulong*)o;
+            break;
+        case xmoc_double:
+            stack[j].s_double = *(double*)o;
+            break;
+        case xmoc_charstar:
+            stack[j].s_voidp = o;
+            break;
+        case xmoc_QString:
+            stack[j].s_voidp = o;
+            break;
+        default:    // case xmoc_ptr:
+        {
+            const SmokeType &t = args[i]->st;
+            void *p = o;
+            switch(t.elem()) {
+            case Smoke::t_bool:
+            stack[j].s_bool = **(bool**)o;
+            break;
+            case Smoke::t_char:
+            stack[j].s_char = **(char**)o;
+            break;
+            case Smoke::t_uchar:
+            stack[j].s_uchar = **(unsigned char**)o;
+            break;
+            case Smoke::t_short:
+            stack[j].s_short = **(short**)p;
+            break;
+            case Smoke::t_ushort:
+            stack[j].s_ushort = **(unsigned short**)p;
+            break;
+            case Smoke::t_int:
+            stack[j].s_int = **(int**)p;
+            break;
+            case Smoke::t_uint:
+            stack[j].s_uint = **(unsigned int**)p;
+            break;
+            case Smoke::t_long:
+            stack[j].s_long = **(long**)p;
+            break;
+            case Smoke::t_ulong:
+            stack[j].s_ulong = **(unsigned long**)p;
+            break;
+            case Smoke::t_float:
+            stack[j].s_float = **(float**)p;
+            break;
+            case Smoke::t_double:
+            stack[j].s_double = **(double**)p;
+            break;
+            case Smoke::t_enum:
+            {
+                //Smoke::EnumFn fn = SmokeClass(t).enumFn();
                 Smoke::Class* _c = t.smoke()->classes + t.classId();
                 Smoke::EnumFn fn = _c->enumFn;
-				if (!fn) {
-					croak("Unknown enumeration %s\n", t.name());
-					stack[j].s_enum = **(int**)p;
-					break;
-				}
-				Smoke::Index id = t.typeId();
-				(*fn)(Smoke::EnumToLong, id, p, stack[j].s_enum);
-			}
-			break;
-			case Smoke::t_class:
-			case Smoke::t_voidp:
-				if (strchr(t.name(), '*') != 0) {
-					stack[j].s_voidp = *(void **)p;
-				} else {
-					stack[j].s_voidp = p;
-				}
-			break;
-			}
-		}
-		}
-	}
+                if (!fn) {
+                    croak("Unknown enumeration %s\n", t.name());
+                    stack[j].s_enum = **(int**)p;
+                    break;
+                }
+                Smoke::Index id = t.typeId();
+                (*fn)(Smoke::EnumToLong, id, p, stack[j].s_enum);
+            }
+            break;
+            case Smoke::t_class:
+            case Smoke::t_voidp:
+                if (strchr(t.name(), '*') != 0) {
+                    stack[j].s_voidp = *(void **)p;
+                } else {
+                    stack[j].s_voidp = p;
+                }
+            break;
+            }
+        }
+        }
+    }
 }
 
 namespace PerlQt {
 
     MethodReturnValueBase::MethodReturnValueBase(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack) :
-	_smoke(smoke), _methodIndex(methodIndex), _stack(stack) {
+      _smoke(smoke), _methodIndex(methodIndex), _stack(stack) {
     }
 
     const Smoke::Method &MethodReturnValueBase::method() {
@@ -319,10 +427,13 @@ namespace PerlQt {
     // callMethod()
     // The rest is modeled after the VirtualMethodCall
     InvokeSlot::InvokeSlot(SV* call_this, char* methodname, QList<MocArgument*> args, void** a) :
-      _cur(-1), _called(false), _methodname(methodname), _this(call_this), _a(a) {
-        _items = args.count();
-        _args = args;
+      _args(args), _cur(-1), _called(false), _this(call_this), _a(a) {
+        _items = _args.count();
         _stack = new Smoke::StackItem[_items - 1];
+        // Create this on the heap.  Just saying _methodname = methodname only
+        // leaves enough space for 1 char.
+        _methodname = new char[strlen(methodname)];
+        strcpy(_methodname, methodname);
         dSP;
         ENTER;
         SAVETMPS;
@@ -336,6 +447,7 @@ namespace PerlQt {
 
     InvokeSlot::~InvokeSlot() {
         delete[] _stack;
+        delete[] _methodname;
     }
 
     Smoke *InvokeSlot::smoke() {
@@ -405,5 +517,112 @@ namespace PerlQt {
 
     void InvokeSlot::copyArguments() {
         smokeStackFromQtStack( _stack, _a + 1, 1, _items, _args );
+    }
+
+    //------------------------------------------------
+
+    EmitSignal::EmitSignal(QObject *obj, int id, int items, QList<MocArgument*> args, SV** sp, SV* retval) :
+      _args(args), _cur(-1), _called(false), _items(items), _obj(obj), _id(id), _retval(retval) {
+        _sp = sp;
+        _stack = new Smoke::StackItem[_items];
+    }
+
+    Marshall::Action EmitSignal::action() {
+        return Marshall::FromSV;
+    }
+
+    const MocArgument& EmitSignal::arg() {
+        return *(_args[_cur + 1]);
+    }
+
+    SmokeType EmitSignal::type() {
+        return arg().st;
+    }
+
+    Smoke::StackItem &EmitSignal::item() {
+        return _stack[_cur];
+    }
+
+    SV* EmitSignal::var() {
+        return _sp[_cur];
+    }
+
+    Smoke *EmitSignal::smoke() {
+        return type().smoke();
+    }
+
+    void EmitSignal::callMethod() {
+        if (_called) return;
+        _called = true;
+
+        // Create the stack to send to the slots
+        void** o = new void*[_items+1];
+        smokeStackToQtStack(_stack, o + 1, 1, _items + 1, _args);
+        // The 0 index stores the return value
+        void* ptr;
+        o[0] = &ptr;
+        prepareReturnValue(o);
+
+        _obj->metaObject()->activate(_obj, _id, o);
+    }
+
+    void EmitSignal::unsupported() {
+        croak("Cannot handle '%s' as argument of slot call",
+              type().name() );
+    }
+
+    void EmitSignal::next() {
+        int oldcur = _cur;
+        ++_cur;
+
+        while(_cur < _items) {
+            Marshall::HandlerFn fn = getMarshallFn(type());
+            (*fn)(this);
+            ++_cur;
+        }
+
+        callMethod();
+        _cur = oldcur;
+    }
+
+    bool EmitSignal::cleanup() {
+        return false;
+    }
+
+    void EmitSignal::prepareReturnValue(void** o){
+        if (_args[0]->argType == xmoc_ptr) {
+            QByteArray type(_args[0]->st.name());
+            type.replace("const ", "");
+            if (!type.endsWith('*')) {  // a real pointer type, so a simple void* will do
+                if (type.endsWith('&')) {
+                    type.resize(type.size() - 1);
+                }
+                if (type.startsWith("QList")) {
+                    o[0] = new QList<void*>;
+                } else if (type.startsWith("QVector")) {
+                    o[0] = new QVector<void*>;
+                } else if (type.startsWith("QHash")) {
+                    o[0] = new QHash<void*, void*>;
+                } else if (type.startsWith("QMap")) {
+                    o[0] = new QMap<void*, void*>;
+                //} else if (type == "QDBusVariant") {
+                    //o[0] = new QDBusVariant;
+                } else {
+                    Smoke::ModuleIndex ci = qt_Smoke->findClass(type);
+                    if (ci.index != 0) {
+                        Smoke::ModuleIndex mi = ci.smoke->findMethod(type, type);
+                        if (mi.index) {
+                            Smoke::Class& c = ci.smoke->classes[ci.index];
+                            Smoke::Method& meth = mi.smoke->methods[mi.smoke->methodMaps[mi.index].method];
+                            Smoke::StackItem _stack[1];
+                            c.classFn(meth.method, 0, _stack);
+                            o[0] = _stack[0].s_voidp;
+                        }
+                    }
+                }
+            }
+        } else if (_args[0]->argType == xmoc_QString) {
+            o[0] = new QString;
+        }
     }
 }

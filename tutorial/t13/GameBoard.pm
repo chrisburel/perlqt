@@ -49,7 +49,7 @@ sub NEW {
     this->connect($shoot, SIGNAL 'clicked()',
                   this, SLOT 'fire()');
     this->connect($cannonField, SIGNAL 'canShoot(bool)',
-                  this, SLOT 'setEnabled(bool)');
+                  $shoot, SLOT 'setEnabled(bool)');
 
     my $restart = Qt::QPushButton("&New Game");
     $restart->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
@@ -104,31 +104,28 @@ sub NEW {
 
 sub fire {
     return if(this->{cannonField}->{gameOver} || this->{cannonField}->isShooting());
-    print "Firing\n";
     this->{shotsLeft}->display(this->{shotsLeft}->intValue() - 1);
     this->{cannonField}->shoot();
 }
 
 sub hit {
-    print "Hit!\n";
     this->{hits}->display(this->{hits}->intValue() + 1);
     if (this->{shotsLeft}->intValue() == 0) {
         this->{cannonField}->setGameOver();
     }
     else {
-        this->{cannonFiled}->newTarget();
+        this->{cannonField}->newTarget();
+        emit this->{cannonField}->canShoot( 1 );
     }
 }
 
 sub missed {
-    print "Missed!\n";
     if (this->{shotsLeft}->intValue() == 0) {
         this->{cannonField}->setGameOver();
     }
 }
 
 sub newGame {
-    print "newGame!\n";
     this->{shotsLeft}->display(15);
     this->{hits}->display(0);
     this->{cannonField}->restartGame();
