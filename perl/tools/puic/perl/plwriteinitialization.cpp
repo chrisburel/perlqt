@@ -1456,8 +1456,8 @@ QString  WriteInitialization::writeSizePolicy(const DomSizePolicy *sp)
             break;
         }
         if (sp->hasAttributeHSizeType() && sp->hasAttributeVSizeType()) {
-                m_output << "( Qt::SizePolicy::" << sp->attributeHSizeType() << ", Qt::SizePolicy::"
-                << sp->attributeVSizeType() << " );\n";
+                m_output << "( Qt::SizePolicy::" << sp->attributeHSizeType() << "(), Qt::SizePolicy::"
+                << sp->attributeVSizeType() << "() );\n";
             break;
         }
         m_output << "\n";
@@ -2460,15 +2460,15 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
     if (sender.isEmpty() || receiver.isEmpty())
         return;
 
-    m_output << m_option.indent << "Qt::Object.connect("
+    m_output << m_option.indent << "Qt::Object->connect("
         << sender
         << ", "
-        << "SIGNAL('" << connection->elementSignal() << "')"
+        << "SIGNAL '" << connection->elementSignal() << "' "
         << ", "
         << receiver
         << ", "
-        << "SLOT('" << connection->elementSlot() << "')"
-        << ")\n";
+        << "SLOT '" << connection->elementSlot() << "' "
+        << ");\n";
 }
 
 DomImage *WriteInitialization::findImage(const QString &name) const
