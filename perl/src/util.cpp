@@ -870,7 +870,72 @@ XS(XS_qabstract_item_model_removecolumns) {
 	croak("%s", "Invalid argument list to Qt::AbstractItemModel::removeColumns");
 }
 
-// Find a better place to put these.
+//qabstractitemmodel_createindex(int argc, VALUE * argv, VALUE self)
+XS(XS_qabstractitemmodel_createindex) {
+    dXSARGS;
+    if (items == 2 || items == 3) {
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o)
+            croak( "%s", "Qt::AbstractItemModel::createIndex must be called as a method on a Qt::AbstractItemModel object, eg. $model->createIndex" );
+        Smoke::ModuleIndex nameId = o->smoke->idMethodName("createIndex$$$");
+        Smoke::ModuleIndex meth = o->smoke->findMethod(qt_Smoke->findClass("QAbstractItemModel"), nameId);
+        Smoke::Index i = meth.smoke->methodMaps[meth.index].method;
+        i = -i;		// turn into ambiguousMethodList index
+        while (o->smoke->ambiguousMethodList[i] != 0) {
+            if ( qstrcmp( o->smoke->types[o->smoke->argumentList[o->smoke->methods[o->smoke->ambiguousMethodList[i]].args + 2]].name,
+                        "void*" ) == 0 )
+            {
+                Smoke::Method &m = o->smoke->methods[o->smoke->ambiguousMethodList[i]];
+                Smoke::ClassFn fn = o->smoke->classes[m.classId].classFn;
+                Smoke::StackItem stack[4];
+                stack[1].s_int = SvIV(ST(0));
+                stack[2].s_int = SvIV(ST(1));
+                if (items == 2) {
+                    fprintf(stderr, "Setting to undef\n");
+                    stack[3].s_voidp = (void*) &PL_sv_undef;
+                } else {
+                    SV* arg3 = 0;
+                    if( SvROK(ST(2)) )
+                        arg3 = newRV_inc(SvRV(ST(2)));
+                    else
+                        arg3 = newRV_inc(ST(2));
+
+                    stack[3].s_voidp = (void*) arg3;
+                }
+                (*fn)(m.method, o->ptr, stack);
+                smokeperl_object* result = alloc_smokeperl_object(
+                    true, 
+                    o->smoke, 
+                    o->smoke->idClass("QModelIndex").index, 
+                    stack[0].s_voidp
+                );
+
+                ST(0) = set_obj_info(" Qt::ModelIndex", result);
+                XSRETURN(1);
+            }
+
+            ++i;
+        }
+    }
+
+    //return rb_call_super(argc, argv);
+}
+
+XS(XS_qmodelindex_internalpointer) {
+    dXSARGS;
+    smokeperl_object *o = sv_obj_info(ST(0));
+	QModelIndex * index = (QModelIndex *) o->ptr;
+	void * ptr = index->internalPointer();
+    if(ptr) {
+        ST(0) = (SV*)ptr;
+    }
+    else {
+        ST(0) = &PL_sv_undef;
+    }
+    XSRETURN(1);
+}
+
+// TODO: Find a better place to put these.
 Q_DECLARE_METATYPE(HV*)
 Q_DECLARE_METATYPE(AV*)
 
@@ -995,12 +1060,14 @@ XS(XS_qvariant_value) {
         */
 	}
 
-	retval = allocSmokePerlSV(sv_ptr, SmokeType( sv_class_id->smoke,
-         sv_class_id->smoke->idType(sv_class_id->smoke->className(sv_class_id->index))));
+    smokeperl_object* reto = alloc_smokeperl_object(
+        true, sv_class_id->smoke, sv_class_id->index, sv_ptr);
+    retval = set_obj_info( resolve_classname(reto), reto );
 
     delete sv_class_id;
 
-	ST(0) = sv_2mortal(retval);
+	//ST(0) = sv_2mortal(retval);
+	ST(0) = retval;
     XSRETURN(1);
 }
 
@@ -1106,9 +1173,12 @@ XS(XS_qvariant_from_value) {
     }
 
 
-    SV *retval = allocSmokePerlSV(v, SmokeType( qt_Smoke, qt_Smoke->idType("QVariant") ) );
+    smokeperl_object* reto = alloc_smokeperl_object(
+        true, qt_Smoke, qt_Smoke->idClass("QVariant").index, v);
+    SV* retval = set_obj_info( resolve_classname(reto), reto );
 
-    ST(0) = sv_2mortal(retval);
+    //ST(0) = sv_2mortal(retval);
+    ST(0) = retval;
     XSRETURN(1);
 }
 

@@ -405,6 +405,8 @@ BOOT:
     newXS(" Qt::AbstractItemModel::insertColumns", XS_qabstract_item_model_insertcolumns, __FILE__);
     newXS(" Qt::AbstractItemModel::removeRows", XS_qabstract_item_model_removerows, __FILE__);
     newXS(" Qt::AbstractItemModel::removeColumns", XS_qabstract_item_model_removecolumns, __FILE__);
+    newXS("Qt::AbstractItemModel::createIndex", XS_qabstractitemmodel_createindex, __FILE__);
+    newXS(" Qt::ModelIndex::internalPointer", XS_qmodelindex_internalpointer, __FILE__);
 
     sv_this = newSV(0);
     sv_qapp = newSV(0);
