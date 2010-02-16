@@ -47,13 +47,11 @@ sub import {
         # doing the loading
         my $name = shift;    # classname = function-name
         my $incaller = (caller)[0];
-        $incaller = (caller(1))[0] if $incaller eq 'if';
         $X->("$incaller\::$name") = sub { $name->new(@_) }
           unless defined &{"$incaller\::$name"};
 
-        if ( grep { $_ eq 'Exporter' } @{$X->("$name\::ISA")}) {
-            $name->export($incaller, @_);
-        }
+        $name->export($incaller, @_)
+          if(grep { $_ eq 'Exporter' } @{$X->("$name\::ISA")});
     };
 
     foreach my $sp ('  ', ' ', '') {
