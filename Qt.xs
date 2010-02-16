@@ -626,31 +626,29 @@ make_metaObject(obj,parentMeta,stringdata_value,data_value)
         SV* stringdata_value
         SV* data_value
     CODE:
-        // Hard code these values for now
-        // See the moc_lcdrange.cpp file from the Qt4 t7 tutorial.
-        static const uint qt_meta_data_LCDRange[] = {
-         // content:
-               1,       // revision
-               0,       // classname
-               0,    0, // classinfo
-               2,   10, // methods
-               0,    0, // properties
-               0,    0, // enums/sets
-         // signals: signature, parameters, type, tag, flags
-              19,   10,    9,    9, 0x05,
-         // slots: signature, parameters, type, tag, flags
-              43,   37,    9,    9, 0x0a,
-               0        // eod
-        };
+        // Create the qt_meta_data array.
+        int count = av_len((AV*)SvRV(data_value)) + 1;
+        uint* qt_meta_data = new uint[count];
+        for (int i = 0; i < count; i++) {
+            SV** datarow = av_fetch((AV*)SvRV(data_value), i, 0);
+            //fprintf( stderr, "Value for entry %d is %d\n", i, SvIV(*datarow) );
+            qt_meta_data[i] = (uint)SvIV(*datarow);
+        }
 
-        static const char qt_meta_stringdata_LCDRange[] = {
-            "LCDRange\0\0newValue\0valueChanged(int)\0"
-            "value\0setValue(int)\0"
-        };
+        // Create the qt_meta_stringdata array.
+        // Can't use string functions here, because these strings contain
+        // null (0) bits, which the string functions will interpret as the end
+        // of the string
 
+        // Stole this line from some preprocessed XS code.
+        STRLEN len = ((XPV*)(stringdata_value)->sv_any)->xpv_cur;
+        char* qt_meta_stringdata = new char[len];
+        memcpy( (void*)(qt_meta_stringdata), (void*)SvPV_nolen(stringdata_value), len );
+
+        // Define our meta object
         const QMetaObject staticMetaObject = {
-            { &QWidget::staticMetaObject, qt_meta_stringdata_LCDRange,
-              qt_meta_data_LCDRange, 0 }
+            { &QWidget::staticMetaObject, qt_meta_stringdata,
+              qt_meta_data, 0 }
         };
         QMetaObject *meta = new QMetaObject;
         *meta = staticMetaObject;

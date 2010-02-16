@@ -32,12 +32,13 @@ sub getMetaObject {
     # was asked for, return the saved one.
     return $meta->{object} if $meta->{object} and !$meta->{changed};
 
-    # Use hardcoded signals and slots that are defined in the XS module.
+    # Generate data to create the meta object
+    my( $stringdata, $data ) = makeMetaData( $class );
     $meta->{object} = Qt::_internal::make_metaObject(
-        undef,
-        undef,
-        undef,
-        undef );
+        $class,
+        undef, #Qt::this()->staticMetaObject,
+        $stringdata,
+        $data );
 
     $meta->{changed} = 0;
     return $meta->{object};
@@ -102,6 +103,40 @@ sub init {
     foreach my $perlClassName (@$classes) {
         init_class($perlClassName);
     }
+}
+
+sub makeMetaData {
+    no strict 'refs';
+    my ( $classname ) = @_;
+    my $meta = \%{ $classname . '::META' };
+    my $classinfos = $meta->{classinfos};
+    my $dbus = $meta->{dbus};
+    my $signals = $meta->{signals};
+    my $slots = $meta->{slots};
+
+    # Each entry in 'stringdata' corresponds to a string in the
+    # qt_meta_stringdata_<classname> structure.
+    # 'pack_string' is used to convert 'stringdata' into the
+    # binary sequence of null terminated strings for the metaObject
+    #my @stringdata;
+    #my $pack_string = "";
+    #my $string_table = string_table_handler(stringdata, pack_string);
+
+    my $data = [1,                   # revision
+                0,                   # classname
+                0, 0,                # classinfo
+                2, 10,               # methods
+                0, 0,                # properties
+                0, 0,                # enums/sets
+                19, 10, 9, 9, 0x05,  # signals
+                43, 37, 9, 9, 0x0a,  # slots
+                0];                  # eod
+    my $stringdata = 
+        "LCDRange\0\0newValue\0valueChanged(int)\0" .
+        "value\0setValue(int)\0"
+    ;
+
+    return ($stringdata, $data);
 }
 
 package Qt;
