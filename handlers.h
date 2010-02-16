@@ -25,6 +25,7 @@ extern struct mgvtbl vtbl_smoke;
 
 template <class T> static void marshall_it(Marshall* m);
 
+void *construct_copy(smokeperl_object *o);
 void marshall_basetype(Marshall* m);
 void marshall_QString(Marshall* m);
 void marshall_QStringList(Marshall* m);

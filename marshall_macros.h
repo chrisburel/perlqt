@@ -226,6 +226,14 @@ void marshall_ValueListItem(Marshall *m) {
                     obj = allocSmokePerlSV( p,
                                             SmokeType( m->smoke(), 
                                                        m->smoke()->idType(ItemSTR) ) );
+                    if( !m->cleanup() && m->type().isStack()) {
+                        smokeperl_object *o = sv_obj_info( obj );
+                        void *ptr = construct_copy( o );
+                        if(ptr) {
+                            o->ptr = ptr;
+                        }
+                    }
+
                     //obj = set_obj_info(className, o);
                 }
 
