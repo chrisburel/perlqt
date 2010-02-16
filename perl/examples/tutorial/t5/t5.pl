@@ -5,19 +5,19 @@ use warnings;
 
 package MyWidget;
 
-use Qt;
-use Qt::isa qw(Qt::Widget);
+use Qt4;
+use Qt4::isa qw(Qt4::Widget);
 
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $quit = Qt::PushButton("Quit");
-    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
+    my $quit = Qt4::PushButton("Quit");
+    $quit->setFont(Qt4::Font("Times", 18, Qt4::Font::Bold()));
 
-    my $lcd = Qt::LCDNumber(2);
-    $lcd->setSegmentStyle(Qt::LCDNumber::Filled());
+    my $lcd = Qt4::LCDNumber(2);
+    $lcd->setSegmentStyle(Qt4::LCDNumber::Filled());
 
-    my $slider = Qt::Slider(Qt::Horizontal());
+    my $slider = Qt4::Slider(Qt4::Horizontal());
     $slider->setRange(0, 99);
     $slider->setValue(0);
 
@@ -25,7 +25,7 @@ sub NEW {
     this->connect($slider, SIGNAL "valueChanged(int)",
                   $lcd, SLOT "display(int)");
 
-    my $layout = Qt::VBoxLayout;
+    my $layout = Qt4::VBoxLayout;
     $layout->addWidget($quit);
     $layout->addWidget($lcd);
     $layout->addWidget($slider);
@@ -34,11 +34,11 @@ sub NEW {
 
 package main;
 
-use Qt;
+use Qt4;
 use MyWidget;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
     my $widget = MyWidget();
     $widget->show();
     return $app->exec();

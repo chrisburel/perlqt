@@ -3,11 +3,11 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 
 sub main {
-    my $app = Qt::Application(\@ARGV);
-    my $hello = Qt::PushButton("Hello world!");
+    my $app = Qt4::Application(\@ARGV);
+    my $hello = Qt4::PushButton("Hello world!");
     $hello->show();
     exit $app->exec();
 }

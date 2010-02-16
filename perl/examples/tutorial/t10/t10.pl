@@ -5,16 +5,16 @@ use warnings;
 
 package MyWidget;
 
-use Qt;
-use Qt::isa qw(Qt::Widget);
+use Qt4;
+use Qt4::isa qw(Qt4::Widget);
 use CannonField;
 use LCDRange;
 
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $quit = Qt::PushButton("&Quit");
-    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
+    my $quit = Qt4::PushButton("&Quit");
+    $quit->setFont(Qt4::Font("Times", 18, Qt4::Font::Bold()));
 
     this->connect($quit, SIGNAL "clicked()", qApp, SLOT "quit()");
 
@@ -35,11 +35,11 @@ sub NEW {
     this->connect($cannonField, SIGNAL 'forceChanged(int)',
                   $force, SLOT 'setValue(int)');
 
-    my $leftLayout = Qt::VBoxLayout();
+    my $leftLayout = Qt4::VBoxLayout();
     $leftLayout->addWidget($angle);
     $leftLayout->addWidget($force);
 
-    my $gridLayout = Qt::GridLayout();
+    my $gridLayout = Qt4::GridLayout();
     $gridLayout->addWidget($quit, 0, 0);
     $gridLayout->addLayout($leftLayout, 1, 0);
     $gridLayout->addWidget($cannonField, 1, 1, 2, 1);
@@ -55,11 +55,11 @@ sub NEW {
 
 package main;
 
-use Qt;
+use Qt4;
 use MyWidget;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
     my $widget = MyWidget();
     $widget->setGeometry(100, 100, 500, 355);
     $widget->show();

@@ -4,17 +4,17 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw(Qt::Widget);
-use Qt::slots setValue => ['int'];
-use Qt::signals valueChanged => ['int'];
+use Qt4;
+use Qt4::isa qw(Qt4::Widget);
+use Qt4::slots setValue => ['int'];
+use Qt4::signals valueChanged => ['int'];
 
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $lcd = Qt::LCDNumber(2);
+    my $lcd = Qt4::LCDNumber(2);
 
-    my $slider = Qt::Slider(Qt::Horizontal());
+    my $slider = Qt4::Slider(Qt4::Horizontal());
     $slider->setRange(0, 99);
     $slider->setValue(0);
 
@@ -23,7 +23,7 @@ sub NEW {
     this->connect($slider, SIGNAL "valueChanged(int)",
                   this, SIGNAL "valueChanged(int)");
 
-    my $layout = Qt::VBoxLayout;
+    my $layout = Qt4::VBoxLayout;
     $layout->addWidget($lcd);
     $layout->addWidget($slider);
     this->setLayout($layout);

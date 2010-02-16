@@ -6,16 +6,16 @@ use blib;
 
 use Math::Trig;
 
-use Qt;
-use Qt::isa qw(Qt::Widget);
-use Qt::slots setAngle    => ['int'],
+use Qt4;
+use Qt4::isa qw(Qt4::Widget);
+use Qt4::slots setAngle    => ['int'],
               setForce    => ['int'],
               shoot       => [],
               newTarget   => [],
               setGameOver => [],
               restartGame => [],
               moveShot    => [];
-use Qt::signals hit          => [],
+use Qt4::signals hit          => [],
                 missed       => [],
                 angleChanged => ['int'],
                 forceChanged => ['int'],
@@ -27,15 +27,15 @@ sub NEW {
     this->{currentAngle} = 45;
     this->{currentForce} = 0;
     this->{timerCount} = 0;
-    my $autoShootTimer = Qt::Timer(this);
+    my $autoShootTimer = Qt4::Timer(this);
     this->{autoShootTimer} = $autoShootTimer;
     this->connect( $autoShootTimer, SIGNAL 'timeout()', this, SLOT 'moveShot()' );
     this->{shootAngle} = 0;
     this->{shootForce} = 0;
-    this->{target} = Qt::Point(0, 0);
+    this->{target} = Qt4::Point(0, 0);
     this->{gameEnded} = 0;
     this->{barrelPressed} = 0;
-    this->setPalette(Qt::Palette(Qt::Color(250,250,200)));
+    this->setPalette(Qt4::Palette(Qt4::Color(250,250,200)));
     this->setAutoFillBackground(1);
     this->{firstTime} = 1;
     newTarget();
@@ -87,8 +87,8 @@ sub newTarget {
     }
 
     # 2147483647 is the value of RAND_MAX, defined in stdlib.h, at least on my machine.
-    # See the Qt 4.2 documentation on qrand() for more details.
-    this->{target} = Qt::Point( 150 + rand(2147483647) % 190, 10 + rand(2147483647) % 255);
+    # See the Qt4 4.2 documentation on qrand() for more details.
+    this->{target} = Qt4::Point( 150 + rand(2147483647) % 190, 10 + rand(2147483647) % 255);
     this->update();
 }
 
@@ -136,7 +136,7 @@ sub moveShot {
 
 sub mousePressEvent {
     my ( $event ) = @_;
-    return if ${$event->button()} != ${Qt::LeftButton()};
+    return if ${$event->button()} != ${Qt4::LeftButton()};
     if (this->barrelHit($event->pos())) {
         this->{barrelPressed} = 1;
     }
@@ -158,20 +158,20 @@ sub mouseMoveEvent {
 
 sub mouseReleaseEvent {
     my ( $event ) = @_;
-    if (${$event->button()} == ${Qt::LeftButton()}){
+    if (${$event->button()} == ${Qt4::LeftButton()}){
         this->{barrelPressed} = 0;
     }
 }
 
-my $barrelRect = Qt::Rect(30, -5, 20, 10);
+my $barrelRect = Qt4::Rect(30, -5, 20, 10);
 
 sub paintEvent {
-    my $painter = Qt::Painter(this);
+    my $painter = Qt4::Painter(this);
 
     if (this->{gameEnded}) {
-        $painter->setPen(Qt::Color(Qt::black()));
-        $painter->setFont(Qt::Font("Courier", 48, Qt::Font::Bold()));
-        $painter->drawText(this->rect(), Qt::AlignCenter(), "Game Over");
+        $painter->setPen(Qt4::Color(Qt4::black()));
+        $painter->setFont(Qt4::Font("Courier", 48, Qt4::Font::Bold()));
+        $painter->drawText(this->rect(), Qt4::AlignCenter(), "Game Over");
     }
     if (isShooting()){
         paintShot($painter);
@@ -187,40 +187,40 @@ sub paintEvent {
 
 sub paintShot {
     my( $painter ) = @_;
-    $painter->setPen(Qt::NoPen());
-    $painter->setBrush(Qt::Brush(Qt::black()));
+    $painter->setPen(Qt4::NoPen());
+    $painter->setBrush(Qt4::Brush(Qt4::black()));
     $painter->drawRect(shotRect());
 }
 
 sub paintTarget {
     my( $painter ) = @_;
-    $painter->setPen(Qt::Color(Qt::black()));
-    $painter->setBrush(Qt::Brush(Qt::red()));
+    $painter->setPen(Qt4::Color(Qt4::black()));
+    $painter->setBrush(Qt4::Brush(Qt4::red()));
     $painter->drawRect(targetRect());
 }
 
 sub paintBarrier {
     my( $painter ) = @_;
-    $painter->setPen(Qt::Color(Qt::black()));
-    $painter->setBrush(Qt::Brush(Qt::yellow()));
+    $painter->setPen(Qt4::Color(Qt4::black()));
+    $painter->setBrush(Qt4::Brush(Qt4::yellow()));
     $painter->drawRect(barrierRect());
 }
 
 sub paintCannon {
     my( $painter ) = @_;
-    $painter->setPen(Qt::NoPen());
-    $painter->setBrush(Qt::Brush(Qt::blue()));
+    $painter->setPen(Qt4::NoPen());
+    $painter->setBrush(Qt4::Brush(Qt4::blue()));
 
     $painter->save();
     $painter->translate(0, this->rect()->height());
-    $painter->drawPie(Qt::Rect(-35, -35, 70, 70), 0, 90 * 16);
+    $painter->drawPie(Qt4::Rect(-35, -35, 70, 70), 0, 90 * 16);
     $painter->rotate(-(this->{currentAngle}));
     $painter->drawRect($barrelRect);
     $painter->restore();
 }
 
 sub cannonRect {
-    my $result = Qt::Rect(0, 0, 50, 50);
+    my $result = Qt4::Rect(0, 0, 50, 50);
     $result->moveBottomLeft(this->rect()->bottomLeft());
     return $result;
 }
@@ -242,25 +242,25 @@ sub shotRect {
     $x = int($x + .5);
     $y = int($y + .5);
 
-    my $result = Qt::Rect(0, 0, 6, 6);
-    $result->moveCenter(Qt::Point( $x, this->height() - 1 - $y ));
+    my $result = Qt4::Rect(0, 0, 6, 6);
+    $result->moveCenter(Qt4::Point( $x, this->height() - 1 - $y ));
     return $result;
 }
 
 sub targetRect {
-    my $result = Qt::Rect(0, 0, 20, 10);
+    my $result = Qt4::Rect(0, 0, 20, 10);
     my $target = this->{target};
-    $result->moveCenter(Qt::Point($target->x(), this->height() - 1 - $target->y()));
+    $result->moveCenter(Qt4::Point($target->x(), this->height() - 1 - $target->y()));
     return $result;
 }
 
 sub barrierRect {
-    return Qt::Rect(145, this->height() - 100, 15, 99);
+    return Qt4::Rect(145, this->height() - 100, 15, 99);
 }
 
 sub barrelHit {
     my ( $pos ) = @_;
-    my $matrix = Qt::Matrix;
+    my $matrix = Qt4::Matrix;
     $matrix->translate(0, this->height());
     $matrix->rotate(-(this->{currentAngle}));
     $matrix = $matrix->inverted();
@@ -272,7 +272,7 @@ sub isShooting {
 }
 
 sub sizeHint {
-    return Qt::Size(400, 300);
+    return Qt4::Size(400, 300);
 }
 
 1;

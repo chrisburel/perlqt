@@ -3,17 +3,17 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
-    my $window = Qt::Widget();
+    my $app = Qt4::Application( \@ARGV );
+    my $window = Qt4::Widget();
     $window->resize(200, 120);
 
-    my $quit = Qt::PushButton("Quit", $window);
-    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
+    my $quit = Qt4::PushButton("Quit", $window);
+    $quit->setFont(Qt4::Font("Times", 18, Qt4::Font::Bold()));
     $quit->setGeometry(10, 40, 180, 40);
-    Qt::Object::connect($quit, SIGNAL "clicked()", $app, SLOT "quit()");
+    Qt4::Object::connect($quit, SIGNAL "clicked()", $app, SLOT "quit()");
 
     $window->show();
     return $app->exec();

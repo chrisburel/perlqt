@@ -4,13 +4,13 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw(Qt::Widget);
-use Qt::slots setAngle => ['int'],
+use Qt4;
+use Qt4::isa qw(Qt4::Widget);
+use Qt4::slots setAngle => ['int'],
               setForce => ['int'],
               shoot    => [],
               moveShot => [];
-use Qt::signals angleChanged => ['int'],
+use Qt4::signals angleChanged => ['int'],
                 forceChanged => ['int'];
 
 sub NEW {
@@ -19,12 +19,12 @@ sub NEW {
     this->{currentAngle} = 45;
     this->{currentForce} = 0;
     this->{timerCount} = 0;
-    my $autoShootTimer = Qt::Timer(this);
+    my $autoShootTimer = Qt4::Timer(this);
     this->{autoShootTimer} = $autoShootTimer;
     this->connect( $autoShootTimer, SIGNAL 'timeout()', this, SLOT 'moveShot()' );
     this->{shootAngle} = 0;
     this->{shootForce} = 0;
-    this->setPalette(Qt::Palette(Qt::Color(250,250,200)));
+    this->setPalette(Qt4::Palette(Qt4::Color(250,250,200)));
     this->setAutoFillBackground(1);
 }
 
@@ -82,23 +82,23 @@ sub moveShot {
     this->update($region);
 }
 
-my $barrelRect = Qt::Rect(30, -5, 20, 10);
+my $barrelRect = Qt4::Rect(30, -5, 20, 10);
 
 sub paintEvent {
-    my $painter = Qt::Painter(this);
+    my $painter = Qt4::Painter(this);
 
     if (this->{autoShootTimer}->isActive()){
         #paintShot($painter);
-        $painter->setPen(Qt::NoPen());
-        $painter->setBrush(Qt::Brush(Qt::black()));
+        $painter->setPen(Qt4::NoPen());
+        $painter->setBrush(Qt4::Brush(Qt4::black()));
         $painter->drawRect(shotRect());
     }
     #paintCannon($painter);
-    $painter->setPen(Qt::NoPen());
-    $painter->setBrush(Qt::Brush(Qt::blue()));
+    $painter->setPen(Qt4::NoPen());
+    $painter->setBrush(Qt4::Brush(Qt4::blue()));
 
     $painter->translate(0, this->rect()->height());
-    $painter->drawPie(Qt::Rect(-35, -35, 70, 70), 0, 90 * 16);
+    $painter->drawPie(Qt4::Rect(-35, -35, 70, 70), 0, 90 * 16);
     $painter->rotate(-(this->{currentAngle}));
     $painter->drawRect($barrelRect);
 
@@ -106,7 +106,7 @@ sub paintEvent {
 }
 
 sub cannonRect {
-    my $result = Qt::Rect(0, 0, 50, 50);
+    my $result = Qt4::Rect(0, 0, 50, 50);
     $result->moveBottomLeft(this->rect()->bottomLeft());
     return $result;
 }
@@ -127,8 +127,8 @@ sub shotRect {
     $x = int($x + .5);
     $y = int($y + .5);
 
-    my $result = Qt::Rect(0, 0, 6, 6);
-    $result->moveCenter(Qt::Point( $x, this->height() - 1 - $y ));
+    my $result = Qt4::Rect(0, 0, 6, 6);
+    $result->moveCenter(Qt4::Point( $x, this->height() - 1 - $y ));
     return $result;
 }
 

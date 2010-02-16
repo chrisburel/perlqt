@@ -5,8 +5,8 @@ use warnings;
 
 package MyWidget;
 
-use Qt;
-use Qt::isa qw(Qt::Widget);
+use Qt4;
+use Qt4::isa qw(Qt4::Widget);
 use LCDRange;
 
 my @widgets;
@@ -14,12 +14,12 @@ my @widgets;
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $quit = Qt::PushButton("Quit");
-    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
+    my $quit = Qt4::PushButton("Quit");
+    $quit->setFont(Qt4::Font("Times", 18, Qt4::Font::Bold()));
 
     this->connect($quit, SIGNAL "clicked()", qApp, SLOT "quit()");
 
-    my $grid = Qt::GridLayout();
+    my $grid = Qt4::GridLayout();
     my $previousRange;
 
 
@@ -36,7 +36,7 @@ sub NEW {
         }
     }
 
-    my $layout = Qt::VBoxLayout;
+    my $layout = Qt4::VBoxLayout;
     $layout->addWidget($quit);
     $layout->addLayout($grid);
     this->setLayout($layout);
@@ -46,11 +46,11 @@ sub NEW {
 
 package main;
 
-use Qt;
+use Qt4;
 use MyWidget;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
     my $widget = MyWidget();
     $widget->show();
     return $app->exec();

@@ -5,28 +5,28 @@ use warnings;
 
 package MyWidget;
 
-use Qt;
-use Qt::isa qw(Qt::Widget);
+use Qt4;
+use Qt4::isa qw(Qt4::Widget);
 
 sub NEW {
     shift->SUPER::NEW(@_);
 
     setFixedSize(200, 120);
 
-    my $quit = Qt::PushButton("Quit", this);
+    my $quit = Qt4::PushButton("Quit", this);
     $quit->setGeometry(62, 40, 75, 30);
-    $quit->setFont(Qt::Font("Times", 18, Qt::Font::Bold()));
+    $quit->setFont(Qt4::Font("Times", 18, Qt4::Font::Bold()));
 
     this->connect($quit, SIGNAL "clicked()", qApp, SLOT "quit()");
 }
 
 package main;
 
-use Qt;
+use Qt4;
 use MyWidget;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
     my $widget = MyWidget();
     $widget->show();
     return $app->exec();
