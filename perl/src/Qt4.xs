@@ -1,4 +1,4 @@
-//util.h brings in all the required Qt headers.  This has to happen before the
+//util.h brings in all the required Qt4 headers.  This has to happen before the
 //perl stuff below
 #include "util.h"
 
@@ -12,19 +12,19 @@ extern "C" {
 
 // Now my own headers
 #include "smoke.h"
-#include "Qt.h"
+#include "Qt4.h"
 #include "binding.h"
 #include "smokeperl.h"
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
 
-extern PerlQt::Binding binding;
+extern PerlQt4::Binding binding;
 extern Q_DECL_EXPORT Smoke* qt_Smoke;
 extern Q_DECL_EXPORT void init_qt_Smoke();
-extern Q_DECL_EXPORT QHash<Smoke*, PerlQtModule> perlqt_modules;
+extern Q_DECL_EXPORT QHash<Smoke*, PerlQt4Module> perlqt_modules;
 extern SV* sv_qapp;
 
-MODULE = Qt                PACKAGE = Qt::_internal
+MODULE = Qt4                PACKAGE = Qt4::_internal
 
 PROTOTYPES: DISABLE
 
@@ -134,7 +134,7 @@ getNativeMetaObject( methodId )
         int methodId
     CODE:
         smokeperl_object* nothis = alloc_smokeperl_object( false, 0, 0, 0 );
-        PerlQt::MethodCall call(
+        PerlQt4::MethodCall call(
             qt_Smoke,
             methodId,
             nothis,
@@ -165,8 +165,8 @@ getSVt( sv )
     OUTPUT:
         RETVAL
 
-#// Args: char* name: the c++ name of a Qt class
-#// Returns: the smoke classId for that Qt class
+#// Args: char* name: the c++ name of a Qt4 class
+#// Returns: the smoke classId for that Qt4 class
 int
 idClass( name )
         char* name
@@ -175,8 +175,8 @@ idClass( name )
     OUTPUT:
         RETVAL
 
-#// Args: char* name: the c++ name of a Qt class
-#// Returns: the smoke classId for that Qt class
+#// Args: char* name: the c++ name of a Qt4 class
+#// Returns: the smoke classId for that Qt4 class
 const char*
 classFromId( classId )
         int classId
@@ -300,7 +300,7 @@ make_metaObject(parentClassId,parentMeta,stringdata_sv,data_sv)
 
         HV *hv = newHV();
         RETVAL = newRV_noinc((SV*)hv);
-        sv_bless( RETVAL, gv_stashpv( " Qt::MetaObject", TRUE ) );
+        sv_bless( RETVAL, gv_stashpv( " Qt4::MetaObject", TRUE ) );
         sv_magic((SV*)hv, 0, '~', (char*)&o, sizeof(o));
         //Not sure we need the entry in the pointer_map
         mapPointer(RETVAL, &o, pointer_map, o.classId, 0);
@@ -338,7 +338,7 @@ void*
 sv_to_ptr(sv)
     SV* sv
 
-MODULE = Qt                PACKAGE = Qt                
+MODULE = Qt4                PACKAGE = Qt4                
 
 PROTOTYPES: ENABLE
 
@@ -374,30 +374,37 @@ BOOT:
 
     init_qt_Smoke();
 
-    binding = PerlQt::Binding(qt_Smoke);
-    PerlQtModule module = { "PerlQt", resolve_classname_qt, 0, &binding };
+    binding = PerlQt4::Binding(qt_Smoke);
+    PerlQt4Module module = { "PerlQt4", resolve_classname_qt, 0, &binding };
     perlqt_modules[qt_Smoke] = module;
 
-    install_handlers(Qt_handlers);
+    install_handlers(Qt4_handlers);
 
-    pointer_map = get_hv( "Qt::_internal::pointer_map", FALSE );
+    pointer_map = get_hv( "Qt4::_internal::pointer_map", FALSE );
 
-    newXS("Qt::qVariantFromValue", XS_qvariant_from_value, __FILE__);
-    newXS("Qt::qVariantValue", XS_qvariant_value, __FILE__);
-    newXS(" Qt::Object::findChildren", XS_find_qobject_children, __FILE__);
-    newXS("Qt::Object::findChildren", XS_find_qobject_children, __FILE__);
-    newXS("Qt::Object::qobject_cast", XS_qobject_qt_metacast, __FILE__);
-    newXS(" Qt::AbstractItemModel::rowCount", XS_qabstract_item_model_rowcount, __FILE__);
-    newXS(" Qt::AbstractItemModel::columnCount", XS_qabstract_item_model_columncount, __FILE__);
-    newXS(" Qt::AbstractItemModel::data", XS_qabstract_item_model_data, __FILE__);
-    newXS(" Qt::AbstractItemModel::setData", XS_qabstract_item_model_setdata, __FILE__);
-    newXS(" Qt::AbstractItemModel::rowCount", XS_qabstract_item_model_rowcount, __FILE__);
-    newXS(" Qt::AbstractItemModel::insertRows", XS_qabstract_item_model_insertrows, __FILE__);
-    newXS(" Qt::AbstractItemModel::insertColumns", XS_qabstract_item_model_insertcolumns, __FILE__);
-    newXS(" Qt::AbstractItemModel::removeRows", XS_qabstract_item_model_removerows, __FILE__);
-    newXS(" Qt::AbstractItemModel::removeColumns", XS_qabstract_item_model_removecolumns, __FILE__);
-    newXS("Qt::AbstractItemModel::createIndex", XS_qabstractitemmodel_createindex, __FILE__);
-    newXS(" Qt::ModelIndex::internalPointer", XS_qmodelindex_internalpointer, __FILE__);
+    newXS("Qt4::qVariantFromValue", XS_qvariant_from_value, __FILE__);
+    newXS("Qt4::qVariantValue", XS_qvariant_value, __FILE__);
+    newXS(" Qt4::Object::findChildren", XS_find_qobject_children, __FILE__);
+    newXS("Qt4::Object::findChildren", XS_find_qobject_children, __FILE__);
+    newXS("Qt4::Object::qobject_cast", XS_qobject_qt_metacast, __FILE__);
+    newXS(" Qt4::AbstractItemModel::columnCount", XS_qabstract_item_model_columncount, __FILE__);
+    newXS(" Qt4::AbstractItemModel::data", XS_qabstract_item_model_data, __FILE__);
+    newXS(" Qt4::AbstractItemModel::insertColumns", XS_qabstract_item_model_insertcolumns, __FILE__);
+    newXS(" Qt4::AbstractItemModel::insertRows", XS_qabstract_item_model_insertrows, __FILE__);
+    newXS(" Qt4::AbstractItemModel::removeColumns", XS_qabstract_item_model_removecolumns, __FILE__);
+    newXS(" Qt4::AbstractItemModel::removeRows", XS_qabstract_item_model_removerows, __FILE__);
+    newXS(" Qt4::AbstractItemModel::rowCount", XS_qabstract_item_model_rowcount, __FILE__);
+    newXS(" Qt4::AbstractItemModel::setData", XS_qabstract_item_model_setdata, __FILE__);
+    newXS("Qt4::AbstractItemModel::columnCount", XS_qabstract_item_model_columncount, __FILE__);
+    newXS("Qt4::AbstractItemModel::data", XS_qabstract_item_model_data, __FILE__);
+    newXS("Qt4::AbstractItemModel::insertColumns", XS_qabstract_item_model_insertcolumns, __FILE__);
+    newXS("Qt4::AbstractItemModel::insertRows", XS_qabstract_item_model_insertrows, __FILE__);
+    newXS("Qt4::AbstractItemModel::removeColumns", XS_qabstract_item_model_removecolumns, __FILE__);
+    newXS("Qt4::AbstractItemModel::removeRows", XS_qabstract_item_model_removerows, __FILE__);
+    newXS("Qt4::AbstractItemModel::rowCount", XS_qabstract_item_model_rowcount, __FILE__);
+    newXS("Qt4::AbstractItemModel::setData", XS_qabstract_item_model_setdata, __FILE__);
+    newXS("Qt4::AbstractItemModel::createIndex", XS_qabstractitemmodel_createindex, __FILE__);
+    newXS(" Qt4::ModelIndex::internalPointer", XS_qmodelindex_internalpointer, __FILE__);
 
     sv_this = newSV(0);
     sv_qapp = newSV(0);

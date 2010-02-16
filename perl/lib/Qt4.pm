@@ -1,4 +1,4 @@
-package Qt::base;
+package Qt4::base;
 
 use strict;
 use warnings;
@@ -9,372 +9,375 @@ sub new {
     # for that package.
 
     # Store whatever current 'this' value we've got
-    my $packageThis = Qt::this();
+    my $packageThis = Qt4::this();
     # Create the object, overwriting the 'this' value
     shift->NEW(@_);
     # Get the return value
-    my $ret = Qt::this();
+    my $ret = Qt4::this();
     # Restore package's this
-    Qt::_internal::setThis($packageThis);
+    Qt4::_internal::setThis($packageThis);
     # Give back the new value
     return $ret;
 }
 
 # This subroutine is used to set the context for translation correctly for any
-# perl subclasses.  Without it, the context would always be set to the base Qt
+# perl subclasses.  Without it, the context would always be set to the base Qt4
 # class.
 sub tr {
-    my $context = ref Qt::this();
+    if( !Qt4::qApp() ) {
+        die 'You must create a Qt4::Application object before calling tr.';
+    }
+    my $context = ref Qt4::this();
     $context =~ s/^ *//;
     if( !$context ) {
-        ($context) = $Qt::AutoLoad::AUTOLOAD =~ m/(.*).:tr$/;
+        ($context) = $Qt4::AutoLoad::AUTOLOAD =~ m/(.*).:tr$/;
     }
-    return Qt::qApp()->translate( $context, @_ );
+    return Qt4::qApp()->translate( $context, @_ );
 }
 
-package Qt::base::_overload;
+package Qt4::base::_overload;
 use strict;
 
 no strict 'refs';
 use overload
     'fallback' => 1,
-    '==' => 'Qt::base::_overload::op_equal',
-    '!=' => 'Qt::base::_overload::op_not_equal',
-    '+=' => 'Qt::base::_overload::op_plus_equal',
-    '-=' => 'Qt::base::_overload::op_minus_equal',
-    '*=' => 'Qt::base::_overload::op_mul_equal',
-    '/=' => 'Qt::base::_overload::op_div_equal',
-    '>>' => 'Qt::base::_overload::op_shift_right',
-    '<<' => 'Qt::base::_overload::op_shift_left',
-    '<=' => 'Qt::base::_overload::op_lesser_equal',
-    '>=' => 'Qt::base::_overload::op_greater_equal',
-    '^=' => 'Qt::base::_overload::op_xor_equal',
-    '|=' => 'Qt::base::_overload::op_or_equal',
-    '>'  => 'Qt::base::_overload::op_greater',
-    '<'  => 'Qt::base::_overload::op_lesser',
-    '+'  => 'Qt::base::_overload::op_plus',
-    '-'  => 'Qt::base::_overload::op_minus',
-    '*'  => 'Qt::base::_overload::op_mul',
-    '/'  => 'Qt::base::_overload::op_div',
-    '^'  => 'Qt::base::_overload::op_xor',
-    '|'  => 'Qt::base::_overload::op_or',
-    '--' => 'Qt::base::_overload::op_decrement',
-    '++' => 'Qt::base::_overload::op_increment',
-    'neg'=> 'Qt::base::_overload::op_negate',
-    'eq' => 'Qt::base::_overload::op_ref_equal';
+    '==' => 'Qt4::base::_overload::op_equal',
+    '!=' => 'Qt4::base::_overload::op_not_equal',
+    '+=' => 'Qt4::base::_overload::op_plus_equal',
+    '-=' => 'Qt4::base::_overload::op_minus_equal',
+    '*=' => 'Qt4::base::_overload::op_mul_equal',
+    '/=' => 'Qt4::base::_overload::op_div_equal',
+    '>>' => 'Qt4::base::_overload::op_shift_right',
+    '<<' => 'Qt4::base::_overload::op_shift_left',
+    '<=' => 'Qt4::base::_overload::op_lesser_equal',
+    '>=' => 'Qt4::base::_overload::op_greater_equal',
+    '^=' => 'Qt4::base::_overload::op_xor_equal',
+    '|=' => 'Qt4::base::_overload::op_or_equal',
+    '>'  => 'Qt4::base::_overload::op_greater',
+    '<'  => 'Qt4::base::_overload::op_lesser',
+    '+'  => 'Qt4::base::_overload::op_plus',
+    '-'  => 'Qt4::base::_overload::op_minus',
+    '*'  => 'Qt4::base::_overload::op_mul',
+    '/'  => 'Qt4::base::_overload::op_div',
+    '^'  => 'Qt4::base::_overload::op_xor',
+    '|'  => 'Qt4::base::_overload::op_or',
+    '--' => 'Qt4::base::_overload::op_decrement',
+    '++' => 'Qt4::base::_overload::op_increment',
+    'neg'=> 'Qt4::base::_overload::op_negate',
+    'eq' => 'Qt4::base::_overload::op_ref_equal';
 
 sub op_equal {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator==';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator==';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator==';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator==';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     return $ret;
 }
 
 sub op_not_equal {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator!=';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator!=';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator!=';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator!=';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     return $ret;
 }
 
 sub op_plus_equal {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator+=';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator+=';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my $err;
     eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
     my $ret;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator+=';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator+=';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     return $ret;
 }
 
 sub op_minus_equal {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator-=';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator-=';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my $err;
     eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
     my $ret;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator-=';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator-=';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
     return $ret;
 }
 
 sub op_mul_equal {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator*=';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator*=';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my $err;
     eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
     my $ret;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator*=';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator*=';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
     return $ret;
 }
 
 sub op_div_equal {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator/=';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator/=';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my $err;
     eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
     my $ret;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator/=';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator/=';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
     return $ret;
 }
 
 sub op_shift_right {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator>>';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator>>';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator>>';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator>>';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     $ret    
 }
 
 sub op_shift_left {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator<<';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator<<';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator<<';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator<<';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     return $ret;
 }
 
 sub op_lesser_equal {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator<=';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator<=';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my $err;
     eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
     my $ret;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator<=';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator<=';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
     return $ret;
 }
 
 sub op_greater_equal {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator>=';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator>=';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my $err;
     eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
     my $ret;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator>=';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator>=';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
     return $ret;
 }
 
 sub op_xor_equal {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator^=';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator^=';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my $err;
     eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
     my $ret;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator^=';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator^=';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
     return $ret;
 }
 
 sub op_or_equal {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator|=';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator|=';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my $err;
     eval { local $SIG{'__DIE__'}; $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return ($_[2] ? $_[1] : $_[0]) unless $err = $@;
     my $ret;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator|=';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator|=';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
     return $ret;
 }
 
 sub op_greater {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator>';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator>';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator>';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator>';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     $ret    
 }
 
 sub op_lesser {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator<';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator<';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator<';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator<';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     $ret    
 }
 
 sub op_plus {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator+';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator+';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator+';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator+';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     $ret    
 }
 
 sub op_minus {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator-';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator-';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator-';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator-';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     $ret    
 }
 
 sub op_mul {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator*';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator*';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator*';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator*';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     $ret     
 }
 
 sub op_div {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator/';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator/';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator/';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator/';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     $ret     
 }
 
 sub op_negate {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator-';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator-';
     my $autoload = ref($_[0])."::AUTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->($_[0]) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator-';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator-';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload($_[0]) };
     die $err.$@ if $@;
     return $ret;
 }
 
 sub op_xor {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator^';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator^';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator^';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator^';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     $ret    
 }
 
 sub op_or {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator|';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator|';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my ($ret, $err);
     eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     return $ret unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator|';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator|';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
     $ret    
 }
 
 sub op_increment {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator++';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator++';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my $err;
     eval { local $SIG{'__DIE__'}; $autoload->($_[0]) };
     return $_[0] unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator++';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator++';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; &$autoload($_[0]) };
     die $err.$@ if $@; 
     $_[0]
 }
 
 sub op_decrement {
-    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator--';
+    $Qt4::AutoLoad::AUTOLOAD = ref($_[0]).'::operator--';
     my $autoload = ref($_[0])."::_UTOLOAD";
     my $err;
     eval { local $SIG{'__DIE__'}; $autoload->($_[0]) };
     return $_[0] unless $err = $@;
-    $Qt::AutoLoad::AUTOLOAD = 'Qt::GlobalSpace::operator--';
-    $autoload = "Qt::GlobalSpace::_UTOLOAD";
+    $Qt4::AutoLoad::AUTOLOAD = 'Qt4::GlobalSpace::operator--';
+    $autoload = "Qt4::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; &$autoload($_[0]) };
     die $err.$@ if $@;
     $_[0]
 }
 
 sub op_ref_equal {
-    return Qt::_internal::sv_to_ptr( $_[0] ) == Qt::_internal::sv_to_ptr( $_[1] );
+    return Qt4::_internal::sv_to_ptr( $_[0] ) == Qt4::_internal::sv_to_ptr( $_[1] );
 }
 
-package Qt::enum::_overload;
+package Qt4::enum::_overload;
 
 use strict;
 
@@ -382,31 +385,31 @@ no strict 'refs';
 
 use overload
     'fallback' => 1,
-    '==' => 'Qt::enum::_overload::op_equal',
-    '!=' => 'Qt::enum::_overload::op_not_equal',
-    '+=' => 'Qt::enum::_overload::op_plus_equal',
-    '-=' => 'Qt::enum::_overload::op_minus_equal',
-    '*=' => 'Qt::enum::_overload::op_mul_equal',
-    '/=' => 'Qt::enum::_overload::op_div_equal',
-    '>>' => 'Qt::enum::_overload::op_shift_right',
-    '<<' => 'Qt::enum::_overload::op_shift_left',
-    '<=' => 'Qt::enum::_overload::op_lesser_equal',
-    '>=' => 'Qt::enum::_overload::op_greater_equal',
-    '^=' => 'Qt::enum::_overload::op_xor_equal',
-    '|=' => 'Qt::enum::_overload::op_or_equal',
-    '&=' => 'Qt::enum::_overload::op_and_equal',
-    '>'  => 'Qt::enum::_overload::op_greater',
-    '<'  => 'Qt::enum::_overload::op_lesser',
-    '+'  => 'Qt::enum::_overload::op_plus',
-    '-'  => 'Qt::enum::_overload::op_minus',
-    '*'  => 'Qt::enum::_overload::op_mul',
-    '/'  => 'Qt::enum::_overload::op_div',
-    '^'  => 'Qt::enum::_overload::op_xor',
-    '|'  => 'Qt::enum::_overload::op_or',
-    '&'  => 'Qt::enum::_overload::op_and',
-    '--' => 'Qt::enum::_overload::op_decrement',
-    '++' => 'Qt::enum::_overload::op_increment',
-    'neg'=> 'Qt::enum::_overload::op_negate';
+    '==' => 'Qt4::enum::_overload::op_equal',
+    '!=' => 'Qt4::enum::_overload::op_not_equal',
+    '+=' => 'Qt4::enum::_overload::op_plus_equal',
+    '-=' => 'Qt4::enum::_overload::op_minus_equal',
+    '*=' => 'Qt4::enum::_overload::op_mul_equal',
+    '/=' => 'Qt4::enum::_overload::op_div_equal',
+    '>>' => 'Qt4::enum::_overload::op_shift_right',
+    '<<' => 'Qt4::enum::_overload::op_shift_left',
+    '<=' => 'Qt4::enum::_overload::op_lesser_equal',
+    '>=' => 'Qt4::enum::_overload::op_greater_equal',
+    '^=' => 'Qt4::enum::_overload::op_xor_equal',
+    '|=' => 'Qt4::enum::_overload::op_or_equal',
+    '&=' => 'Qt4::enum::_overload::op_and_equal',
+    '>'  => 'Qt4::enum::_overload::op_greater',
+    '<'  => 'Qt4::enum::_overload::op_lesser',
+    '+'  => 'Qt4::enum::_overload::op_plus',
+    '-'  => 'Qt4::enum::_overload::op_minus',
+    '*'  => 'Qt4::enum::_overload::op_mul',
+    '/'  => 'Qt4::enum::_overload::op_div',
+    '^'  => 'Qt4::enum::_overload::op_xor',
+    '|'  => 'Qt4::enum::_overload::op_or',
+    '&'  => 'Qt4::enum::_overload::op_and',
+    '--' => 'Qt4::enum::_overload::op_decrement',
+    '++' => 'Qt4::enum::_overload::op_increment',
+    'neg'=> 'Qt4::enum::_overload::op_negate';
 
 sub op_equal {
     if( ref $_[0] ) {
@@ -638,7 +641,7 @@ sub op_negate {
     return -${$_[0]};
 }
 
-package Qt::DBusReply;
+package Qt4::DBusReply;
 
 use strict;
 use warnings;
@@ -647,10 +650,10 @@ sub new {
     my ( $class, $reply ) = @_;
     my $this = bless {}, $class;
 
-    my $error = Qt::DBusError($reply);
+    my $error = Qt4::DBusError($reply);
     $this->{error} = $error;
     if ( $error->isValid() ) {
-        $this->{data} = Qt::Variant();
+        $this->{data} = Qt4::Variant();
         return $this;
     }
 
@@ -661,9 +664,9 @@ sub new {
     }
 
     # This only gets called if the 2 previous ifs weren't
-    $this->{error} = Qt::DBusError( Qt::DBusError::InvalidSignature(),
+    $this->{error} = Qt4::DBusError( Qt4::DBusError::InvalidSignature(),
                                     'Unexpected reply signature' );
-    $this->{data} = Qt::Variant();
+    $this->{data} = Qt4::Variant();
     return $this;
 }
 
@@ -682,19 +685,19 @@ sub error() {
     return $this->{error};
 }
 
-# Create the Qt::DBusReply() constructor
-Qt::_internal::installSub('Qt::DBusReply', sub { Qt::DBusReply->new(@_) });
+# Create the Qt4::DBusReply() constructor
+Qt4::_internal::installSub('Qt4::DBusReply', sub { Qt4::DBusReply->new(@_) });
 
 1;
 
-package Qt::DBusVariant;
+package Qt4::DBusVariant;
 
 use strict;
 use warnings;
 
 sub NEW {
     my ( $class, $value ) = @_;
-    if ( ref $value eq ' Qt::Variant' ) {
+    if ( ref $value eq ' Qt4::Variant' ) {
         $class->SUPER::NEW( $value );
     }
     else {
@@ -704,7 +707,7 @@ sub NEW {
 
 1;
 
-package Qt::_internal;
+package Qt4::_internal;
 
 use strict;
 use warnings;
@@ -721,7 +724,7 @@ our %classId2package;
 our %pointer_map;
 
 my %customClasses = (
-    'Qt::DBusVariant' => 'Qt::Variant',
+    'Qt4::DBusVariant' => 'Qt4::Variant',
 );
 
 our $ambiguousSignature = undef;
@@ -731,17 +734,17 @@ my %arrayTypes = (
         value => [ 'QVariant' ]
     },
     'const QStringList&' => {
-        value => [ 's', 'Qt::String' ],
+        value => [ 's', 'Qt4::String' ],
     },
 );
 
 my %hashTypes = (
     'const QHash<QString, QVariant>&' => {
-        value1 => [ 's', 'Qt::String' ],
+        value1 => [ 's', 'Qt4::String' ],
         value2 => [ 'QVariant' ]
     },
     'const QMap<QString, QVariant>&' => {
-        value1 => [ 's', 'Qt::String' ],
+        value1 => [ 's', 'Qt4::String' ],
         value2 => [ 'QVariant' ]
     },
 );
@@ -826,7 +829,7 @@ sub argmatch {
         elsif ( $argType eq 'r' or $argType eq 'U' ) {
             $match{$methodId} = [0,$methodIdIdx];
         }
-        elsif ( $argType eq 'Qt::String' ) {
+        elsif ( $argType eq 'Qt4::String' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName =~m/^(?:const )?QString[\*&]?$/ ) {
@@ -836,7 +839,7 @@ sub argmatch {
                 $explicitType = 1;
             }
         }
-        elsif ( $argType eq 'Qt::CString' ) {
+        elsif ( $argType eq 'Qt4::CString' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName =~m/^(?:const )?char ?\*[\*&]?$/ ) {
@@ -846,7 +849,7 @@ sub argmatch {
                 $explicitType = 1;
             }
         }
-        elsif ( $argType eq 'Qt::Int' ) {
+        elsif ( $argType eq 'Qt4::Int' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName =~ m/^int[\*&]?$/ ) {
@@ -856,7 +859,7 @@ sub argmatch {
                 $explicitType = 1;
             }
         }
-        elsif ( $argType eq 'Qt::Uint' ) {
+        elsif ( $argType eq 'Qt4::Uint' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName =~ m/^unsigned int[\*&]?$/ ) {
@@ -866,7 +869,7 @@ sub argmatch {
                 $explicitType = 1;
             }
         }
-        elsif ( $argType eq 'Qt::Bool' ) {
+        elsif ( $argType eq 'Qt4::Bool' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName eq 'bool' ) {
@@ -876,7 +879,7 @@ sub argmatch {
                 $explicitType = 1;
             }
         }
-        elsif ( $argType eq 'Qt::Short' ) {
+        elsif ( $argType eq 'Qt4::Short' ) {
             if( $typeName =~ m/^short[\*&]?$/ ) {
                 return $methodId;
             }
@@ -884,7 +887,7 @@ sub argmatch {
                 $explicitType = 1;
             }
         }
-        elsif ( $argType eq 'Qt::Ushort' ) {
+        elsif ( $argType eq 'Qt4::Ushort' ) {
             if( $typeName =~ m/^unsigned short[\*&]?$/ ) {
                 return $methodId;
             }
@@ -892,7 +895,7 @@ sub argmatch {
                 $explicitType = 1;
             }
         }
-        elsif ( $argType eq 'Qt::Uchar' ) {
+        elsif ( $argType eq 'Qt4::Uchar' ) {
             if( $typeName =~ m/^u(?=nsigned )?char[\*&]?$/ ) {
                 return $methodId;
             }
@@ -1031,7 +1034,7 @@ sub getSmokeMethodId {
             # else will be 2
             my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
             my @caller = caller($stackDepth);
-            while ( $caller[1] =~ m/Qt\.pm$/ || $caller[1] =~ m/Qt\/isa\.pm/ ) {
+            while ( $caller[1] =~ m/Qt4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
                 ++$stackDepth;
                 @caller = caller($stackDepth);
             }
@@ -1056,7 +1059,7 @@ sub getSmokeMethodId {
         if (!objmatch($methodIds[0], \@_)) {
             my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
             my @caller = caller($stackDepth);
-            while ( $caller[1] =~ m/Qt\.pm$/ || $caller[1] =~ m/Qt\/isa\.pm/ ) {
+            while ( $caller[1] =~ m/Qt4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
                 ++$stackDepth;
                 @caller = caller($stackDepth);
             }
@@ -1096,7 +1099,7 @@ sub getMetaObject {
     # was asked for, return the saved one.
     return $meta->{object} if $meta->{object} and !$meta->{changed};
 
-    # If this is a native Qt class, call metaObject() on that class directly
+    # If this is a native Qt4 class, call metaObject() on that class directly
     if ( $package2classId{$class} ) {
         my $classId = $package2classId{$class};
         my $cxxClass = classFromId( $classId );
@@ -1122,7 +1125,7 @@ sub getMetaObject {
 
     # Generate data to create the meta object
     my( $stringdata, $data ) = makeMetaData( $class );
-    $meta->{object} = Qt::_internal::make_metaObject(
+    $meta->{object} = Qt4::_internal::make_metaObject(
         $parentClassId,
         $parentMeta,
         $stringdata,
@@ -1170,22 +1173,22 @@ sub init_class {
         $super = normalize_classname($super);
     }
 
-    # The root of the tree will be Qt::base, so a call to
+    # The root of the tree will be Qt4::base, so a call to
     # $className::new() redirects there.
-    @isa = ('Qt::base') unless @isa;
+    @isa = ('Qt4::base') unless @isa;
     @{arrayByName($perlClassName.'::ISA')} = @isa;
 
     # Define overloaded operators
-    @{arrayByName(" $perlClassName\::ISA")} = ('Qt::base::_overload');
+    @{arrayByName(" $perlClassName\::ISA")} = ('Qt4::base::_overload');
 
     foreach my $sp ('', ' ') {
         my $where = $sp . $perlClassName;
         installautoload($where);
         # Putting this in one package gives XS_AUTOLOAD one spot to look for
         # the autoload variable
-        package Qt::AutoLoad;
+        package Qt4::AutoLoad;
         my $autosub = \&{$where . '::_UTOLOAD'};
-        Qt::_internal::installSub( $where.'::AUTOLOAD', sub{&$autosub} );
+        Qt4::_internal::installSub( $where.'::AUTOLOAD', sub{&$autosub} );
     }
 
     installSub("$perlClassName\::NEW", sub {
@@ -1195,7 +1198,7 @@ sub init_class {
         # If we have a cxx classname that's in some other namespace, like
         # QTextEdit::ExtraSelection, remove the first bit.
         $cxxClassName =~ s/.*://;
-        $Qt::AutoLoad::AUTOLOAD = "$perlClassName\::$cxxClassName";
+        $Qt4::AutoLoad::AUTOLOAD = "$perlClassName\::$cxxClassName";
         my $_utoload = \&{"$perlClassName\::_UTOLOAD"};
         setThis( bless &$_utoload, " $perlClassName" );
     }) unless(defined &{"$perlClassName\::NEW"});
@@ -1242,9 +1245,9 @@ sub reportNoMethodFound {
     my $stackDepth = ( $methodname eq $classname ) ? 5 : 3;
 
     # Look up the stack to find who called us.  We don't care if it was
-    # called from Qt.pm or isa.pm
+    # called from Qt4.pm or isa.pm
     my @caller = caller($stackDepth);
-    while ( $caller[1] =~ m/Qt\.pm$/ || $caller[1] =~ m/Qt\/isa\.pm/ ) {
+    while ( $caller[1] =~ m/Qt4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
         ++$stackDepth;
         @caller = caller($stackDepth);
     }
@@ -1267,10 +1270,10 @@ sub init {
     foreach my $enumName (@$enums) {
         $enumName =~ s/^const //;
         if(@{arrayByName("${enumName}::ISA")}) {
-            @{arrayByName("${enumName}Enum::ISA")} = ('Qt::enum::_overload');
+            @{arrayByName("${enumName}Enum::ISA")} = ('Qt4::enum::_overload');
         }
         else {
-            @{arrayByName("${enumName}::ISA")} = ('Qt::enum::_overload');
+            @{arrayByName("${enumName}::ISA")} = ('Qt4::enum::_overload');
         }
     }
 
@@ -1377,14 +1380,14 @@ sub makeMetaData {
     return ($stringdata, $data);
 }
 
-# Args: $cxxClassName: the name of a Qt class
+# Args: $cxxClassName: the name of a Qt4 class
 # Returns: The name of the associated perl package
 # Desc: Given a c++ class name, determine the perl package name
 sub normalize_classname {
     my ( $cxxClassName ) = @_;
 
-    # Don't modify the 'Qt' class
-    return $cxxClassName if $cxxClassName eq 'Qt';
+    # Call the 'Qt' class 'Qt4';
+    return 'Qt4' if $cxxClassName eq 'Qt';
 
     my $perlClassName = $cxxClassName;
 
@@ -1393,9 +1396,9 @@ sub normalize_classname {
         $perlClassName =~ s/^Q3(?=[A-Z])/Qt3::/;
     }
     elsif ($cxxClassName =~ m/^Q/) {
-        # Only prepend Qt:: if the name starts with Q and is followed by
+        # Only prepend Qt4:: if the name starts with Q and is followed by
         # an uppercase letter
-        $perlClassName =~ s/^Q(?=[A-Z])/Qt::/;
+        $perlClassName =~ s/^Q(?=[A-Z])/Qt4::/;
     }
 
     return $perlClassName;
@@ -1422,31 +1425,31 @@ sub objmatch {
     return 1;
 }
 
-sub Qt::CoreApplication::NEW {
+sub Qt4::CoreApplication::NEW {
     my $class = shift;
     my $argv = shift;
     unshift @$argv, $0;
     my $count = scalar @$argv;
-    my $retval = Qt::CoreApplication::QCoreApplication( $count, $argv );
+    my $retval = Qt4::CoreApplication::QCoreApplication( $count, $argv );
     bless( $retval, " $class" );
     setThis( $retval );
     setQApp( $retval );
     shift @$argv;
 }
 
-sub Qt::Application::NEW {
+sub Qt4::Application::NEW {
     my $class = shift;
     my $argv = shift;
     unshift @$argv, $0;
     my $count = scalar @$argv;
-    my $retval = Qt::Application::QApplication( $count, $argv );
+    my $retval = Qt4::Application::QApplication( $count, $argv );
     bless( $retval, " $class" );
     setThis( $retval );
     setQApp( $retval );
     shift @$argv;
 }
 
-package Qt;
+package Qt4;
 
 use 5.008006;
 use strict;
@@ -1460,9 +1463,9 @@ our $VERSION = '0.01';
 
 our @EXPORT = qw( SIGNAL SLOT emit CAST qApp );
 
-XSLoader::load('Qt', $VERSION);
+XSLoader::load('Qt4', $VERSION);
 
-Qt::_internal::init();
+Qt4::_internal::init();
 
 sub SIGNAL ($) { '2' . $_[0] }
 sub SLOT ($) { '1' . $_[0] }
@@ -1470,7 +1473,7 @@ sub emit (@) { return pop @_ }
 sub CAST ($$) {
     my( $var, $class ) = @_;
     if( ref $var ) {
-        if ( $class->isa( 'Qt::base' ) ) {
+        if ( $class->isa( 'Qt4::base' ) ) {
             $class = " $class";
         }
         return bless( $var, $class );
@@ -1483,195 +1486,195 @@ sub CAST ($$) {
 sub import { goto &Exporter::import }
 
 sub setSignature {
-    $Qt::_internal::ambiguousSignature = shift;
+    $Qt4::_internal::ambiguousSignature = shift;
 }
 
 # Called in the DESTROY method for all QObjects to see if they still have a
 # parent, and avoid deleting them if they do.
-sub Qt::Object::ON_DESTROY {
-    package Qt::_internal;
-    my $parent = Qt::this()->parent;
+sub Qt4::Object::ON_DESTROY {
+    package Qt4::_internal;
+    my $parent = Qt4::this()->parent;
     if( defined $parent ) {
-        my $ptr = sv_to_ptr(Qt::this());
-        ${ $parent->{'hidden children'} }{ $ptr } = Qt::this();
-        Qt::this()->{'has been hidden'} = 1;
+        my $ptr = sv_to_ptr(Qt4::this());
+        ${ $parent->{'hidden children'} }{ $ptr } = Qt4::this();
+        Qt4::this()->{'has been hidden'} = 1;
         return 1;
     }
     return 0;
 }
 
 # Never save a QApplication from destruction
-sub Qt::Application::ON_DESTROY {
+sub Qt4::Application::ON_DESTROY {
     return 0;
 }
 
-Qt::_internal::installSub(' Qt::Variant::value', sub {
+Qt4::_internal::installSub(' Qt4::Variant::value', sub {
     my $this = shift;
 
     my $type = $this->type();
-    if( $type == Qt::Variant::Invalid() ) {
+    if( $type == Qt4::Variant::Invalid() ) {
         return;
     }
-    elsif( $type == Qt::Variant::Bitmap() ) {
+    elsif( $type == Qt4::Variant::Bitmap() ) {
     }
-    elsif( $type == Qt::Variant::Bool() ) {
+    elsif( $type == Qt4::Variant::Bool() ) {
         return $this->toBool();
     }
-    elsif( $type == Qt::Variant::Brush() ) {
-        return Qt::qVariantValue($this, 'Qt::Brush');
+    elsif( $type == Qt4::Variant::Brush() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Brush');
     }
-    elsif( $type == Qt::Variant::ByteArray() ) {
+    elsif( $type == Qt4::Variant::ByteArray() ) {
         return $this->toByteArray();
     }
-    elsif( $type == Qt::Variant::Char() ) {
-        return Qt::qVariantValue($this, 'Qt::Char');
+    elsif( $type == Qt4::Variant::Char() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Char');
     }
-    elsif( $type == Qt::Variant::Color() ) {
-        return Qt::qVariantValue($this, 'Qt::Color');
+    elsif( $type == Qt4::Variant::Color() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Color');
     }
-    elsif( $type == Qt::Variant::Cursor() ) {
-        return Qt::qVariantValue($this, 'Qt::Cursor');
+    elsif( $type == Qt4::Variant::Cursor() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Cursor');
     }
-    elsif( $type == Qt::Variant::Date() ) {
+    elsif( $type == Qt4::Variant::Date() ) {
         return $this->toDate();
     }
-    elsif( $type == Qt::Variant::DateTime() ) {
+    elsif( $type == Qt4::Variant::DateTime() ) {
         return $this->toDateTime();
     }
-    elsif( $type == Qt::Variant::Double() ) {
+    elsif( $type == Qt4::Variant::Double() ) {
         return $this->toDouble();
     }
-    elsif( $type == Qt::Variant::Font() ) {
-        return Qt::qVariantValue($this, 'Qt::Font');
+    elsif( $type == Qt4::Variant::Font() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Font');
     }
-    elsif( $type == Qt::Variant::Icon() ) {
-        return Qt::qVariantValue($this, 'Qt::Icon');
+    elsif( $type == Qt4::Variant::Icon() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Icon');
     }
-    elsif( $type == Qt::Variant::Image() ) {
-        return Qt::qVariantValue($this, 'Qt::Image');
+    elsif( $type == Qt4::Variant::Image() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Image');
     }
-    elsif( $type == Qt::Variant::Int() ) {
+    elsif( $type == Qt4::Variant::Int() ) {
         return $this->toInt();
     }
-    elsif( $type == Qt::Variant::KeySequence() ) {
-        return Qt::qVariantValue($this, 'Qt::KeySequence');
+    elsif( $type == Qt4::Variant::KeySequence() ) {
+        return Qt4::qVariantValue($this, 'Qt4::KeySequence');
     }
-    elsif( $type == Qt::Variant::Line() ) {
+    elsif( $type == Qt4::Variant::Line() ) {
         return $this->toLine();
     }
-    elsif( $type == Qt::Variant::LineF() ) {
+    elsif( $type == Qt4::Variant::LineF() ) {
         return $this->toLineF();
     }
-    elsif( $type == Qt::Variant::List() ) {
+    elsif( $type == Qt4::Variant::List() ) {
         return $this->toList();
     }
-    elsif( $type == Qt::Variant::Locale() ) {
-        return Qt::qVariantValue($this, 'Qt::Locale');
+    elsif( $type == Qt4::Variant::Locale() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Locale');
     }
-    elsif( $type == Qt::Variant::LongLong() ) {
+    elsif( $type == Qt4::Variant::LongLong() ) {
         return $this->toLongLong();
     }
-    elsif( $type == Qt::Variant::Map() ) {
+    elsif( $type == Qt4::Variant::Map() ) {
         return $this->toMap();
     }
-    elsif( $type == Qt::Variant::Palette() ) {
-        return Qt::qVariantValue($this, 'Qt::Palette');
+    elsif( $type == Qt4::Variant::Palette() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Palette');
     }
-    elsif( $type == Qt::Variant::Pen() ) {
-        return Qt::qVariantValue($this, 'Qt::Pen');
+    elsif( $type == Qt4::Variant::Pen() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Pen');
     }
-    elsif( $type == Qt::Variant::Pixmap() ) {
-        return Qt::qVariantValue($this, 'Qt::Pixmap');
+    elsif( $type == Qt4::Variant::Pixmap() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Pixmap');
     }
-    elsif( $type == Qt::Variant::Point() ) {
+    elsif( $type == Qt4::Variant::Point() ) {
         return $this->toPoint();
     }
-    elsif( $type == Qt::Variant::PointF() ) {
+    elsif( $type == Qt4::Variant::PointF() ) {
         return $this->toPointF();
     }
-    elsif( $type == Qt::Variant::Polygon() ) {
-        return Qt::qVariantValue($this, 'Qt::Polygon');
+    elsif( $type == Qt4::Variant::Polygon() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Polygon');
     }
-    elsif( $type == Qt::Variant::Rect() ) {
+    elsif( $type == Qt4::Variant::Rect() ) {
         return $this->toRect();
     }
-    elsif( $type == Qt::Variant::RectF() ) {
+    elsif( $type == Qt4::Variant::RectF() ) {
         return $this->toRectF();
     }
-    elsif( $type == Qt::Variant::RegExp() ) {
+    elsif( $type == Qt4::Variant::RegExp() ) {
         return $this->toRegExp();
     }
-    elsif( $type == Qt::Variant::Region() ) {
-        return Qt::qVariantValue($this, 'Qt::Region');
+    elsif( $type == Qt4::Variant::Region() ) {
+        return Qt4::qVariantValue($this, 'Qt4::Region');
     }
-    elsif( $type == Qt::Variant::Size() ) {
+    elsif( $type == Qt4::Variant::Size() ) {
         return $this->toSize();
     }
-    elsif( $type == Qt::Variant::SizeF() ) {
+    elsif( $type == Qt4::Variant::SizeF() ) {
         return $this->toSizeF();
     }
-    elsif( $type == Qt::Variant::SizePolicy() ) {
+    elsif( $type == Qt4::Variant::SizePolicy() ) {
         return $this->toSizePolicy();
     }
-    elsif( $type == Qt::Variant::String() ) {
+    elsif( $type == Qt4::Variant::String() ) {
         return $this->toString();
     }
-    elsif( $type == Qt::Variant::StringList() ) {
+    elsif( $type == Qt4::Variant::StringList() ) {
         return $this->toStringList();
     }
-    elsif( $type == Qt::Variant::TextFormat() ) {
-        return Qt::qVariantValue($this, 'Qt::TextFormat');
+    elsif( $type == Qt4::Variant::TextFormat() ) {
+        return Qt4::qVariantValue($this, 'Qt4::TextFormat');
     }
-    elsif( $type == Qt::Variant::TextLength() ) {
-        return Qt::qVariantValue($this, 'Qt::TextLength');
+    elsif( $type == Qt4::Variant::TextLength() ) {
+        return Qt4::qVariantValue($this, 'Qt4::TextLength');
     }
-    elsif( $type == Qt::Variant::Time() ) {
+    elsif( $type == Qt4::Variant::Time() ) {
         return $this->toTime();
     }
-    elsif( $type == Qt::Variant::UInt() ) {
+    elsif( $type == Qt4::Variant::UInt() ) {
         return $this->toUInt();
     }
-    elsif( $type == Qt::Variant::ULongLong() ) {
+    elsif( $type == Qt4::Variant::ULongLong() ) {
         return $this->toULongLong();
     }
-    elsif( $type == Qt::Variant::Url() ) {
+    elsif( $type == Qt4::Variant::Url() ) {
         return $this->toUrl();
     }
     else {
-        return Qt::qVariantValue($this);
+        return Qt4::qVariantValue($this);
     }
 });
 
 sub String {
-    return bless \shift, 'Qt::String';
+    return bless \shift, 'Qt4::String';
 }
 
 sub CString {
-    return bless \shift, 'Qt::CString';
+    return bless \shift, 'Qt4::CString';
 }
 
 sub Int {
-    return bless \shift, 'Qt::Int';
+    return bless \shift, 'Qt4::Int';
 }
 
 sub Uint {
-    return bless \shift, 'Qt::Uint';
+    return bless \shift, 'Qt4::Uint';
 }
 
 sub Bool {
-    return bless \shift, 'Qt::Bool';
+    return bless \shift, 'Qt4::Bool';
 }
 
 sub Short {
-    return bless \shift, 'Qt::Short';
+    return bless \shift, 'Qt4::Short';
 }
 
 sub Ushort {
-    return bless \shift, 'Qt::Ushort';
+    return bless \shift, 'Qt4::Ushort';
 }
 
 sub Uchar {
-    return bless \shift, 'Qt::Uchar';
+    return bless \shift, 'Qt4::Uchar';
 }
 
 1;
@@ -1680,15 +1683,15 @@ sub Uchar {
 
 =head1 NAME
 
-Qt - Perl bindings for the Qt version 4 library
+Qt4 - Perl bindings for the Qt4 version 4 library
 
 =head1 SYNOPSIS
 
-  use Qt;
+  use Qt4;
 
 =head1 DESCRIPTION
 
-This module is a port of the PerlQt3 package to work with Qt version 4.
+This module is a port of the PerlQt43 package to work with Qt4 version 4.
 
 =head2 EXPORT
 
@@ -1701,49 +1704,49 @@ class.
 
 =over
 
-=item Qt::Variant
+=item Qt4::Variant
 
-According to the Qt documentation:
+According to the Qt4 documentation:
 
-    Because QVariant is part of the QtCore library, it cannot provide
-    conversion functions to data types defined in QtGui, such as QColor,
+    Because QVariant is part of the Qt4Core library, it cannot provide
+    conversion functions to data types defined in Qt4Gui, such as QColor,
     QImage, and QPixmap.  In other words, there is no toColor() function.
     Instead, you can use the QVariant::value() or the qVariantValue() template
     function.
 
-PerlQt implements this functionality by supplying 2 functions,
-Qt::qVariantValue() and Qt::qVariantFromValue().  These two functions, in
-addition to handling the QtGui types, can also handle Perl hash references and
+PerlQt4 implements this functionality by supplying 2 functions,
+Qt4::qVariantValue() and Qt4::qVariantFromValue().  These two functions, in
+addition to handling the Qt4Gui types, can also handle Perl hash references and
 array references.  To accomplish this, 2 metatypes have been declared, called
 'HV*' and 'AV*'.
 
 =over
 
-=item Qt::qVariantValue()
+=item Qt4::qVariantValue()
 
 Returns:
 An object of type $typename, or undef if the conversion cannot be made.
 
 Args:
-$variant: A Qt::Variant object.
-$typename: The name of the type of data you want out of the Qt::Variant.  This
+$variant: A Qt4::Variant object.
+$typename: The name of the type of data you want out of the Qt4::Variant.  This
 parameter is optional if the variant contains a perl hash or array ref.
 
 Description:
-Equivalent to Qt's qVariantValue() function.
+Equivalent to Qt4's qVariantValue() function.
 
-=item Qt::qVariantFromValue()
+=item Qt4::qVariantFromValue()
 
 Returns:
-A Qt::Variant object containing a copy of the given value on success, undef on
+A Qt4::Variant object containing a copy of the given value on success, undef on
 failure.
 
 Args:
-$value: The value to place into the Qt::Variant.
+$value: The value to place into the Qt4::Variant.
 
 Description:
-Equivalent to Qt's qVariantFromValue() function.  If $value is a hash or array
-ref, the resulting Qt::Variant will have it's typeName set to 'HV*' or 'AV*',
+Equivalent to Qt4's qVariantFromValue() function.  If $value is a hash or array
+ref, the resulting Qt4::Variant will have it's typeName set to 'HV*' or 'AV*',
 respectively.
 
 =back
@@ -1752,7 +1755,7 @@ respectively.
 
 =head1 SEE ALSO
 
-The existing Qt documentation is very complete.  Use it for your reference.
+The existing Qt4 documentation is very complete.  Use it for your reference.
 
 Get the project's current version at http://code.google.com/p/perlqt4/
 

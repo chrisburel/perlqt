@@ -1,4 +1,4 @@
-package Qt::isa;
+package Qt4::isa;
 
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ my $H = sub {my ($n) = @_; no strict 'refs'; no warnings 'once'; \%{$n}};
 my $ISUB = sub {my ($n, $s) = @_; no strict 'refs'; *{$n} = $s};
 
 sub import {
-    # Class will be Qt::isa.  Caller is the name of the package doing the use.
+    # Class will be Qt4::isa.  Caller is the name of the package doing the use.
     my $class = shift;
     my $caller = (caller)[0];
 
@@ -18,10 +18,10 @@ sub import {
     my $pm = $caller . ".pm";
     $pm =~ s!::!/!g;
     unless(exists $::INC{$pm}) {
-        $::INC{$pm} = $::INC{"Qt/isa.pm"};
+        $::INC{$pm} = $::INC{"Qt4/isa.pm"};
     }
 
-    # Define the Qt::ISA array
+    # Define the Qt4::ISA array
     # Load the file if necessary
     for my $super (@_) {
         push @{$A->($caller . '::ISA')}, $super;
@@ -29,7 +29,7 @@ sub import {
 
         # Convert ::'s to a filepath /
         (my $super_pm = $super.'.pm') =~ s!::!/!g;
-        unless( defined $Qt::_internal::package2classId{$super} ){
+        unless( defined $Qt4::_internal::package2classId{$super} ){
             require $super_pm;
         }
     }
@@ -52,12 +52,12 @@ sub import {
 
     foreach my $sp ('  ', ' ', '') {
         my $where = $sp . $caller;
-        Qt::_internal::installautoload($where);
-        package Qt::AutoLoad;
+        Qt4::_internal::installautoload($where);
+        package Qt4::AutoLoad;
         my $autosub = \&{$where . '::_UTOLOAD'};
         $ISUB->($where.'::AUTOLOAD', sub { &$autosub });
     }
 
-    Qt::_internal::installthis($caller);
+    Qt4::_internal::installthis($caller);
 }
 1; # Is the loneliest number that you'll ever do

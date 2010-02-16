@@ -1,5 +1,5 @@
-package Qt::debug;
-use Qt;
+package Qt4::debug;
+use Qt4;
 
 our %channel = (
     'ambiguous' => 0x01,
@@ -19,7 +19,7 @@ sub dumpMetaMethods {
     # Did we get an object in, or just a class name?
     my $className = ref $object ? ref $object : $object;
     $className =~ s/^ *//;
-    my $meta = Qt::_internal::getMetaObject( $className );
+    my $meta = Qt4::_internal::getMetaObject( $className );
 
     if ( $meta->methodCount() ) {
         print join '', 'Methods for ', $meta->className(), ":\n"
@@ -59,14 +59,14 @@ sub import {
              $usage++;
         }
     }
-    Qt::_internal::setDebug($db);    
+    Qt4::_internal::setDebug($db);    
     print "Available channels: \n\t".
           join("\n\t", sort keys %channel).
           "\n" if $usage;
 }
 
 sub unimport {
-    Qt::_internal::setDebug(0);    
+    Qt4::_internal::setDebug(0);    
 }
 
 1;
