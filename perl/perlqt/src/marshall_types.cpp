@@ -447,9 +447,30 @@ namespace PerlQt4 {
         SPAGAIN;
         // Marshall the return value back to c++, using the top of the stack
         VirtualMethodReturnValue r(_smoke, _method, _stack, POPs);
+        if ( r.type().isClass() ) {
+            const char* typeOfInput = get_SVt(r.var());
+            if (strlen(typeOfInput) == 1) {
+                switch( *typeOfInput ) {
+                    case 's':
+                        croak( "Expected return value of type %s, but got a "
+                               "string", r.type().name() );
+                        break;
+                    case 'i':
+                    case 'n':
+                        croak( "Expected return value of type %s, but got a "
+                               "numeric value", r.type().name() );
+                        break;
+                    case 'u':
+                    case 'U':
+                        croak( "Expected return value of type %s, but got an "
+                               "undefined value", r.type().name() );
+                }
+            }
+        }
         PUTBACK;
         FREETMPS;
         LEAVE;
+
     }
 
     bool VirtualMethodCall::cleanup() {

@@ -64,10 +64,10 @@ sub headerData {
     
     if ($orientation == Qt4::Horizontal()) {
         if ($section == 0) {
-            return this->tr("Name");
+            return Qt4::Variant(Qt4::String(this->tr("Name")));
         }
-        elsif ($section == 1) {              
-            return this->tr("Address");
+        elsif ($section == 1) {
+            return Qt4::Variant(Qt4::String(this->tr("Address")));
         }
         else {
             return Qt4::Variant();
