@@ -1,2 +1,5 @@
-Ui_CalculatorForm.pm : calculatorform.ui /pts/testPipe/share/Qt4/def/dat/perlqt4/build/perl/tools/puic/puic4
+Ui_CalculatorForm.pm : calculatorform.ui
 	puic4 calculatorform.ui -o Ui_CalculatorForm.pm
+
+clean :
+	rm -f Ui_CalculatorForm.pm

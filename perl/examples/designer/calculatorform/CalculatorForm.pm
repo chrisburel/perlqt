@@ -14,15 +14,13 @@ use Qt::slots
     on_inputSpinBox1_valueChanged => ['int'],
     on_inputSpinBox2_valueChanged => ['int'];
 
-#private:
-    #Ui::CalculatorForm ui;
 # [1]
 
 # [0]
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW($parent);
-    this->{ui} = Ui_CalculatorForm::setupUi(this);
+    this->{ui} = Ui_CalculatorForm->setupUi(this);
 }
 # [0]
 
@@ -36,7 +34,6 @@ sub on_inputSpinBox1_valueChanged {
 # [2]
 sub on_inputSpinBox2_valueChanged {
     my ( $value ) = @_;
-    $DB::single=1;
     this->{ui}->outputWidget()->setText( $value + this->{ui}->inputSpinBox1->value() );
 }
 # [2]
