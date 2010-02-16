@@ -1,4 +1,4 @@
-use Test::More tests => 20;
+use Test::More tests => 23;
 
 use strict;
 use warnings;
@@ -80,15 +80,39 @@ my $app = Qt::Application( \@ARGV );
 
 {
     # Test char and uchar marshalling
-    Qt::setSignature( 'QChar::QChar( int )' );
-    my $char = Qt::Char( 87 );
+    my $char = Qt::Char( Qt::Int(87) );
     is ( $char->toAscii(), 87, 'signed char' );
-    Qt::setSignature( 'QChar::QChar( uchar )' );
-    $char = Qt::Char( 'f' );
-    is ( $char->toAscii(), ord('f'), 'signed char' );
+    $char = Qt::Char( Qt::Uchar('f') );
+    is ( $char->toAscii(), ord('f'), 'unsigned char' );
     $char = Qt::Char( 'f', 3 );
     is ( $char->row(), 3, 'unsigned char' );
     is ( $char->cell(), ord('f'), 'unsigned char' );
+}
+
+{
+    # Test short, ushort, and long marshalling
+    my $shortSize = length( pack 'S', 0 );
+    my $num = 5;
+    my $gotNum = 0;
+    my $block = Qt::ByteArray();
+    my $stream = Qt::DataStream($block, Qt::IODevice::ReadWrite());
+    no warnings qw(void);
+    $stream << Qt::Short($num);
+    my $streamPos = $stream->device()->pos();
+    $stream->device()->seek(0);
+    $stream >> Qt::Short($gotNum);
+    use warnings;
+    is ( $gotNum, $num, 'signed short' );
+
+    $gotNum = 0;
+    no warnings qw(void);
+    $stream->device()->seek(0);
+    $stream << Qt::Ushort($num);
+    $stream->device()->seek(0);
+    $stream >> Qt::Ushort($gotNum);
+    use warnings;
+    is ( $gotNum, $num, 'unsigned short' );
+    is ( $streamPos, $shortSize, 'long' );
 }
 
 {

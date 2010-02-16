@@ -876,6 +876,14 @@ sub argmatch {
                 $explicitType = 1;
             }
         }
+        elsif ( $argType eq 'Qt::Uchar' ) {
+            if( $typeName =~ m/^u(?=nsigned )?char[\*&]?$/ ) {
+                return $methodId;
+            }
+            else {
+                $explicitType = 1;
+            }
+        }
         # objects
         else {
             # Optional const, some words, optional & or *.  Note ?: does not
@@ -1658,6 +1666,10 @@ sub Short {
 
 sub Ushort {
     return bless \shift, 'Qt::Ushort';
+}
+
+sub Uchar {
+    return bless \shift, 'Qt::Uchar';
 }
 
 1;

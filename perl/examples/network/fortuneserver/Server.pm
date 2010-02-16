@@ -83,7 +83,7 @@ sub sendFortune
 {
 # [5]
     my $block = Qt::ByteArray();
-    my $out = Qt::DataStream($block, Qt::IODevice::ReadWrite());
+    my $out = Qt::DataStream($block, Qt::IODevice::WriteOnly());
     $out->setVersion(Qt::DataStream::Qt_4_0());
     my $shortSize = length( pack 'S', 0 );
 # [4] //! [6]

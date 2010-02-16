@@ -34,6 +34,8 @@ template <>
 unsigned char perl_to_primitive<unsigned char>(SV *sv) {
     if ( !SvOK(sv) )
         return 0;
+    if ( SvROK(sv) )
+        sv = SvRV(sv);
     if ( SvIOK( sv ) )
         return (unsigned char)SvIV(sv);
     return (unsigned char)*SvPV_nolen(sv);
@@ -46,7 +48,6 @@ SV *primitive_to_perl<unsigned char>(unsigned char sv) {
 //-----------------------------------------------------------------------------
 template <>
 short perl_to_primitive<short>(SV *sv) {
-    UNTESTED_HANDLER("perl_to_primitive<short>");
     if ( !SvOK(sv) )
         return 0;
     if ( SvROK(sv) )
@@ -62,7 +63,6 @@ SV *primitive_to_perl<short>(short sv) {
 //-----------------------------------------------------------------------------
 template <>
 unsigned short perl_to_primitive<unsigned short>(SV *sv) {
-    UNTESTED_HANDLER("perl_to_primitive<unsigned short>");
     if ( !SvOK(sv) )
         return 0;
     if ( SvROK(sv) )
@@ -107,18 +107,14 @@ SV* primitive_to_perl<unsigned int>(unsigned int sv) {
 //-----------------------------------------------------------------------------
 template <>
 long perl_to_primitive<long>(SV *sv) {
-    UNTESTED_HANDLER("perl_to_primitive<long>");
-    if ( !SvOK(sv) ) {
+    if ( !SvOK(sv) )
         return 0;
-    //} else if (TYPE(sv) == T_OBJECT) {
-        //return (long) NUM2LONG(rb_funcall(qt_internal_module, rb_intern("get_qinteger"), 1, sv));
-    } else {
-        return (long) SvIV(sv);
-    }
+    if ( SvROK(sv) )
+        sv = SvRV(sv);
+    return (long) SvIV(sv);
 }
 template <>
 SV *primitive_to_perl<long>(long sv) {
-    UNTESTED_HANDLER("primitive_to_perl<long>");
     return newSViv(sv);
 }
 
