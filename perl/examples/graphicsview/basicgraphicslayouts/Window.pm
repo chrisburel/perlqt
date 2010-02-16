@@ -8,8 +8,6 @@ use Qt4::isa qw( Qt4::GraphicsWidget );
 # [0]
 use LayoutItem;
 
-my @foo;
-
 sub NEW
 {
     my ($class, $parent) = @_;
@@ -18,14 +16,12 @@ sub NEW
     my $windowLayout = Qt4::GraphicsLinearLayout(Qt4::Vertical());
     my $linear = Qt4::GraphicsLinearLayout($windowLayout);
     my $item = LayoutItem();
-    push @foo, $item;
     $linear->addItem($item);
     $linear->setStretchFactor($item, 1);
 # [0]
 
 # [1]
     $item = LayoutItem();
-    push @foo, $item;
     $linear->addItem($item);
     $linear->setStretchFactor($item, 3);
     $windowLayout->addItem($linear);
@@ -34,27 +30,20 @@ sub NEW
 # [2]
     my $grid = Qt4::GraphicsGridLayout($windowLayout);
     $item = LayoutItem();
-    push @foo, $item;
     $grid->addItem($item, 0, 0, 4, 1);
     $item = LayoutItem();
-    push @foo, $item;
     $item->setMaximumHeight($item->minimumHeight());
     $grid->addItem($item, 0, 1, 2, 1, Qt4::AlignVCenter());
     $item = LayoutItem();
-    push @foo, $item;
     $item->setMaximumHeight($item->minimumHeight());
     $grid->addItem($item, 2, 1, 2, 1, Qt4::AlignVCenter());
     $item = LayoutItem();
-    push @foo, $item;
     $grid->addItem($item, 0, 2);
     $item = LayoutItem();
-    push @foo, $item;
     $grid->addItem($item, 1, 2);
     $item = LayoutItem();
-    push @foo, $item;
     $grid->addItem($item, 2, 2);
     $item = LayoutItem();
-    push @foo, $item;
     $grid->addItem($item, 3, 2);
     $windowLayout->addItem($grid);
 # [2]

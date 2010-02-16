@@ -39,7 +39,7 @@ sub paint
     push @stops, [$frame->height()/2/$frame->height(), Qt4::Color(102, 176, 54)];
 
     push @stops, [1.0, Qt4::Color(215, 215, 215)];
-    $gradient->setStops(\@stops);
+    #$gradient->setStops(\@stops);
     $painter->setBrush(Qt4::Brush($gradient));
     $painter->drawRoundedRect($frame, 10.0, 10.0);
 
@@ -53,7 +53,7 @@ sub paint
     push @stops, [0.0, Qt4::Color(215, 255, 200)];
     push @stops, [0.5, Qt4::Color(102, 176, 54)];
     push @stops, [1.0, Qt4::Color(0, 0,  0)];
-    $gradient->setStops(\@stops);
+    #$gradient->setStops(\@stops);
     $painter->setBrush(Qt4::Brush($gradient));
     $painter->drawRoundedRect($innerFrame, 10.0, 10.0);
     $painter->drawPixmap($pixpos, this->pix);
