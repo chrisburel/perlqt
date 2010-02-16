@@ -43,6 +43,7 @@
 
 template <class Item, class ItemList, const char *ItemSTR >
 void marshall_ItemList(Marshall *m) {
+    UNTESTED_HANDLER( "marshall_ItemList" );
     switch(m->action()) {
         case Marshall::FromSV: {
             m->unsupported();
@@ -168,6 +169,7 @@ void marshall_ItemList(Marshall *m) {
 /*
 template <class Item, class ItemList, const char *ItemSTR >
 void marshall_ValueListItem(Marshall *m) {
+    UNTESTED_HANDLER( "marshall_ValueListItem" );
     switch(m->action()) {
         case Marshall::FromVALUE:
         {
@@ -283,6 +285,7 @@ void marshall_ValueListItem(Marshall *m) {
 
 template <class Item, class ItemList, const char *ItemSTR >
 void marshall_LinkedItemList(Marshall *m) {
+    UNTESTED_HANDLER( "marshall_LinkedItemList" );
     switch(m->action()) {
         case Marshall::FromVALUE:
         {
@@ -378,6 +381,7 @@ void marshall_LinkedItemList(Marshall *m) {
 
 template <class Item, class ItemList, const char *ItemSTR >
 void marshall_LinkedValueListItem(Marshall *m) {
+    UNTESTED_HANDLER( "marshall_LinkedValueListItem" );
     switch(m->action()) {
         case Marshall::FromVALUE:
         {
@@ -490,6 +494,7 @@ void marshall_LinkedValueListItem(Marshall *m) {
 
 template <class Value, const char *ValueSTR >
 void marshall_Hash(Marshall *m) {
+    UNTESTED_HANDLER( "marshall_Hash" );
     switch(m->action()) {
     case Marshall::FromVALUE:
     {

@@ -64,7 +64,6 @@
 
 //==============================================================================
 
-#define UNTESTED_HANDLER(name) fprintf( stderr, "The handler %s has not been tested.\n", name );
 #include "handlers.h"
 #include "binding.h"
 #include "Qt.h"
@@ -139,6 +138,12 @@ QString* qstringFromPerlString( SV* perlstring ) {
         return new QString(QString::fromLatin1(SvPV_nolen(perlstring)));
 }
 
+QByteArray* qbytearrayFromPerlString( SV* perlstring ) {
+    STRLEN len = 0;
+    char *s = SvPV( perlstring, len );
+    return new QByteArray( s, len );
+}
+
 SV* perlstringFromQString( QString * s ) {
     SV *retval = newSV(0);
     COP *cop = cxstack[cxstack_ix].blk_oldcop;
@@ -152,6 +157,10 @@ SV* perlstringFromQString( QString * s ) {
         sv_setpv( retval, (const char *)s->toLatin1() );
 
     return retval;
+}
+
+SV* perlstringFromQByteArray( QByteArray * s ) {
+    return newSVpv(s->data(), s->size());
 }
 
 void marshall_basetype(Marshall* m) {
@@ -330,7 +339,7 @@ static void marshall_doubleR(Marshall *m) {
 
 void marshall_QString(Marshall* m) {
     switch(m->action()) {
-      case Marshall::FromSV: {
+        case Marshall::FromSV: {
             SV* sv = m->var();
             QString* mystr = 0;
             if( SvOK(sv) ) {
@@ -348,7 +357,7 @@ void marshall_QString(Marshall* m) {
             }
         }
         break;
-      case Marshall::ToSV: {
+        case Marshall::ToSV: {
             QString* cxxptr = (QString*)m->item().s_voidp;
             if( cxxptr ) {
                 if (cxxptr->isNull()) {
@@ -367,64 +376,58 @@ void marshall_QString(Marshall* m) {
             }
         }
         break;
-      default:
-        m->unsupported();
+        default:
+            m->unsupported();
         break;
     }
 }
 
-/*
 static void marshall_QByteArray(Marshall *m) {
     UNTESTED_HANDLER("marshall_QByteArray");
-  switch(m->action()) {
-    case Marshall::FromSV:
-    {
-      QByteArray* s = 0;
-      if( *(m->var()) != Qnil) {
-        s = qbytearrayFromRString(*(m->var()));
-      } else {
-        s = new QByteArray();
-      }
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            QByteArray* s = 0;
+            SV* sv = m->var();
+            if( SvOK(sv) ) {
+                s = qbytearrayFromPerlString( sv );
+            } else {
+                s = new QByteArray();
+            }
 
-      m->item().s_voidp = s;
-      m->next();
+            m->item().s_voidp = s;
+            m->next();
 
-      if (!m->type().isConst() && *(m->var()) != Qnil && s != 0 && !s->isNull()) {
-        rb_str_resize(*(m->var()), 0);
-        VALUE temp = rstringFromQByteArray(s);
-        rb_str_cat2(*(m->var()), StringValuePtr(temp));
-      }
-
-      if (s != 0 && m->cleanup()) {
-        delete s;
-      }
-    }
-    break;
-
-    case Marshall::ToSV:
-    {
-      QByteArray *s = (QByteArray*)m->item().s_voidp;
-      if(s) {
-        if (s->isNull()) {
-          *(m->var()) = Qnil;
-        } else {
-          *(m->var()) = rstringFromQByteArray(s);
+            if ( s != 0 && m->cleanup() ) {
+                delete s;
+            }
         }
-        if(m->cleanup() || m->type().isStack() ) {
-          delete s;
-        }
-      } else {
-        *(m->var()) = Qnil;
-      }
-    }
-    break;
+        break;
 
-    default:
-      m->unsupported();
-    break;
-   }
+        case Marshall::ToSV: {
+            QByteArray *s = (QByteArray*)m->item().s_voidp;
+            if( s ) {
+                // No magic needed on these, they're not blessed
+                if (s->isNull()) {
+                    sv_setsv( m->var(), &PL_sv_undef );
+                } else {
+                    sv_setsv( m->var(), perlstringFromQByteArray(s) );
+                }
+                if(m->cleanup() || m->type().isStack() ) {
+                    delete s;
+                }
+            } else {
+                sv_setsv( m->var(), &PL_sv_undef );
+            }
+        }
+        break;
+
+        default:
+            m->unsupported();
+            break;
+    }
 }
 
+/*
 void marshall_QDBusVariant(Marshall *m) {
     UNTESTED_HANDLER("marshall_QDBusVariant");
 	switch(m->action()) {
@@ -484,8 +487,8 @@ void marshall_QDBusVariant(Marshall *m) {
     }
 }
 */
+
 static void marshall_charP_array(Marshall* m) {
-    // Not copied from ruby
     switch( m->action() ) {
         case Marshall::FromSV: {
             SV* arglistref = m->var();
@@ -547,22 +550,16 @@ void marshall_QStringList(Marshall* m) {
                     continue;
                 }
                 // TODO: handle different encodings
-                stringlist->append(QString(SvPV_nolen(item)));
+                stringlist->append(*(qstringFromPerlString(item)));
             }
 
             m->item().s_voidp = stringlist;
             m->next();
 
-            if (stringlist != 0 && !m->type().isConst()) {
-                av_clear(list);
-                for(QStringList::Iterator it = stringlist->begin(); it != stringlist->end(); ++it)
-                    // TODO: handle different encodings
-                    av_push( list, newSVpv((*it).toLatin1().data(), 0) );
-            }
-                                
             if (m->cleanup()) {
                 delete stringlist;
             }
+
             break;
         }
         case Marshall::ToSV: {
@@ -576,7 +573,8 @@ void marshall_QStringList(Marshall* m) {
             SV* sv = newRV_noinc( (SV*)av );
             for (QStringList::Iterator it = stringlist->begin(); it != stringlist->end(); ++it) {
                 // TODO: handle different encodings
-                av_push( av, newSVpv((*it).toLatin1().data(), 0) );
+                //av_push( av, newSVpv((*it).toLatin1().data(), 0) );
+                av_push( av, perlstringFromQString(&(*it)) );
             }
 
             sv_setsv(m->var(), sv);
@@ -712,363 +710,372 @@ void marshall_QListCharStar(Marshall *m) {
     }
 }
 
-/*
 void marshall_QListInt(Marshall *m) {
     UNTESTED_HANDLER("marshall_QListInt");
     switch(m->action()) {
-      case Marshall::FromSV:
-	{
-	    VALUE list = *(m->var());
-	    if (TYPE(list) != T_ARRAY) {
-		m->item().s_voidp = 0;
-		break;
-	    }
-	    int count = RARRAY_LEN(list);
-	    QList<int> *valuelist = new QList<int>;
-	    long i;
-	    for(i = 0; i < count; i++) {
-		VALUE item = rb_ary_entry(list, i);
-		if(TYPE(item) != T_FIXNUM && TYPE(item) != T_BIGNUM) {
-		    valuelist->append(0);
-		    continue;
-		}
-		valuelist->append(NUM2INT(item));
-	    }
+        case Marshall::FromSV: {
+            SV *listref = m->var();
+            if ( !SvOK( listref ) && !SvROK( listref ) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-	    m->item().s_voidp = valuelist;
-	    m->next();
+            AV *list = (AV*)SvRV( listref );
+            
+            int count = av_len(list) + 1;
+            QList<int> *valuelist = new QList<int>;
+            long i;
+            for(i = 0; i < count; ++i) {
+                SV **item = av_fetch(list, i, 0);
+                if( !item && !SvIOK( *item ) ) {
+                    valuelist->append(0);
+                    continue;
+                }
+                valuelist->append(SvIV(*item));
+            }
 
-		if (!m->type().isConst()) {
-			rb_ary_clear(list);
-	
-			for (	QList<int>::iterator i = valuelist->begin(); 
-					i != valuelist->end(); 
-					++i ) 
-			{
-				rb_ary_push(list, INT2NUM((int)*i));
-			}
-		}
+            m->item().s_voidp = valuelist;
+            m->next();
 
-		if (m->cleanup()) {
-			delete valuelist;
-	    }
-	}
-	break;
-      case Marshall::ToSV:
-	{
-	    QList<int> *valuelist = (QList<int>*)m->item().s_voidp;
-	    if(!valuelist) {
-		*(m->var()) = Qnil;
-		break;
-	    }
+            if (!m->type().isConst()) {
+                av_clear(list);
 
-	    VALUE av = rb_ary_new();
+                for (	QList<int>::iterator i = valuelist->begin(); 
+                        i != valuelist->end(); 
+                        ++i ) 
+                {
+                    av_push(list, newSViv((int)*i));
+                }
+            }
 
-		for (	QList<int>::iterator i = valuelist->begin(); 
-				i != valuelist->end(); 
-				++i ) 
-		{
-		    rb_ary_push(av, INT2NUM((int)*i));
-		}
-		
-	    *(m->var()) = av;
-		m->next();
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+        case Marshall::ToSV: {
+            QList<int> *valuelist = (QList<int>*)m->item().s_voidp;
+            if(!valuelist) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
 
-		if (m->cleanup()) {
-			delete valuelist;
-		}
-	}
-	break;
-      default:
-	m->unsupported();
-	break;
+            AV *av = newAV();
+
+            for (	QList<int>::iterator i = valuelist->begin(); 
+                    i != valuelist->end(); 
+                    ++i ) 
+            {
+                av_push(av, newSViv((int)*i));
+            }
+
+            sv_setsv( m->var(), newRV_noinc( (SV*)av ) );
+            m->next();
+
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+        default:
+            m->unsupported();
+            break;
     }
 }
 
 void marshall_QListUInt(Marshall *m) {
     UNTESTED_HANDLER("marshall_QListUInt");
     switch(m->action()) {
-      case Marshall::FromSV:
-	{
-	    VALUE list = *(m->var());
-	    if (TYPE(list) != T_ARRAY) {
-		m->item().s_voidp = 0;
-		break;
-	    }
-	    int count = RARRAY_LEN(list);
-	    QList<uint> *valuelist = new QList<uint>;
-	    long i;
-	    for(i = 0; i < count; i++) {
-		VALUE item = rb_ary_entry(list, i);
-		if(TYPE(item) != T_FIXNUM && TYPE(item) != T_BIGNUM) {
-		    valuelist->append(0);
-		    continue;
-		}
-		valuelist->append(NUM2UINT(item));
-	    }
+        case Marshall::FromSV: {
+            SV *listref = m->var();
+            if ( !SvOK( listref ) && !SvROK( listref ) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-	    m->item().s_voidp = valuelist;
-	    m->next();
+            AV *list = (AV*)SvRV( listref );
 
-		if (!m->type().isConst()) {
-			rb_ary_clear(list);
-	
-			for (	QList<uint>::iterator i = valuelist->begin(); 
-					i != valuelist->end(); 
-					++i ) 
-			{
-				rb_ary_push(list, UINT2NUM((int)*i));
-			}
-		}
+            int count = av_len(list) + 1;
+            QList<uint> *valuelist = new QList<uint>;
 
-		if (m->cleanup()) {
-			delete valuelist;
-	    }
-	}
-	break;
-      case Marshall::ToSV:
-	{
-	    QList<uint> *valuelist = (QList<uint>*)m->item().s_voidp;
-	    if(!valuelist) {
-		*(m->var()) = Qnil;
-		break;
-	    }
+            long i;
+            for(i = 0; i < count; i++) {
+                SV **item = av_fetch(list, i, 0);
+                if( !item ) {
+                    valuelist->append(0);
+                    continue;
+                }
+                valuelist->append(SvUV(*item));
+            }
 
-	    VALUE av = rb_ary_new();
+            m->item().s_voidp = valuelist;
+            m->next();
 
-		for (	QList<uint>::iterator i = valuelist->begin(); 
-				i != valuelist->end(); 
-				++i ) 
-		{
-		    rb_ary_push(av, UINT2NUM((int)*i));
-		}
-		
-	    *(m->var()) = av;
-		m->next();
+            if (!m->type().isConst()) {
+                av_clear(list);
 
-		if (m->cleanup()) {
-			delete valuelist;
-		}
-	}
-	break;
-      default:
-	m->unsupported();
-	break;
+                for (	QList<uint>::iterator i = valuelist->begin(); 
+                        i != valuelist->end(); 
+                        ++i ) 
+                {
+                    av_push(list, newSVuv((int)*i));
+                }
+            }
+
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+        case Marshall::ToSV: {
+            QList<uint> *valuelist = (QList<uint>*)m->item().s_voidp;
+            if(!valuelist) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
+
+            AV *av = newAV();
+
+            for (	QList<uint>::iterator i = valuelist->begin(); 
+                    i != valuelist->end(); 
+                    ++i ) 
+            {
+                av_push(av, newSVuv((int)*i));
+            }
+
+            sv_setsv( m->var(), newRV_noinc( (SV*)av ) );
+            m->next();
+
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
     }
 }
 
 void marshall_QListqreal(Marshall *m) {
     UNTESTED_HANDLER("marshall_QListqreal");
     switch(m->action()) {
-      case Marshall::FromSV:
-	{
-	    VALUE list = *(m->var());
-	    if (TYPE(list) != T_ARRAY) {
-		m->item().s_voidp = 0;
-		break;
-	    }
-	    int count = RARRAY_LEN(list);
-	    QList<qreal> *valuelist = new QList<qreal>;
-	    long i;
-	    for(i = 0; i < count; i++) {
-		VALUE item = rb_ary_entry(list, i);
-		if(TYPE(item) != T_FLOAT) {
-		    valuelist->append(0.0);
-		    continue;
-		}
-		valuelist->append(NUM2DBL(item));
-	    }
+        case Marshall::FromSV: {
+            SV* listref = m->var();
+            if ( !SvOK( listref ) && !SvROK( listref ) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-	    m->item().s_voidp = valuelist;
-	    m->next();
+            AV *list = (AV*)SvRV( listref );
 
-		if (!m->type().isConst()) {
-			rb_ary_clear(list);
-	
-			for (	QList<qreal>::iterator i = valuelist->begin(); 
-					i != valuelist->end(); 
-					++i ) 
-			{
-				rb_ary_push(list, rb_float_new((qreal)*i));
-			}
-		}
+            int count = av_len(list) + 1;
+            QList<qreal> *valuelist = new QList<qreal>;
+            for(long i = 0; i < count; ++i) {
+                SV **item = av_fetch(list, i, 0);
+                if( !item ) {
+                    valuelist->append(0.0);
+                    continue;
+                }
+                valuelist->append(SvNV(*item));
+            }
 
-		if (m->cleanup()) {
-			delete valuelist;
-		}
-	}
-	break;
-      case Marshall::ToSV:
-	{
-	    QList<qreal> *valuelist = (QList<qreal>*)m->item().s_voidp;
-	    if(!valuelist) {
-		*(m->var()) = Qnil;
-		break;
-	    }
+            m->item().s_voidp = valuelist;
+            m->next();
 
-	    VALUE av = rb_ary_new();
+            if (!m->type().isConst()) {
+                av_clear(list);
 
-		for (	QList<qreal>::iterator i = valuelist->begin(); 
-				i != valuelist->end(); 
-				++i ) 
-		{
-		    rb_ary_push(av, rb_float_new((qreal)*i));
-		}
-		
-	    *(m->var()) = av;
-		m->next();
+                for (	QList<qreal>::iterator i = valuelist->begin(); 
+                        i != valuelist->end(); 
+                        ++i ) 
+                {
+                    av_push(list, newSVnv((qreal)*i));
+                }
+            }
 
-		if (m->cleanup()) {
-			delete valuelist;
-		}
-	}
-	break;
-      default:
-	m->unsupported();
-	break;
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+        case Marshall::ToSV: {
+            QList<qreal> *valuelist = (QList<qreal>*)m->item().s_voidp;
+            if(!valuelist) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
+
+            AV *av = newAV();
+
+            for (	QList<qreal>::iterator i = valuelist->begin(); 
+                    i != valuelist->end(); 
+                    ++i ) 
+            {
+                av_push(av, newSVnv((qreal)*i));
+            }
+
+            sv_setsv( m->var(), newRV_noinc( (SV*)av ) );
+            m->next();
+
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
     }
 }
 
 void marshall_QVectorqreal(Marshall *m) {
     UNTESTED_HANDLER("marshall_QVectorqreal");
-	switch(m->action()) {
-	case Marshall::FromSV:
-	{
-		VALUE list = *(m->var());
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *listref = m->var();
+            if ( !SvOK( listref ) && !SvROK( listref ) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-		list = rb_check_array_type(*(m->var()));
-		if (NIL_P(list)) {
-			m->item().s_voidp = 0;
-			break;
-		}
+            AV *list = (AV*)SvRV( listref );
 
-		int count = RARRAY_LEN(list);
-		QVector<qreal> *valuelist = new QVector<qreal>;
-		long i;
-		for (i = 0; i < count; i++) {
-			valuelist->append(NUM2DBL(rb_ary_entry(list, i)));
-		}
+            int count = av_len(list) + 1;
+            QVector<qreal> *valuelist = new QVector<qreal>;
+            for ( long i = 0; i < count; i++) {
+                SV **item = av_fetch(list, i, 0);
+                if( !item ) {
+                    valuelist->append(0.0);
+                    continue;
+                }
 
-		m->item().s_voidp = valuelist;
-		m->next();
+                valuelist->append(SvNV(*item));
+            }
 
-		if (!m->type().isConst()) {
-			rb_ary_clear(list);
-	
-			for (	QVector<qreal>::iterator i = valuelist->begin(); 
-					i != valuelist->end(); 
-					++i ) 
-			{
-				rb_ary_push(list, rb_float_new((qreal)*i));
-			}
-		}
+            m->item().s_voidp = valuelist;
+            m->next();
 
-		if (m->cleanup()) {
-			delete valuelist;
-		}
-	}
-	break;
-	case Marshall::ToSV:
-	{
-	    QVector<qreal> *valuelist = (QVector<qreal>*)m->item().s_voidp;
-	    if(!valuelist) {
-		*(m->var()) = Qnil;
-		break;
-	    }
+            if (!m->type().isConst()) {
+                av_clear(list);
 
-	    VALUE av = rb_ary_new();
+                for (	QVector<qreal>::iterator i = valuelist->begin(); 
+                        i != valuelist->end(); 
+                        ++i ) 
+                {
+                    av_push(list, newSVnv((qreal)*i));
+                }
+            }
 
-		for (	QVector<qreal>::iterator i = valuelist->begin(); 
-				i != valuelist->end(); 
-				++i ) 
-		{
-		    rb_ary_push(av, rb_float_new((qreal)*i));
-		}
-		
-	    *(m->var()) = av;
-		m->next();
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+        case Marshall::ToSV: {
+            QVector<qreal> *valuelist = (QVector<qreal>*)m->item().s_voidp;
+            if(!valuelist) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
 
-		if (m->cleanup()) {
-			delete valuelist;
-		}
-	}
-	break;
-      default:
-	m->unsupported();
-	break;
+            AV *av = newAV();
+
+            for (	QVector<qreal>::iterator i = valuelist->begin(); 
+                    i != valuelist->end(); 
+                    ++i ) 
+            {
+                av_push(av, newSVnv((qreal)*i));
+            }
+
+            sv_setsv( m->var(), newRV_noinc( (SV*)av ) );
+            m->next();
+
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
     }
 }
 
 void marshall_QVectorint(Marshall *m) {
     UNTESTED_HANDLER("marshall_QVectorint");
-	switch(m->action()) {
-	case Marshall::FromSV:
-	{
-		VALUE list = *(m->var());
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *listref = m->var();
+            if ( !SvOK( listref ) && !SvROK( listref ) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-		list = rb_check_array_type(*(m->var()));
-		if (NIL_P(list)) {
-			m->item().s_voidp = 0;
-			break;
-		}
+            AV *list = (AV*)SvRV( listref );
 
-		int count = RARRAY_LEN(list);
-		QVector<int> *valuelist = new QVector<int>;
-		long i;
-		for (i = 0; i < count; i++) {
-			valuelist->append(NUM2INT(rb_ary_entry(list, i)));
-		}
+            int count = av_len(list) + 1;
+            QVector<int> *valuelist = new QVector<int>;
+            for ( long i = 0; i < count; i++) {
+                SV **item = av_fetch(list, i, 0);
+                if( !item ) {
+                    valuelist->append(0.0);
+                    continue;
+                }
 
-		m->item().s_voidp = valuelist;
-		m->next();
+                valuelist->append(SvIV(*item));
+            }
 
-		if (!m->type().isConst()) {
-			rb_ary_clear(list);
-	
-			for (	QVector<int>::iterator i = valuelist->begin(); 
-					i != valuelist->end(); 
-					++i ) 
-			{
-				rb_ary_push(list, INT2NUM((int)*i));
-			}
-		}
+            m->item().s_voidp = valuelist;
+            m->next();
 
-		if (m->cleanup()) {
-			delete valuelist;
-		}
-	}
-	break;
-	case Marshall::ToSV:
-	{
-	    QVector<int> *valuelist = (QVector<int>*)m->item().s_voidp;
-	    if(!valuelist) {
-		*(m->var()) = Qnil;
-		break;
-	    }
+            if (!m->type().isConst()) {
+                av_clear(list);
 
-	    VALUE av = rb_ary_new();
+                for (	QVector<int>::iterator i = valuelist->begin(); 
+                        i != valuelist->end(); 
+                        ++i ) 
+                {
+                    av_push(list, newSViv((int)*i));
+                }
+            }
 
-		for (	QVector<int>::iterator i = valuelist->begin(); 
-				i != valuelist->end(); 
-				++i ) 
-		{
-		    rb_ary_push(av, INT2NUM((int)*i));
-		}
-		
-	    *(m->var()) = av;
-		m->next();
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+        case Marshall::ToSV: {
+            QVector<int> *valuelist = (QVector<int>*)m->item().s_voidp;
+            if(!valuelist) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
 
-		if (m->cleanup()) {
-			delete valuelist;
-		}
-	}
-	break;
-      default:
-	m->unsupported();
-	break;
+            AV *av = newAV();
+
+            for (	QVector<int>::iterator i = valuelist->begin(); 
+                    i != valuelist->end(); 
+                    ++i ) 
+            {
+                av_push(av, newSViv((int)*i));
+            }
+
+            sv_setsv( m->var(), newRV_noinc( (SV*)av ) );
+            m->next();
+
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
     }
 }
 
+/*
 void marshall_voidP(Marshall *m) {
     UNTESTED_HANDLER("marshall_voidP");
     switch(m->action()) {
@@ -1091,144 +1098,152 @@ void marshall_voidP(Marshall *m) {
 	break;
     }
 }
+*/
 
 void marshall_QMapQStringQString(Marshall *m) {
     UNTESTED_HANDLER("marshall_QMapQStringQString");
     switch(m->action()) {
-      case Marshall::FromSV:
-	{
-	    VALUE hash = *(m->var());
-	    if (TYPE(hash) != T_HASH) {
-		m->item().s_voidp = 0;
-		break;
-	    }
-		
-		QMap<QString,QString> * map = new QMap<QString,QString>;
-		
-		// Convert the ruby hash to an array of key/value arrays
-		VALUE temp = rb_funcall(hash, rb_intern("to_a"), 0);
+        case Marshall::FromSV: {
+            SV *hashref = m->var();
+            if( !SvROK(hashref) && (SvTYPE(SvRV(hashref)) != SVt_PVHV) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-		for (long i = 0; i < RARRAY_LEN(temp); i++) {
-			VALUE key = rb_ary_entry(rb_ary_entry(temp, i), 0);
-			VALUE value = rb_ary_entry(rb_ary_entry(temp, i), 1);
-			(*map)[QString(StringValuePtr(key))] = QString(StringValuePtr(value));
-		}
-	    
-		m->item().s_voidp = map;
-		m->next();
-		
-	    if(m->cleanup())
-		delete map;
-	}
-	break;
-      case Marshall::ToSV:
-	{
-	    QMap<QString,QString> *map = (QMap<QString,QString>*)m->item().s_voidp;
-	    if(!map) {
-		*(m->var()) = Qnil;
-		break;
-	    }
-		
-	    VALUE hv = rb_hash_new();
-			
-		QMap<QString,QString>::Iterator it;
-		for (it = map->begin(); it != map->end(); ++it) {
-			rb_hash_aset(hv, rstringFromQString((QString*)&(it.key())), rstringFromQString((QString*) &(it.value())));
+            HV *hash = (HV*)SvRV(hashref);
+            QMap<QString,QString> * map = new QMap<QString,QString>;
+
+            char* key;
+            SV* val;
+            I32* keylen = new I32;
+            while( val = hv_iternextsv( hash, &key, keylen ) ) {
+                (*map)[QString(key)] = QString(SvPV_nolen(val));
+            }
+            delete keylen;
+
+            m->item().s_voidp = map;
+            m->next();
+
+            if(m->cleanup())
+                delete map;
         }
-		
-		*(m->var()) = hv;
-		m->next();
-		
-	    if(m->cleanup())
-		delete map;
-	}
-	break;
-      default:
-	m->unsupported();
-	break;
+        break;
+        case Marshall::ToSV: {
+            QMap<QString,QString> *map = (QMap<QString,QString>*)m->item().s_voidp;
+            if(!map) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
+
+            HV *hv = newHV();
+            SV *sv = newRV_noinc( (SV*)hv );
+
+            QMap<QString,QString>::Iterator it;
+            for (it = map->begin(); it != map->end(); ++it) {
+                SV *key = perlstringFromQString((QString*)&(it.key()));
+                STRLEN keylen = SvLEN( key );
+                SV *val = perlstringFromQString((QString*) &(it.value()));
+                hv_store( hv, SvPV_nolen(key), keylen, val, 0 );
+            }
+
+            sv_setsv(m->var(), sv);
+            m->next();
+
+            if(m->cleanup())
+                delete map;
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
     }
 }
 
 void marshall_QMapQStringQVariant(Marshall *m) {
     UNTESTED_HANDLER("marshall_QMapQStringQVariant");
-	switch(m->action()) {
-	case Marshall::FromSV:
-	{
-		VALUE hash = *(m->var());
-		if (TYPE(hash) != T_HASH) {
-			m->item().s_voidp = 0;
-			break;
-	    }
-		
-		QMap<QString,QVariant> * map = new QMap<QString,QVariant>;
-		
-		// Convert the ruby hash to an array of key/value arrays
-		VALUE temp = rb_funcall(hash, rb_intern("to_a"), 0);
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *hashref = m->var();
+            if( !SvROK(hashref) && (SvTYPE(SvRV(hashref)) != SVt_PVHV) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-		for (long i = 0; i < RARRAY_LEN(temp); i++) {
-			VALUE key = rb_ary_entry(rb_ary_entry(temp, i), 0);
-			VALUE value = rb_ary_entry(rb_ary_entry(temp, i), 1);
-			
-			smokeruby_object *o = value_obj_info(value);
-			if (!o || !o->ptr || o->classId != o->smoke->findClass("QVariant").index) {
-				// If the value isn't a Qt::Variant, then try and construct
-				// a Qt::Variant from it
-				value = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, value);
-				if (value == Qnil) {
-					continue;
-				}
-				o = value_obj_info(value);
-			}
-			
-			(*map)[QString(StringValuePtr(key))] = (QVariant)*(QVariant*)o->ptr;
-		}
-	    
-		m->item().s_voidp = map;
-		m->next();
-		
-	    if(m->cleanup())
-		delete map;
-	}
-	break;
-      case Marshall::ToSV:
-	{
-	    QMap<QString,QVariant> *map = (QMap<QString,QVariant>*)m->item().s_voidp;
-	    if(!map) {
-		*(m->var()) = Qnil;
-		break;
-	    }
-		
-	    VALUE hv = rb_hash_new();
-			
-		QMap<QString,QVariant>::Iterator it;
-		for (it = map->begin(); it != map->end(); ++it) {
-			void *p = new QVariant(it.value());
-			VALUE obj = getPointerObject(p);
-				
-			if (obj == Qnil) {
-				smokeruby_object  * o = alloc_smokeruby_object(	true, 
-																m->smoke(), 
-																m->smoke()->idClass("QVariant").index, 
-																p );
-				obj = set_obj_info("Qt::Variant", o);
-			}
-			
-			rb_hash_aset(hv, rstringFromQString((QString*)&(it.key())), obj);
+            HV *hash = (HV*)SvRV(hashref);
+            QMap<QString,QVariant> * map = new QMap<QString,QVariant>;
+
+            char* key;
+            SV* value;
+            I32* keylen = new I32;
+            while( value = hv_iternextsv( hash, &key, keylen ) ) {
+                smokeperl_object *o = sv_obj_info(value);
+                if (!o || !o->ptr || o->classId != o->smoke->findClass("QVariant").index) {
+                    continue;
+                    // If the value isn't a Qt::Variant, then try and construct
+                    // a Qt::Variant from it
+                    // TODO: I have no idea how to do this.
+                    /*
+                    value = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, value);
+                    if (value == Qnil) {
+                        continue;
+                    }
+                    o = value_obj_info(value);
+                    */
+                }
+
+                (*map)[QString(key)] = (QVariant)*(QVariant*)o->ptr;
+            }
+            delete keylen;
+
+            m->item().s_voidp = map;
+            m->next();
+
+            if(m->cleanup())
+                delete map;
         }
-		
-		*(m->var()) = hv;
-		m->next();
-		
-	    if(m->cleanup())
-		delete map;
-	}
-	break;
-      default:
-	m->unsupported();
-	break;
+        break;
+        case Marshall::ToSV: {
+            QMap<QString,QVariant> *map = (QMap<QString,QVariant>*)m->item().s_voidp;
+            if(!map) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
+
+            HV *hv = newHV();
+            SV *sv = newRV_noinc( (SV*)hv );
+
+            QMap<QString,QVariant>::Iterator it;
+            for (it = map->begin(); it != map->end(); ++it) {
+                void *p = new QVariant(it.value());
+                SV *obj = getPointerObject(p);
+
+                if ( !obj || !SvOK(obj) ) {
+                    obj = allocSmokePerlSV( p, 
+                            SmokeType( m->smoke(),
+                                       m->smoke()->idClass("QVariant").index )
+                    );
+                    //obj = set_obj_info("Qt::Variant", o);
+                }
+
+                SV *key = perlstringFromQString((QString*)&(it.key()));
+                STRLEN keylen = SvLEN( key );
+                hv_store( hv, SvPV_nolen(key), keylen, obj, 0 );
+            }
+
+            sv_setsv(m->var(), sv);
+            m->next();
+
+            if(m->cleanup())
+                delete map;
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
     }
 }
 
+/*
 void marshall_QMapIntQVariant(Marshall *m) {
     UNTESTED_HANDLER("marshall_QMapIntQVariant");
 	switch(m->action()) {
@@ -1652,8 +1667,8 @@ void marshall_voidP_array(Marshall *m) {
 }
 
 Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
-    { "bool*", marshall_it<bool *> },
-    { "bool&", marshall_it<bool *> },
+    //{ "bool*", marshall_it<bool *> },
+    //{ "bool&", marshall_it<bool *> },
     { "char**", marshall_charP_array },
     { "char*",marshall_it<char *> },
     //{ "DOM::DOMTimeStamp", marshall_it<long long> },
@@ -1676,18 +1691,18 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     { "qint32&", marshall_it<int *> },
     //{ "qint64", marshall_it<long long> },
     //{ "qint64&", marshall_it<long long> },
-    //{ "QList<const char*>", marshall_QListCharStar },
-    //{ "QList<int>", marshall_QListInt },
-    //{ "QList<int>&", marshall_QListInt },
-    //{ "QList<uint>", marshall_QListUInt },
-    //{ "QList<uint>&", marshall_QListUInt },
+    { "QList<const char*>", marshall_QListCharStar },
+    { "QList<int>", marshall_QListInt },
+    { "QList<int>&", marshall_QListInt },
+    { "QList<uint>", marshall_QListUInt },
+    { "QList<uint>&", marshall_QListUInt },
     //{ "QList<QAbstractButton*>", marshall_QAbstractButtonList },
     //{ "QList<QActionGroup*>", marshall_QActionGroupList },
     //{ "QList<QAction*>", marshall_QActionList },
     //{ "QList<QAction*>&", marshall_QActionList },
-    //{ "QList<QByteArray>", marshall_QByteArrayList },
-    //{ "QList<QByteArray>*", marshall_QByteArrayList },
-    //{ "QList<QByteArray>&", marshall_QByteArrayList },
+    { "QList<QByteArray>", marshall_QByteArrayList },
+    { "QList<QByteArray>*", marshall_QByteArrayList },
+    { "QList<QByteArray>&", marshall_QByteArrayList },
     ////{ "QList<QHostAddress>", marshall_QHostAddressList },
     //{ "QList<QHostAddress>&", marshall_QHostAddressList },
     //{ "QList<QImageTextKeyLang>", marshall_QImageTextKeyLangList },
@@ -1705,11 +1720,11 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     //{ "QList<QPolygonF>", marshall_QPolygonFList },
     //{ "QList<QRectF>", marshall_QRectFList },
     //{ "QList<QRectF>&", marshall_QRectFList },
-    //{ "QList<qreal>", marshall_QListqreal },
-    //{ "QList<double>", marshall_QListqreal },
-    //{ "QwtValueList", marshall_QListqreal },
-    //{ "QwtValueList&", marshall_QListqreal },
-    //{ "QList<double>&", marshall_QListqreal },
+    { "QList<qreal>", marshall_QListqreal },
+    { "QList<double>", marshall_QListqreal },
+    { "QwtValueList", marshall_QListqreal },
+    { "QwtValueList&", marshall_QListqreal },
+    { "QList<double>&", marshall_QListqreal },
     //{ "QList<QObject*>", marshall_QObjectList },
     //{ "QList<QObject*>&", marshall_QObjectList },
     //{ "QList<QTableWidgetItem*>", marshall_QTableWidgetItemList },
@@ -1736,12 +1751,12 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     //{ "QMap<int,QVariant>", marshall_QMapintQVariant },
     //{ "QMap<int,QVariant>", marshall_QMapIntQVariant },
     //{ "QMap<int,QVariant>&", marshall_QMapIntQVariant },
-    //{ "QMap<QString,QString>", marshall_QMapQStringQString },
-    //{ "QMap<QString,QString>&", marshall_QMapQStringQString },
-    //{ "QMap<QString,QVariant>", marshall_QMapQStringQVariant },
-    //{ "QMap<QString,QVariant>&", marshall_QMapQStringQVariant },
-    //{ "QVariantMap", marshall_QMapQStringQVariant },
-    //{ "QVariantMap&", marshall_QMapQStringQVariant },
+    { "QMap<QString,QString>", marshall_QMapQStringQString },
+    { "QMap<QString,QString>&", marshall_QMapQStringQString },
+    { "QMap<QString,QVariant>", marshall_QMapQStringQVariant },
+    { "QMap<QString,QVariant>&", marshall_QMapQStringQVariant },
+    { "QVariantMap", marshall_QMapQStringQVariant },
+    { "QVariantMap&", marshall_QMapQStringQVariant },
     //{ "QModelIndexList", marshall_QModelIndexList },
     //{ "QModelIndexList&", marshall_QModelIndexList },
     //{ "QObjectList", marshall_QObjectList },
@@ -1757,16 +1772,16 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     { "QString", marshall_QString },
     { "QString*", marshall_QString },
     { "QString&", marshall_QString },
-    //{ "QByteArray", marshall_QByteArray },
-    //{ "QByteArray*", marshall_QByteArray },
-    //{ "QByteArray&", marshall_QByteArray },
+    { "QByteArray", marshall_QByteArray },
+    { "QByteArray*", marshall_QByteArray },
+    { "QByteArray&", marshall_QByteArray },
     //{ "quint64", marshall_it<unsigned long long> },
     //{ "quint64&", marshall_it<unsigned long long> },
     //{ "qulonglong", marshall_it<unsigned long long> },
     //{ "qulonglong&", marshall_it<unsigned long long> },
     //{ "QVariantList&", marshall_QVariantList },
-    //{ "QVector<int>", marshall_QVectorint },
-    //{ "QVector<int>&", marshall_QVectorint },
+    { "QVector<int>", marshall_QVectorint },
+    { "QVector<int>&", marshall_QVectorint },
     //{ "QVector<QColor>", marshall_QColorVector },
     //{ "QVector<QColor>&", marshall_QColorVector },
     //{ "QVector<QLineF>", marshall_QLineFVector },
@@ -1777,8 +1792,8 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     //{ "QVector<QPointF>&", marshall_QPointFVector },
     //{ "QVector<QPoint>", marshall_QPointVector },
     //{ "QVector<QPoint>&", marshall_QPointVector },
-    //{ "QVector<qreal>", marshall_QVectorqreal },
-    //{ "QVector<qreal>&", marshall_QVectorqreal },
+    { "QVector<qreal>", marshall_QVectorqreal },
+    { "QVector<qreal>&", marshall_QVectorqreal },
     //{ "QVector<QRectF>", marshall_QRectFVector },
     //{ "QVector<QRectF>&", marshall_QRectFVector },
     //{ "QVector<QRect>", marshall_QRectVector },
@@ -1793,10 +1808,10 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     //{ "QVector<QVariant>&", marshall_QVariantVector },
     //{ "QWidgetList", marshall_QWidgetList },
     //{ "QWidgetList&", marshall_QWidgetList },
-    //{ "QwtArray<double>", marshall_QVectorqreal },
-    //{ "QwtArray<double>&", marshall_QVectorqreal },
-    //{ "QwtArray<int>", marshall_QVectorint },
-    //{ "QwtArray<int>&", marshall_QVectorint },
+    { "QwtArray<double>", marshall_QVectorqreal },
+    { "QwtArray<double>&", marshall_QVectorqreal },
+    { "QwtArray<int>", marshall_QVectorint },
+    { "QwtArray<int>&", marshall_QVectorint },
     { "signed int&", marshall_it<int *> },
     //{ "uchar*", marshall_ucharP },
     //{ "unsigned long long int", marshall_it<long long> },

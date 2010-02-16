@@ -37,4 +37,6 @@ void install_handlers(TypeHandler* h);
 
 Marshall::HandlerFn getMarshallFn(const SmokeType& type);
 
+#define UNTESTED_HANDLER(name) fprintf( stderr, "The handler %s has no test case.\n", name );
+
 #endif // HANDLERS_H

@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------
 template<>
 void marshall_from_perl<int*>(Marshall* m) {
+    UNTESTED_HANDLER("marshall_from_perl<int*>");
     SV* sv = m->var();
     if ( !SvOK(sv) ) {
         m->item().s_voidp = 0;
@@ -25,6 +26,7 @@ void marshall_from_perl<int*>(Marshall* m) {
 
 template<>
 void marshall_to_perl<int*>(Marshall* m) {
+    UNTESTED_HANDLER("marshall_to_perl<int*>");
     int* sv = (int*)m->item().s_voidp;
     if( !sv ) {
         sv_setsv( m->var(), &PL_sv_undef );
