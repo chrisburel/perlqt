@@ -883,6 +883,29 @@ sub do_autoload {
 
     my $cacheLookup = 1;
 
+    # If we didn't get any methodIds, look for alternatives, and try convert
+    # the arguments we have to the kind this method call wants
+    if (!@methodIds) {
+        my @altMethod = findAnyPossibleMethod( $classname, $methodname, @_ );
+
+        # Only try this if there's only one possible alternative
+        if ( @altMethod == 1 ) {
+            my $altMethod = $altMethod[0];
+            foreach my $argId ( 0..$#_ ) {
+                my $wantType = getTypeNameOfArg( $altMethod, $argId );
+                $wantType =~ s/^const\s+//;
+                $wantType =~ s/(?<=\w)[&*]$//g;
+                $wantType = normalize_classname( $wantType );
+                no strict qw( refs );
+                $_[$argId] = $wantType->( $_[$argId] );
+                use strict;
+            }
+            my( $methodId ) = do_autoload( @_, $classId, $methodname, $classname );
+            # Don't cache this lookup.
+            return $methodId, 0;
+        }
+    }
+
     # If we got more than 1 method id, resolve it
     if (@methodIds > 1) {
         foreach my $argNum (0..$#_) {
