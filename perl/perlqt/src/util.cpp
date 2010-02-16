@@ -53,7 +53,7 @@ int do_debug = 0;
 
 // There's a comment in Qt4Ruby about possible memory leaks with these.
 // Method caches, to avoid expensive lookups
-QHash<QByteArray, Smoke::Index *> methcache;
+QHash<QByteArray, Smoke::ModuleIndex *> methcache;
 
 smokeperl_object * 
 alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr) {
@@ -63,6 +63,14 @@ alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr) {
 	o->ptr = ptr;
 	o->allocated = allocated;
     return o;
+}
+
+SV* alloc_perl_moduleindex( int smokeIndex, Smoke::Index classOrMethIndex ) {
+    AV* av = newAV();
+    SV* sv = newRV_noinc( (SV*)av );
+    av_push( av, newSViv((IV)smokeIndex) );
+    av_push( av, newSViv((IV)classOrMethIndex) );
+    return sv;
 }
 
 #ifdef DEBUG
@@ -321,6 +329,32 @@ SV* getPointerObject(void* ptr) {
     return *svp;
 }
 
+int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke *baseSmoke, Smoke::Index baseId, int count) {
+    if (!classId || !baseId || !smoke || !baseSmoke)
+        return -1;
+    if (smoke == baseSmoke && classId == baseId)
+        return count;
+    ++count;
+
+    for(Smoke::Index p = smoke->classes[classId].parents; smoke->inheritanceList[p]; p++) {
+        Smoke::Class& cur = smoke->classes[smoke->inheritanceList[p]];
+        if (cur.external) {
+            Smoke::ModuleIndex mi = smoke->findClass(cur.className);
+            if (isDerivedFrom(mi.smoke, mi.index, baseSmoke, baseId, count) != -1)
+                return count;
+        }
+        if (isDerivedFrom(smoke, smoke->inheritanceList[p], baseSmoke, baseId, count) != -1)
+            return count;
+    }
+    return -1;
+}
+
+int isDerivedFromByName(const char *className, const char *baseClassName, int count) {
+    Smoke::ModuleIndex classId = qt_Smoke->findClass(className);
+    Smoke::ModuleIndex baseId = qt_Smoke->findClass(baseClassName);
+    return isDerivedFrom(classId.smoke, classId.index, baseId.smoke, baseId.index, count);
+}
+
 int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke::Index baseId, int cnt) {
     if(classId == baseId)
         return cnt;
@@ -374,14 +408,14 @@ void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void
 // Given the perl package, look up the smoke classid
 // Depends on the classcache_ext hash being defined, which gets set in the
 // init_class function in Qt4::_internal
-Smoke::Index package_classId( const char *package ) {
+SV* package_classId( const char *package ) {
     // Get the cache hash
     HV* classcache_ext = get_hv( "Qt4::_internal::package2classId", false );
     U32 klen = strlen( package );
     SV** classcache = hv_fetch( classcache_ext, package, klen, 0 );
-    Smoke::Index item = 0;
+    SV* item = 0;
     if( classcache ) {
-        item = SvIV( *classcache );
+        item = *classcache;
     }
     if( item ){
         return item;
@@ -395,10 +429,10 @@ Smoke::Index package_classId( const char *package ) {
     // Loop over the ISA array
     for( int i = 0; i <= av_len( isa ); i++ ) {
         // Get the value of the current index into @isa
-        SV** np = av_fetch( isa, i, 0 ); // np = 'new package'?
-        if( np ) {
+        SV** parentPackage = av_fetch( isa, i, 0 );
+        if( parentPackage ) {
             // Recurse until we find a match
-            Smoke::Index ix = package_classId( SvPV_nolen( *np ) );
+            SV* ix = package_classId( SvPV_nolen( *parentPackage ) );
             if( ix ) {
                 ;// Cache the result - TODO
                 return ix;
@@ -412,16 +446,16 @@ Smoke::Index package_classId( const char *package ) {
 #ifdef DEBUG
 // Args: Smoke::Index id: a smoke method id to print
 // Returns: an SV* containing a formatted method signature string
-SV* prettyPrintMethod(Smoke::Index id) {
+SV* prettyPrintMethod(Smoke::ModuleIndex id) {
     SV* r = newSVpv("", 0);
-    Smoke::Method& meth = qt_Smoke->methods[id];
-    const char* tname = qt_Smoke->types[meth.ret].name;
+    Smoke::Method& meth = id.smoke->methods[id.index];
+    const char* tname = id.smoke->types[meth.ret].name;
     if(meth.flags & Smoke::mf_static) sv_catpv(r, "static ");
     sv_catpvf(r, "%s ", (tname ? tname:"void"));
-    sv_catpvf(r, "%s::%s(", qt_Smoke->classes[meth.classId].className, qt_Smoke->methodNames[meth.name]);
+    sv_catpvf(r, "%s::%s(", id.smoke->classes[meth.classId].className, id.smoke->methodNames[meth.name]);
     for(int i = 0; i < meth.numArgs; i++) {
         if(i) sv_catpv(r, ", ");
-        tname = qt_Smoke->types[qt_Smoke->argumentList[meth.args+i]].name;
+        tname = id.smoke->types[id.smoke->argumentList[meth.args+i]].name;
         sv_catpv(r, (tname ? tname:"void"));
     }
     sv_catpv(r, ")");
@@ -826,7 +860,8 @@ XS(XS_qobject_qt_metacast) {
 	}
 
 	const char * classname = SvPV_nolen(klass); //HvNAME(SvSTASH(SvRV(mythis)));
-	Smoke::Index classId = package_classId(classname);
+    SV* moduleIdRef = package_classId(classname);
+	Smoke::Index classId = SvIV(*(SV**)av_fetch((AV*)SvRV(moduleIdRef), 1, 0));
 	if (classId == 0) {
 		XSRETURN_UNDEF;
 	}
@@ -1399,8 +1434,9 @@ XS(XS_qvariant_value) {
     }
 	const char * classname = SvPV_nolen(ST(1));
     Smoke::ModuleIndex * sv_class_id = new Smoke::ModuleIndex;
-    sv_class_id->index = package_classId(classname);
-    sv_class_id->smoke = qt_Smoke;
+    SV* moduleIdRef = package_classId(classname);
+    sv_class_id->smoke = smokeList[SvIV(*(SV**)av_fetch((AV*)SvRV(moduleIdRef), 0, 0))];
+    sv_class_id->index = SvIV(*(SV**)av_fetch((AV*)SvRV(moduleIdRef), 1, 0));
 
 	if (sv_class_id->index == 0) {
 		ST(0) = retval;
@@ -1798,13 +1834,14 @@ XS(XS_AUTOLOAD) {
         // We're calling a c++ method
 
         // Get the classId (eventually converting SUPER to the right Qt4 class)
-        int moduleId = package_classId( package );
-        int smokeId = (moduleId>>12)&4095;
-        Smoke::Index classId = moduleId&4095;
-        Smoke* smoke = smokeList[smokeId];
-        char* classname = (char*) smoke->className( classId );
-        Smoke::Index methodId = 0;
-        // We may call a perl sub to find the methodId.  This will overwrite
+        SV* moduleIdRef = package_classId( package );
+        Smoke::ModuleIndex mi;
+
+        // This complicated mess is just $moduleIdRef->[0], $moduleIdRef->[1];
+        mi.smoke = smokeList[SvIV(*(SV**)av_fetch((AV*)SvRV(moduleIdRef), 0, 0))];
+        mi.index = SvIV(*(SV**)av_fetch((AV*)SvRV(moduleIdRef), 1, 0));
+        char* classname = (char*) mi.smoke->className( mi.index );
+        // We may call a perl sub to find the retModuleId.  This will overwrite
         // the current SP pointer, so save a copy
         SV** savestack = new SV*[items+1];
 
@@ -1816,7 +1853,7 @@ XS(XS_AUTOLOAD) {
         Copy( SP - items + 1 + withObject, savestack, items + withObject, SV* );
 
         // Look in the cache; if this method was called before with the same
-        // arguments, we already know the methodId
+        // arguments, we already know the retModuleId
         // The key to the methodcache looks like this:
         // class      method     arg types
         // QPopupMenu;insertItem;s;QApplication;s
@@ -1841,19 +1878,19 @@ XS(XS_AUTOLOAD) {
         *ptr = 0; // Don't forget to null-terminate the string
 
         // See if it's cached
-        Smoke::Index* rcid = methcache.value(mcid);
+        Smoke::ModuleIndex* rcid = methcache.value(mcid);
         if(rcid) {
             // Got a hit
-            methodId = *rcid;
+            mi = *rcid;
         }
         else {
-            // Call getSmokeMethodId to get the methodId
+            // Call getSmokeMethodId to get the retModuleId
             sv_setsv( ERRSV, &PL_sv_undef );
             ENTER;
             SAVETMPS;
             PUSHMARK( SP - items + withObject );
             EXTEND( SP, 3 );
-            PUSHs(sv_2mortal(newSViv((IV)moduleId)));
+            PUSHs(sv_2mortal(alloc_perl_moduleindex(smokeList.indexOf(mi.smoke), mi.index)));
             PUSHs(sv_2mortal(newSVpv(methodname, 0)));
             PUSHs(sv_2mortal(newSVpv(classname, 0)));
             PUTBACK;
@@ -1869,7 +1906,7 @@ XS(XS_AUTOLOAD) {
                 croak("%s", SvPV_nolen(ERRSV));
             }
 
-            if (count != 2) {
+            if (count != 3) {
                 // Error, clean up our crap
                 if( withObject ) {
                     SvREFCNT_dec(sv_this);
@@ -1882,14 +1919,17 @@ XS(XS_AUTOLOAD) {
             }
 
             int cacheLookup = POPi;
-            methodId = POPi;
+            Smoke::Index retMethodId = POPi;
+            Smoke::Index retSmokeId = POPi;
             PUTBACK;
             FREETMPS;
             LEAVE;
 
             // Save our lookup
+            mi.smoke = smokeList[retSmokeId];
+            mi.index = retMethodId;
             if ( cacheLookup ) 
-                methcache.insert(mcid, new Smoke::Index(methodId));
+                methcache.insert(mcid, new Smoke::ModuleIndex(mi));
         }
 
         static smokeperl_object nothis = { 0, 0, 0, false };
@@ -1905,15 +1945,15 @@ XS(XS_AUTOLOAD) {
 
 #ifdef DEBUG
         if(do_debug && (do_debug & qtdb_calls)) {
-            fprintf(stderr, "Calling method\t%s\t%s\n", methodname, SvPV_nolen(sv_2mortal(prettyPrintMethod(methodId))));
+            fprintf(stderr, "Calling method\t%s\t%s\n", methodname, SvPV_nolen(sv_2mortal(prettyPrintMethod(mi))));
             if(do_debug & qtdb_verbose) {
                 fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(savestack, items - withObject))));
             }
         }
 #endif
 
-        PerlQt4::MethodCall call( smoke,
-                         methodId,
+        PerlQt4::MethodCall call( mi.smoke,
+                         mi.index,
                          call_this,
                          savestack,
                          items  - withObject );

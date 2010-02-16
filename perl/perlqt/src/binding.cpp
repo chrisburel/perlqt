@@ -96,10 +96,10 @@ char* Binding::className(Smoke::Index classId) {
     HV* classId2package = get_hv( "Qt4::_internal::classId2package", FALSE );
     if( !classId2package ) croak( "Internal error: Unable to find classId2package hash" );
 
-    int smokeId = (smokeList.indexOf(smoke))<<12;
+    int smokeId = smokeList.indexOf(smoke);
     // Look up the package's name in the hash
     char* key = new char[6];
-    int klen = sprintf( key, "%d", smokeId + classId );
+    int klen = sprintf( key, "%d", (classId<<8) + smokeId );
     //*(key + klen) = 0;
     SV** packagename = hv_fetch( classId2package, key, klen, FALSE );
     delete[] key;

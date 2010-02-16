@@ -34,6 +34,7 @@ extern "C" {
 #include "handlers.h" // for install_handlers function
 
 smokeperl_object * alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr);
+SV* alloc_perl_moduleindex( int smokeIndex, Smoke::Index classOrMethIndex );
 
 #ifdef DEBUG
 void catRV( SV *r, SV *sv );
@@ -41,7 +42,7 @@ void catSV( SV *r, SV *sv );
 void catAV( SV *r, AV *av );
 SV* catArguments(SV** sp, int n);
 
-SV* prettyPrintMethod(Smoke::Index id);
+SV* prettyPrintMethod(Smoke::ModuleIndex id);
 #endif
 
 const char* get_SVt(SV* sv);
@@ -50,6 +51,8 @@ QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName,
   QList<QByteArray> methodTypes);
 SV* getPointerObject(void* ptr);
 
+int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke *baseSmoke, Smoke::Index baseId, int count);
+int isDerivedFromByName(const char *className, const char *baseClassName, int count);
 int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke::Index baseId,
   int cnt);
 int isDerivedFrom(Smoke *smoke, const char *className,
@@ -58,7 +61,7 @@ int isDerivedFrom(Smoke *smoke, const char *className,
 void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId,
   void *lastptr);
 
-Smoke::Index package_classId( const char *package );
+SV* package_classId( const char *package );
 
 const char* resolve_classname_qt( smokeperl_object* o );
 

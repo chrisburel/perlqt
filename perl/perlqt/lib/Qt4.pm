@@ -776,7 +776,7 @@ sub unique {
 }
 
 sub argmatch {
-    my ( $smokeId, $methodIds, $args, $argNum ) = @_;
+    my ( $methodIds, $args, $argNum ) = @_;
     my %match;
 
     my $argType = getSVt( $args->[$argNum] );
@@ -784,31 +784,33 @@ sub argmatch {
     my $explicitType = 0;
                #index into methodId array
     foreach my $methodIdIdx ( 0..$#{$methodIds} ) {
-        my $methodId = $methodIds->[$methodIdIdx];
+        my $moduleId = $methodIds->[$methodIdIdx];
+        my $smokeId = $moduleId->[0];
+        my $methodId = $moduleId->[1];
         my $typeName = getTypeNameOfArg( $smokeId, $methodId, $argNum );
         #ints and bools
         if ( $argType eq 'i' ) {
             if( $typeName =~ m/^(?:bool|(?:(?:un)?signed )?(?:int|long)|uint)[*&]?$/ ) {
-                $match{$methodId} = [0,$methodIdIdx];
+                $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
             }
         }
         # floats and doubles
         elsif ( $argType eq 'n' ) {
             if( $typeName =~ m/^(?:float|double)$/ ) {
-                $match{$methodId} = [0,$methodIdIdx];
+                $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
             }
         }
         # enums
         elsif ( $argType eq 'e' ) {
             my $refName = ref $args->[$argNum];
             if( $typeName =~ m/^$refName[s]?$/ ) {
-                $match{$methodId} = [0,$methodIdIdx];
+                $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
             }
         }
         # strings
         elsif ( $argType eq 's' ) {
             if( $typeName =~ m/^(?:(?:const )?u?char\*|(?:const )?(?:(QString)|QByteArray)[\*&]?)$/ ) {
-                $match{$methodId} = [0,$methodIdIdx];
+                $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
             }
         }
         # arrays
@@ -824,17 +826,17 @@ sub argmatch {
                 }
             }
             if( $good ) {
-                $match{$methodId} = [0,$methodIdIdx];
+                $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
             }
         }
         elsif ( $argType eq 'r' or $argType eq 'U' ) {
-            $match{$methodId} = [0,$methodIdIdx];
+            $match{$methodId} = [0,[$smokeId,$methodIdIdx]];
         }
         elsif ( $argType eq 'Qt4::String' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName =~m/^(?:const )?QString[\*&]?$/ ) {
-                return $methodId;
+                return [$smokeId,$methodId];
             }
             else {
                 $explicitType = 1;
@@ -844,7 +846,7 @@ sub argmatch {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName =~m/^(?:const )?char ?\*[\*&]?$/ ) {
-                return $methodId;
+                return [$smokeId,$methodId];
             }
             else {
                 $explicitType = 1;
@@ -854,7 +856,7 @@ sub argmatch {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName =~ m/^int[\*&]?$/ ) {
-                return $methodId;
+                return [$smokeId,$methodId];
             }
             else {
                 $explicitType = 1;
@@ -864,7 +866,7 @@ sub argmatch {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName =~ m/^unsigned int[\*&]?$/ ) {
-                return $methodId;
+                return [$smokeId,$methodId];
             }
             else {
                 $explicitType = 1;
@@ -874,7 +876,7 @@ sub argmatch {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
             if( $typeName eq 'bool' ) {
-                return $methodId;
+                return [$smokeId,$methodId];
             }
             else {
                 $explicitType = 1;
@@ -882,7 +884,7 @@ sub argmatch {
         }
         elsif ( $argType eq 'Qt4::Short' ) {
             if( $typeName =~ m/^short[\*&]?$/ ) {
-                return $methodId;
+                return [$smokeId,$methodId];
             }
             else {
                 $explicitType = 1;
@@ -890,7 +892,7 @@ sub argmatch {
         }
         elsif ( $argType eq 'Qt4::Ushort' ) {
             if( $typeName =~ m/^unsigned short[\*&]?$/ ) {
-                return $methodId;
+                return [$smokeId,$methodId];
             }
             else {
                 $explicitType = 1;
@@ -898,7 +900,7 @@ sub argmatch {
         }
         elsif ( $argType eq 'Qt4::Uchar' ) {
             if( $typeName =~ m/^u(?=nsigned )?char[\*&]?$/ ) {
-                return $methodId;
+                return [$smokeId,$methodId];
             }
             else {
                 $explicitType = 1;
@@ -911,7 +913,7 @@ sub argmatch {
             $typeName =~ s/^(?:const\s+)?(\w*)[&*]?$/$1/g;
             my $isa = classIsa( $argType, $typeName );
             if ( $isa != -1 ) {
-                $match{$methodId} = [-$isa, $methodIdIdx];
+                $match{$methodIdIdx} = [-$isa, [$smokeId,$methodId]];
             }
         }
     }
@@ -920,7 +922,8 @@ sub argmatch {
         return -1;
     }
 
-    return sort { $match{$b}[0] <=> $match{$a}[0] or $match{$a}[1] <=> $match{$b}[1] } keys %match;
+    return map{ $match{$_}->[1] }
+        sort { $match{$b}[0] <=> $match{$a}[0] or $match{$a}[1] <=> $match{$b}[1] } keys %match;
 }
 
 sub dumpArgs {
@@ -937,12 +940,16 @@ sub dumpArgs {
 }
 
 sub dumpCandidates {
-    my ( $classname, $methodname, $methodIds ) = @_;
+    my ( $classname, $methodname, $moduleIds ) = @_;
     my @methods;
-    foreach my $id ( @{$methodIds} ) {
-        my $numArgs = getNumArgs( $id );
+    foreach my $moduleId ( @{$moduleIds} ) {
+
+        my $smokeId = $moduleId->[0];
+        my $methodId = $moduleId->[1];
+
+        my $numArgs = getNumArgs( $smokeId, $methodId );
         my $method = "$classname\::$methodname( ";
-        $method .= join ', ', map{ getTypeNameOfArg( $id, $_ ) } ( 0..$numArgs-1 );
+        $method .= join ', ', map{ getTypeNameOfArg( $smokeId, $methodId, $_ ) } ( 0..$numArgs-1 );
         $method .= " )";
         push @methods, $method;
     }
@@ -961,7 +968,7 @@ sub getSmokeMethodId {
     my $classname = pop;
     my $methodname = pop;
     my $moduleId = pop;
-    my $smokeId = ($moduleId>>12)&4095;
+    my $smokeId = $moduleId->[0];
 
     # Loop over the arguments to determine the type of args
     my @mungedMethods = ( $methodname );
@@ -984,7 +991,7 @@ sub getSmokeMethodId {
     # If we got more than 1 method id, resolve it
     if (@methodIds > 1) {
         foreach my $argNum (0..$#_) {
-            my @matching = argmatch( $smokeId, \@methodIds, \@_, $argNum );
+            my @matching = argmatch( \@methodIds, \@_, $argNum );
             if (@matching) {
                 if ($matching[0] == -1) {
                     @methodIds = ();
@@ -1035,7 +1042,7 @@ sub getSmokeMethodId {
         # We have one match and arguments.  We need to make sure our input
         # arguments match what the method is expecting.  Clear methodIds if
         # args don't match
-        if (!objmatch($smokeId, $methodIds[0], \@_)) {
+        if (!objmatch( $methodIds[0], \@_)) {
             my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
             my @caller = caller($stackDepth);
             while ( $caller[1] =~ m/Qt4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
@@ -1057,16 +1064,17 @@ sub getSmokeMethodId {
     }
 
     if ( !@methodIds ) {
+        my $smokeId = $moduleId->[0];
         @methodIds = findAnyPossibleMethod( $smokeId, $classname, $methodname, @_ );
         if( @methodIds ) {
-            die reportAlternativeMethods( $classname, $methodname, \@methodIds, @_ );
+            die reportAlternativeMethods( $smokeId, $classname, $methodname, \@methodIds, @_ );
         }
         else {
             die reportNoMethodFound( $classname, $methodname, @_ );
         }
     }
 
-    return $methodIds[0], $cacheLookup;
+    return @{$methodIds[0]}, $cacheLookup;
 }
 
 sub getMetaObject {
@@ -1135,17 +1143,18 @@ sub findAnyPossibleMethod {
 }
 
 sub init_class {
-    my ($cxxClassName) = @_;
+    my ($class, $cxxClassName) = @_;
 
-    my $perlClassName = normalize_classname($cxxClassName);
+    my $perlClassName = $class->normalize_classname($cxxClassName);
     my ($classId, $smokeId) = findClass($cxxClassName);
-    my $moduleId = ($smokeId<<12)+$classId;
+    my $moduleId = [$smokeId, $classId];
 
     my @isa;
     if ( $classId ) {
         # Save the association between this perl package and the cxx classId.
         $package2classId{$perlClassName} = $moduleId;
-        $classId2package{$moduleId} = $perlClassName;
+        my $moduleIdBitwise = ($classId<<8)+$smokeId;
+        $classId2package{$moduleIdBitwise} = $perlClassName;
 
         # Define the inheritance array for this class.
         @isa = getIsa($moduleId);
@@ -1157,7 +1166,7 @@ sub init_class {
     # We want the isa array to be the names of perl packages, not c++ class
     # names
     foreach my $super ( @isa ) {
-        $super = normalize_classname($super);
+        $super = normalize_classname($class, $super);
     }
 
     # The root of the tree will be Qt4::base, so a call to
@@ -1251,7 +1260,7 @@ sub reportNoMethodFound {
 sub init {
     my $classes = getClassList();
     push @{$classes}, keys %customClasses;
-    init_class($_) for(@$classes);
+    Qt4::_internal->init_class($_) for(@$classes);
 
     my $enums = getEnumList();
     foreach my $enumName (@$enums) {
@@ -1371,7 +1380,7 @@ sub makeMetaData {
 # Returns: The name of the associated perl package
 # Desc: Given a c++ class name, determine the perl package name
 sub normalize_classname {
-    my ( $cxxClassName ) = @_;
+    my $cxxClassName = $_[1];
 
     # Call the 'Qt' class 'Qt4';
     return 'Qt4' if $cxxClassName eq 'Qt';
@@ -1392,22 +1401,24 @@ sub normalize_classname {
 }
 
 sub objmatch {
-    my ( $smokeid, $methodid, $args ) = @_;
+    my ( $moduleId, $args ) = @_;
+    my $smokeId = $moduleId->[0];
+    my $methodId = $moduleId->[1];
     foreach my $i ( 0..$#$args ) {
         # Compare our actual args to what the method expects
-        my $argtype = getSVt($$args[$i]);
+        my $argtype = getSVt($args->[$i]);
 
         # argtype will be only 1 char if it is not an object. If that's the
         # case, don't do any checks.
         next if length $argtype == 1;
 
-        my $typename = getTypeNameOfArg( $smokeid, $methodid, $i );
+        my $typename = getTypeNameOfArg( $smokeId, $methodId, $i );
 
         # We don't care about const or [&*]
         $typename =~ s/^const\s+//;
         $typename =~ s/(?<=\w)[&*]$//g;
 
-        return 0 if classIsa($argtype, $typename) == -1;
+        return 0 if classIsa( $argtype, $typename) == -1;
     }
     return 1;
 }

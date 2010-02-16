@@ -34,7 +34,7 @@ classIsa( className, base )
         char *className
         char *base
     CODE:
-        RETVAL = isDerivedFrom(qt_Smoke, className, base, 0);
+        RETVAL = isDerivedFromByName(className, base, 0);
     OUTPUT:
         RETVAL
 
@@ -45,33 +45,33 @@ classIsa( className, base )
 #//          or an array of possible ids if the signature is ambiguous
 void
 findMethod( moduleId, classname, methodname )
-        int moduleId
+        AV* moduleId
         char* classname
         char* methodname
     PPCODE:
-        Smoke::Index smokeId = (moduleId>>12)&4095;
-        Smoke* smoke = smokeList[smokeId];
-        Smoke::Index method = smoke->findMethod(classname, methodname).index;
-        if ( !method ) {
+        Smoke* smoke = smokeList[SvIV(*(SV**)av_fetch(moduleId, 0, 0))];
+        Smoke::ModuleIndex mi = smoke->findMethod(classname, methodname);
+        if ( !mi.index ) {
             // empty list
         }
-        else if ( method > 0 ) {
-            Smoke::Index methodId = smoke->methodMaps[method].method;
+        else if ( mi.index  > 0 ) {
+            int smokeId = smokeList.indexOf(mi.smoke);
+            Smoke::Index methodId = mi.smoke->methodMaps[mi.index].method;
             if ( !methodId ) {
                 croak( "Corrupt method %s::%s", classname, methodname );
             }
             else if ( methodId > 0 ) {     // single match
-                XPUSHs( sv_2mortal(newSViv((IV)methodId)) );
+                XPUSHs( sv_2mortal(alloc_perl_moduleindex(smokeId, methodId)) );
             }
             else {                  // multiple match
                 // trun into ambiguousMethodList index
                 methodId = -methodId;
 
                 // Put all ambiguous method possibilities onto the stack
-                while( smoke->ambiguousMethodList[methodId] ) {
+                while( mi.smoke->ambiguousMethodList[methodId] ) {
                     XPUSHs( 
                         sv_2mortal(
-                            newSViv( (IV)qt_Smoke->ambiguousMethodList[methodId] )
+                            alloc_perl_moduleindex(smokeId, (IV)mi.smoke->ambiguousMethodList[methodId])
                         )
                     );
                     ++methodId;
@@ -111,14 +111,15 @@ getEnumList()
 #// Returns: An array of strings defining the inheritance list for that class.
 void
 getIsa( moduleId )
-        int moduleId
+        SV* moduleId
     PPCODE:
-        int smokeId = (moduleId>>12)&4095;
-        int classId = (moduleId)&4095;
-        Smoke* smoke = smokeList[smokeId];
+        AV* av = (AV*)SvRV(moduleId);
+        SV** smokeId = av_fetch(av, 0, 0);
+        SV** classId = av_fetch(av, 1, 0);
+        Smoke* smoke = smokeList[SvIV(*smokeId)];
         Smoke::Index *parents =
             smoke->inheritanceList +
-            smoke->classes[classId].parents;
+            smoke->classes[SvIV(*classId)].parents;
         while(*parents)
             XPUSHs(sv_2mortal(newSVpv(smoke->classes[*parents++].className, 0)));
 
@@ -158,10 +159,11 @@ getNativeMetaObject( methodId )
 #// Args: int classId: a smoke classId
 #// Returns: The number of arguments that method has
 int
-getNumArgs( methodId )
+getNumArgs( smokeId, methodId )
+        int smokeId
         int methodId
     CODE:
-        Smoke::Method &method = qt_Smoke->methods[methodId];
+        Smoke::Method &method = smokeList[smokeId]->methods[methodId];
         RETVAL = method.numArgs;
     OUTPUT:
         RETVAL

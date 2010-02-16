@@ -1,4 +1,4 @@
-include_directories( ${CMAKE_SOURCE_DIR}/smoke ${PERL_INCLUDE_PATH} ${CMAKE_SOURCE_DIR}/perl/perlqt4/src)
+include_directories( ${CMAKE_SOURCE_DIR}/smoke ${PERL_INCLUDE_PATH} ${CMAKE_SOURCE_DIR}/perl/perlqt/src)
 include_directories( ${QT_INCLUDES} )
 
 # Run doxsubpp.pl to run xsubpp on Qt4.xs
