@@ -113,6 +113,7 @@ sub NEW
     this->setLayout($mainLayout);
 
     this->setWindowTitle(this->tr('Fortune Client'));
+    this->portLineEdit->setText('39423');
     this->portLineEdit->setFocus();
 
     this->{currentFortune} = '';
