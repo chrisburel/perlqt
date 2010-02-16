@@ -82,8 +82,8 @@ sub argmatch {
     my $argType = getSVt( $args->[$argNum] );
 
                #index into methodId array
-    foreach my $methodIdIdx ( 0..$#$methodIds ) {
-        my $methodId = $$methodIds[$methodIdIdx];
+    foreach my $methodIdIdx ( 0..$#{$methodIds} ) {
+        my $methodId = $methodIds->[$methodIdIdx];
         my $typeName = getTypeNameOfArg( $methodId, $argNum );
         #ints and bools
         if ( $argType eq 'i' ) {
@@ -105,8 +105,9 @@ sub argmatch {
         }
         # strings
         elsif ( $argType eq 's' ) {
-            print "String test in method name resolution not implemented\n";
-            return ();
+            if( $typeName =~ m/^(?:(?:const )?u?char\*|(?:const )?(?:(QString)|QByteArray)[*&]?)$/ ) {
+                $match{$methodId} = [0,$methodIdIdx];
+            }
         }
         # arrays
         elsif ( $argType eq 'a' ) {
