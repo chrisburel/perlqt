@@ -200,6 +200,8 @@ const char* get_SVt(SV* sv) {
                          !strcmp( classname, "Qt::CString" ) ||
                          !strcmp( classname, "Qt::Int" ) ||
                          !strcmp( classname, "Qt::Uint" ) ||
+                         !strcmp( classname, "Qt::Short" ) ||
+                         !strcmp( classname, "Qt::Ushort" ) ||
                          !strcmp( classname, "Qt::Bool" ) ) {
                         r = classname;
                     }

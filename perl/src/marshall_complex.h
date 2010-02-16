@@ -35,16 +35,27 @@ void marshall_from_perl<unsigned long long>(Marshall *m) {
 template<>
 void marshall_from_perl<int*>(Marshall* m) {
     SV *sv = m->var();
-    if ( !SvOK(sv) || !SvIOK(sv) ) {
+    if ( !SvOK(sv) ) {
+        sv_setiv( sv, 0 );
+    }
+    if ( SvROK(sv) ) {
+        sv = SvRV(sv);
+    }
+
+    if ( !SvIOK(sv) ) {
         sv_setiv( sv, 0 );
     }
 
     // This gives us a pointer to the int stored in the perl var.
-    int *i = (int*)&SvIVX( sv );
+    int *i = new int(SvIV(sv));
     m->item().s_voidp = i;
     m->next();
 
-    // Don't clean up, we'd delete the perl memory.
+    if(m->cleanup() && m->type().isConst()) {
+        delete i;
+    } else {
+        sv_setiv(sv, *i);
+    }
 }
 template<>
 void marshall_to_perl<int*>(Marshall* m) {
@@ -66,9 +77,8 @@ template <>
 void marshall_from_perl<unsigned int *>(Marshall *m) {
     UNTESTED_HANDLER("marshall_from_perl<unsigned int *>");
     SV *sv = m->var();
-    unsigned int *i = new unsigned int;
 
-    if ( !SvOK(sv) || !SvIOK(sv) ) {
+    if ( !SvOK(sv) ) {
         m->item().s_voidp = 0;
         return;
         //} else if (TYPE(sv) == T_OBJECT) {
@@ -79,17 +89,19 @@ void marshall_from_perl<unsigned int *>(Marshall *m) {
         //m->next();
         //rb_funcall(qt_internal_module, rb_intern("set_qinteger"), 2, sv, INT2NUM(*i));
         //sv = temp;
-    } else {
-        i = (unsigned int*)&SvIVX(sv);
-        m->item().s_voidp = i;
-        m->next();
     }
+    if ( SvROK(sv) ) {
+        sv = SvRV(sv);
+    }
+    unsigned int *i = new unsigned int(SvUV(sv));
+    m->item().s_voidp = i;
+    m->next();
 
     // XXX Is this right?
     if(m->cleanup() && m->type().isConst()) {
         delete i;
     } else {
-        m->item().s_voidp = new int((int)SvIV(sv));
+        sv_setuv(sv, *i);
     }
 }
 template <>
@@ -106,6 +118,88 @@ void marshall_to_perl<unsigned int *>(Marshall *m) {
     m->next();
     if(!m->type().isConst())
         *ip = SvIV(m->var());
+}
+
+//-----------------------------------------------------------------------------
+template<>
+void marshall_from_perl<short*>(Marshall* m) {
+    SV *sv = m->var();
+    if ( !SvOK(sv) ) {
+        sv_setiv( sv, 0 );
+    }
+    if ( SvROK(sv) ) {
+        sv = SvRV(sv);
+    }
+
+    if ( !SvIOK(sv) ) {
+        sv_setiv( sv, 0 );
+    }
+
+    // This gives us a poshorter to the short stored in the perl var.
+    short *i = new short(SvIV(sv));
+    m->item().s_voidp = i;
+    m->next();
+
+    if(m->cleanup() && m->type().isConst()) {
+        delete i;
+    } else {
+        sv_setiv(sv, *i);
+    }
+}
+template<>
+void marshall_to_perl<short*>(Marshall* m) {
+    UNTESTED_HANDLER("marshall_to_perl<short*>");
+    short* sv = (short*)m->item().s_voidp;
+    if( !sv ) {
+        sv_setsv( m->var(), &PL_sv_undef );
+        return;
+    }
+
+    sv_setiv( m->var(), *sv );
+    m->next();
+    if( !m->type().isConst() )
+        *sv = SvIV(m->var());
+}
+
+//-----------------------------------------------------------------------------
+template<>
+void marshall_from_perl<unsigned short*>(Marshall* m) {
+    SV *sv = m->var();
+    if ( !SvOK(sv) ) {
+        sv_setiv( sv, 0 );
+    }
+    if ( SvROK(sv) ) {
+        sv = SvRV(sv);
+    }
+
+    if ( !SvIOK(sv) ) {
+        sv_setiv( sv, 0 );
+    }
+
+    // This gives us a pounsigned shorter to the unsigned short stored in the perl var.
+    unsigned short *i = new unsigned short(SvIV(sv));
+    m->item().s_voidp = i;
+    m->next();
+
+    if(m->cleanup() && m->type().isConst()) {
+        delete i;
+    } else {
+        sv_setiv(sv, *i);
+    }
+}
+template<>
+void marshall_to_perl<unsigned short*>(Marshall* m) {
+    UNTESTED_HANDLER("marshall_to_perl<unsigned short*>");
+    unsigned short* sv = (unsigned short*)m->item().s_voidp;
+    if( !sv ) {
+        sv_setsv( m->var(), &PL_sv_undef );
+        return;
+    }
+
+    sv_setiv( m->var(), *sv );
+    m->next();
+    if( !m->type().isConst() )
+        *sv = SvIV(m->var());
 }
 
 //-----------------------------------------------------------------------------

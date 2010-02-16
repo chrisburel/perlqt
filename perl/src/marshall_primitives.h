@@ -49,8 +49,9 @@ short perl_to_primitive<short>(SV *sv) {
     UNTESTED_HANDLER("perl_to_primitive<short>");
     if ( !SvOK(sv) )
         return 0;
-    else
-        return (short)SvIV(sv);
+    if ( SvROK(sv) )
+        sv = SvRV(sv);
+    return (short)SvIV(sv);
 }
 template <>
 SV *primitive_to_perl<short>(short sv) {
@@ -64,8 +65,9 @@ unsigned short perl_to_primitive<unsigned short>(SV *sv) {
     UNTESTED_HANDLER("perl_to_primitive<unsigned short>");
     if ( !SvOK(sv) )
         return 0;
-    else
-        return (unsigned short)SvIV(sv);
+    if ( SvROK(sv) )
+        sv = SvRV(sv);
+    return (unsigned short)SvIV(sv);
 }
 template <>
 SV *primitive_to_perl<unsigned short>(unsigned short sv) {

@@ -813,7 +813,7 @@ sub argmatch {
         elsif ( $argType eq 'Qt::String' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
-            if( $typeName =~m/^(?:const )?QString[\*&]?/ ) {
+            if( $typeName =~m/^(?:const )?QString[\*&]?$/ ) {
                 return $methodId;
             }
             else {
@@ -823,7 +823,7 @@ sub argmatch {
         elsif ( $argType eq 'Qt::CString' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
-            if( $typeName =~m/^(?:const )?char ?\*[\*&]?/ ) {
+            if( $typeName =~m/^(?:const )?char ?\*[\*&]?$/ ) {
                 return $methodId;
             }
             else {
@@ -833,7 +833,7 @@ sub argmatch {
         elsif ( $argType eq 'Qt::Int' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
-            if( $typeName =~ m/^int[\*&]?/ ) {
+            if( $typeName =~ m/^int[\*&]?$/ ) {
                 return $methodId;
             }
             else {
@@ -843,7 +843,7 @@ sub argmatch {
         elsif ( $argType eq 'Qt::Uint' ) {
             # This type exists only to resolve ambiguous method calls, so we
             # can return here.
-            if( $typeName =~ m/^unsigned int[\*&]?/ ) {
+            if( $typeName =~ m/^unsigned int[\*&]?$/ ) {
                 return $methodId;
             }
             else {
@@ -860,7 +860,23 @@ sub argmatch {
                 $explicitType = 1;
             }
         }
-            # objects
+        elsif ( $argType eq 'Qt::Short' ) {
+            if( $typeName =~ m/^short[\*&]?$/ ) {
+                return $methodId;
+            }
+            else {
+                $explicitType = 1;
+            }
+        }
+        elsif ( $argType eq 'Qt::Ushort' ) {
+            if( $typeName =~ m/^unsigned short[\*&]?$/ ) {
+                return $methodId;
+            }
+            else {
+                $explicitType = 1;
+            }
+        }
+        # objects
         else {
             # Optional const, some words, optional & or *.  Note ?: does not
             # make a backreference, (\w*) is the only thing actually captured.
@@ -1634,6 +1650,14 @@ sub Uint {
 
 sub Bool {
     return bless \shift, 'Qt::Bool';
+}
+
+sub Short {
+    return bless \shift, 'Qt::Short';
+}
+
+sub Ushort {
+    return bless \shift, 'Qt::Ushort';
 }
 
 1;

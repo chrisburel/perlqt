@@ -82,16 +82,16 @@ sub NEW
 sub sendFortune
 {
 # [5]
-    $DB::single=1;
     my $block = Qt::ByteArray();
     my $out = Qt::DataStream($block, Qt::IODevice::ReadWrite());
     $out->setVersion(Qt::DataStream::Qt_4_0());
 # [4] //! [6]
-    my $fortune = this->fortunes->[rand(scalar @{this->fortunes})];
-    $out << Qt::Uint(0);
-    $out << Qt::String($fortune);
+    no warnings qw(void);
+    $out << Qt::Ushort(0);
+    $out << Qt::String(this->fortunes->[rand(scalar @{this->fortunes})]);
     $out->device()->seek(0);
-    $out << Qt::Uint($block->size() - 4);
+    $out << Qt::Ushort($block->size() - 2);
+    use warnings;
 # [6] //! [7]
 
     my $clientConnection = this->tcpServer->nextPendingConnection();

@@ -113,7 +113,6 @@ sub NEW
     this->setLayout($mainLayout);
 
     this->setWindowTitle(this->tr('Fortune Client'));
-    this->portLineEdit->setText('39423');
     this->portLineEdit->setFocus();
 
     this->{currentFortune} = '';
@@ -143,15 +142,15 @@ sub readFortune
     $in->setVersion(Qt::DataStream::Qt_4_0());
 
     if (this->blockSize == 0) {
-        #if (this->tcpSocket->bytesAvailable() < (int)sizeof(quint16))
-        if (this->tcpSocket->bytesAvailable() < 4) {
+        my $shortSize = length( pack 'S', 0 );
+        if (this->tcpSocket->bytesAvailable() < $shortSize) {
             return;
         }
 # [8]
 
 # [10]
         no warnings qw(void);
-        $in >> Qt::Uint(this->{blockSize});
+        $in >> Qt::Ushort(this->{blockSize});
         use warnings;
     }
 
