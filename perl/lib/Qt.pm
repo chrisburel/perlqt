@@ -1133,9 +1133,10 @@ sub findAnyPossibleMethod {
     return map { findMethod( $classname, $_ ) } @mungedMethods;
 }
 
+my $X = sub :lvalue {
+  my $n = shift; no strict 'refs'; no warnings 'once'; *{"$n"}
+};
 sub init_class {
-    no strict 'refs';
-
     my ($cxxClassName) = @_;
 
     my $perlClassName = normalize_classname($cxxClassName);
@@ -1159,26 +1160,22 @@ sub init_class {
     # The root of the tree will be Qt::base, so a call to
     # $className::new() redirects there.
     @isa = ('Qt::base') unless @isa;
-    @{ "$perlClassName\::ISA" } = @isa;
+    $X->($perlClassName.'::ISA') = \@isa;
 
     # Define overloaded operators
-    *{ " $perlClassName\::ISA" } = ['Qt::base::_overload'];
+    $X->(" $perlClassName\::ISA") = ['Qt::base::_overload'];
 
-    # Define the $perlClassName::_UTOLOAD function, which always redirects to
-    # XS_AUTOLOAD in Qt.xs
-    installautoload($perlClassName);
-    installautoload(" $perlClassName");
-    {
+    foreach my $sp ('', ' ') {
+        my $where = $sp . $perlClassName;
+        installautoload($where);
         # Putting this in one package gives XS_AUTOLOAD one spot to look for
         # the autoload variable
         package Qt::AutoLoad;
-        my $closure = \&{ "$perlClassName\::_UTOLOAD" };
-        *{ $perlClassName . "::AUTOLOAD" } = sub{ &$closure };
-        $closure = \&{ " $perlClassName\::_UTOLOAD" };
-        *{ " $perlClassName\::AUTOLOAD" } = sub{ &$closure };
+        my $autosub = \&{$where . '::_UTOLOAD'};
+        $X->($where.'::AUTOLOAD') = sub {&$autosub};
     }
 
-    *{ "$perlClassName\::NEW" } = sub {
+    $X->("$perlClassName\::NEW") = sub {
         # Removes $perlClassName from the front of @_
         my $perlClassName = shift;
 
@@ -1186,18 +1183,15 @@ sub init_class {
         # QTextEdit::ExtraSelection, remove the first bit.
         $cxxClassName =~ s/.*://;
         $Qt::AutoLoad::AUTOLOAD = "$perlClassName\::$cxxClassName";
-        my $_utoload = "$perlClassName\::_UTOLOAD";
-        {
-            no warnings;
-            setThis( bless &$_utoload, " $perlClassName" );
-        }
-    } unless defined &{"$perlClassName\::NEW"};
+        my $_utoload = \&{"$perlClassName\::_UTOLOAD"};
+        setThis( bless &$_utoload, " $perlClassName" );
+    } unless(defined &{"$perlClassName\::NEW"});
 
     # Make the constructor subroutine
-    *{ $perlClassName } = sub {
+    $X->($perlClassName) = sub {
         # Adds $perlClassName to the front of @_
         $perlClassName->new(@_);
-    } unless defined &{ $perlClassName };
+    } unless(defined &{$perlClassName});
 }
 
 sub permateMungedMethods {
@@ -1258,15 +1252,14 @@ sub init {
         init_class($cxxClassName);
     }
 
-    no strict 'refs';
     my $enums = getEnumList();
     foreach my $enumName (@$enums) {
         $enumName =~ s/^const //;
-        if ( !defined @{"${enumName}::ISA"} ) {
-            @{"${enumName}::ISA"} = ('Qt::enum::_overload');
+        if(@{$X->("${enumName}::ISA")}) {
+            $X->("${enumName}Enum::ISA") = ['Qt::enum::_overload'];
         }
         else {
-            @{"${enumName}Enum::ISA"} = ('Qt::enum::_overload');
+            $X->("${enumName}::ISA") = ['Qt::enum::_overload'];
         }
     }
 
