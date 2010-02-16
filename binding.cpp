@@ -25,20 +25,23 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
     // If the Qt process forked, we want to make sure we can see the
     // interpreter
     PERL_SET_CONTEXT(PL_curinterp);
+#ifdef DEBUG
     if( do_debug && (do_debug & qtdb_virtual) && (do_debug & qtdb_verbose)){
         Smoke::Method methodobj = qt_Smoke->methods[method];
         fprintf( stderr, "Looking for virtual method override for %p->%s::%s()\n",
             ptr, qt_Smoke->classes[methodobj.classId].className, qt_Smoke->methodNames[methodobj.name] );
     }
+#endif
     // Look for a perl sv associated with this pointer
     SV *obj = getPointerObject(ptr);
     smokeperl_object *o = sv_obj_info(obj);
 
     // Didn't find one
     if(!o) {
-        if(!PL_dirty && (do_debug && (do_debug & qtdb_virtual) && (do_debug & qtdb_verbose))){ // If not in global destruction
+#ifdef DEBUG
+        if(!PL_dirty && (do_debug && (do_debug & qtdb_virtual) && (do_debug & qtdb_verbose)))// If not in global destruction
             fprintf(stderr, "Cannot find object for virtual method\n");
-        }
+#endif
         return false;
     }
 
@@ -54,9 +57,10 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
     // Found no autoload function
     if(!gv) return false;
 
-    if( do_debug && ( do_debug & qtdb_virtual ) ) {
+#ifdef DEBUG
+    if( do_debug && ( do_debug & qtdb_virtual ) )
         fprintf(stderr, "In Virtual override for %s\n", methodname);
-    }
+#endif
 
     VirtualMethodCall call(smoke, method, args, obj, gv);
     call.next();

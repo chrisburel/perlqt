@@ -52,16 +52,6 @@ QHash<QByteArray, Smoke::Index *> methcache;
 
 SV *prettyPrintMethod(Smoke::Index id);
 
-Smoke::Index getMethod(Smoke *smoke, const char* c, const char* m) {
-    Smoke::Index method = smoke->findMethod(c, m).index;
-    Smoke::Index i = smoke->methodMaps[method].method;
-    if(i == 0) {
-        // ambiguous method have i < 0; it's possible to resolve them, see the other bindings
-        fprintf(stderr, "%s method %s::%s\n", "Unknown", c, m);
-    }
-    return i;
-}
-
 bool argmatch( Smoke::Index methodIndex, SV** _sp ) {
     Smoke::Method method = qt_Smoke->methods[methodIndex];
     if( !method.numArgs ) return true;
@@ -122,25 +112,6 @@ bool argmatch( Smoke::Index methodIndex, SV** _sp ) {
     return argmatch;
 }
 
-Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
-    methodIndex = -methodIndex; // turn into ambiguousMethodList index
-    while(qt_Smoke->ambiguousMethodList[methodIndex]) {
-        Smoke::Index curIdx = qt_Smoke->ambiguousMethodList[methodIndex];
-        if(do_debug && (do_debug & qtdb_ambiguous)) 
-            fprintf(stderr, "Testing method\t%d\t%s\n", curIdx, SvPV_nolen(sv_2mortal(prettyPrintMethod(curIdx))));
-
-        if( argmatch( curIdx, _sp ) ){
-            if(do_debug && (do_debug & qtdb_ambiguous)) 
-                fprintf( stderr, "Returning %d\n", curIdx );
-            return curIdx;
-        }
-        ++methodIndex;
-    }
-
-    return 0;
-}
-
-
 void callMethod(Smoke *smoke, void *obj, Smoke::Index method, Smoke::Stack args) {
     Smoke::Method *m = smoke->methods + method;
     Smoke::ClassFn fn = smoke->classes[m->classId].classFn;
@@ -152,55 +123,41 @@ void callMethod(Smoke *smoke, void *obj, Smoke::Index method, Smoke::Stack args)
     }
 }
 
-void smokeCast(Smoke *smoke, Smoke::Index method, Smoke::Stack args, Smoke::Index i, void *obj, const char *className) {
-    // cast obj from className to the desired type of args[i]
-    Smoke::Index arg = smoke->argumentList[
-        smoke->methods[method].args + i - 1
-    ];
-    // cast(obj, from_type, to_type)
-    args[i].s_class = smoke->cast(obj, smoke->idClass(className).index, smoke->types[arg].classId);
-}
-
-void smokeCastThis(Smoke *smoke, Smoke::Index method, Smoke::Stack args, void *obj, const char *className) {
-    args[0].s_class = smoke->cast(obj, smoke->idClass(className).index, smoke->methods[method].classId);
-}
-// Given the perl package, look up the smoke classid
-// Depends on the classcache_ext hash being defined, which gets set in the
-// init_class function in Qt::_internal
-Smoke::Index package_classid(const char *package) {
-    // Get the cache hash
-    HV* classcache_ext = get_hv( "Qt::_internal::package2classid", false);
-    U32 klen = strlen( package );
-    SV** classcache = hv_fetch( classcache_ext, package, klen, 0 );
-    Smoke::Index item = 0;
-    if( classcache ) {
-        item = SvIV( *classcache );
-    }
-    if(item){
-        return item;
-    }
-
-    // Get the ISA array, nisa is a temp string to build package::ISA
-    char *nisa = new char[strlen(package)+6];
-    sprintf(nisa, "%s::ISA", package);
-    AV* isa=get_av(nisa, true);
-    delete[] nisa;
-
-    // Loop over the ISA array
-    for(int i=0; i<=av_len(isa); i++) {
-        // Get the value of the current index into @isa
-        SV** np = av_fetch(isa, i, 0); // np = 'new package'?
-        if(np) {
-            // Recurse until we find a match
-            Smoke::Index ix = package_classid(SvPV_nolen(*np));
-            if(ix) {
-                ;// Cache the result - to do, does it depend on cache?
-                return ix;
-            }
+SV *catArguments(SV** sp, int n) {
+    SV* r=newSVpvf("");
+    for(int i = 0; i < n; i++) {
+        if(i) sv_catpv(r, ", ");
+        if(!SvOK(sp[i])) {
+            sv_catpv(r, "undef");
+        } else if(SvROK(sp[i])) {
+            smokeperl_object *o = sv_obj_info(sp[i]);
+            if(o)
+                sv_catpv(r, o->smoke->className(o->classId));
+            else if (SvTYPE(SvRV(sp[i])) == SVt_PVMG)
+                sv_catpvf(r, "%s(%s)", HvNAME(SvSTASH(SvRV(sp[i]))), SvPV_nolen(SvRV(sp[i])));
+            else
+                sv_catsv(r, sp[i]);
+        } else {
+            bool isString = SvPOK(sp[i]);
+            STRLEN len;
+            char *s = SvPV(sp[i], len);
+            if(isString) sv_catpv(r, "'");
+            sv_catpvn(r, s, len > 10 ? 10 : len);
+            if(len > 10) sv_catpv(r, "...");
+            if(isString) sv_catpv(r, "'");
         }
     }
-    // Found nothing, so
-    return (Smoke::Index) 0;
+    return r;
+}
+
+Smoke::Index getMethod(Smoke *smoke, const char* c, const char* m) {
+    Smoke::Index method = smoke->findMethod(c, m).index;
+    Smoke::Index i = smoke->methodMaps[method].method;
+    if(i == 0) {
+        // ambiguous method have i < 0; it's possible to resolve them, see the other bindings
+        fprintf(stderr, "%s method %s::%s\n", "Unknown", c, m);
+    }
+    return i;
 }
 
 // The pointer map gives us the relationship between an arbitrary c++ pointer
@@ -227,30 +184,6 @@ SV *getPointerObject(void *ptr) {
     }
     SvREFCNT_dec(keysv);
     return *svp;
-}
-
-// Store pointer in pointer_map hash : "pointer_to_Qt_object" => weak ref to associated Perl object
-// Recurse to store it also as casted to its parent classes.
-void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void *lastptr) {
-    void *ptr = o->smoke->cast(o->ptr, o->classId, classId);
-    // This ends the recursion
-    if(ptr != lastptr) {
-        lastptr = ptr;
-        SV *keysv = newSViv((IV)ptr);
-        STRLEN len;
-        char *key = SvPV(keysv, len);
-        SV *rv = newSVsv(obj);
-        sv_rvweaken(rv); // weak reference! What's this?
-        hv_store(hv, key, len, rv, 0);
-        SvREFCNT_dec(keysv);
-    }
-    for(Smoke::Index *i = o->smoke->inheritanceList + o->smoke->classes[classId].parents; *i; i++) {
-        mapPointer(obj, o, hv, *i, lastptr);
-    }
-}
-
-void unmapPointer(smokeperl_object *o, Smoke::Index classId, void *lastptr) {
-    //For object deletion
 }
 
 char *get_SVt(SV *sv) {
@@ -282,111 +215,6 @@ char *get_SVt(SV *sv) {
     else
         r = "U";
     return r;
-}
-
-SV *prettyPrintMethod(Smoke::Index id) {
-    SV *r = newSVpvf("");
-    Smoke::Method &meth = qt_Smoke->methods[id];
-    const char *tname = qt_Smoke->types[meth.ret].name;
-    if(meth.flags & Smoke::mf_static) sv_catpv(r, "static ");
-    sv_catpvf(r, "%s ", (tname ? tname:"void"));
-    sv_catpvf(r, "%s::%s(", qt_Smoke->classes[meth.classId].className, qt_Smoke->methodNames[meth.name]);
-    for(int i = 0; i < meth.numArgs; i++) {
-        if(i) sv_catpv(r, ", ");
-        tname = qt_Smoke->types[qt_Smoke->argumentList[meth.args+i]].name;
-        sv_catpv(r, (tname ? tname:"void"));
-    }
-    sv_catpv(r, ")");
-    if(meth.flags & Smoke::mf_const) sv_catpv(r, " const");
-    return r;
-}
-
-SV *catArguments(SV** sp, int n) {
-    SV* r=newSVpvf("");
-    for(int i = 0; i < n; i++) {
-        if(i) sv_catpv(r, ", ");
-        if(!SvOK(sp[i])) {
-            sv_catpv(r, "undef");
-        } else if(SvROK(sp[i])) {
-            smokeperl_object *o = sv_obj_info(sp[i]);
-            if(o)
-                sv_catpv(r, o->smoke->className(o->classId));
-            else if (SvTYPE(SvRV(sp[i])) == SVt_PVMG)
-                sv_catpvf(r, "%s(%s)", HvNAME(SvSTASH(SvRV(sp[i]))), SvPV_nolen(SvRV(sp[i])));
-            else
-                sv_catsv(r, sp[i]);
-        } else {
-            bool isString = SvPOK(sp[i]);
-            STRLEN len;
-            char *s = SvPV(sp[i], len);
-            if(isString) sv_catpv(r, "'");
-            sv_catpvn(r, s, len > 10 ? 10 : len);
-            if(len > 10) sv_catpv(r, "...");
-            if(isString) sv_catpv(r, "'");
-        }
-    }
-    return r;
-}
-
-XS(XS_Qt__myQAbstractItemModel_flags){
-    dXSARGS;
-    if( do_debug && ( do_debug | qtdb_autoload ) )
-        fprintf( stderr, "In XS Custom   for Qt::QAbstractItemModel::flags\n" );
-
-    char *classname = "QAbstractItemModel";
-    char *methodname = "flags#";
-
-    Smoke::Index methodIndex = getMethod(qt_Smoke, classname, methodname );
-
-    /*
-    //Method 1
-    QAbstractItemModel* mythis = (QAbstractItemModel*)sv_obj_info(sv_this)->ptr;
-    QModelIndex* modelix = (QModelIndex*)sv_obj_info( ST(0) )->ptr;
-    SV* retval = newSViv(mythis->QAbstractItemModel::flags( *modelix ));
-
-    //Method 2
-    Smoke::StackItem args[items + 1];
-    // ST(0) should contain 'this'.  ST(1) is the 1st arg.
-    args[1].s_voidp = sv_obj_info( ST(1) )->ptr;
-    callMethod( qt_Smoke, sv_obj_info(sv_this)->ptr, methodIndex, args );
-    SV* retval = newSViv(args[0].s_int);
-    */
-
-    //Method 3
-    int withObject = 1;
-    PerlQt::MethodCall call( qt_Smoke,
-                             methodIndex,
-                             sv_obj_info(sv_this),
-                             SP - items + 1 + withObject,
-                             items - withObject );
-    call.next();
-    SV* retval = call.var();
-
-    // Put the return value onto perl's stack
-    ST(0) = sv_2mortal(retval);
-    XSRETURN(1);
-}
-
-XS(XS_Qt__myQTableView_setRootIndex){
-    dXSARGS;
-    fprintf( stderr, "In XS Custom   for setRootIndex\n" );
-    
-    char *classname = "QTableView";
-    char *methodname = "setRootIndex#";
-
-    Smoke::StackItem args[items + 1];
-    args[1].s_voidp = sv_obj_info( ST(1) )->ptr;
-
-    Smoke::Index methodIndex = getMethod(qt_Smoke, classname, methodname );
-
-    PerlQt::MethodCall call( qt_Smoke, methodIndex, sv_obj_info(ST(0)), SP - items + 2, items - 1 );
-    call.next();
-
-    SV* retval = call.var();
-
-    // Put the return value onto perl's stack
-    ST(0) = sv_2mortal(retval);
-    XSRETURN(1);
 }
 
 QList<MocArgument*> get_moc_arguments(Smoke* smoke, const char * typeName, QList<QByteArray> methodTypes) {
@@ -492,81 +320,175 @@ QList<MocArgument*> get_moc_arguments(Smoke* smoke, const char * typeName, QList
 	return result;
 }
 
-XS(XS_qt_metacall){
-    dXSARGS;
-    PERL_UNUSED_VAR(items);
+// Store pointer in pointer_map hash : "pointer_to_Qt_object" => weak ref to associated Perl object
+// Recurse to store it also as casted to its parent classes.
+void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void *lastptr) {
+    void *ptr = o->smoke->cast(o->ptr, o->classId, classId);
+    // This ends the recursion
+    if(ptr != lastptr) {
+        lastptr = ptr;
+        SV *keysv = newSViv((IV)ptr);
+        STRLEN len;
+        char *key = SvPV(keysv, len);
+        SV *rv = newSVsv(obj);
+        sv_rvweaken(rv); // weak reference! What's this?
+        hv_store(hv, key, len, rv, 0);
+        SvREFCNT_dec(keysv);
+    }
+    for(Smoke::Index *i = o->smoke->inheritanceList + o->smoke->classes[classId].parents; *i; i++) {
+        mapPointer(obj, o, hv, *i, lastptr);
+    }
+}
 
-    // Get my arguments off the stack
-    QObject* sv_this_ptr = (QObject*)sv_obj_info(sv_this)->ptr;
-    // This is an enum value, so it's stored as a scalar reference.
-    QMetaObject::Call _c = (QMetaObject::Call)SvIV(SvRV(ST(0)));
-    int _id = (int)SvIV(ST(1));
-    void** _a = (void**)sv_obj_info(ST(2))->ptr;
-
-	// Assume the target slot is a C++ one
-	smokeperl_object *o = sv_obj_info(sv_this);
-	Smoke::ModuleIndex nameId = o->smoke->idMethodName("qt_metacall$$?");
-	Smoke::ModuleIndex classIdx = { o->smoke, o->classId };
-	Smoke::ModuleIndex meth = nameId.smoke->findMethod(classIdx, nameId);
-	if (meth.index > 0) {
-		Smoke::Method &m = meth.smoke->methods[meth.smoke->methodMaps[meth.index].method];
-		Smoke::ClassFn fn = meth.smoke->classes[m.classId].classFn;
-		Smoke::StackItem i[4];
-		i[1].s_enum = _c;
-		i[2].s_int = _id;
-		i[3].s_voidp = _a;
-		(*fn)(m.method, o->ptr, i);
-		int ret = i[0].s_int;
-		if (ret < 0) {
-            ST(0) = sv_2mortal(newSViv(ret));
-			XSRETURN(1);
-		}
-	} else {
-		// Should never happen..
-		//rb_raise(rb_eRuntimeError, "Cannot find %s::qt_metacall() method\n", 
-		//	o->smoke->classes[o->classId].className );
-	}
-
-    // Get the current metaobject with a virtual call
-    const QMetaObject* metaobject = sv_this_ptr->metaObject();
-
-	// get method/property count
-	int count = 0;
-	if (_c == QMetaObject::InvokeMetaMethod) {
-		count = metaobject->methodCount();
-	} else {
-		count = metaobject->propertyCount();
-	}
-
-    if (_c == QMetaObject::InvokeMetaMethod) {
-        QMetaMethod method = metaobject->method(_id);
-
-        // Signals are easy, just activate the meta object
-        if (method.methodType() == QMetaMethod::Signal) {
-            //fprintf( stderr, "In signal for %s::%s\n", metaobject->className(), method.signature() );
-            metaobject->activate(sv_this_ptr, metaobject, 0, _a);
-            ST(0) = sv_2mortal(newSViv(_id - count));
-            XSRETURN(1);
-        }
-        else if (method.methodType() == QMetaMethod::Slot) {
-
-            // Get the smoke to type id relationship args
-            QList<MocArgument*> mocArgs = get_moc_arguments(o->smoke, method.typeName(), method.parameterTypes());
-
-            // Find the name of the method being called
-            QString name(method.signature());
-            static QRegExp* rx = 0;
-            if (rx == 0) {
-                rx = new QRegExp("\\(.*");
-            }
-            name.replace(*rx, "");
-
-            PerlQt::InvokeSlot slot( sv_this, name.toLatin1().data(), mocArgs, _a );
-            slot.next();
-        }
+// Given the perl package, look up the smoke classid
+// Depends on the classcache_ext hash being defined, which gets set in the
+// init_class function in Qt::_internal
+Smoke::Index package_classid(const char *package) {
+    // Get the cache hash
+    HV* classcache_ext = get_hv( "Qt::_internal::package2classid", false);
+    U32 klen = strlen( package );
+    SV** classcache = hv_fetch( classcache_ext, package, klen, 0 );
+    Smoke::Index item = 0;
+    if( classcache ) {
+        item = SvIV( *classcache );
+    }
+    if(item){
+        return item;
     }
 
-    ST(0) = sv_2mortal(newSViv(_id - count));
+    // Get the ISA array, nisa is a temp string to build package::ISA
+    char *nisa = new char[strlen(package)+6];
+    sprintf(nisa, "%s::ISA", package);
+    AV* isa=get_av(nisa, true);
+    delete[] nisa;
+
+    // Loop over the ISA array
+    for(int i=0; i<=av_len(isa); i++) {
+        // Get the value of the current index into @isa
+        SV** np = av_fetch(isa, i, 0); // np = 'new package'?
+        if(np) {
+            // Recurse until we find a match
+            Smoke::Index ix = package_classid(SvPV_nolen(*np));
+            if(ix) {
+                ;// Cache the result - to do, does it depend on cache?
+                return ix;
+            }
+        }
+    }
+    // Found nothing, so
+    return (Smoke::Index) 0;
+}
+
+SV *prettyPrintMethod(Smoke::Index id) {
+    SV *r = newSVpvf("");
+    Smoke::Method &meth = qt_Smoke->methods[id];
+    const char *tname = qt_Smoke->types[meth.ret].name;
+    if(meth.flags & Smoke::mf_static) sv_catpv(r, "static ");
+    sv_catpvf(r, "%s ", (tname ? tname:"void"));
+    sv_catpvf(r, "%s::%s(", qt_Smoke->classes[meth.classId].className, qt_Smoke->methodNames[meth.name]);
+    for(int i = 0; i < meth.numArgs; i++) {
+        if(i) sv_catpv(r, ", ");
+        tname = qt_Smoke->types[qt_Smoke->argumentList[meth.args+i]].name;
+        sv_catpv(r, (tname ? tname:"void"));
+    }
+    sv_catpv(r, ")");
+    if(meth.flags & Smoke::mf_const) sv_catpv(r, " const");
+    return r;
+}
+
+Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
+    methodIndex = -methodIndex; // turn into ambiguousMethodList index
+    while(qt_Smoke->ambiguousMethodList[methodIndex]) {
+        Smoke::Index curIdx = qt_Smoke->ambiguousMethodList[methodIndex];
+        if(do_debug && (do_debug & qtdb_ambiguous)) 
+            fprintf(stderr, "Testing method\t%d\t%s\n", curIdx, SvPV_nolen(sv_2mortal(prettyPrintMethod(curIdx))));
+
+        if( argmatch( curIdx, _sp ) ){
+            if(do_debug && (do_debug & qtdb_ambiguous)) 
+                fprintf( stderr, "Returning %d\n", curIdx );
+            return curIdx;
+        }
+        ++methodIndex;
+    }
+
+    return 0;
+}
+
+void smokeCast(Smoke *smoke, Smoke::Index method, Smoke::Stack args, Smoke::Index i, void *obj, const char *className) {
+    // cast obj from className to the desired type of args[i]
+    Smoke::Index arg = smoke->argumentList[
+        smoke->methods[method].args + i - 1
+    ];
+    // cast(obj, from_type, to_type)
+    args[i].s_class = smoke->cast(obj, smoke->idClass(className).index, smoke->types[arg].classId);
+}
+
+void smokeCastThis(Smoke *smoke, Smoke::Index method, Smoke::Stack args, void *obj, const char *className) {
+    args[0].s_class = smoke->cast(obj, smoke->idClass(className).index, smoke->methods[method].classId);
+}
+
+void unmapPointer(smokeperl_object *o, Smoke::Index classId, void *lastptr) {
+    //For object deletion
+}
+
+XS(XS_Qt__myQAbstractItemModel_flags){
+    dXSARGS;
+    if( do_debug && ( do_debug | qtdb_autoload ) )
+        fprintf( stderr, "In XS Custom   for Qt::QAbstractItemModel::flags\n" );
+
+    char *classname = "QAbstractItemModel";
+    char *methodname = "flags#";
+
+    Smoke::Index methodIndex = getMethod(qt_Smoke, classname, methodname );
+
+    /*
+    //Method 1
+    QAbstractItemModel* mythis = (QAbstractItemModel*)sv_obj_info(sv_this)->ptr;
+    QModelIndex* modelix = (QModelIndex*)sv_obj_info( ST(0) )->ptr;
+    SV* retval = newSViv(mythis->QAbstractItemModel::flags( *modelix ));
+
+    //Method 2
+    Smoke::StackItem args[items + 1];
+    // ST(0) should contain 'this'.  ST(1) is the 1st arg.
+    args[1].s_voidp = sv_obj_info( ST(1) )->ptr;
+    callMethod( qt_Smoke, sv_obj_info(sv_this)->ptr, methodIndex, args );
+    SV* retval = newSViv(args[0].s_int);
+    */
+
+    //Method 3
+    int withObject = 1;
+    PerlQt::MethodCall call( qt_Smoke,
+                             methodIndex,
+                             sv_obj_info(sv_this),
+                             SP - items + 1 + withObject,
+                             items - withObject );
+    call.next();
+    SV* retval = call.var();
+
+    // Put the return value onto perl's stack
+    ST(0) = sv_2mortal(retval);
+    XSRETURN(1);
+}
+
+XS(XS_Qt__myQTableView_setRootIndex){
+    dXSARGS;
+    fprintf( stderr, "In XS Custom   for setRootIndex\n" );
+    
+    char *classname = "QTableView";
+    char *methodname = "setRootIndex#";
+
+    Smoke::StackItem args[items + 1];
+    args[1].s_voidp = sv_obj_info( ST(1) )->ptr;
+
+    Smoke::Index methodIndex = getMethod(qt_Smoke, classname, methodname );
+
+    PerlQt::MethodCall call( qt_Smoke, methodIndex, sv_obj_info(ST(0)), SP - items + 2, items - 1 );
+    call.next();
+
+    SV* retval = call.var();
+
+    // Put the return value onto perl's stack
+    ST(0) = sv_2mortal(retval);
     XSRETURN(1);
 }
 
@@ -785,6 +707,84 @@ XS(XS_AUTOLOAD){
     }
 }
 
+XS(XS_qt_metacall){
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+
+    // Get my arguments off the stack
+    QObject* sv_this_ptr = (QObject*)sv_obj_info(sv_this)->ptr;
+    // This is an enum value, so it's stored as a scalar reference.
+    QMetaObject::Call _c = (QMetaObject::Call)SvIV(SvRV(ST(0)));
+    int _id = (int)SvIV(ST(1));
+    void** _a = (void**)sv_obj_info(ST(2))->ptr;
+
+	// Assume the target slot is a C++ one
+	smokeperl_object *o = sv_obj_info(sv_this);
+	Smoke::ModuleIndex nameId = o->smoke->idMethodName("qt_metacall$$?");
+	Smoke::ModuleIndex classIdx = { o->smoke, o->classId };
+	Smoke::ModuleIndex meth = nameId.smoke->findMethod(classIdx, nameId);
+	if (meth.index > 0) {
+		Smoke::Method &m = meth.smoke->methods[meth.smoke->methodMaps[meth.index].method];
+		Smoke::ClassFn fn = meth.smoke->classes[m.classId].classFn;
+		Smoke::StackItem i[4];
+		i[1].s_enum = _c;
+		i[2].s_int = _id;
+		i[3].s_voidp = _a;
+		(*fn)(m.method, o->ptr, i);
+		int ret = i[0].s_int;
+		if (ret < 0) {
+            ST(0) = sv_2mortal(newSViv(ret));
+			XSRETURN(1);
+		}
+	} else {
+		// Should never happen..
+		//rb_raise(rb_eRuntimeError, "Cannot find %s::qt_metacall() method\n", 
+		//	o->smoke->classes[o->classId].className );
+	}
+
+    // Get the current metaobject with a virtual call
+    const QMetaObject* metaobject = sv_this_ptr->metaObject();
+
+	// get method/property count
+	int count = 0;
+	if (_c == QMetaObject::InvokeMetaMethod) {
+		count = metaobject->methodCount();
+	} else {
+		count = metaobject->propertyCount();
+	}
+
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        QMetaMethod method = metaobject->method(_id);
+
+        // Signals are easy, just activate the meta object
+        if (method.methodType() == QMetaMethod::Signal) {
+            //fprintf( stderr, "In signal for %s::%s\n", metaobject->className(), method.signature() );
+            metaobject->activate(sv_this_ptr, metaobject, 0, _a);
+            ST(0) = sv_2mortal(newSViv(_id - count));
+            XSRETURN(1);
+        }
+        else if (method.methodType() == QMetaMethod::Slot) {
+
+            // Get the smoke to type id relationship args
+            QList<MocArgument*> mocArgs = get_moc_arguments(o->smoke, method.typeName(), method.parameterTypes());
+
+            // Find the name of the method being called
+            QString name(method.signature());
+            static QRegExp* rx = 0;
+            if (rx == 0) {
+                rx = new QRegExp("\\(.*");
+            }
+            name.replace(*rx, "");
+
+            PerlQt::InvokeSlot slot( sv_this, name.toLatin1().data(), mocArgs, _a );
+            slot.next();
+        }
+    }
+
+    ST(0) = sv_2mortal(newSViv(_id - count));
+    XSRETURN(1);
+}
+
 XS(XS_signal){
     dXSARGS;
 
@@ -968,13 +968,6 @@ installautoload(package)
         delete[] autoload;
 
 void
-installsignal(signalname)
-        char *signalname
-    CODE:
-        if(!signalname) XSRETURN_EMPTY;
-        newXS(signalname, XS_signal, __FILE__);
-
-void
 installqt_metacall(package)
         char *package
     CODE:
@@ -983,6 +976,13 @@ installqt_metacall(package)
         sprintf(qt_metacall, "%s::qt_metacall", package);
         newXS(qt_metacall, XS_qt_metacall, __FILE__);
         delete[] qt_metacall;
+
+void
+installsignal(signalname)
+        char *signalname
+    CODE:
+        if(!signalname) XSRETURN_EMPTY;
+        newXS(signalname, XS_signal, __FILE__);
 
 void
 installsuper(package)
