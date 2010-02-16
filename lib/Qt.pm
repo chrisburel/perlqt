@@ -119,7 +119,9 @@ sub argmatch {
         }
         # objects
         else {
-            $typeName =~ s/^const\s+(\w*)[&*]$/$1/g;
+            # Optional const, some words, optional & or *.  Note ?: does not
+            # make a backreference, (\w*) is the only thing actually captured.
+            $typeName =~ s/^(?:const\s+)?(\w*)[&*]?$/$1/g;
             my $isa = classIsa( $argType, $typeName );
             if ( $isa != -1 ) {
                 $match{$methodId} = [-$isa, $methodIdIdx];
@@ -159,20 +161,20 @@ sub do_autoload {
 
     # If we got more than 1 method id, resolve it
     if (@methodIds > 1) {
-        my $count = scalar @_;
-        foreach my $argNum (0..$count-1) {
+        foreach my $argNum (0..$#_) {
             my @matching = argmatch( \@methodIds, \@_, $argNum );
             @methodIds = @matching if @matching;
         }
 
-        # If we still have more than 1 match, die.
+        # If we still have more than 1 match, use the first one.
         if ( @methodIds > 1 ) {
             # A constructor call will be 4 levels deep on the stack, everything
             # else will be 2
             my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
-            die "--- Ambiguous method ${classname}::$methodname " .
-                "called at " . (caller($stackDepth))[1] .
-                " line " . (caller($stackDepth))[2] . "\n";
+             #"--- Ambiguous method ${classname}::$methodname " .
+                #"called at " . (caller($stackDepth))[1] .
+                #" line " . (caller($stackDepth))[2] . "\n";
+            @methodIds = $methodIds[0];
         }
     }
     elsif ( @methodIds == 1 and @_ ) {

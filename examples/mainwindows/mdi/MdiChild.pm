@@ -5,7 +5,7 @@ use warnings;
 use blib;
 
 use Qt;
-use Qt::isa qw( Qt::QTextEdit );
+use Qt::isa qw( Qt::TextEdit );
 use Qt::slots
     documentWasModified => [''];
 
@@ -13,7 +13,7 @@ my $sequenceNumber = 1;
 
 sub NEW {
     shift->SUPER::NEW(@_);
-    this->setAttribute(Qt::Qt::WA_DeleteOnClose());
+    this->setAttribute(Qt::WA_DeleteOnClose());
     this->{isUntitled} = 1;
 }
 
@@ -29,16 +29,16 @@ sub newFile {
 sub loadFile {
     my ( $fileName ) = @_;
     if(!(open( FH, "< $fileName"))) {
-        Qt::QMessageBox::warning(this, "MDI",
+        Qt::MessageBox::warning(this, "MDI",
                                  sprintf("Cannot read file %s:\n%s.",
                                  $fileName,
                                  $!));
         return 0;
     }
 
-    Qt::QApplication::setOverrideCursor(Qt::QCursor(Qt::Qt::WaitCursor()));
+    Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
     this->setPlainText( join '', <FH> );
-    Qt::QApplication::restoreOverrideCursor();
+    Qt::Application::restoreOverrideCursor();
     close FH;
 
     setCurrentFile($fileName);
@@ -59,7 +59,7 @@ sub save {
 }
 
 sub saveAs {
-    my $fileName = Qt::QFileDialog::getSaveFileName(this, "Save As",
+    my $fileName = Qt::FileDialog::getSaveFileName(this, "Save As",
                                                     this->{curFile});
     if (!$fileName) {
         return 0;
@@ -71,16 +71,16 @@ sub saveAs {
 sub saveFile {
     my ( $fileName ) = @_;
     if(!(open( FH, "> $fileName"))) {
-        Qt::QMessageBox::warning(this, "MDI",
+        Qt::MessageBox::warning(this, "MDI",
                                  sprintf("Cannot write file %s:\n%s.",
                                  $fileName,
                                  $!));
         return 0;
     }
 
-    Qt::QApplication::setOverrideCursor(Qt::QCursor(Qt::Qt::WaitCursor()));
+    Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
     print FH this->toPlainText();
-    Qt::QApplication::restoreOverrideCursor();
+    Qt::Application::restoreOverrideCursor();
     close FH;
 
     setCurrentFile($fileName);
@@ -106,17 +106,17 @@ sub documentWasModified {
 
 sub maybeSave {
     if (this->document()->isModified()) {
-        my $ret = Qt::QMessageBox::warning(
+        my $ret = Qt::MessageBox::warning(
                      this,
                      "MDI",
                      sprintf( "'%s' has been modified.\n" .
                          "Do you want to save your changes?",
                          userFriendlyCurrentFile() ),
-                     CAST Qt::QMessageBox::Save() | Qt::QMessageBox::Discard() | Qt::QMessageBox::Cancel(), 'QMessageBox::StandardButtons');
-        if ($ret == Qt::QMessageBox::Save()) {
+                     CAST Qt::MessageBox::Save() | Qt::MessageBox::Discard() | Qt::MessageBox::Cancel(), 'QMessageBox::StandardButtons');
+        if ($ret == Qt::MessageBox::Save()) {
             return save();
         }
-        elsif ($ret == Qt::QMessageBox::Cancel()) {
+        elsif ($ret == Qt::MessageBox::Cancel()) {
             return 0;
         }
     }
@@ -125,7 +125,7 @@ sub maybeSave {
 
 sub setCurrentFile {
     my ( $fileName ) = @_;
-    this->{curFile} = Qt::QFileInfo($fileName)->canonicalFilePath();
+    this->{curFile} = Qt::FileInfo($fileName)->canonicalFilePath();
     this->{isUntitled} = 0;
     this->document()->setModified(0);
     this->setWindowModified(0);
@@ -141,7 +141,7 @@ sub currentFile {
 
 sub strippedName { 
     my ( $fullFileName ) = @_;
-    return Qt::QFileInfo($fullFileName)->fileName();
+    return Qt::FileInfo($fullFileName)->fileName();
 }
 
 1;

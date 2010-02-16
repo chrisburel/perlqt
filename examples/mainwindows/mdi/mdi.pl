@@ -37,10 +37,11 @@ sub dumpMetaMethods {
 =cut
 
 sub main {
+    my $app = Qt::Application();
     my $mainWin = MainWindow();
     #dumpMetaMethods(Qt::_internal::getMetaObject('QMdiArea'));
     $mainWin->show();
-    exit Qt::qapp()->exec();
+    exit $app->exec();
 }
 
 main();
