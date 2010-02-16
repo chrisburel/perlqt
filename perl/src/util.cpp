@@ -589,7 +589,7 @@ XS(XS_qabstract_item_model_setdata) {
         }
 	}
     else if ( items == 4 ) {
-        printf( "Calling setData with displayrole %d\n", SvIV(SvRV(ST(3))) );
+        printf( "Calling setData with displayrole %"IVdf"\n", SvIV(SvRV(ST(3))) );
         if ( model->setData( *modelIndex, *variant, SvIV(SvRV(ST(3))) ) ) {
             XSRETURN_YES;
         }
