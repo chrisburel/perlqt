@@ -1492,8 +1492,6 @@ sub Qt::Application::ON_DESTROY {
     return 0;
 }
 
-# Unfortunately this has to be here, since you can't say
-# 'package " Qt::Variant"'.  The leading space causes problems.
 $X->(' Qt::Variant::value') = sub {
     my $this = shift;
 
