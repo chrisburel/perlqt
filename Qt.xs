@@ -28,6 +28,7 @@
 #include "QtCore/QMetaObject"
 #include "QtCore/QMetaMethod"
 #include "QtCore/QModelIndex"
+#include "QtCore/QObject"
 #include "QtGui/QPainter"
 #include "QtGui/QWidget"
 
@@ -96,18 +97,43 @@ Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
         bool argmatch = false;
         for(int i=0; i<method.numArgs; i++) {
             SmokeType curType( qt_Smoke, args[i] );
-            //fprintf( stderr, "c++ %d: %s ", i, curType.name() );
 
             if( curType.isClass() ) {
+                //fprintf( stderr, "c++ %d: %s ", i, curType.name() );
                 // Test to see if the perl argument is the same class type
                 smokeperl_object *o = sv_obj_info(_sp[i]);
                 if(o && (o->classId == curType.classId()) )
                     argmatch = true;
-                else
+                else {
                     argmatch = false;
+                    break;
+                }
             }
             else {
-                argmatch = false;
+                int len = strlen(curType.name()) + 1;
+                char* name = new char[len];
+                memcpy( name, curType.name(), len );
+
+                // Remove leading const and trailing &
+                name += strspn( name, "const " );
+                char* ref = strstr(name, "&");
+                if( ref ) {
+                    *ref = 0;
+                }
+
+                //fprintf( stderr, "c++ %d: %s ", i, name );
+
+                // Check for QString validity
+                if(!strcmp(name, "QString") && SvPOK(_sp[i])) {
+                    argmatch = true;
+                }
+                else if((!strcmp(name, "double") || (!strcmp(name, "int")) && SvIOK(_sp[i]))) {
+                    argmatch = true;
+                }
+                else {
+                    argmatch = false;
+                    break;
+                }
             }
         }
         if( argmatch ) {
@@ -117,7 +143,7 @@ Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
         ++methodIndex;
     }
 
-    //fprintf( stderr, "\n" );
+    //fprintf( stderr, "\nReturning id %d\n", retval );
 
     return retval;
 }
@@ -401,29 +427,6 @@ QList<MocArgument*> get_moc_arguments(Smoke* smoke, const char * typeName, QList
 	return result;
 }
 
-void callmyfreakinslot( char* methodname, int setValue ){
-    //fprintf( stderr, "In slot for %s\n", methodname );
-    //Call the perl sub
-    //Copy the way the VirtualMethodCall does it
-    HV *stash = SvSTASH(SvRV(sv_this));
-    if(*HvNAME(stash) == ' ' ) // if withObject, look for a diff stash
-        stash = gv_stashpv(HvNAME(stash) + 1, TRUE);
-
-    GV *gv = gv_fetchmethod_autoload(stash, methodname, 0);
-    if(!gv) {
-        fprintf( stderr, "Found no method to call in slot\n" );
-        return;
-    }
-
-    dSP;
-    ENTER;
-    SAVETMPS;
-    PUSHMARK(SP);
-    PUSHs(sv_2mortal( newSViv( setValue ) ));
-    PUTBACK;
-    call_sv((SV*)GvCV(gv), G_VOID);
-}    
-
 XS(XS_qt_metacall){
     dXSARGS;
     PERL_UNUSED_VAR(items);
@@ -474,7 +477,7 @@ XS(XS_qt_metacall){
 
         // Signals are easy, just activate the meta object
         if (method.methodType() == QMetaMethod::Signal) {
-            //fprintf( stderr, "In signal for %s::%s\n", metaobject->className(), SvPV_nolen(methodname) );
+            //fprintf( stderr, "In signal for %s::%s\n", metaobject->className(), method.signature() );
             metaobject->activate(sv_this_ptr, metaobject, 0, _a);
             ST(0) = sv_2mortal(newSViv(_id - count));
             XSRETURN(1);
@@ -544,59 +547,54 @@ XS(XS_AUTOLOAD){
         }
     }
 
-    // Look to see if there's a perl subroutine for this method
-    // HV* classcache_ext = get_hv( "Qt::_internal::package2classid", false);
-    // U32 klen = strlen( package );
-    // SV** classcache = hv_fetch( classcache_ext, package, klen, 0 );
-    // if( !classcache ) {
-        HV *stash = gv_stashpv(package, TRUE);
-        GV *gv = gv_fetchmethod_autoload(stash, methodname, 0);
+    HV *stash = gv_stashpv(package, TRUE);
+    //fprintf(stderr, "Looking in stash %s\n", HvNAME(stash));
+    GV *gv = gv_fetchmethod_autoload(stash, methodname, 0);
 
-        if(gv){
-            if(do_debug && (do_debug & qtdb_autoload))
-                fprintf(stderr, "\tfound in %s's Perl stash\n", package);
+    if(gv){
+        if(do_debug && (do_debug & qtdb_autoload))
+            fprintf(stderr, "\t%s::%s found in Perl stash\n", package, methodname);
 
-            SV *old_this = 0;
-            if(withObject && !isSuper){
-                old_this = sv_this;
-                sv_this = newSVsv(ST(0));
-            }
-
-            // Call the found method
-            ENTER;
-            SAVETMPS;
-            PUSHMARK(SP - items + withObject);
-            // What context are we calling this subroutine in?
-            I32 gimme = GIMME_V;
-            // Make the call, save number of returned values
-            int count = call_sv((SV*)GvCV(gv), gimme|G_EVAL);
-            // Get the return value
-            SPAGAIN;
-            SP -= count;
-            if (withObject)
-                for (int i=0; i<count; i++)
-                    ST(i) = ST(i+1);
-            PUTBACK;
-            //FREETMPS;
-            //LEAVE;
-
-            // Clean up
-            if(withObject && !isSuper){
-                SvREFCNT_dec(sv_this);
-                sv_this = old_this;
-            }
-            else if(isSuper)
-                delete[] package;
-
-            // Error out if necessary
-            if(SvTRUE(ERRSV))
-                croak(SvPV_nolen(ERRSV));
-            if (gimme == G_VOID)
-                XSRETURN_UNDEF;
-            else
-                XSRETURN(count);
+        SV *old_this = 0;
+        if(withObject && !isSuper){
+            old_this = sv_this;
+            sv_this = newSVsv(ST(0));
         }
-    // }
+
+        // Call the found method
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP - items + withObject);
+        // What context are we calling this subroutine in?
+        I32 gimme = GIMME_V;
+        // Make the call, save number of returned values
+        int count = call_sv((SV*)GvCV(gv), gimme|G_EVAL);
+        // Get the return value
+        SPAGAIN;
+        SP -= count;
+        if (withObject)
+            for (int i=0; i<count; i++)
+                ST(i) = ST(i+1);
+        PUTBACK;
+        //FREETMPS;
+        //LEAVE;
+
+        // Clean up
+        if(withObject && !isSuper){
+            SvREFCNT_dec(sv_this);
+            sv_this = old_this;
+        }
+        else if(isSuper)
+            delete[] package;
+
+        // Error out if necessary
+        if(SvTRUE(ERRSV))
+            croak(SvPV_nolen(ERRSV));
+        if (gimme == G_VOID)
+            XSRETURN_UNDEF;
+        else
+            XSRETURN(count);
+    }
     else if(!strcmp(methodname, "DESTROY")) {
         //fprintf( stderr, "DESTROY: coming soon.\n" );
     }
@@ -666,6 +664,51 @@ XS(XS_AUTOLOAD){
         ST(0) = sv_2mortal(retval);
         XSRETURN(1);
     }
+}
+
+XS(XS_signal){
+    dXSARGS;
+
+    smokeperl_object *o = sv_obj_info(sv_this);
+    QObject *qobj = (QObject*)o->smoke->cast( o->ptr, o->classId, o->smoke->idClass("QObject").index );
+    if(qobj->signalsBlocked()) XSRETURN_UNDEF;
+
+    // Each xs method has an implied cv argument that holds the info for the
+    // called subroutine.  Use it to determine the name of the signal being
+    // called.
+    GV* gv = CvGV(cv);
+    QLatin1String signalname( GvNAME(gv) );
+    fprintf(stderr, "In signal call %s\t", signalname.latin1());
+
+    // Get the current metaobject with a virtual call
+    const QMetaObject* metaobject = qobj->metaObject();
+
+    // Find the method's meta id.  This loop is easier than building the method
+    // signature to send to indexOfMethod, but makes it impossible to make 2
+    // signals with different signatures.
+    int index = -1;
+    for (index = metaobject->methodCount() - 1; index > -1; index--) {
+		if (metaobject->method(index).methodType() == QMetaMethod::Signal) {
+			QString name(metaobject->method(index).signature());
+            static QRegExp * rx = 0;
+			if (rx == 0) {
+				rx = new QRegExp("\\(.*");
+			}
+			name.replace(*rx, "");
+
+			if (name == signalname) {
+				break;
+			}
+		}
+    }
+
+	if (index == -1) {
+		XSRETURN_UNDEF;
+	}
+    fprintf(stderr, " id: %d\n", index);
+    
+    // Activate the metaobject with the found index
+    metaobject->activate(qobj, index, index, 0);
 }
 
 XS(XS_super) {
@@ -780,6 +823,13 @@ installautoload(package)
         char *file = __FILE__;
         newXS(autoload, XS_AUTOLOAD, file);
         delete[] autoload;
+
+void
+installsignal(signalname)
+        char *signalname
+    CODE:
+        if(!signalname) XSRETURN_EMPTY;
+        newXS(signalname, XS_signal, __FILE__);
 
 void
 installqt_metacall(package)

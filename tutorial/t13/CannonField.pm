@@ -6,15 +6,18 @@ use blib;
 
 use Qt;
 use Qt::isa qw(Qt::QWidget);
-use Qt::slots setAngle  => ['int'],
-              setForce  => ['int'],
-              shoot     => [],
-              newTarget => [],
-              moveShot  => [];
+use Qt::slots setAngle    => ['int'],
+              setForce    => ['int'],
+              shoot       => [],
+              newTarget   => [],
+              setGameOver => [],
+              restartGame => [],
+              moveShot    => [];
 use Qt::signals hit          => [],
                 missed       => [],
                 angleChanged => ['int'],
-                forceChanged => ['int'];
+                forceChanged => ['int'],
+                canShoot     => ['bool'];
 
 sub NEW {
     shift->SUPER::NEW(@_);
@@ -28,6 +31,7 @@ sub NEW {
     this->{shootAngle} = 0;
     this->{shootForce} = 0;
     this->{target} = Qt::QPoint(0, 0);
+    this->{gameEnded} = 0;
     this->setPalette(Qt::QPalette(Qt::QColor(250,250,200)));
     this->setAutoFillBackground(1);
     this->{firstTime} = 1;
@@ -47,7 +51,7 @@ sub setAngle {
     }
     this->{currentAngle} = $angle;
     this->update(this->cannonRect());
-    this->emit( 'angleChanged', this->{currentAngle} );
+    emit angleChanged( this->{currentAngle} );
 }
 
 sub setForce {
@@ -59,18 +63,18 @@ sub setForce {
         return;
     }
     this->{currentForce} = $force;
-    this->emit( 'forceChanged', this->{currentForce} );
+    emit forceChanged( this->{currentForce} );
 }
 
 sub shoot {
-    my $autoShootTimer = this->{autoShootTimer};
-    if ($autoShootTimer->isActive()) {
+    if (isShooting()) {
         return;
     }
     this->{timerCount} = 0;
     this->{shootAngle} = this->{currentAngle};
     this->{shootForce} = this->{currentForce};
-    $autoShootTimer->start(5);
+    this->{autoShootTimer}->start(5);
+    emit canShoot( 0 );
 }
 
 sub newTarget {
@@ -85,6 +89,24 @@ sub newTarget {
     this->update();
 }
 
+sub setGameOver {
+    return if (this->{gameEnded});
+    if (this->{isShooting}()) {
+        this->{autoShootTimer}->stop();
+    }
+    this->{gameEnded} = 1;
+    this->update();
+}
+
+sub restartGame {
+    if (isShooting()) {
+        this->{autoShootTimer}->stop();
+    }
+    this->{gameEnded} = 0;
+    this->update();
+    emit canShoot( 1 );
+}
+
 sub moveShot {
     my $region = shotRect();
     this->{timerCount}++;
@@ -93,11 +115,14 @@ sub moveShot {
 
     if ($shotR->intersects(targetRect())) {
         this->{autoShootTimer}->stop();
-        this->emit( 'hit' );
+        print "Hit cannonfield\n";
+        emit hit();
+        emit canShoot( 1 );
     }
     elsif ($shotR->x() > this->width() || $shotR->y() > this->height()) {
         this->{autoShootTimer}->stop();
-        this->emit( 'missed' );
+        emit missed();
+        emit canShoot( 1 );
     }
     else {
         $region = $region->unite($shotR);
@@ -110,12 +135,17 @@ my $barrelRect = Qt::QRect(30, -5, 20, 10);
 sub paintEvent {
     my $painter = Qt::_internal::gimmePainter(this);
 
-    if (this->{autoShootTimer}->isActive()){
+    if (this->{gameEnded}) {
+        $painter->setPen(Qt::QColor(0, 0, 0));
+        $painter->setFont(Qt::QFont("Courier", 48, Qt::QFont::Bold()));
+        $painter->drawText(rect(), Qt::Qt::AlignCenter(), "Game Over");
+    }
+    if (isShooting()){
         paintShot($painter);
     }
-
-    paintTarget($painter);
-
+    if (!this->{gameEnded}) {
+        paintTarget($painter);
+    }
     paintCannon($painter);
 
     $painter->end();
@@ -180,4 +210,7 @@ sub targetRect {
     return $result;
 }
 
+sub isShooting {
+    return this->{autoShootTimer}->isActive();
+}
 1;

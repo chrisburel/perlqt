@@ -31,6 +31,7 @@ sub import {
         };
 
         push @{$meta->{signals}}, $signal;
+        Qt::_internal::installsignal("$caller\::$signalname") unless defined &{ "$caller\::$signalname" };
     }
 }
 
