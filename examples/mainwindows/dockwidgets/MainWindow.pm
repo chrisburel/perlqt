@@ -95,11 +95,13 @@ sub printSlot {
 sub save {
     my $fileName = Qt::FileDialog::getSaveFileName(this,
                         "Choose a file name", ".",
-                        "HTML (*.html *.htm");
+                        "HTML (*.html *.htm)");
     if (!$fileName) {
         return;
     }
-    if (!(open( FH, "> $fileName"))) {
+
+    my $FH;
+    if(!(open $FH, '>', $fileName)) {
         Qt::MessageBox::warning(this, "Dock Widgets",
                                  sprintf("Cannot write file %s:\n%s.",
                                  $fileName,
@@ -108,7 +110,8 @@ sub save {
     }
 
     Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
-    print FH this->{textEdit}->toHtml();
+    print $FH this->{textEdit}->toHtml();
+    close $FH;
     Qt::Application::restoreOverrideCursor();
 
     this->statusBar()->showMessage("Saved '$fileName'", 2000);
