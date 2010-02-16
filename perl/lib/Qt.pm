@@ -930,6 +930,58 @@ sub Qt::Application::NEW {
     shift @$argv;
 }
 
+package Qt::DBusReply;
+
+use strict;
+use warnings;
+
+sub new {
+    my ( $class, $reply ) = @_;
+    my $this = bless {}, $class;
+
+    my $error = Qt::DBusError($reply);
+    $this->{error} = $error;
+    if ( $error->isValid() ) {
+        $this->{data} = Qt::Variant();
+        return $this;
+    }
+
+    my $arguments = $reply->arguments();
+    if ( ref $arguments eq 'ARRAY' && scalar @{$arguments} >= 1 ) {
+        $this->{data} = $arguments->[0];
+        return $this;
+    }
+
+    # This only gets called if the 2 previous ifs weren't
+    $this->{error} = Qt::DBusError( Qt::DBusError::InvalidSignature(),
+                                    'Unexpected reply signature' );
+    $this->{data} = Qt::Variant();
+    return $this;
+}
+
+sub isValid {
+    my ( $this ) = @_;
+    return !$this->{error}->isValid();
+}
+
+sub value() {
+    my ( $this ) = @_;
+    return $this->{data}->value();
+}
+
+sub error() {
+    my ( $this ) = @_;
+    return $this->{error};
+}
+
+# Create the Qt::DBusReply() constructor
+no strict;
+*{'Qt::DBusReply'} = sub {
+    Qt::DBusReply->new(@_);
+};
+
+1;
+
 package Qt;
 
 use 5.008006;
@@ -981,6 +1033,146 @@ sub Qt::Object::ON_DESTROY {
 sub Qt::Application::ON_DESTROY {
     return 0;
 }
+
+# Unfortunately this has to be here, since you can't say
+# 'package " Qt::Variant"'.  The leading space causes problems.
+no strict;
+*{' Qt::Variant::value'} = sub {
+    use strict;
+    my $this = shift;
+    my $type = $this->type();
+    if( $type == Qt::Variant::Invalid() ) {
+        return;
+    }
+    elsif( $type == Qt::Variant::Bitmap() ) {
+    }
+    elsif( $type == Qt::Variant::Bool() ) {
+        return $this->toBool();
+    }
+    elsif( $type == Qt::Variant::Brush() ) {
+        return Qt::qVariantValue(Qt::Brush(), $this);
+    }
+    elsif( $type == Qt::Variant::ByteArray() ) {
+        return $this->toByteArray();
+    }
+    elsif( $type == Qt::Variant::Char() ) {
+        return Qt::qVariantValue(Qt::Char(), $this);
+    }
+    elsif( $type == Qt::Variant::Color() ) {
+        return Qt::qVariantValue(Qt::Color(), $this);
+    }
+    elsif( $type == Qt::Variant::Cursor() ) {
+        return Qt::qVariantValue(Qt::Cursor(), $this);
+    }
+    elsif( $type == Qt::Variant::Date() ) {
+        return $this->toDate();
+    }
+    elsif( $type == Qt::Variant::DateTime() ) {
+        return $this->toDateTime();
+    }
+    elsif( $type == Qt::Variant::Double() ) {
+        return $this->toDouble();
+    }
+    elsif( $type == Qt::Variant::Font() ) {
+        return Qt::qVariantValue(Qt::Font(), $this);
+    }
+    elsif( $type == Qt::Variant::Icon() ) {
+        return Qt::qVariantValue(Qt::Icon(), $this);
+    }
+    elsif( $type == Qt::Variant::Image() ) {
+        return Qt::qVariantValue(Qt::Image(), $this);
+    }
+    elsif( $type == Qt::Variant::Int() ) {
+        return $this->toInt();
+    }
+    elsif( $type == Qt::Variant::KeySequence() ) {
+        return Qt::qVariantValue(Qt::KeySequence(), $this);
+    }
+    elsif( $type == Qt::Variant::Line() ) {
+        return $this->toLine();
+    }
+    elsif( $type == Qt::Variant::LineF() ) {
+        return $this->toLineF();
+    }
+    elsif( $type == Qt::Variant::List() ) {
+        return $this->toList();
+    }
+    elsif( $type == Qt::Variant::Locale() ) {
+        return Qt::qVariantValue(Qt::Locale(), $this);
+    }
+    elsif( $type == Qt::Variant::LongLong() ) {
+        return $this->toLongLong();
+    }
+    elsif( $type == Qt::Variant::Map() ) {
+        return $this->toMap();
+    }
+    elsif( $type == Qt::Variant::Palette() ) {
+        return Qt::qVariantValue(Qt::Palette(), $this);
+    }
+    elsif( $type == Qt::Variant::Pen() ) {
+        return Qt::qVariantValue(Qt::Pen(), $this);
+    }
+    elsif( $type == Qt::Variant::Pixmap() ) {
+        return Qt::qVariantValue(Qt::Pixmap(), $this);
+    }
+    elsif( $type == Qt::Variant::Point() ) {
+        return $this->toPoint();
+    }
+    elsif( $type == Qt::Variant::PointF() ) {
+        return $this->toPointF();
+    }
+    elsif( $type == Qt::Variant::Polygon() ) {
+        return Qt::qVariantValue(Qt::Polygon(), $this);
+    }
+    elsif( $type == Qt::Variant::Rect() ) {
+        return $this->toRect();
+    }
+    elsif( $type == Qt::Variant::RectF() ) {
+        return $this->toRectF();
+    }
+    elsif( $type == Qt::Variant::RegExp() ) {
+        return $this->toRegExp();
+    }
+    elsif( $type == Qt::Variant::Region() ) {
+        return Qt::qVariantValue(Qt::Region(), $this);
+    }
+    elsif( $type == Qt::Variant::Size() ) {
+        return $this->toSize();
+    }
+    elsif( $type == Qt::Variant::SizeF() ) {
+        return $this->toSizeF();
+    }
+    elsif( $type == Qt::Variant::SizePolicy() ) {
+        return $this->toSizePolicy();
+    }
+    elsif( $type == Qt::Variant::String() ) {
+        return $this->toString();
+    }
+    elsif( $type == Qt::Variant::StringList() ) {
+        return $this->toStringList();
+    }
+    elsif( $type == Qt::Variant::TextFormat() ) {
+        return Qt::qVariantValue(Qt::TextFormat(), $this);
+    }
+    elsif( $type == Qt::Variant::TextLength() ) {
+        return Qt::qVariantValue(Qt::TextLength(), $this);
+    }
+    elsif( $type == Qt::Variant::Time() ) {
+        return $this->toTime();
+    }
+    elsif( $type == Qt::Variant::UInt() ) {
+        return $this->toUInt();
+    }
+    elsif( $type == Qt::Variant::ULongLong() ) {
+        return $this->toULongLong();
+    }
+    elsif( $type == Qt::Variant::Url() ) {
+        return $this->toUrl();
+    }
+    else {
+        return Qt::qVariantValue(undef, $this);
+    }
+};
 
 1;
 
