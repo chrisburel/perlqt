@@ -721,6 +721,32 @@ my %customClasses = (
 
 our $ambiguousSignature = undef;
 
+my %arrayTypes = (
+    'const QList<QVariant>&' => {
+        value => [ 'QVariant' ]
+    },
+    'const QStringList&' => {
+        value => [ 's', 'Qt::String' ],
+    },
+);
+
+my %hashTypes = (
+    'const QHash<QString, QVariant>&' => {
+        value1 => [ 's', 'Qt::String' ],
+        value2 => [ 'QVariant' ]
+    },
+    'const QMap<QString, QVariant>&' => {
+        value1 => [ 's', 'Qt::String' ],
+        value2 => [ 'QVariant' ]
+    },
+);
+
+sub unique {
+    my %uniq;          # Use keys of this hash to track unique values
+    @uniq{@_} = ();    # use the args as those keys
+    return keys %uniq; # Return unique values
+}
+
 sub argmatch {
     my ( $methodIds, $args, $argNum ) = @_;
     my %match;
@@ -757,14 +783,26 @@ sub argmatch {
         }
         # arrays
         elsif ( $argType eq 'a' ) {
-            print "Array test in method name resolution not implemented\n";
-            return ();
+            next unless defined $arrayTypes{$typeName};
+            my @subArgTypes = unique( map{ getSVt( $_ ) } @{$args->[$argNum]} );
+            my @validTypes = @{$arrayTypes{$typeName}->{value}};
+            my $good = 1;
+            foreach my $subArgType ( @subArgTypes ) {
+                if ( !grep{ $_ eq $subArgType } @validTypes ) {
+                    $good = 0;
+                    last;
+                }
+            }
+            if( $good ) {
+                $match{$methodId} = [0,$methodIdIdx];
+            }
         }
         elsif ( $argType eq 'r' or $argType eq 'U' ) {
             $match{$methodId} = [0,$methodIdIdx];
         }
         elsif ( $argType eq 'Qt::String' ) {
-            # This type exists only to resolve ambiguous method calls, so we can return here.
+            # This type exists only to resolve ambiguous method calls, so we
+            # can return here.
             if( $typeName =~m/^(?:const )?QString[\*&]?/ ) {
                 return $methodId;
             }

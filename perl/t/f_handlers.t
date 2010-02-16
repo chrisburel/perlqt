@@ -1,4 +1,4 @@
-use Test::More tests => 18;
+use Test::More tests => 20;
 
 use strict;
 use warnings;
@@ -113,6 +113,14 @@ my $app = Qt::Application( \@ARGV );
 }
 
 {
+    # Test ambiguous list call
+    my $strings = [ qw( The quick brown fox jumped over the lazy dog ) ];
+    my $var = Qt::Variant( $strings );
+    my $newStrings = $var->toStringList();
+    is_deeply( $strings, $newStrings );
+}
+
+{
     # Test marshall_ValueListItem ToSV
     Qt::setSignature( 'QKeySequence::QKeySequence( int )' );
     my $shortcut1 = Qt::KeySequence( Qt::Key_Enter() );
@@ -126,7 +134,6 @@ my $app = Qt::Application( \@ARGV );
     is_deeply( [ map{ eval "\$shortcuts->[$_] == \$gotshortcuts->[$_]" } (0..$#{$shortcuts}) ],
                [ map{ 1 } (0..$#{$shortcuts}) ],
                'marshall_ValueListItem<> FromSV' );
-
 }
 
 {
@@ -160,8 +167,10 @@ my $app = Qt::Application( \@ARGV );
 {
     # Test Qt::Object::findChildren
     my $widget = Qt::Widget();
-    my $widget2 = Qt::Widget($widget);
-    my $widget3 = Qt::Widget($widget2);
-    my $children = $widget->findChildren();
-    is_deeply( $children, [$widget2, $widget3], 'Qt::Object::findChildren' );
+    my $childWidget = Qt::Widget($widget);
+    my $childPushButton = Qt::PushButton($childWidget);
+    my $children = $widget->findChildren('Qt::Widget');
+    is_deeply( $children, [$childWidget, $childPushButton], 'Qt::Object::findChildren' );
+    $children = $widget->findChildren('Qt::PushButton');
+    is_deeply( $children, [$childPushButton], 'Qt::Object::findChildren' );
 }
