@@ -128,6 +128,17 @@ getTypeNameOfArg( methodId, argnum )
     OUTPUT:
         RETVAL
 
+#// Args: int classId: a smoke classId
+#// Returns: The number of arguments that method has
+int
+getNumArgs( methodId )
+        int methodId
+    CODE:
+        Smoke::Method &method = qt_Smoke->methods[methodId];
+        RETVAL = method.numArgs;
+    OUTPUT:
+        RETVAL
+
 const char*
 getSVt( sv )
         SV* sv

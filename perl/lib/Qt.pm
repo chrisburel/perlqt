@@ -662,9 +662,10 @@ sub dumpArgs {
 }
 
 sub dumpCandidates {
-    my ( $classname, $methodname, $numArgs, $methodIds ) = @_;
+    my ( $classname, $methodname, $methodIds ) = @_;
     my @methods;
     foreach my $id ( @{$methodIds} ) {
+        my $numArgs = getNumArgs( $id );
         my $method = "$classname\::$methodname( ";
         $method .= join ', ', map{ getTypeNameOfArg( $id, $_ ) } ( 0..$numArgs-1 );
         $method .= " )";
@@ -714,7 +715,7 @@ sub do_autoload {
         # Look for the user-defined signature
         if ( @methodIds > 1 && defined $ambiguousSignature ) {
             foreach my $methodId ( @methodIds ) {
-                my ($signature) = dumpCandidates( $classname, $methodname, scalar @_, [$methodId] );
+                my ($signature) = dumpCandidates( $classname, $methodname, [$methodId] );
                 if ( $signature eq $ambiguousSignature ) {
                     @methodIds = ($methodId);
                     $ambiguousSignature = undef;
@@ -732,7 +733,7 @@ sub do_autoload {
                 ' called at ' . (caller($stackDepth))[1] .
                 ' line ' . (caller($stackDepth))[2] . "\n";
             $msg .= "Candidates are:\n\t";
-            $msg .= join "\n\t", dumpCandidates( $classname, $methodname, scalar @_, \@methodIds );
+            $msg .= join "\n\t", dumpCandidates( $classname, $methodname, \@methodIds );
             $msg .= "\nChoosing first one...\n";
             warn $msg;
             @methodIds = $methodIds[0];
@@ -756,22 +757,20 @@ sub do_autoload {
             $errStr .= "Method call was:\n\t";
             $errStr .= "$classname\::$methodname( " . dumpArgs(@_) . " )\n";
             $errStr .= "C++ signature is:\n\t";
-            $errStr .= (dumpCandidates( $classname, $methodname, scalar @_, \@methodIds ))[0] . "\n";
+            $errStr .= (dumpCandidates( $classname, $methodname, \@methodIds ))[0] . "\n";
             @methodIds = ();
             print STDERR $errStr and die;
         }
     }
 
     if ( !@methodIds ) {
-        my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
-        while ( (caller($stackDepth))[1] =~ m/Qt\.pm$/ ) {
-            ++$stackDepth;
+        @methodIds = findAnyPossibleMethod( $classname, $methodname, @_ );
+        if( @methodIds ) {
+            die reportAlternativeMethods( $classname, $methodname, \@methodIds, @_ );
         }
-        my $errStr = '--- No method found in lookup for ' .
-            "$classname\::$methodname," .
-            ' called at ' . (caller($stackDepth))[1] .
-            ' line ' . (caller($stackDepth))[2] . "\n";
-        die $errStr;
+        else {
+            die reportNoMethodFound( $classname, $methodname, @_ );
+        }
     }
 
     return $methodIds[0], $cacheLookup;
@@ -812,6 +811,23 @@ sub getMetaObject {
 
     $meta->{changed} = 0;
     return $meta->{object};
+}
+
+# Does the method exist, but the user just gave bad args?
+sub findAnyPossibleMethod {
+    my $classname = shift;
+    my $methodname = shift;
+
+    my @last = '';
+    my @mungedMethods = ( $methodname );
+    # 14 is the max number of args, but that's way too many permutations.
+    # Keep it short.
+    foreach ( 0..7 ) { 
+        @last = permateMungedMethods( ['$', '?', '#'], @last );
+        push @mungedMethods, map{ $methodname . $_ } @last;
+    }
+
+    return map { findMethod( $classname, $_ ) } @mungedMethods;
 }
 
 sub init_class {
@@ -879,6 +895,54 @@ sub init_class {
         # Adds $perlClassName to the front of @_
         $perlClassName->new(@_);
     } unless defined &{ $perlClassName };
+}
+
+sub permateMungedMethods {
+    my $sigils = shift;
+    my @output;
+    while( defined( my $input = shift ) ) {
+        push @output, map{ $input . $_ } @{$sigils};
+    }
+    return @output;
+}
+
+sub reportAlternativeMethods {
+    my $classname = shift;
+    my $methodname = shift;
+    my $methodIds = shift;
+    # @_ now equals the original argument array of the method call
+    my $stackDepth = ( $methodname eq $classname ) ? 5 : 3;
+    my $errStr = '--- Arguments for method call ' .
+        "$classname\::$methodname did not match any known C++ method ".
+        "signature," .
+        ' called at ' . (caller($stackDepth))[1] .
+        ' line ' . (caller($stackDepth))[2] . "\n";
+    $errStr .= "Method call was:\n\t";
+    $errStr .= "$classname\::$methodname( " . dumpArgs(@_) . " )\n";
+    $errStr .= "Possible candidates:\n\t";
+    $errStr .= join( "\n\t", dumpCandidates( $classname, $methodname, $methodIds ) ) . "\n";
+    return $errStr;
+}
+
+sub reportNoMethodFound {
+    my $classname = shift;
+    my $methodname = shift;
+    # @_ now equals the original argument array of the method call
+
+    my $stackDepth = ( $methodname eq $classname ) ? 5 : 3;
+
+    # Look up the stack to find who called us.  We don't care if it was
+    # called from Qt.pm or isa.pm
+    my @caller = caller($stackDepth);
+    while ( $caller[1] =~ m/Qt\.pm$/ || $caller[1] =~ m/Qt\/isa\.pm/ ) {
+        ++$stackDepth;
+        @caller = caller($stackDepth);
+    }
+    my $errStr = '--- Error: Method does not exist or not provided by this ' .
+        "binding:\n";
+    $errStr .= "$classname\::$methodname(),\n";
+    $errStr .= 'called at ' . $caller[1] . ' line ' . $caller[2] . "\n";
+    return $errStr;
 }
 
 # Args: none
