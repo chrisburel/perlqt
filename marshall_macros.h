@@ -101,7 +101,7 @@ void marshall_ItemList(Marshall *m) {
             AV* av = newAV();
             SV* avref = newRV_noinc((SV*)av);
 
-            for (int i=0;i<valuelist->size();++i) {
+            for (int i=0; i < valuelist->size(); ++i) {
                 void *p = (void *) valuelist->at(i);
 
                 if (m->item().s_voidp == 0) {
@@ -110,7 +110,7 @@ void marshall_ItemList(Marshall *m) {
                 }
 
                 SV* obj = getPointerObject(p);
-                if (!obj) {
+                if (!obj || !SvOK(obj) ) {
                     obj = allocSmokePerlSV( p,
                                             SmokeType( m->smoke(),
                                                        m->smoke()->idType(ItemSTR) ) );
@@ -139,9 +139,8 @@ template <class Item, class ItemList, const char *ItemSTR >
 void marshall_ValueListItem(Marshall *m) {
     switch(m->action()) {
         case Marshall::FromSV: {
-            UNTESTED_HANDLER( "marshall_ValueListItem FromSV" );
             SV *listref = m->var();
-            if ( !listref || !SvROK( listref ) || SvTYPE( listref ) != SVt_PVAV ) {
+            if ( !listref || !SvROK( listref ) || SvTYPE( SvRV(listref) ) != SVt_PVAV ) {
                 m->item().s_voidp = 0;
                 break;
             }
@@ -202,7 +201,6 @@ void marshall_ValueListItem(Marshall *m) {
         break;
 
         case Marshall::ToSV: {
-            UNTESTED_HANDLER( "marshall_ValueListItem ToSV" );
             ItemList *valuelist = (ItemList*)m->item().s_voidp;
             if(!valuelist) {
                 sv_setsv(m->var(), &PL_sv_undef);
@@ -215,7 +213,7 @@ void marshall_ValueListItem(Marshall *m) {
             //int ix = m->smoke()->idClass(ItemSTR).index;
             //const char * className = binding.className(ix);
 
-            for(int i=0; i < valuelist->size() ; ++i) {
+            for(int i=0; i < valuelist->size(); ++i) {
                 void *p = (void *) &(valuelist->at(i));
 
                 if(m->item().s_voidp == 0) {

@@ -1,4 +1,4 @@
-use Test::More tests => 10;
+use Test::More tests => 13;
 
 use strict;
 use warnings;
@@ -8,6 +8,8 @@ my $app = Qt::Application( \@ARGV );
 
 {
     my $widget = Qt::Widget();
+    # Check refcount
+    is ( Devel::Peek::SvREFCNT($widget), 1, 'refcount' );
     # Test Qt::String marshalling
     my $wt = 'Qt::String marshalling works!';
     $widget->setWindowTitle( $wt );
@@ -22,6 +24,7 @@ my $app = Qt::Application( \@ARGV );
     utf8::upgrade($wt);
     $widget->setWindowTitle( $wt );
     is ( $widget->windowTitle(), $wt, 'Qt::String unicode' );
+    no utf8;
 }
 
 {
@@ -99,3 +102,48 @@ my $app = Qt::Application( \@ARGV );
 
     is_deeply( $actions, $gotactions, 'marshall_ItemList<>' );
 }
+
+{
+    # Test marshall_ValueListItem ToSV
+    my $shortcut1 = Qt::KeySequence( Qt::Key_Enter() );
+    my $shortcut2 = Qt::KeySequence( Qt::Key_Tab() );
+    my $shortcuts = [ $shortcut1, $shortcut2 ];
+    my $action = Qt::Action( 'Foobar', undef );
+
+    $action->setShortcuts( $shortcuts );
+    my $gotshortcuts = $action->shortcuts();
+
+    is_deeply( [ map{ eval "\$shortcuts->[$_] == \$gotshortcuts->[$_]" } (0..$#{$shortcuts}) ],
+               [ map{ 1 } (0..$#{$shortcuts}) ],
+               'marshall_ValueListItem<> FromSV' );
+
+}
+
+{
+    my $tree = Qt::TableView( undef );
+    my $model = Qt::DirModel();
+
+    $tree->setModel( $model );
+    my $top = $model->index( Qt::Dir::currentPath() );
+    $tree->setRootIndex( $top );
+
+    my $selectionModel = $tree->selectionModel();
+    my $child0 = $top->child(0,0);
+    my $child1 = $top->child(0,1);
+    my $child2 = $top->child(0,2);
+    my $child3 = $top->child(0,3);
+    $selectionModel->select( $child0, Qt::ItemSelectionModel::Select() );
+    $selectionModel->select( $child1, Qt::ItemSelectionModel::Select() );
+    $selectionModel->select( $child2, Qt::ItemSelectionModel::Select() );
+    $selectionModel->select( $child3, Qt::ItemSelectionModel::Select() );
+
+    my $selection = $selectionModel->selection();
+    my $indexes = $selection->indexes();
+
+    # Run $indexes->[0] == $child0, which should return '1', for each returned
+    # index.
+    is_deeply( [ map{ eval "\$indexes->[$_] == \$child$_" } (0..$#{$indexes}) ],
+               [ map{ 1 } (0..$#{$indexes}) ],
+               'marshall_ValueListItem<> ToSV' );
+}
+

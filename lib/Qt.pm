@@ -20,6 +20,23 @@ sub new {
     return $ret;
 }
 
+package Qt::base::_overload;
+use strict;
+
+no strict 'refs';
+use overload
+    "fallback" => 1,
+    "==" => "Qt::base::_overload::op_equal";
+
+sub op_equal {
+    $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator==';
+    my $autoload = ref($_[0])."::_UTOLOAD";
+    my ($ret, $err);
+    eval { local $SIG{'__DIE__'}; $ret = $autoload->(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
+    return $ret;
+}
+
+
 package Qt::enum::_overload;
 
 use strict;
@@ -256,6 +273,9 @@ sub init_class {
     # $className::new() redirects there.
     @isa = ('Qt::base') unless @isa;
     @{ "$perlClassName\::ISA" } = @isa;
+
+    # Define overloaded operators
+    *{ " $perlClassName\::ISA" } = ['Qt::base::_overload'];
 
     # Define the $perlClassName::_UTOLOAD function, which always redirects to
     # XS_AUTOLOAD in Qt.xs

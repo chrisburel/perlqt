@@ -59,10 +59,11 @@ SV* allocSmokePerlSV ( void* ptr, SmokeType type ) {
     o.smoke = qt_Smoke;
     o.classId = type.classId();
     o.ptr = ptr;
-    o.allocated = false;
 
     if(type.isStack())
         o.allocated = true;
+    else
+        o.allocated = false;
      
     // For this, we need a magic wand.  This is what actually
     // stores 'o' into our hash.
@@ -96,9 +97,28 @@ SV* catArguments(SV** sp, int n) {
         } else if(SvROK(sp[i])) {
             smokeperl_object *o = sv_obj_info(sp[i]);
             if(o)
-                sv_catpv(r, o->smoke->className(o->classId));
+                sv_catpvf(r, "(%s*)0x%p",o->smoke->className(o->classId), o->ptr);
             else if (SvTYPE(SvRV(sp[i])) == SVt_PVMG)
                 sv_catpvf(r, "%s(%s)", HvNAME(SvSTASH(SvRV(sp[i]))), SvPV_nolen(SvRV(sp[i])));
+            else if (SvTYPE(SvRV(sp[i])) == SVt_PVAV) {
+                AV* av = (AV*)SvRV(sp[i]);
+                long count = av_len( av ) + 1;
+                sv_catpv(r, "[");
+                for( long j = 0; j < count; ++j ) {
+                    if(j) sv_catpv(r, ", ");
+                    SV** item = av_fetch( av, j, 0 );
+                    if( !item || !SvOK(*item) )
+                        sv_catpv(r, "undef");
+                    smokeperl_object *o = sv_obj_info(*item);
+                    if(o)
+                        sv_catpvf(r, "(%s*)0x%p",o->smoke->className(o->classId), o->ptr);
+                    else if (SvTYPE(SvRV(*item)) == SVt_PVMG)
+                        sv_catpvf(r, "%s(%s)", HvNAME(SvSTASH(SvRV(*item))), SvPV_nolen(SvRV(*item)));
+                    else
+                        sv_catsv(r, *item);
+                }
+                sv_catpv(r, "]");
+            }
             else
                 sv_catsv(r, sp[i]);
         } else {
