@@ -49,7 +49,8 @@ sub dragEnterEvent
 {
     my ($event) = @_;
     if ($event->mimeData()->hasText()) {
-        if (this->children()->contains($event->source())) {
+        my $children = this->children();
+        if ($children && grep{ $_ eq $event->source } @{$children}) {
             $event->setDropAction(Qt::MoveAction());
             $event->accept();
         } else {
@@ -69,10 +70,10 @@ sub dropEvent
         my $position = $event->pos();
         my $hotSpot = Qt::Point();
 
-        my @hotSpotPos = split / /, $mime->data('application/x-hotspot');
+        my @hotSpotPos = split / /, $mime->data('application/x-hotspot')->data();
         if (scalar @hotSpotPos == 2) {
-            $hotSpot->setX($hotSpotPos[0]->toInt());
-            $hotSpot->setY($hotSpotPos[1]->toInt());
+            $hotSpot->setX($hotSpotPos[0]);
+            $hotSpot->setY($hotSpotPos[1]);
         }
 
         foreach my $piece ( @pieces ) {
@@ -115,8 +116,8 @@ sub mousePressEvent
     my $mimeData = Qt::MimeData();
     $mimeData->setText($child->text());
     $mimeData->setData('application/x-hotspot',
-                      $hotSpot->x()
-                      . ' ' . $hotSpot->y());
+                       Qt::ByteArray( $hotSpot->x()
+                           . ' ' . $hotSpot->y()) );
 
     my $pixmap = Qt::Pixmap($child->size());
     $child->render($pixmap);

@@ -57,7 +57,8 @@ use overload
     '|'  => 'Qt::base::_overload::op_or',
     '--' => 'Qt::base::_overload::op_decrement',
     '++' => 'Qt::base::_overload::op_increment',
-    'neg'=> 'Qt::base::_overload::op_negate';
+    'neg'=> 'Qt::base::_overload::op_negate',
+    'eq' => 'Qt::base::_overload::op_ref_equal';
 
 sub op_equal {
     $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator==';
