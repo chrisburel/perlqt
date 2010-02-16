@@ -1065,9 +1065,9 @@ sub getSmokeMethodId {
 
     if ( !@methodIds ) {
         my $smokeId = $classId->[0];
-        @methodIds = findAnyPossibleMethod( $smokeId, $classname, $methodname, @_ );
+        @methodIds = findAnyPossibleMethod( $classId, $classname, $methodname, @_ );
         if( @methodIds ) {
-            die reportAlternativeMethods( $smokeId, $classname, $methodname, \@methodIds, @_ );
+            die reportAlternativeMethods( $classname, $methodname, \@methodIds, @_ );
         }
         else {
             die reportNoMethodFound( $classname, $methodname, @_ );
@@ -1126,7 +1126,7 @@ sub getMetaObject {
 
 # Does the method exist, but the user just gave bad args?
 sub findAnyPossibleMethod {
-    my $smokeId = shift;
+    my $classId = shift;
     my $classname = shift;
     my $methodname = shift;
 
@@ -1139,7 +1139,7 @@ sub findAnyPossibleMethod {
         push @mungedMethods, map{ $methodname . $_ } @last;
     }
 
-    return map { findMethod( $smokeId, $classname, $_ ) } @mungedMethods;
+    return map { findMethod( $classId, $classname, $_ ) } @mungedMethods;
 }
 
 sub init_class {

@@ -83,7 +83,7 @@ namespace {
         case DomProperty::Enum: {
             QString area = pstyle->elementEnum();
             fixQt4EnumerationName(area);
-            area += QLatin1String(", ");
+            area += QLatin1String("(), ");
             return area;
         }
         default:
@@ -615,7 +615,6 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     }
     */
 
-    // XXX FOO
     writeProperties(varName, className, node->elementProperty());
 
     if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QMenu")) && parentWidget.size()) {
@@ -1084,6 +1083,8 @@ void WriteInitialization::writeProperties(const QString &varName,
         QString propertyName = p->attributeName();
         QString propertyValue;
 
+        qDebug() << "Processing property: " << propertyName;
+
         // special case for the property `geometry': Do not use position
         if (isTopLevel && propertyName == QLatin1String("geometry") && p->elementRect()) {
             const DomRect *r = p->elementRect();
@@ -1130,7 +1131,7 @@ void WriteInitialization::writeProperties(const QString &varName,
             if (p->elementEnum() == QLatin1String("Qt4::Vertical"))
                 shape = QLatin1String("Qt4::Frame::VLine");
 
-            m_output << m_option.indent << varName << "->setFrameShape( " << shape << " );\n";
+            m_output << m_option.indent << varName << "->setFrameShape( " << shape << "() );\n";
             // QFrame Default is 'Plain'. Make the line 'Sunken' unless otherwise specified
             if (!frameShadowEncountered)
                 m_output << m_option.indent << varName << "->setFrameShadow( Qt4::Frame::Sunken() );\n";
@@ -1183,7 +1184,7 @@ void WriteInitialization::writeProperties(const QString &varName,
         }
         case DomProperty::Color: {
             DomColor *c = p->elementColor();
-            propertyValue = QString::fromLatin1("Qt4::Color.new(%1, %2, %3)")
+            propertyValue = QString::fromLatin1("Qt4::Color(%1, %2, %3)")
                   .arg(c->elementRed())
                   .arg(c->elementGreen())
                   .arg(c->elementBlue()); }
@@ -1199,13 +1200,13 @@ void WriteInitialization::writeProperties(const QString &varName,
             }
             break;
         case DomProperty::Cursor:
-            propertyValue = QString::fromLatin1("Qt4::Cursor.new(%1)")
+            propertyValue = QString::fromLatin1("Qt4::Cursor(%1())")
                             .arg(p->elementCursor());
             break;
         case DomProperty::CursorShape:
             if (p->hasAttributeStdset() && !p->attributeStdset())
                 varNewName += QLatin1String(".viewport()");
-            propertyValue = QString::fromLatin1("Qt4::Cursor.new(Qt4::%1)")
+            propertyValue = QString::fromLatin1("Qt4::Cursor(Qt4::%1())")
                             .arg(p->elementCursorShape());
             break;
         case DomProperty::Enum:
@@ -1227,7 +1228,12 @@ void WriteInitialization::writeProperties(const QString &varName,
         case DomProperty::IconSet:
             propertyValue = writeIconProperties(p->elementIconSet());
             break;
-
+        case DomProperty::Locale: {
+             const DomLocale *locale = p->elementLocale();
+             propertyValue = QString::fromLatin1("Qt4::Locale(Qt4::Locale::%1(), Qt4::Locale::%2())")
+                             .arg(locale->attributeLanguage()).arg(locale->attributeCountry());
+            break;
+        }
         case DomProperty::Pixmap:
             propertyValue = pixCall(p);
             break;
@@ -1235,11 +1241,11 @@ void WriteInitialization::writeProperties(const QString &varName,
         case DomProperty::Palette: {
             DomPalette *pal = p->elementPalette();
             QString paletteName = QString("$") + m_driver->unique(QLatin1String("palette"));
-            m_output << m_option.indent << paletteName << " = Qt4::Palette.new\n";
+            m_output << m_option.indent << "my " << paletteName << " = Qt4::Palette();\n";
 
-            writeColorGroup(pal->elementActive(), QLatin1String("Qt4::Palette::Active"), paletteName);
-            writeColorGroup(pal->elementInactive(), QLatin1String("Qt4::Palette::Inactive"), paletteName);
-            writeColorGroup(pal->elementDisabled(), QLatin1String("Qt4::Palette::Disabled"), paletteName);
+            writeColorGroup(pal->elementActive(), QLatin1String("Qt4::Palette::Active()"), paletteName);
+            writeColorGroup(pal->elementInactive(), QLatin1String("Qt4::Palette::Inactive()"), paletteName);
+            writeColorGroup(pal->elementDisabled(), QLatin1String("Qt4::Palette::Disabled()"), paletteName);
 
             propertyValue = paletteName;
             break;
@@ -1270,12 +1276,6 @@ void WriteInitialization::writeProperties(const QString &varName,
                             .arg(rf->elementWidth()).arg(rf->elementHeight());
             break;
         }
-        case DomProperty::Locale: {
-             const DomLocale *locale = p->elementLocale();
-             propertyValue = QString::fromLatin1("Qt4::Locale(Qt4::Locale::%1, Qt4::Locale::%2)")
-                             .arg(locale->attributeLanguage()).arg(locale->attributeCountry());
-            break;
-        }
         case DomProperty::SizePolicy: {
             const QString spName = writeSizePolicy( p->elementSizePolicy());
             m_output << m_option.indent << spName << QString::fromLatin1(
@@ -1298,22 +1298,14 @@ void WriteInitialization::writeProperties(const QString &varName,
             break;
         }
         case DomProperty::String: {
-            /*
-            if (propertyName == QLatin1String("objectName")) {
-                QString v = p->elementString()->text();
-                if (    (varName.startsWith("$") && v == varName.mid(1))
-                        || v.mid(0,1).toLower() + v.mid(1) == varName )
-                    break;
-
-                // ### qWarning("Deprecated: the property `objectName' is different from the variable name");
-            }
-            */
-
+            qDebug() << propertyName << " is a string";
             if (p->elementString()->hasAttributeNotr()
                     && toBool(p->elementString()->attributeNotr())) {
                 propertyValue = fixString(p->elementString()->text(), m_option.indent);
             } else {
                 propertyValue = trCall(p->elementString());
+                if ( propertyName == "shortcut" )
+                    propertyValue = QString("Qt4::KeySequence( ") + propertyValue + QString(" )");
             }
             break;
         }
@@ -1571,12 +1563,12 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
 QString WriteInitialization::domColor2QString(const DomColor *c)
 {
     if (c->hasAttributeAlpha())
-        return QString::fromLatin1("Qt4::Color.new(%1, %2, %3, %4)")
+        return QString::fromLatin1("Qt4::Color(%1, %2, %3, %4)")
             .arg(c->elementRed())
             .arg(c->elementGreen())
             .arg(c->elementBlue())
             .arg(c->attributeAlpha());
-    return QString::fromLatin1("Qt4::Color.new(%1, %2, %3)")
+    return QString::fromLatin1("Qt4::Color(%1, %2, %3)")
         .arg(c->elementRed())
         .arg(c->elementGreen())
         .arg(c->elementBlue());
@@ -1605,9 +1597,9 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
         const DomColorRole *colorRole = itRole.next();
         if (colorRole->hasAttributeRole()) {
             const QString brushName = writeBrushInitialization(colorRole->elementBrush());
-            m_output << m_option.indent << paletteName << ".setBrush(" << group
+            m_output << m_option.indent << paletteName << "->setBrush(" << group
                 << ", " << "Qt4::Palette::" << colorRole->attributeRole()
-                << ", " << brushName << ")\n";
+                << "(), " << brushName << ");\n";
         }
     }
 }
@@ -1630,7 +1622,7 @@ QString WriteInitialization::writeBrushInitialization(const DomBrush *brush)
         }
     }
     // Create and enter into cache if simple
-    const QString brushName = m_driver->unique(QLatin1String("brush"));
+    const QString brushName = QString("$") + m_driver->unique(QLatin1String("brush"));
     writeBrush(brush, brushName);
     if (solidColoredBrush)
         m_colorBrushHash.insert(rgb, brushName);
@@ -1686,20 +1678,20 @@ void WriteInitialization::writeBrush(const DomBrush *brush, const QString &brush
                 << stop->attributePosition() << ", "
                 << domColor2QString(color) << ")\n";
         }
-        m_output << m_option.indent << brushName << " = Qt4::Brush.new" << "("
-            << gradientName << ")\n";
+        m_output << m_option.indent << "my " << brushName << " = Qt4::Brush" << "("
+            << gradientName << ");\n";
     } else if (style == QLatin1String("TexturePattern")) {
         DomProperty *property = brush->elementTexture();
 
-        m_output << m_option.indent << brushName << " = Qt4::Brush.new" <<  "("
-            << pixCall(property) << ")\n";
+        m_output << m_option.indent << "my " << brushName << " = Qt4::Brush" <<  "("
+            << pixCall(property) << ");\n";
     } else {
         DomColor *color = brush->elementColor();
-        m_output << m_option.indent << brushName << " = Qt4::Brush.new" <<  "("
-            << domColor2QString(color) << ")\n";
+        m_output << m_option.indent << "my " << brushName << " = Qt4::Brush("
+            << domColor2QString(color) << ");\n";
 
-        m_output << m_option.indent << brushName << ".style = "
-            << "Qt4::" << style << "\n";
+        m_output << m_option.indent << brushName << "->setStyle( "
+            << "Qt4::" << style << "() );\n";
     }
 }
 

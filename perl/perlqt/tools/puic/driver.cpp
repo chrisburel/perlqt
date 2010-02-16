@@ -174,14 +174,19 @@ QString Driver::perlClassName(const QString &name)
 		qname = QString("Qt3::") + qname.mid(2);
 	} else if (qname.startsWith("Qwt") && !qname.startsWith("Qwt::")) {
 		qname = QString("Qwt::") + qname.mid(3);
-	} else if (qname.startsWith("Q") && !qname.startsWith("Qt::")) {
-		qname = QString("Qt::") + qname.mid(1);
+	} else if (qname.startsWith("Q")) {
+        if (qname.startsWith("Qt::")) {
+            qname = QString("Qt4::") + qname.mid(4);
+        }
+        else {
+            qname = QString("Qt4::") + qname.mid(1);
+        }
 	} else if (qname.startsWith("K") && !qname.startsWith("KDE::")) {
 		qname = QString("KDE::") + qname.mid(1);
 	}
 
 	if (!qname.contains("|Qt::")) {
-    	qname.replace("|Q", "|Qt::");
+    	qname.replace("|Q", "|Qt4::");
 	} else if (!qname.contains("|KDE::")) {
     	qname.replace("|K", "|KDE::");
 	}
