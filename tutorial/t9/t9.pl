@@ -72,7 +72,7 @@ sub main {
     #dumpMetaMethods(Qt::_internal::getMetaObject('LCDRange'));
     #dumpMetaMethods(Qt::_internal::getMetaObject('CannonField'));
 
-    return Qt::appexec();
+    return Qt::qapp()->exec();
 } 
 
 main();

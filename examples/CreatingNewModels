@@ -1,16 +1,11 @@
 #!/usr/local/bin/perl -w
 use strict;
-
-BEGIN {
-        chdir "$ENV{HOME}/src/qt/4/PerlQt";
-        unshift @INC, 'blib/arch';
-        unshift @INC, 'blib/lib';
-}
+use blib;
 
 package myStringListModel;
 use Qt;
 use Qt::isa qw(Qt::QAbstractListModel);
-use Devel::Peek;
+#use Qt::signals dataChanged => ['int', 'int'];
 
 my @stringList;
 
@@ -74,11 +69,13 @@ sub setData {
     my( $index, $value, $role ) = @_;
     if ($index->isValid() && $role == Qt::Qt::EditRole()) { 
         @stringList[$index->row()] = $value->toString();
-        this->dataChanged($index, $index); # emit
+        this->dataChanged( $index, $index );
+        #this->emit( 'dataChanged( $index, $index );
         return 1;
     }
     return 0;
 }
+
 1;
 
 package main;
@@ -86,6 +83,18 @@ package main;
 use Qt;
 #use Qt::debug qw(all);
 use myStringListModel;
+
+sub dumpMetaMethods {
+    my ( $meta ) = @_;
+
+    print "Methods for ".$meta->className().":\n";
+    foreach my $index ( 0..$meta->methodCount()-1 ) {
+        my $metaMethod = $meta->method($index);
+        print $metaMethod->signature() . "\n";
+    }
+    print "\n";
+}
+
 
 my $model = myStringListModel( [qw( Hello world you are awesome )] );
 my $numRows = $model->rowCount();
@@ -100,4 +109,4 @@ $listview->setModel( $model );
 
 $tableview->setSelectionModel( $listview->selectionModel() );
 $splitter->show();
-exit Qt::appexec;
+exit Qt::qapp()->exec()

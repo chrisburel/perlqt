@@ -33,10 +33,20 @@ sub NEW {
                   $cannonField, SLOT 'setAngle(int)');
     this->connect($cannonField, SIGNAL 'angleChanged(int)',
                   $angle, SLOT 'setValue(int)');
+
     this->connect($force, SIGNAL 'valueChanged(int)',
                   $cannonField, SLOT 'setForce(int)');
     this->connect($cannonField, SIGNAL 'forceChanged(int)',
                   $force, SLOT 'setValue(int)');
+
+    my $shoot = Qt::QPushButton("&Shoot");
+    $shoot->setFont(Qt::QFont("Times", 18, Qt::QFont::Bold()));
+
+    this->connect($shoot, SIGNAL 'clicked()', $cannonField, SLOT 'shoot()');
+
+    my $topLayout = Qt::QHBoxLayout();
+    $topLayout->addWidget($shoot);
+    $topLayout->addStretch(1);
 
     my $leftLayout = Qt::QVBoxLayout();
     $leftLayout->addWidget($angle);
@@ -44,6 +54,7 @@ sub NEW {
 
     my $gridLayout = Qt::QGridLayout();
     $gridLayout->addWidget($quit, 0, 0);
+    $gridLayout->addLayout($topLayout, 0, 1);
     $gridLayout->addLayout($leftLayout, 1, 0);
     $gridLayout->addWidget($cannonField, 1, 1, 2, 1);
     $gridLayout->setColumnStretch(1, 10);
@@ -56,6 +67,7 @@ sub NEW {
     push @widgets, $angle;
     push @widgets, $force;
     push @widgets, $cannonField;
+    push @widgets, $shoot;
 }
 
 1;

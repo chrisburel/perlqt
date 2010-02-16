@@ -35,4 +35,4 @@ use Button;
 my $w = Button("Hello World!", undef);
 $w->resize(130, 40);
 $w->show;
-exit Qt::appexec();
+exit Qt::qapp()->exec();

@@ -27,7 +27,6 @@
 #include "QtCore/QMetaObject"
 #include "QtCore/QMetaMethod"
 #include "QtCore/QModelIndex"
-#include "QtGui/QApplication"
 #include "QtGui/QPainter"
 #include "QtGui/QWidget"
 
@@ -39,9 +38,9 @@ SV *sv_this = 0;
 HV *pointer_map = 0;
 int do_debug = qtdb_none;
 
-char *myargv = "Hello";
 int myargc = 1;
-QApplication *qapp = new QApplication(myargc, &myargv);
+char **myargv = new char*[1];
+void* qapp = 0;
 
 QHash<Smoke*, PerlQtModule> perlqt_modules;
 static PerlQt::Binding binding;
@@ -118,6 +117,11 @@ void callMethod(Smoke *smoke, void *obj, Smoke::Index method, Smoke::Stack args)
     Smoke::Method *m = smoke->methods + method;
     Smoke::ClassFn fn = smoke->classes[m->classId].classFn;
     fn(m->method, obj, args);
+    if(m->flags & Smoke::mf_ctor){
+        Smoke::StackItem s[2];
+        s[1].s_voidp = perlqt_modules[smoke].binding;
+        (*fn)(0, args[0].s_voidp, s);
+    }
 }
 
 void smokeCast(Smoke *smoke, Smoke::Index method, Smoke::Stack args, Smoke::Index i, void *obj, const char *className) {
@@ -670,7 +674,7 @@ installqt_metacall(package)
         char *package
     CODE:
         if(!package) XSRETURN_EMPTY;
-        char *qt_metacall = new char[strlen(package) + 13];
+        char *qt_metacall = new char[strlen(package) + 14];
         sprintf(qt_metacall, "%s::qt_metacall", package);
         newXS(qt_metacall, XS_qt_metacall, __FILE__);
         delete[] qt_metacall;
@@ -700,12 +704,30 @@ installthis(package)
         delete[] attr;
 
 SV*
-make_metaObject(obj,parentMeta,stringdata_sv,data_sv)
-        #SV* obj
-        #SV* parentMeta
+make_metaObject(parentClassId,parentMeta,stringdata_sv,data_sv)
+        SV* parentClassId
+        SV* parentMeta
         SV* stringdata_sv
         SV* data_sv
     CODE:
+        // Get the meta object of the super class, to inherit the super's
+        // sig/slots
+        QMetaObject* superdata;
+        if( !SvROK(parentMeta) ){
+            // The parent class is a Smoke class, so call metaObject() on the
+            // instance to get it via a smoke library call
+            const char* classname = qt_Smoke->classes[SvIV(parentClassId)].className;
+            Smoke::Index methodid = getMethod(qt_Smoke, classname, "metaObject");
+            Smoke::StackItem args[1];
+            callMethod( qt_Smoke, 0, methodid, args );
+            superdata = (QMetaObject*) args[0].s_voidp;
+        }
+        else {
+            // The parent class is a custom Perl class whose metaObject
+            // was constructed at runtime
+            superdata = (QMetaObject*)sv_obj_info(parentMeta)->ptr;
+        }
+
         // Create the qt_meta_data array.
         int count = av_len((AV*)SvRV(data_sv)) + 1;
         uint* qt_meta_data = new uint[count];
@@ -727,7 +749,7 @@ make_metaObject(obj,parentMeta,stringdata_sv,data_sv)
 
         // Define our meta object
         const QMetaObject staticMetaObject = {
-            { &QWidget::staticMetaObject, qt_meta_stringdata,
+            { superdata, qt_meta_stringdata,
               qt_meta_data, 0 }
         };
         QMetaObject *meta = new QMetaObject;
@@ -770,15 +792,6 @@ this()
     OUTPUT:
         RETVAL
 
-int
-appexec()
-    CODE:
-        if( do_debug && ( do_debug | qtdb_autoload ) )
-            fprintf( stderr, "In QApplication::exec\n" );
-        RETVAL = qapp->exec();
-    OUTPUT:
-        RETVAL
-
 SV *
 qapp()
     CODE:
@@ -804,5 +817,20 @@ BOOT:
     install_handlers(Qt_handlers);
     sv_this = newSV(0);
     pointer_map = newHV();
+
+    myargv[0] = new char[6];
+    strcpy( myargv[0], "Hello");
+
+    //Create the QApplication through smoke
+    {
+        Smoke::Index methodid = getMethod(qt_Smoke, "QApplication", "QApplication$?" );
+        Smoke::StackItem args[3];
+        args[1].s_voidp = (void*)&myargc;
+        args[2].s_voidp = (void*)myargv;
+        //smokeCast( qt_Smoke, methodid, args, 2, myargv, "charp" );
+        callMethod( qt_Smoke, 0, methodid, args );
+        qapp = args[0].s_voidp;
+    }
+
     newXS("myStringListModel::SUPER::flags", XS_Qt__myQAbstractItemModel_flags, file);
     //newXS(" Qt::QTableView::setRootIndex", XS_Qt__myQTableView_setRootIndex, file);

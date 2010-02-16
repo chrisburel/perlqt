@@ -1,11 +1,6 @@
 #!/usr/local/bin/perl -w
 use strict;
-
-BEGIN {
-    chdir "$ENV{HOME}/src/qt/4/PerlQt";
-    unshift @INC, 'blib/arch';
-    unshift @INC, 'blib/lib';
-}
+use blib;
 
 package Button::Hello;
 use Qt;
@@ -15,15 +10,13 @@ my $this;
 
 sub NEW
 {
-  $this = bless( shift->SUPER::NEW(@_[0..2]), ' Button');
-  $this->resize(130, 40);
-  return $this;
+    shift->SUPER::NEW(@_);
+    this->resize(130, 40);
 }
 
-sub resize {
-    printf( "In custom resize\n" );
-    $this->resize(130,40);
-}
+#sub resize {
+    #SUPER->resize(130,40);
+#}
 
 1;
 
@@ -34,4 +27,4 @@ use Button::Hello;
 
 my $w = Button::Hello("Hello World!", undef);
 $w->show;
-exit Qt::appexec();
+exit Qt::qapp()->exec();

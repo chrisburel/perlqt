@@ -64,7 +64,7 @@ use MyWidget;
 sub main {
     my $widget = MyWidget();
     $widget->show();
-    return Qt::appexec();
+    return Qt::qapp()->exec();
 } 
 
 main();

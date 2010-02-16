@@ -11,7 +11,7 @@ sub main {
     my $hello = Qt::QPushButton("Hello world!");
 
     $hello->show();
-    return Qt::appexec();
+    return Qt::qapp()->exec();
 }
 
 main();

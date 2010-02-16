@@ -16,7 +16,7 @@ sub main {
     Qt::QObject::connect($quit, SIGNAL "clicked()", Qt::qapp(), SLOT "quit()");
 
     $window->show();
-    return Qt::appexec();
+    return Qt::qapp()->exec();
 } 
 
 main();

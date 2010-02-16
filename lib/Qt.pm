@@ -32,11 +32,25 @@ sub getMetaObject {
     # was asked for, return the saved one.
     return $meta->{object} if $meta->{object} and !$meta->{changed};
 
+    # Get the super class's meta object for sig/slot inheritance
+    # Recurse up through ISA to find it
+    my $parentMeta;
+    my $parentClassId;
+
+    # This seems wrong...
+    my $parentClass = (@{$class."::ISA"})[0]; 
+    if( !$package2classid{$parentClass} ) {
+        $parentMeta = &{$parentClass."::metaObject"};
+    }
+    else {
+        $parentClassId = $package2classid{$parentClass};
+    }
+
     # Generate data to create the meta object
     my( $stringdata, $data ) = makeMetaData( $class );
     $meta->{object} = Qt::_internal::make_metaObject(
-        $class,
-        undef, #Qt::this()->staticMetaObject,
+        $parentClassId,
+        $parentMeta,
         $stringdata,
         $data );
 

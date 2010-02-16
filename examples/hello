@@ -14,4 +14,4 @@ use Devel::Peek;
 my $label = Qt::QLabel("Hello Awesome!");
 #Dump($label);
 $label->show();
-Qt::appexec();
+Qt::qapp()->exec();

@@ -17,6 +17,7 @@ sub import {
     # Define the Qt::ISA array
     # Load the file if necessary
     for my $super (@_) {
+        no warnings; # Name "Foo::META" used only once
         push @{ $caller . '::ISA' }, $super;
         push @{ ${$caller . '::META'}{'superClass'} }, $super;
         (my $super_pm = $super.'.pm') =~ s!::!/!g;

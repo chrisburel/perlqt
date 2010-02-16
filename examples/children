@@ -17,4 +17,4 @@ my $splitter = Qt::QSplitter();
 my $label1 = Qt::QLabel("Hello World!", $splitter);
 my $label2 = Qt::QLabel("You Rock!", $splitter);
 $splitter->show();
-Qt::appexec();
+Qt::qapp()->exec();

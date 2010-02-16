@@ -17,7 +17,7 @@ sub main {
 
     $quit->show();
 
-    return Qt::appexec();
+    return Qt::qapp()->exec();
 }
 
 main();

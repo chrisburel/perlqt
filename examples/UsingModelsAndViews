@@ -27,5 +27,5 @@ $table1->setSelectionModel( $table2->selectionModel() );
 
 $splitter->setWindowTitle( 'Two views onto the same directory model' );
 $splitter->show();
-exit Qt::appexec();
+exit Qt::qapp()->exec();
 #exit $app->exec();
