@@ -3,10 +3,10 @@ package Qt::base;
 use strict;
 use warnings;
 
-# meta-hackery tool 
-my $X = sub :lvalue {
-  my $n = shift; no strict 'refs'; no warnings 'once'; *{"$n"}
-};
+# meta-hackery tools
+my $A = sub {my $n = shift; no strict 'refs'; \@{$n}};
+my $H = sub {my ($n) = @_; no strict 'refs'; no warnings 'once'; \%{$n}};
+my $ISUB = sub {my ($n, $s) = @_; no strict 'refs'; *{$n} = $s};
 
 sub new {
     # Any direct calls to the 'NEW' function will bypass this code.  It's
@@ -688,7 +688,7 @@ sub error() {
 }
 
 # Create the Qt::DBusReply() constructor
-$X->('Qt::DBusReply') = sub { Qt::DBusReply->new(@_) };
+$ISUB->('Qt::DBusReply', sub { Qt::DBusReply->new(@_) });
 
 1;
 
@@ -1076,7 +1076,7 @@ sub getSmokeMethodId {
 sub getMetaObject {
     my $class = shift;
 
-    my $meta = \%{$X->($class . '::META')};
+    my $meta = $H->($class . '::META');
 
     # If no signals/slots/properties have been added since the last time this
     # was asked for, return the saved one.
@@ -1096,7 +1096,7 @@ sub getMetaObject {
     my $parentClassId;
 
     # This seems wrong, it won't work with multiple inheritance
-    my $parentClass = (@{$X->($class."::ISA")})[0]; 
+    my $parentClass = $A->($class."::ISA")->[0]; 
     if( !$package2classId{$parentClass} ) {
         # The parent class is a custom Perl class whose metaObject was
         # constructed at runtime, so we can get it's metaObject from here.
@@ -1159,10 +1159,10 @@ sub init_class {
     # The root of the tree will be Qt::base, so a call to
     # $className::new() redirects there.
     @isa = ('Qt::base') unless @isa;
-    $X->($perlClassName.'::ISA') = \@isa;
+    @{$A->($perlClassName.'::ISA')} =  @isa;
 
     # Define overloaded operators
-    $X->(" $perlClassName\::ISA") = ['Qt::base::_overload'];
+    @{$A->(" $perlClassName\::ISA")} = ('Qt::base::_overload');
 
     foreach my $sp ('', ' ') {
         my $where = $sp . $perlClassName;
@@ -1171,10 +1171,10 @@ sub init_class {
         # the autoload variable
         package Qt::AutoLoad;
         my $autosub = \&{$where . '::_UTOLOAD'};
-        $X->($where.'::AUTOLOAD') = sub {&$autosub};
+        $ISUB->($where.'::AUTOLOAD', sub {&$autosub});
     }
 
-    $X->("$perlClassName\::NEW") = sub {
+    $ISUB->("$perlClassName\::NEW", sub {
         # Removes $perlClassName from the front of @_
         my $perlClassName = shift;
 
@@ -1184,13 +1184,13 @@ sub init_class {
         $Qt::AutoLoad::AUTOLOAD = "$perlClassName\::$cxxClassName";
         my $_utoload = \&{"$perlClassName\::_UTOLOAD"};
         setThis( bless &$_utoload, " $perlClassName" );
-    } unless(defined &{"$perlClassName\::NEW"});
+    }) unless(defined &{"$perlClassName\::NEW"});
 
     # Make the constructor subroutine
-    $X->($perlClassName) = sub {
+    $ISUB->($perlClassName, sub {
         # Adds $perlClassName to the front of @_
         $perlClassName->new(@_);
-    } unless(defined &{$perlClassName});
+    }) unless(defined &{$perlClassName});
 }
 
 sub permateMungedMethods {
@@ -1252,11 +1252,11 @@ sub init {
     my $enums = getEnumList();
     foreach my $enumName (@$enums) {
         $enumName =~ s/^const //;
-        if(@{$X->("${enumName}::ISA")}) {
-            $X->("${enumName}Enum::ISA") = ['Qt::enum::_overload'];
+        if(@{$A->("${enumName}::ISA")}) {
+            @{$A->("${enumName}Enum::ISA")} = ('Qt::enum::_overload');
         }
         else {
-            $X->("${enumName}::ISA") = ['Qt::enum::_overload'];
+            @{$A->("${enumName}::ISA")} = ('Qt::enum::_overload');
         }
     }
 
@@ -1265,7 +1265,8 @@ sub init {
 sub makeMetaData {
     my ( $classname ) = @_;
 
-    my $meta = \%{$X->($classname . '::META')};
+    my $meta = $H->($classname . '::META');
+
     my $classinfos = $meta->{classinfos};
     my $dbus = $meta->{dbus};
     my $signals = $meta->{signals};
@@ -1490,7 +1491,7 @@ sub Qt::Application::ON_DESTROY {
     return 0;
 }
 
-$X->(' Qt::Variant::value') = sub {
+$ISUB->(' Qt::Variant::value', sub {
     my $this = shift;
 
     my $type = $this->type();
@@ -1625,7 +1626,7 @@ $X->(' Qt::Variant::value') = sub {
     else {
         return Qt::qVariantValue(undef, $this);
     }
-};
+});
 
 sub String {
     return bless \shift, 'Qt::String';

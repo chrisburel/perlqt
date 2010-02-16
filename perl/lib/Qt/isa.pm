@@ -3,11 +3,10 @@ package Qt::isa;
 use strict;
 use warnings;
 
-# $X->($whatever) gives you an assignable symbolic glob for all of your
-# metahackery needs
-my $X = sub :lvalue {
-  my $n = shift; no strict 'refs'; no warnings 'once'; *{"$n"}
-};
+# meta-hackery tools
+my $A = sub {my ($n) = @_; no strict 'refs'; \@{$n}};
+my $H = sub {my ($n) = @_; no strict 'refs'; no warnings 'once'; \%{$n}};
+my $ISUB = sub {my ($n, $s) = @_; no strict 'refs'; *{$n} = $s};
 
 sub import {
     # Class will be Qt::isa.  Caller is the name of the package doing the use.
@@ -25,8 +24,8 @@ sub import {
     # Define the Qt::ISA array
     # Load the file if necessary
     for my $super (@_) {
-        push @{$X->($caller . '::ISA')}, $super;
-        push @{$X->($caller . '::META')->{'superClass'}}, $super;
+        push @{$A->($caller . '::ISA')}, $super;
+        push @{$H->($caller . '::META')->{'superClass'}}, $super;
 
         # Convert ::'s to a filepath /
         (my $super_pm = $super.'.pm') =~ s!::!/!g;
@@ -39,29 +38,29 @@ sub import {
     # when we call SUPER(), we get this blessed object back.
     {
       my $superthing = bless {}, "  $caller";
-      $X->($caller.'::SUPER') = sub {$superthing};
+      $ISUB->($caller.'::SUPER', sub {$superthing});
     }
 
     # Make it so that 'use <packagename>' makes a subroutine called
     # <packagename> that calls ->new
-    $X->($caller . '::import') = sub {
+    $ISUB->($caller . '::import', sub {
         # Name is the full package name being loaded, incaller is the package
         # doing the loading
         my $name = shift;    # classname = function-name
         my $incaller = (caller)[0];
-        $X->("$incaller\::$name") = sub { $name->new(@_) }
+        $ISUB->("$incaller\::$name", sub { $name->new(@_) })
           unless defined &{"$incaller\::$name"};
 
         $name->export($incaller, @_)
-          if(grep { $_ eq 'Exporter' } @{$X->("$name\::ISA")});
-    };
+          if(grep { $_ eq 'Exporter' } @{$A->("$name\::ISA")});
+    });
 
     foreach my $sp ('  ', ' ', '') {
         my $where = $sp . $caller;
         Qt::_internal::installautoload($where);
         package Qt::AutoLoad;
         my $autosub = \&{$where . '::_UTOLOAD'};
-        $X->($where.'::AUTOLOAD') = sub { &$autosub };
+        $ISUB->($where.'::AUTOLOAD', sub { &$autosub });
     }
 
     Qt::_internal::installthis($caller);
