@@ -348,7 +348,7 @@ sub writeSettings {
 
 sub activeMdiChild {
     if (my $activeSubWindow = this->{mdiArea}->activeSubWindow()) {
-        return CAST $activeSubWindow->widget(), ' MdiChild';
+        return CAST $activeSubWindow->widget(), 'MdiChild';
     }
     return 0;
 }
@@ -358,7 +358,7 @@ sub findMdiChild {
     my $canonicalFilePath = Qt::FileInfo($fileName)->canonicalFilePath();
 
     foreach my $window ( @{this->{mdiArea}->subWindowList()} ) {
-        my $mdiChild = CAST $window->widget(), ' MdiChild';
+        my $mdiChild = CAST $window->widget(), 'MdiChild';
         if ($mdiChild->currentFile() eq $canonicalFilePath) {
             return $window;
         }
