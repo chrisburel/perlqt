@@ -71,7 +71,6 @@ sub setupFontTree
             $styleItem->setCheckState(0, Qt::Unchecked());
             $styleItem->setData(0, Qt::UserRole(),
                 Qt::Variant(Qt::Int($database->weight($family, $style))));
-            $DB::single=1;
             $styleItem->setData(0, Qt::UserRole() + 1,
                 Qt::Variant(Qt::Bool($database->italic($family, $style)?1:0)));
         }
