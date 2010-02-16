@@ -395,23 +395,6 @@ BOOT:
     newXS(" Qt4::AbstractItemModel::removeRows", XS_qabstract_item_model_removerows, __FILE__);
     newXS(" Qt4::AbstractItemModel::rowCount", XS_qabstract_item_model_rowcount, __FILE__);
     newXS(" Qt4::AbstractItemModel::setData", XS_qabstract_item_model_setdata, __FILE__);
-    newXS("Qt4::AbstractItemModel::columnCount", XS_qabstract_item_model_columncount, __FILE__);
-    newXS("Qt4::AbstractItemModel::data", XS_qabstract_item_model_data, __FILE__);
-    newXS("Qt4::AbstractItemModel::insertColumns", XS_qabstract_item_model_insertcolumns, __FILE__);
-    newXS("Qt4::AbstractItemModel::insertRows", XS_qabstract_item_model_insertrows, __FILE__);
-    newXS("Qt4::AbstractItemModel::removeColumns", XS_qabstract_item_model_removecolumns, __FILE__);
-    newXS("Qt4::AbstractItemModel::removeRows", XS_qabstract_item_model_removerows, __FILE__);
-    newXS("Qt4::AbstractItemModel::rowCount", XS_qabstract_item_model_rowcount, __FILE__);
-    newXS("Qt4::AbstractItemModel::setData", XS_qabstract_item_model_setdata, __FILE__);
-    newXS("Qt4::AbstractItemModel::createIndex", XS_qabstractitemmodel_createindex, __FILE__);
-    newXS(" Qt4::AbstractTableModel::columnCount", XS_qabstract_item_model_columncount, __FILE__);
-    newXS(" Qt4::AbstractTableModel::data", XS_qabstract_item_model_data, __FILE__);
-    newXS(" Qt4::AbstractTableModel::insertColumns", XS_qabstract_item_model_insertcolumns, __FILE__);
-    newXS(" Qt4::AbstractTableModel::insertRows", XS_qabstract_item_model_insertrows, __FILE__);
-    newXS(" Qt4::AbstractTableModel::removeColumns", XS_qabstract_item_model_removecolumns, __FILE__);
-    newXS(" Qt4::AbstractTableModel::removeRows", XS_qabstract_item_model_removerows, __FILE__);
-    newXS(" Qt4::AbstractTableModel::rowCount", XS_qabstract_item_model_rowcount, __FILE__);
-    newXS(" Qt4::AbstractTableModel::setData", XS_qabstract_item_model_setdata, __FILE__);
     newXS(" Qt4::ModelIndex::internalPointer", XS_qmodelindex_internalpointer, __FILE__);
 
     sv_this = newSV(0);
