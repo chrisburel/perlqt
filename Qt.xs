@@ -358,7 +358,7 @@ void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void
         STRLEN len;
         char *key = SvPV(keysv, len);
         SV *rv = newSVsv(obj);
-        sv_rvweaken(rv); // weak reference! What's this?
+        sv_rvweaken(rv); // weak reference! See weaken docs in Scalar::Util
         hv_store(hv, key, len, rv, 0);
         SvREFCNT_dec(keysv);
     }
@@ -450,6 +450,101 @@ void unmapPointer( smokeperl_object* o, Smoke::Index classId, void* lastptr) {
     for(Smoke::Index *i = o->smoke->inheritanceList + o->smoke->classes[classId].parents; *i; i++) {
         unmapPointer(o, *i, lastptr);
     }
+}
+
+XS(XS_qvariant_from_value) {
+    dXSARGS;
+    if (items == 2) {
+        Smoke::ModuleIndex nameId = qt_Smoke->NullModuleIndex;
+        smokeperl_object *o = sv_obj_info(ST(0));
+        if (o) {
+            nameId = qt_Smoke->idMethodName("QVariant#");
+        } else if (SvTYPE(ST(0)) == SVt_PVAV) {
+            nameId = qt_Smoke->idMethodName("QVariant?");
+        } else {
+            nameId = qt_Smoke->idMethodName("QVariant$");
+        }
+
+        Smoke::ModuleIndex meth = qt_Smoke->findMethod(qt_Smoke->idClass("QVariant"), nameId);
+        Smoke::Index i = meth.smoke->methodMaps[meth.index].method;
+        i = -i;		// turn into ambiguousMethodList index
+        while (meth.smoke->ambiguousMethodList[i] != 0) {
+            if ( qstrcmp( meth.smoke->types[meth.smoke->argumentList[meth.smoke->methods[meth.smoke->ambiguousMethodList[i]].args]].name,
+                        HvNAME(ST(1)) ) == 0 )
+            {
+                Smoke::Index methodId = meth.smoke->ambiguousMethodList[i];
+                PerlQt::MethodCall c(qt_Smoke, methodId, o, SP, 0);
+                c.next();
+                ST(0) = sv_2mortal(c.var());
+                XSRETURN(1);
+            }
+
+            i++;
+        }
+    }
+
+    const char * classname = HvNAME(SvSTASH(SvRV(ST(0))));
+    smokeperl_object *o = sv_obj_info(ST(0));
+    if (o == 0 || o->ptr == 0) {
+        // Assume the Qt::Variant can be created with a
+        // Qt::Variant.new(obj) call
+        fprintf( stderr, "Arguments to qVariantFromValue cannot be null or undef.\n" );
+        XSRETURN_UNDEF;
+        //if (qstrcmp(classname, "Qt::Enum") == 0) {
+            //return rb_funcall(qvariant_class, rb_intern("new"), 1, rb_funcall(ST(0), rb_intern("to_i"), 0));
+        //} else {
+            //return rb_funcall(qvariant_class, rb_intern("new"), 1, ST(0));
+        //}
+    }
+
+    QVariant * v = 0;
+
+    if (qstrcmp(classname, " Qt::Pixmap") == 0) {
+        v = new QVariant(qVariantFromValue(*(QPixmap*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Font") == 0) {
+        v = new QVariant(qVariantFromValue(*(QFont*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Brush") == 0) {
+        v = new QVariant(qVariantFromValue(*(QBrush*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Color") == 0) {
+        v = new QVariant(qVariantFromValue(*(QColor*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Palette") == 0) {
+        v = new QVariant(qVariantFromValue(*(QPalette*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Icon") == 0) {
+        v = new QVariant(qVariantFromValue(*(QIcon*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Image") == 0) {
+        v = new QVariant(qVariantFromValue(*(QImage*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Polygon") == 0) {
+        v = new QVariant(qVariantFromValue(*(QPolygon*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Region") == 0) {
+        v = new QVariant(qVariantFromValue(*(QRegion*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Bitmap") == 0) {
+        v = new QVariant(qVariantFromValue(*(QBitmap*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Cursor") == 0) {
+        v = new QVariant(qVariantFromValue(*(QCursor*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::SizePolicy") == 0) {
+        v = new QVariant(qVariantFromValue(*(QSizePolicy*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::KeySequence") == 0) {
+        v = new QVariant(qVariantFromValue(*(QKeySequence*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::Pen") == 0) {
+        v = new QVariant(qVariantFromValue(*(QPen*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::TextLength") == 0) {
+        v = new QVariant(qVariantFromValue(*(QTextLength*) o->ptr));
+    } else if (qstrcmp(classname, " Qt::TextFormat") == 0) {
+        v = new QVariant(qVariantFromValue(*(QTextFormat*) o->ptr));
+    } else if (QVariant::nameToType(o->smoke->classes[o->classId].className) >= QVariant::UserType) {
+        v = new QVariant(QMetaType::type(o->smoke->classes[o->classId].className), o->ptr);
+    } else {
+        // Assume the Qt::Variant can be created with a
+        // Qt::Variant.new(obj) call
+        fprintf( stderr, "Cannot handle type %s in qVariantToValue", classname );
+        XSRETURN_UNDEF;
+        //return rb_funcall(qvariant_class, rb_intern("new"), 1, ST(0));
+    }
+
+    SV *retval = allocSmokePerlSV(v, SmokeType( qt_Smoke, qt_Smoke->idType("QVariant") ) );
+
+    ST(0) = sv_2mortal(retval);
+    XSRETURN(1);
 }
 
 XS(XS_AUTOLOAD) {
@@ -1293,6 +1388,8 @@ BOOT:
     install_handlers(Qt_handlers);
 
     pointer_map = get_hv( "Qt::_internal::pointer_map", FALSE );
+
+    newXS("Qt::qVariantFromValue", XS_qvariant_from_value, __FILE__);
 
     sv_this = newSV(0);
     sv_qapp = newSV(0);

@@ -103,8 +103,8 @@ sub openFile {
                                    Qt::Variant($pieces[0]));
                     $model->setData($model->index($row, 1, Qt::ModelIndex()),
                                    Qt::Variant($pieces[1]));
-                    #$model->setData($model->index($row, 0, Qt::ModelIndex()),
-                                   #Qt::Variant(Qt::Color($pieces[2])), Qt::DecorationRole());
+                    $model->setData($model->index($row, 0, Qt::ModelIndex()),
+                                   Qt::qVariantFromValue(Qt::Color($pieces[2])), Qt::DecorationRole());
                     $row++;
                 }
             } while ($line);
