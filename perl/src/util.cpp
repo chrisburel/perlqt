@@ -1287,7 +1287,7 @@ XS(XS_qvariant_value) {
     sv_class_id->index = package_classId(classname);
     sv_class_id->smoke = qt_Smoke;
 
-	if (sv_class_id == 0) {
+	if (sv_class_id->index == 0) {
 		ST(0) = retval;
         XSRETURN(1);
 	}

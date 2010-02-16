@@ -1504,19 +1504,19 @@ $ISUB->(' Qt::Variant::value', sub {
         return $this->toBool();
     }
     elsif( $type == Qt::Variant::Brush() ) {
-        return Qt::qVariantValue(Qt::Brush(), $this);
+        return Qt::qVariantValue($this, 'Qt::Brush');
     }
     elsif( $type == Qt::Variant::ByteArray() ) {
         return $this->toByteArray();
     }
     elsif( $type == Qt::Variant::Char() ) {
-        return Qt::qVariantValue(Qt::Char(), $this);
+        return Qt::qVariantValue($this, 'Qt::Char');
     }
     elsif( $type == Qt::Variant::Color() ) {
-        return Qt::qVariantValue(Qt::Color(), $this);
+        return Qt::qVariantValue($this, 'Qt::Color');
     }
     elsif( $type == Qt::Variant::Cursor() ) {
-        return Qt::qVariantValue(Qt::Cursor(), $this);
+        return Qt::qVariantValue($this, 'Qt::Cursor');
     }
     elsif( $type == Qt::Variant::Date() ) {
         return $this->toDate();
@@ -1528,19 +1528,19 @@ $ISUB->(' Qt::Variant::value', sub {
         return $this->toDouble();
     }
     elsif( $type == Qt::Variant::Font() ) {
-        return Qt::qVariantValue(Qt::Font(), $this);
+        return Qt::qVariantValue($this, 'Qt::Font');
     }
     elsif( $type == Qt::Variant::Icon() ) {
-        return Qt::qVariantValue(Qt::Icon(), $this);
+        return Qt::qVariantValue($this, 'Qt::Icon');
     }
     elsif( $type == Qt::Variant::Image() ) {
-        return Qt::qVariantValue(Qt::Image(), $this);
+        return Qt::qVariantValue($this, 'Qt::Image');
     }
     elsif( $type == Qt::Variant::Int() ) {
         return $this->toInt();
     }
     elsif( $type == Qt::Variant::KeySequence() ) {
-        return Qt::qVariantValue(Qt::KeySequence(), $this);
+        return Qt::qVariantValue($this, 'Qt::KeySequence');
     }
     elsif( $type == Qt::Variant::Line() ) {
         return $this->toLine();
@@ -1552,7 +1552,7 @@ $ISUB->(' Qt::Variant::value', sub {
         return $this->toList();
     }
     elsif( $type == Qt::Variant::Locale() ) {
-        return Qt::qVariantValue(Qt::Locale(), $this);
+        return Qt::qVariantValue($this, 'Qt::Locale');
     }
     elsif( $type == Qt::Variant::LongLong() ) {
         return $this->toLongLong();
@@ -1561,13 +1561,13 @@ $ISUB->(' Qt::Variant::value', sub {
         return $this->toMap();
     }
     elsif( $type == Qt::Variant::Palette() ) {
-        return Qt::qVariantValue(Qt::Palette(), $this);
+        return Qt::qVariantValue($this, 'Qt::Palette');
     }
     elsif( $type == Qt::Variant::Pen() ) {
-        return Qt::qVariantValue(Qt::Pen(), $this);
+        return Qt::qVariantValue($this, 'Qt::Pen');
     }
     elsif( $type == Qt::Variant::Pixmap() ) {
-        return Qt::qVariantValue(Qt::Pixmap(), $this);
+        return Qt::qVariantValue($this, 'Qt::Pixmap');
     }
     elsif( $type == Qt::Variant::Point() ) {
         return $this->toPoint();
@@ -1576,7 +1576,7 @@ $ISUB->(' Qt::Variant::value', sub {
         return $this->toPointF();
     }
     elsif( $type == Qt::Variant::Polygon() ) {
-        return Qt::qVariantValue(Qt::Polygon(), $this);
+        return Qt::qVariantValue($this, 'Qt::Polygon');
     }
     elsif( $type == Qt::Variant::Rect() ) {
         return $this->toRect();
@@ -1588,7 +1588,7 @@ $ISUB->(' Qt::Variant::value', sub {
         return $this->toRegExp();
     }
     elsif( $type == Qt::Variant::Region() ) {
-        return Qt::qVariantValue(Qt::Region(), $this);
+        return Qt::qVariantValue($this, 'Qt::Region');
     }
     elsif( $type == Qt::Variant::Size() ) {
         return $this->toSize();
@@ -1606,10 +1606,10 @@ $ISUB->(' Qt::Variant::value', sub {
         return $this->toStringList();
     }
     elsif( $type == Qt::Variant::TextFormat() ) {
-        return Qt::qVariantValue(Qt::TextFormat(), $this);
+        return Qt::qVariantValue($this, 'Qt::TextFormat');
     }
     elsif( $type == Qt::Variant::TextLength() ) {
-        return Qt::qVariantValue(Qt::TextLength(), $this);
+        return Qt::qVariantValue($this, 'Qt::TextLength');
     }
     elsif( $type == Qt::Variant::Time() ) {
         return $this->toTime();
