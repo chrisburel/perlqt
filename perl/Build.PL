@@ -19,6 +19,9 @@ use warnings;
 use Getopt::Long;
 use Module::Build;
 
+use lib 'inc';
+use QtBuilder;
+
 my( $userSmokeDir, $userSmokeIncDir, $userSmokeLibDir,
     $userQtDir,    $userQtIncDir,    $userQtLibDir );
 GetOptions(
@@ -68,11 +71,11 @@ foreach my $path ( $userSmokeLibDir, $userQtLibDir ) {
 
 # Find QtGui using pkg-config
 # QtGui depends on QtCore, so both libraries will be loaded
-my $flags = `pkg-config --cflags QtGui`;
+my $flags = `pkg-config --cflags QtGui QtCore QtXml`;
 if (defined($flags) && length($flags)) {
   push(@flags, split(' ', $flags));
   # If pkg-config got the cflags, we can assume libs will work too
-  push(@libs, split(' ', `pkg-config --libs QtGui`));
+  push(@libs, split(' ', `pkg-config --libs QtGui QtCore QtXml`));
 }
 else {
   # If pkg-config couldn't find it, try qmake
@@ -98,7 +101,7 @@ else {
   #}
 }
 
-my $builder = Module::Build->new(
+my $builder = QtBuilder->new(
   module_name           => 'Qt',
   license               => 'gpl',
   dist_author           => 'Chris Burel <chrisburel@gmail.com>',
