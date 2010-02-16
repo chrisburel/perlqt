@@ -304,7 +304,7 @@ sub currentPageMap
         my $family;
 
         if ($familyItem->checkState(0) == Qt::Checked()) {
-            $family = familyItem->text(0);
+            $family = $familyItem->text(0);
             $pageMap{$family} = [];
         }
 
