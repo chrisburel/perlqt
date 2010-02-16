@@ -4,18 +4,19 @@ use ExtUtils::MakeMaker;
 $CC = 'g++';
 
 #$build = 'release';
-$build = 'debug';
+#$build = 'debug';
 
-$QT_DIR = "/usr/local/Trolltech/Qt-4.4.0/$build";
+$QT_DIR = "/opt/qt";
 $QT_INCLUDE = "$QT_DIR/include";
 $QT_LIB = "$QT_DIR/lib";
 
-$SMOKE_DIR = "/home/chris/src/kdebindings/$build/smoke";
-$SMOKE_LIB = "$SMOKE_DIR/qt";
+$SMOKE_DIR = "/usr/src/rpm/build/kdebindings-4.2.0/smoke";
+$SMOKE_INCLUDE = $SMOKE_DIR;
+$SMOKE_LIB = "/opt/kde-4.2/lib";
 
 $CXX_FLAGS = "-Wall";
 $CXX_LIBS = "-L$QT_LIB -L$SMOKE_LIB -lQtCore -lQtGui -lsmokeqt";
-$CXX_INC = "-I. -I$QT_INCLUDE -I$SMOKE_DIR";
+$CXX_INC = "-I. -I$QT_INCLUDE -I$SMOKE_INCLUDE";
 $OPTIMIZE = ( $build eq 'release' ) ? '-O2' : '-g';
 $DEFINE = '-DDEBUG' if $build eq 'debug';
 

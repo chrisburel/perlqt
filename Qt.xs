@@ -968,7 +968,7 @@ SV*
 getClassList()
     CODE:
         AV* av = newAV();
-        for (int i = 1; i < qt_Smoke->numClasses; i++) {
+        for (int i = 1; i <= qt_Smoke->numClasses; i++) {
             av_push(av, newSVpv(qt_Smoke->classes[i].className, 0));
         }
         RETVAL = newRV_noinc((SV*)av);
