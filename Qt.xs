@@ -57,33 +57,6 @@ Smoke::Index getMethod(Smoke *smoke, const char* c, const char* m) {
     return i;
 }
 
-/*
-Smoke::Index* getMethod2(const char* classname, const char* methodname) {
-    Smoke::Index method = qt_Smoke->findMethod(classname, methodname).index;
-    if(!method) {
-        // empty list
-    }
-    else if(method > 0) {
-        Smoke::Index* retarray;
-        Smoke::Index methodIndex = qt_Smoke->methodMaps[method].method;
-        if(!methodIndex) { // Shouldn't happen
-            croak("Corrupt method %s::%s", classname, methodname);
-        }
-        else if(methodIndex > 0) { // single match
-            // push onto return
-            fprintf( stderr, "Got method index %d for %s::%s\n", methodIndex, classname, methodname );
-            retarray = new Smoke::Index[1];
-            retarray[0] = methodIndex;
-        }
-        else { //multiple match
-            //
-        }
-        return retarray;
-    }
-    return 0;
-}
-*/
-
 Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
     methodIndex = -methodIndex; // turn into ambiguousMethodList index
     Smoke::Index retval = 0;
@@ -304,7 +277,7 @@ SV *catArguments(SV** sp, int n) {
             if(o)
                 sv_catpv(r, o->smoke->className(o->classId));
             else if (SvTYPE(SvRV(sp[i])) == SVt_PVMG)
-                sv_catpv(r, SvPV_nolen(SvRV(sp[i])));
+                sv_catpvf(r, "%s(%s)", HvNAME(SvSTASH(SvRV(sp[i]))), SvPV_nolen(SvRV(sp[i])));
             else
                 sv_catsv(r, sp[i]);
         } else {
