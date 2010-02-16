@@ -20,7 +20,6 @@ sub main {
 
     my $iface = Qt::DBusInterface(SERVICE_NAME, '/', '', Qt::DBusConnection::sessionBus());
     if ($iface->isValid()) {
-        # TODO: investigate why the smoke object is missing the QDBusReply object
         my $reply = Qt::DBusReply( $iface->call( 'ping', Qt::Variant(@ARGV > 0 ? $ARGV[0] : '')) );
         if ($reply->isValid()) {
             printf "Reply was: %s\n", $reply->value();
