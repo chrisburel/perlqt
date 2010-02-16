@@ -6,11 +6,9 @@ template<>
 void marshall_from_perl<int*>(Marshall* m) {
     SV* sv = m->var();
     if ( !SvOK(sv) ) {
-        m->item().s_voidp = 0;
-        return;
+        sv_setiv( sv, 0 );
     }
 
-    //int* i = new int(SvIV(sv));
     // This should give us a pointer to the int stored in the perl var.
     // XXX May not be portable
     int* i = (int*)&((xpviv*)sv->sv_any)->xiv_u.xivu_iv;
@@ -18,13 +16,6 @@ void marshall_from_perl<int*>(Marshall* m) {
     m->next();
 
 	// Don't clean up, we'd delete the perl memory.
-    //if (m->cleanup() && m->type().isConst()) {
-        //delete i;
-    //}
-    // Why would you do this?
-    //else {
-        //m->item().s_voidp = new int((int)SvIV(sv));
-    //}
 }
 
 template<>

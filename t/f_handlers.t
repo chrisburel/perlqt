@@ -53,7 +53,7 @@ my $widget = Qt::Widget();
 
 {
     # Test int* marshalling
-    my ( $x1, $y1, $w1, $h1, $x2, $y2, $w2, $h2 ) = ( 0, 0, 0, 0, 0, 0, 0, 0 );
+    my ( $x1, $y1, $w1, $h1, $x2, $y2, $w2, $h2 ) = ( 5, 4, 50, 40 );
     $x1 = 5;
     $y1 = 4;
     $w1 = 50;
