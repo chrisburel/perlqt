@@ -342,8 +342,8 @@ sub cdToParent
 {
     this->setCursor(Qt::Cursor(Qt::WaitCursor()));
     this->fileList->clear();
-    this->isDirectory = {};
-    this->{currentPath} =~ s#.*\/##g;
+    this->{isDirectory} = {};
+    this->{currentPath} =~ s@\/[^/]*$@@g;
     if (!this->currentPath) {
         this->cdToParentButton->setEnabled(0);
         this->ftp->cd('/');

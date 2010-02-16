@@ -453,12 +453,9 @@ void marshall_QString(Marshall* m) {
             if( SvROK(sv) ) {
                 sv = SvRV(sv);
             }
-            if( SvPOK(sv) ) {
-                mystr = qstringFromPerlString( sv );
-            }
-            else {
-                mystr = new QString();
-            }
+            // Don't check for SvPOK.  Calling SvPV_nolen will stringify the
+            // sv, which is what we want for numbers.
+            mystr = qstringFromPerlString( sv );
 
             m->item().s_voidp = (void*)mystr;
             m->next();

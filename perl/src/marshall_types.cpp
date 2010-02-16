@@ -119,92 +119,91 @@ smokeStackFromQtStack(Smoke::Stack stack, void ** _o, int start, int end, QList<
     for (int i = start, j = 0; i < end; ++i, ++j) {
         void *o = _o[j];
         switch(args[i]->argType) {
-        case xmoc_bool:
-            stack[j].s_bool = *(bool*)o;
-            break;
-        case xmoc_int:
-            stack[j].s_int = *(int*)o;
-            break;
-        case xmoc_uint:
-            stack[j].s_uint = *(uint*)o;
-            break;
-        case xmoc_long:
-            stack[j].s_long = *(long*)o;
-            break;
-        case xmoc_ulong:
-            stack[j].s_ulong = *(ulong*)o;
-            break;
-        case xmoc_double:
-            stack[j].s_double = *(double*)o;
-            break;
-        case xmoc_charstar:
-            stack[j].s_voidp = o;
-            break;
-        case xmoc_QString:
-            stack[j].s_voidp = o;
-            break;
-        default:    // case xmoc_ptr:
-        {
-            const SmokeType &t = args[i]->st;
-            void *p = o;
-            switch(t.elem()) {
-            case Smoke::t_bool:
-            stack[j].s_bool = **(bool**)o;
-            break;
-            case Smoke::t_char:
-            stack[j].s_char = **(char**)o;
-            break;
-            case Smoke::t_uchar:
-            stack[j].s_uchar = **(unsigned char**)o;
-            break;
-            case Smoke::t_short:
-            stack[j].s_short = **(short**)p;
-            break;
-            case Smoke::t_ushort:
-            stack[j].s_ushort = **(unsigned short**)p;
-            break;
-            case Smoke::t_int:
-            stack[j].s_int = **(int**)p;
-            break;
-            case Smoke::t_uint:
-            stack[j].s_uint = **(unsigned int**)p;
-            break;
-            case Smoke::t_long:
-            stack[j].s_long = **(long**)p;
-            break;
-            case Smoke::t_ulong:
-            stack[j].s_ulong = **(unsigned long**)p;
-            break;
-            case Smoke::t_float:
-            stack[j].s_float = **(float**)p;
-            break;
-            case Smoke::t_double:
-            stack[j].s_double = **(double**)p;
-            break;
-            case Smoke::t_enum:
-            {
-                //Smoke::EnumFn fn = SmokeClass(t).enumFn();
-                Smoke::Class* _c = t.smoke()->classes + t.classId();
-                Smoke::EnumFn fn = _c->enumFn;
-                if (!fn) {
-                    croak("Unknown enumeration %s\n", t.name());
-                    stack[j].s_enum = **(int**)p;
-                    break;
+            case xmoc_bool:
+                stack[j].s_bool = *(bool*)o;
+                break;
+            case xmoc_int:
+                stack[j].s_int = *(int*)o;
+                break;
+            case xmoc_uint:
+                stack[j].s_uint = *(uint*)o;
+                break;
+            case xmoc_long:
+                stack[j].s_long = *(long*)o;
+                break;
+            case xmoc_ulong:
+                stack[j].s_ulong = *(ulong*)o;
+                break;
+            case xmoc_double:
+                stack[j].s_double = *(double*)o;
+                break;
+            case xmoc_charstar:
+                stack[j].s_voidp = o;
+                break;
+            case xmoc_QString:
+                stack[j].s_voidp = o;
+                break;
+            default: { // case xmoc_ptr:
+                const SmokeType &t = args[i]->st;
+                void *p = o;
+                switch(t.elem()) {
+                    case Smoke::t_bool:
+                        stack[j].s_bool = *(bool*)o;
+                        break;
+                    case Smoke::t_char:
+                        stack[j].s_char = *(char*)o;
+                        break;
+                    case Smoke::t_uchar:
+                        stack[j].s_uchar = *(unsigned char*)o;
+                        break;
+                    case Smoke::t_short:
+                        stack[j].s_short = *(short*)p;
+                        break;
+                    case Smoke::t_ushort:
+                        stack[j].s_ushort = *(unsigned short*)p;
+                        break;
+                    case Smoke::t_int:
+                        stack[j].s_int = *(int*)p;
+                        break;
+                    case Smoke::t_uint:
+                        stack[j].s_uint = *(unsigned int*)p;
+                        break;
+                    case Smoke::t_long:
+                        stack[j].s_long = *(long*)p;
+                        break;
+                    case Smoke::t_ulong:
+                        stack[j].s_ulong = *(unsigned long*)p;
+                        break;
+                    case Smoke::t_float:
+                        stack[j].s_float = *(float*)p;
+                        break;
+                    case Smoke::t_double:
+                        stack[j].s_double = *(double*)p;
+                        break;
+                    case Smoke::t_enum:
+                        {
+                            //Smoke::EnumFn fn = SmokeClass(t).enumFn();
+                            Smoke::Class* _c = t.smoke()->classes + t.classId();
+                            Smoke::EnumFn fn = _c->enumFn;
+                            if (!fn) {
+                                croak("Unknown enumeration %s\n", t.name());
+                                stack[j].s_enum = **(int**)p;
+                                break;
+                            }
+                            Smoke::Index id = t.typeId();
+                            (*fn)(Smoke::EnumToLong, id, p, stack[j].s_enum);
+                        }
+                        break;
+                    case Smoke::t_class:
+                    case Smoke::t_voidp:
+                        if (strchr(t.name(), '*') != 0) {
+                            stack[j].s_voidp = *(void **)p;
+                        } else {
+                            stack[j].s_voidp = p;
+                        }
+                        break;
                 }
-                Smoke::Index id = t.typeId();
-                (*fn)(Smoke::EnumToLong, id, p, stack[j].s_enum);
             }
-            break;
-            case Smoke::t_class:
-            case Smoke::t_voidp:
-                if (strchr(t.name(), '*') != 0) {
-                    stack[j].s_voidp = *(void **)p;
-                } else {
-                    stack[j].s_voidp = p;
-                }
-            break;
-            }
-        }
         }
     }
 }
