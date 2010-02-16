@@ -992,8 +992,9 @@ XS(XS_qvariant_from_value) {
     const char * classname = 0;
     smokeperl_object *o = 0;
     if( SvROK(ST(0)) ) {
-        classname = HvNAME(SvSTASH(SvRV(ST(0))));
         o = sv_obj_info(ST(0));
+        if(o)
+            classname = HvNAME(SvSTASH(SvRV(ST(0))));
     }
 
     if(o) {
@@ -1354,8 +1355,10 @@ XS(XS_AUTOLOAD) {
 
         static smokeperl_object nothis = { 0, 0, 0, false };
         smokeperl_object* call_this = 0;
-        if ( withObject ) {
+        if ( SvOK(sv_this) ) {
             call_this = sv_obj_info( sv_this );
+            if ( !call_this )
+                call_this = &nothis;
         }
         else {
             call_this = &nothis;

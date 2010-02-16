@@ -98,7 +98,7 @@ int runUic(int argc, char *argv[])
                 return 1;
             }
             driver.option().outputFile = QFile::decodeName(argv[arg]);
-#ifdef QT_UIC_RUBY_GENERATOR
+#ifdef QT_UIC_PERL_GENERATOR
         } else if (opt == QLatin1String("-x")) {
             driver.option().execCode = 1;
         } else if (opt == QLatin1String("-k") || opt == QLatin1String("-kde")) {
@@ -137,7 +137,7 @@ int runUic(int argc, char *argv[])
             if (name == QLatin1String("java")) {
                 driver.option().generator = Option::JavaGenerator;
             } else if (name == QLatin1String("perl")) {
-                driver.option().generator = Option::RubyGenerator;
+                driver.option().generator = Option::PerlGenerator;
             } else {
                 driver.option().generator = Option::CppGenerator;
             }

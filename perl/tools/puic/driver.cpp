@@ -269,7 +269,7 @@ bool Driver::uic(const QString &fileName, DomUI *ui, QTextStream *out)
 
     Uic tool(this);
     bool rtn = false;
-#ifdef QT_UIC_RUBY_GENERATOR
+#ifdef QT_UIC_PERL_GENERATOR
     rtn = tool.plwrite(ui);
 #else
     Q_UNUSED(ui);

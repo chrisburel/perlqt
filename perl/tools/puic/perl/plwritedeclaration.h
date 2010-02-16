@@ -56,7 +56,7 @@ class Uic;
 
 struct Option;
 
-namespace Ruby {
+namespace Perl {
 
 struct WriteDeclaration : public TreeWalker
 {
@@ -76,7 +76,7 @@ private:
     const Option &m_option;
 };
 
-} // namespace Ruby
+} // namespace Perl
 
 #if defined(QT_END_NAMESPACE)
   QT_END_NAMESPACE

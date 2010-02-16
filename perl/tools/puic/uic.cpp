@@ -58,7 +58,7 @@
 #include "javawritedeclaration.h"
 #endif
 
-#ifdef QT_UIC_RUBY_GENERATOR
+#ifdef QT_UIC_PERL_GENERATOR
 #include "plwritedeclaration.h"
 #endif
 
@@ -148,7 +148,7 @@ bool Uic::printDependencies()
 void Uic::writeCopyrightHeader(DomUI *ui)
 {
     QString comment = ui->elementComment();
-#ifdef QT_UIC_RUBY_GENERATOR
+#ifdef QT_UIC_PERL_GENERATOR
     if (comment.size())
         out << "\n=begin\n" << comment << "\n=cut\n\n";
 
@@ -213,8 +213,8 @@ bool Uic::write(QIODevice *in)
 #else
         fprintf(stderr, "uic: option to generate java code not compiled in\n");
 #endif
-    } else if (option().generator == Option::RubyGenerator) {
-#ifdef QT_UIC_RUBY_GENERATOR
+    } else if (option().generator == Option::PerlGenerator) {
+#ifdef QT_UIC_PERL_GENERATOR
         rtn = plwrite (ui);
 #else
         fprintf(stderr, "uic: option to generate perl code not compiled in\n");
@@ -302,10 +302,10 @@ bool Uic::jwrite(DomUI *ui)
 }
 #endif
 
-#ifdef QT_UIC_RUBY_GENERATOR
+#ifdef QT_UIC_PERL_GENERATOR
 bool Uic::plwrite(DomUI *ui)
 {
-    using namespace Ruby;
+    using namespace Perl;
 
     if (!ui || !ui->elementWidget())
         return false;

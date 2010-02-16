@@ -57,7 +57,7 @@ struct Option
     {
         CppGenerator,
         JavaGenerator,
-        RubyGenerator
+        PerlGenerator
     };
 
     unsigned int headerProtection : 1;
@@ -67,7 +67,7 @@ struct Option
     unsigned int autoConnection : 1;
     unsigned int dependencies : 1;
     unsigned int extractImages : 1;
-#ifdef QT_UIC_RUBY_GENERATOR
+#ifdef QT_UIC_PERL_GENERATOR
     unsigned int execCode : 1;
     unsigned int useKDE : 1;
 #endif
@@ -95,7 +95,7 @@ struct Option
           dependencies(0),
           extractImages(0),
           execCode(0),
-          generator(RubyGenerator),
+          generator(PerlGenerator),
           prefix(QLatin1String("Ui_"))
     { indent.fill(QLatin1Char(' '), 4); }
 };

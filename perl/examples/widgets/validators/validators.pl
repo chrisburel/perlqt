@@ -31,25 +31,25 @@ sub doubleValidator() {
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
-    $class->setupUi(this);
+    my $ui = this->{ui} = $class->setupUi(this);
 
-    my $localeSelector = this->{localeSelector};
+    my $localeSelector = $ui->{localeSelector};
     this->connect($localeSelector, SIGNAL 'localeSelected(QLocale)', this, SLOT '_setLocale(QLocale)');
 
-    my $minVal = this->{minVal};
-    my $maxVal = this->{maxVal};
-    my $editor = this->{editor};
-    my $ledWidget = this->{ledWidget};
+    my $minVal = $ui->{minVal};
+    my $maxVal = $ui->{maxVal};
+    my $editor = $ui->{editor};
+    my $ledWidget = $ui->{ledWidget};
     this->connect($minVal, SIGNAL 'editingFinished()', this, SLOT 'updateValidator()');
     this->connect($maxVal, SIGNAL 'editingFinished()', this, SLOT 'updateValidator()');
     this->connect($editor, SIGNAL 'editingFinished()', $ledWidget, SLOT 'flash()');
 
-    my $doubleMaxVal = this->{doubleMaxVal};
-    my $doubleMinVal = this->{doubleMinVal};
-    my $doubleDecimals = this->{doubleDecimals};
-    my $doubleFormat = this->{doubleFormat};
-    my $doubleEditor = this->{doubleEditor};
-    my $doubleLedWidget = this->{doubleLedWidget};
+    my $doubleMaxVal = $ui->{doubleMaxVal};
+    my $doubleMinVal = $ui->{doubleMinVal};
+    my $doubleDecimals = $ui->{doubleDecimals};
+    my $doubleFormat = $ui->{doubleFormat};
+    my $doubleEditor = $ui->{doubleEditor};
+    my $doubleLedWidget = $ui->{doubleLedWidget};
     this->connect($doubleMaxVal, SIGNAL 'editingFinished()', this, SLOT 'updateDoubleValidator()');
     this->connect($doubleMinVal, SIGNAL 'editingFinished()', this, SLOT 'updateDoubleValidator()');
     this->connect($doubleDecimals, SIGNAL 'valueChanged(int)', this, SLOT 'updateDoubleValidator()');
@@ -63,13 +63,13 @@ sub NEW {
 }
 
 sub updateValidator {
-    my $minVal = this->{minVal};
-    my $maxVal = this->{maxVal};
-    my $editor = this->{editor};
+    my $ui = this->{ui};
+    my $minVal = $ui->{minVal};
+    my $maxVal = $ui->{maxVal};
+    my $editor = $ui->{editor};
     my $v = Qt::IntValidator($minVal->value(), $maxVal->value(), this);
     $v->setLocale(this->locale());
     $editor->setValidator($v);
-    #delete validator;
     this->{validator} = $v;
     my $validator = this->{validator};
 
@@ -83,16 +83,16 @@ sub updateValidator {
 }
 
 sub updateDoubleValidator {
-    my $doubleMinVal = this->{doubleMinVal};
-    my $doubleMaxVal = this->{doubleMaxVal};
-    my $doubleDecimals = this->{doubleDecimals};
-    my $doubleFormat = this->{doubleFormat};
+    my $ui = this->{ui};
+    my $doubleMinVal = $ui->{doubleMinVal};
+    my $doubleMaxVal = $ui->{doubleMaxVal};
+    my $doubleDecimals = $ui->{doubleDecimals};
+    my $doubleFormat = $ui->{doubleFormat};
     my $v = Qt::DoubleValidator($doubleMinVal->value(), $doubleMaxVal->value(),
                                 $doubleDecimals->value(), this);
-    #v->setNotation(static_cast<Qt::DoubleValidator::Notation>(doubleFormat->currentIndex()));
     $v->setNotation($doubleFormat->currentIndex());
     $v->setLocale(this->locale());
-    my $doubleEditor = this->{doubleEditor};
+    my $doubleEditor = $ui->{doubleEditor};
     $doubleEditor->setValidator($v);
     this->{doubleValidator} = $v;
     my $doubleValidator = this->{doubleValidator};

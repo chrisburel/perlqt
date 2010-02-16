@@ -53,7 +53,7 @@
 
 #include <QTextStream>
 
-namespace Ruby {
+namespace Perl {
 
 WriteDeclaration::WriteDeclaration(Uic *uic)  :
     m_uic(uic),
@@ -66,7 +66,7 @@ WriteDeclaration::WriteDeclaration(Uic *uic)  :
 void WriteDeclaration::acceptUI(DomUI *node)
 {
     QString qualifiedClassName = node->elementClass() + m_option.postfix;
-    // Ruby classnames must start with an upper case letter
+    // Perl classnames must start with an upper case letter
     QString className = qualifiedClassName.mid(0, 1).toUpper() + qualifiedClassName.mid(1);
 
     QString varName = m_driver->findOrInsertWidget(node->elementWidget());
@@ -234,4 +234,4 @@ void WriteDeclaration::acceptAction(DomAction *node)
     TreeWalker::acceptAction(node);
 }
 
-} // namespace Ruby
+} // namespace Perl

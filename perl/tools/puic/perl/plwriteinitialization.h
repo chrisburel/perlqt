@@ -63,7 +63,7 @@ class DomResourceIcon;
 class DomSizePolicy;
 struct Option;
 
-namespace Ruby {
+namespace Perl {
     // Handle for a flat DOM font to get comparison functionality required for maps
     class FontHandle {
     public:
@@ -305,7 +305,7 @@ private:
     QString m_mainWidget;
 };
 
-} // namespace Ruby
+} // namespace Perl
 
 #if defined(QT_END_NAMESPACE)
   QT_END_NAMESPACE

@@ -68,7 +68,7 @@ namespace {
     }
     // figure out the toolbar area of a DOM attrib list.
     // By legacy, it is stored as an integer. As of 4.3.0, it is the enumeration value.
-    QString toolBarAreaStringFromDOMAttributes(const Ruby::WriteInitialization::DomPropertyMap &attributes) {
+    QString toolBarAreaStringFromDOMAttributes(const Perl::WriteInitialization::DomPropertyMap &attributes) {
         const DomProperty *pstyle = attributes.value(QLatin1String("toolBarArea"));
         if (!pstyle)
             return QString();
@@ -176,7 +176,7 @@ namespace {
     }
 }
 
-namespace Ruby {
+namespace Perl {
 
 FontHandle::FontHandle(const DomFont *domFont) :
       m_domFont(domFont)
@@ -2496,7 +2496,7 @@ void WriteInitialization::acceptImage(DomImage *image)
     m_registeredImages.insert(image->attributeName(), image);
 }
 
-} // namespace Ruby
+} // namespace Perl
 
 #if defined(QT_END_NAMESPACE)
   QT_END_NAMESPACE

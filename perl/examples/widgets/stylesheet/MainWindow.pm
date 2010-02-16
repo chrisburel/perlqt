@@ -14,16 +14,13 @@ use Qt::slots
     on_editStyleAction_triggered => [],
     on_aboutAction_triggered => [];
 
-    #StyleSheetEditor *styleSheetEditor;
-    #Ui::MainWindow ui;
-
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
 
     my $ui = Ui_MainWindow->setupUi(this);
 
-    $ui->nameLabel()->setProperty("class", Qt::Variant("mandatory Qt::Label"));
+    $ui->nameLabel()->setProperty("class", Qt::Variant(Qt::String("mandatory Qt::Label")));
 
     my $styleSheetEditor = StyleSheetEditor(this);
     this->{styleSheetEditor} = $styleSheetEditor;

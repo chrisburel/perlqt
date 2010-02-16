@@ -270,8 +270,8 @@ sub emitLocaleSelected {
     if (!$v->isValid()) {
         return;
     }
-    my $l = qVariantValue($v);
-    emit localeSelected(Qt::Locale(Qt::Locale::Language($l->{lang}), Qt::Locale::Country($l->{country})));
+    my $l = Qt::qVariantValue($v);
+    emit localeSelected(Qt::Locale($l->{lang}, $l->{country}));
 }
 
 1;

@@ -51,7 +51,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QStack>
 
-#define QT_UIC_RUBY_GENERATOR
+#define QT_UIC_PERL_GENERATOR
 
 #if defined(QT_BEGIN_NAMESPACE)
   QT_BEGIN_NAMESPACE
@@ -115,7 +115,7 @@ public:
     bool write(DomUI *ui);
 #endif
 
-#ifdef QT_UIC_RUBY_GENERATOR
+#ifdef QT_UIC_PERL_GENERATOR
     bool plwrite(DomUI *ui);
 #endif
 

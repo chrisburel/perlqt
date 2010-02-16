@@ -57,7 +57,7 @@ class Uic;
 
 struct Option;
 
-namespace Ruby {
+namespace Perl {
 
 class ExtractImages : public TreeWalker
 {
@@ -74,7 +74,7 @@ private:
     QDir m_imagesDir;
 };
 
-} // namespace Ruby
+} // namespace Perl
 
 #if defined(QT_END_NAMESPACE)
   QT_END_NAMESPACE

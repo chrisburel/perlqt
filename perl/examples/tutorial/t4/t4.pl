@@ -11,7 +11,7 @@ use Qt::isa qw(Qt::Widget);
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    this->setFixedSize(200, 120);
+    setFixedSize(200, 120);
 
     my $quit = Qt::PushButton("Quit", this);
     $quit->setGeometry(62, 40, 75, 30);

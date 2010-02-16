@@ -59,7 +59,7 @@
   QT_BEGIN_NAMESPACE
 #endif
 
-namespace Ruby {
+namespace Perl {
 
 ExtractImages::ExtractImages(const Option &opt)
     : m_output(0), m_option(opt)
@@ -134,16 +134,16 @@ void ExtractImages::acceptImage(DomImage *image)
         QTextStream *imageOut = new QTextStream(&f);
         imageOut->setCodec(QTextCodec::codecForName("UTF-8"));
 
-        Ruby::WriteIconData::writeImage(*imageOut, QString(), image);
+        Perl::WriteIconData::writeImage(*imageOut, QString(), image);
         delete imageOut;
     } else {
-        Ruby::WriteIconData::writeImage(f, image);
+        Perl::WriteIconData::writeImage(f, image);
     }
 
     f.close();
 }
 
-} // namespace Ruby
+} // namespace Perl
 
 #if defined(QT_END_NAMESPACE)
   QT_END_NAMESPACE

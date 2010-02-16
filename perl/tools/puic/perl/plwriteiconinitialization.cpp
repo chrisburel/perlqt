@@ -55,7 +55,7 @@
   QT_BEGIN_NAMESPACE
 #endif
 
-namespace Ruby {
+namespace Perl {
 
 WriteIconInitialization::WriteIconInitialization(Uic *uic)
     : driver(uic->driver()), output(uic->output()), option(uic->option())
@@ -119,7 +119,7 @@ void WriteIconInitialization::acceptImage(DomImage *image)
     }
 }
 
-} // namespace Ruby
+} // namespace Perl
 
 #if defined(QT_END_NAMESPACE)
   QT_END_NAMESPACE

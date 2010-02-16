@@ -52,7 +52,7 @@
   QT_BEGIN_NAMESPACE
 #endif
 
-namespace Ruby {
+namespace Perl {
 
 static QByteArray transformImageData(QString data)
 {
@@ -178,7 +178,7 @@ void WriteIconData::writeImage(QIODevice &output, DomImage *image)
     output.write(array, array.size());
 }
 
-} // namespace Ruby
+} // namespace Perl
 
 #if defined(QT_END_NAMESPACE)
   QT_END_NAMESPACE
