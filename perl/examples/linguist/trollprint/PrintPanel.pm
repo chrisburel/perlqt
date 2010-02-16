@@ -39,8 +39,8 @@ sub NEW
 =begin
 
 /*
-    Qt::Label *label = new Qt::Label(PrintPanel::tr("<b>TROLL PRINT</b>"));
-    label->setAlignment(Qt::AlignCenter);
+    my $label = Qt::Label(PrintPanel::tr("<b>TROLL PRINT</b>"));
+    $label->setAlignment(Qt::AlignCenter());
 */
 
 =cut
@@ -75,7 +75,7 @@ sub NEW
 =begin
 
 /*
-    mainLayout->addWidget(label);
+    $mainLayout->addWidget($label);
 */
 
 =cut
