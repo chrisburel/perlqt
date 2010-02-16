@@ -306,7 +306,10 @@ sub initialItemPosition {
 
 # [24]
 sub randomItemPosition {
-    return Qt::Point(qrand() % (this->width() - 120), qrand() % (this->height() - 120));
+    # 2147483647 is the value of RAND_MAX, defined in stdlib.h, at least on
+    # my machine.
+    # See the Qt documentation on qrand() for more details.
+    return Qt::Point(rand(2147483647) % (this->width() - 120), rand(2147483647) % (this->height() - 120));
 }
 # [24]
 
@@ -318,7 +321,7 @@ sub initialItemColor {
 
 # [26]
 sub randomItemColor {
-    return Qt::Color::fromHsv(qrand() % 256, 255, 190);
+    return Qt::Color::fromHsv(rand(2147483647) % 256, 255, 190);
 }
 # [26]
 
