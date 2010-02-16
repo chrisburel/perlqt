@@ -97,22 +97,18 @@ sub insertRows {
     return 1;
 }
 
-=begin
+sub removeRows {
+    my ($position, $rows, $index) = @_;
+    my $listOfPairs = this->{listOfPairs};
+    this->beginRemoveRows(Qt::ModelIndex(), $position, $position+$rows-1);
 
-sub removeRows(int position, int rows, const Qt::ModelIndex &index)
-{
-    Q_UNUSED(index);    
-    beginRemoveRows(Qt::ModelIndex(), position, position+rows-1);
-    
-    for (int row=0; row < rows; ++row) {
-        $listOfPairs->removeAt(position);
+    foreach my $row (0..$rows) {
+        splice( @{$listOfPairs}, $position, 1 );
     }
 
-    endRemoveRows();
+    this->endRemoveRows();
     return 1;
 }
-
-=cut
 
 sub setData {
     my ($index, $value, $role) = @_;

@@ -66,69 +66,62 @@ sub addEntry2 {
     #}
 }
 
-=begin
+sub editEntry {
+    my $temp = CAST this->currentWidget(), ' Qt::TableView';
+    my $proxy = CAST $temp->model(), ' Qt::SortFilterProxyModel';
+    my $selectionModel = $temp->selectionModel();
+    my $table = this->{table};
 
-void AddressWidget::editEntry()
-{
-    QTableView *temp = static_cast<QTableView*>(currentWidget());
-    QSortFilterProxyModel *proxy = static_cast<QSortFilterProxyModel*>(temp->model());
-    QItemSelectionModel *selectionModel = temp->selectionModel();
+    my $indexes = $selectionModel->selectedRows();
+    my $i;        
+    my $name;
+    my $address;
+    my $row;
 
-    QModelIndexList indexes = selectionModel->selectedRows();
-    QModelIndex index, i;        
-    QString name;
-    QString address;
-    int row;
-
-    foreach (index, indexes) {
-        row = proxy->mapToSource(index).row();
-        i = table->index(row, 0, QModelIndex());
-        QVariant varName = table->data(i, Qt::DisplayRole);
-        name = varName.toString();
+    foreach my $index ( @{$indexes} ) {
+        $row = $proxy->mapToSource($index)->row();
+        $i = $table->index($row, 0, Qt::ModelIndex());
+        my $varName = $table->data($i, Qt::DisplayRole());
+        my $name = $varName->toString();
     
-        i = table->index(row, 1, QModelIndex());
-        QVariant varAddr = table->data(i, Qt::DisplayRole);
-        address = varAddr.toString();
+        $i = $table->index($row, 1, Qt::ModelIndex());
+        my $varAddr = $table->data($i, Qt::DisplayRole());
+        $address = $varAddr->toString();
     }
 
-    
+    my $aDialog = AddDialog();
+    $aDialog->setWindowTitle(this->tr('Edit a Contact'));
 
-    AddDialog aDialog;
-    aDialog.setWindowTitle(tr("Edit a Contact"));
+    $aDialog->nameText->setReadOnly(1);
+    $aDialog->nameText->setText($name);
+    $aDialog->addressText->setText($address);
 
-    aDialog.nameText->setReadOnly(true);
-    aDialog.nameText->setText(name);
-    aDialog.addressText->setText(address);
-
-    if (aDialog.exec()) {
-        QString newAddress = aDialog.addressText->toPlainText();
-        if (newAddress != address) {
-            i = table->index(row, 1, QModelIndex());
-            table->setData(i, newAddress, Qt::EditRole);
+    if ($aDialog->exec()) {
+        my $newAddress = $aDialog->addressText()->toPlainText();
+        if ($newAddress != $address) {
+            $i = $table->index($row, 1, Qt::ModelIndex());
+            $table->setData($i, $newAddress, Qt::EditRole());
         }
     }
 }
 
-void AddressWidget::removeEntry()
-{
-    QTableView *temp = static_cast<QTableView*>(currentWidget());
-    QSortFilterProxyModel *proxy = static_cast<QSortFilterProxyModel*>(temp->model());
-    QItemSelectionModel *selectionModel = temp->selectionModel();
-    
-    QModelIndexList indexes = selectionModel->selectedRows();
-    QModelIndex index;
+sub removeEntry {
+    my $temp = CAST this->currentWidget(), ' Qt::TableView';
+    my $proxy = CAST $temp->model(), ' Qt::SortFilterProxyModel';
+    my $selectionModel = $temp->selectionModel();
+    my $table = this->{table};
 
-    foreach (index, indexes) {
-        int row = proxy->mapToSource(index).row();
-        table->removeRows(row, 1, QModelIndex());
+    my $indexes = $selectionModel->selectedRows();
+
+    foreach my $index ( @{$indexes} ) {
+        my $row = $proxy->mapToSource($index)->row();
+        $table->removeRows($row, 1, Qt::ModelIndex());
     }
 
-    if (table->rowCount(QModelIndex()) == 0) {
-        insertTab(0, newAddressTab, "Address Book");
+    if ($table->rowCount(Qt::ModelIndex()) == 0) {
+        this->insertTab(0, this->{newAddressTab}, 'Address Book');
     }
 }
-
-=cut
 
 sub setupTabs {
     my @groups = ('ABC', 'DEF', 'GHI', 'JKL', 'MNO', 'PQR', 'STU', 'VW', 'XYZ');

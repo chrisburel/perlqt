@@ -52,6 +52,7 @@ sub createMenus {
     
 
     my $editAct = Qt::Action(this->tr("&Edit Entry..."), this);
+    this->{editAct} = $editAct;
     $editAct->setEnabled(0);
     $toolMenu->addAction($editAct);
     this->connect($editAct, SIGNAL 'triggered()',
@@ -60,6 +61,7 @@ sub createMenus {
     $toolMenu->addSeparator();
 
     my $removeAct = Qt::Action(this->tr("&Remove Entry"), this);
+    this->{removeAct} = $removeAct;
     $removeAct->setEnabled(0);
     $toolMenu->addAction($removeAct);
     this->connect($removeAct, SIGNAL 'triggered()',
@@ -87,20 +89,19 @@ sub saveFile {
     }
 }
 
+=cut
 
+sub updateActions {
+    my ($selection) = @_;
+    my $indexes = $selection->indexes();
 
-sub updateActions(const Qt::ItemSelection &selection) {
-    Qt::ModelIndexList indexes = selection.indexes();
-    
-    if (!indexes.isEmpty()) {
-        removeAct->setEnabled(this->true);
-        editAct->setEnabled(this->true);
+    if ( ref $indexes eq 'ARRAY' && @{$indexes} ) {
+        this->{removeAct}->setEnabled(1);
+        this->{editAct}->setEnabled(1);
     } else {
-        removeAct->setEnabled(false);
-        editAct->setEnabled(false);
+        this->{removeAct}->setEnabled(0);
+        this->{editAct}->setEnabled(0);
     }
 }
-
-=cut
 
 1;

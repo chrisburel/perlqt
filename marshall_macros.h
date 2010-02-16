@@ -115,6 +115,13 @@ void marshall_ItemList(Marshall *m) {
                                             SmokeType( m->smoke(),
                                                        m->smoke()->idType(ItemSTR) ) );
 
+                    if( !m->cleanup() && m->type().isStack()) {
+                        smokeperl_object *o = sv_obj_info( obj );
+                        void *ptr = construct_copy( o );
+                        if(ptr) {
+                            o->ptr = ptr;
+                        }
+                    }
                 }
             
                 av_push(av, obj);
@@ -226,6 +233,7 @@ void marshall_ValueListItem(Marshall *m) {
                     obj = allocSmokePerlSV( p,
                                             SmokeType( m->smoke(), 
                                                        m->smoke()->idType(ItemSTR) ) );
+
                     if( !m->cleanup() && m->type().isStack()) {
                         smokeperl_object *o = sv_obj_info( obj );
                         void *ptr = construct_copy( o );
