@@ -972,28 +972,12 @@ XS(XS_qvariant_from_value) {
     }
 
     QVariant * v = 0;
-    SV* value = ST(0);
-    if( SvROK(value) ) {
-        value = SvRV(value);
-    }
-
     const char * classname = 0;
     smokeperl_object *o = 0;
-    int mytype = SvTYPE(value);
-    switch ( SvTYPE(value) ) {
-        case SVt_PVAV:
-            v = new QVariant(qVariantFromValue((AV*)value));
-            break;
-        break;
-        case SVt_PVHV:
-            v = new QVariant(qVariantFromValue((HV*)value));
-            break;
-        break;
-        case SVt_PVMG:
-            classname = HvNAME(SvSTASH(value));
-            o = sv_obj_info(ST(0));
-        break;
-    };
+    if( SvROK(ST(0)) ) {
+        classname = HvNAME(SvSTASH(SvRV(ST(0))));
+        o = sv_obj_info(ST(0));
+    }
 
     if(o) {
         if (qstrcmp(classname, " Qt::Pixmap") == 0) {
@@ -1038,6 +1022,19 @@ XS(XS_qvariant_from_value) {
             //return rb_funcall(qvariant_class, rb_intern("new"), 1, ST(0));
         }
     }
+    else {
+        switch ( SvTYPE(SvRV(ST(0))) ) {
+            case SVt_PVAV:
+                v = new QVariant(qVariantFromValue((AV*)SvRV(ST(0))));
+                break;
+            break;
+            case SVt_PVHV:
+                v = new QVariant(qVariantFromValue((HV*)SvRV(ST(0))));
+                break;
+            break;
+        };
+    }
+
 
     SV *retval = allocSmokePerlSV(v, SmokeType( qt_Smoke, qt_Smoke->idType("QVariant") ) );
 
