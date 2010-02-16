@@ -509,7 +509,7 @@ void unmapPointer( smokeperl_object* o, Smoke::Index classId, void* lastptr) {
 
 /* Adapted from the internal function qt_qFindChildren() in qobject.cpp */
 static void 
-pl_qFindChildren_helper(SV* parent, const QString &name, SV* re,
+pl_qFindChildren_helper(SV* parent, const QString &objectName, SV* re,
                          const QMetaObject &mo, AV* list)
 {
     char* classname = HvNAME((HV*)SvSTASH(SvRV(parent)));
@@ -542,42 +542,59 @@ pl_qFindChildren_helper(SV* parent, const QString &name, SV* re,
                 //rb_ary_push(list, rv);
                 //}
             } else {
-                if (name.isNull() || obj->objectName() == name) {
+                if (objectName.isNull() || obj->objectName() == objectName) {
                     av_push(list, rv);
                 }
             }
         }
-        pl_qFindChildren_helper(rv, name, re, mo, list);
+        pl_qFindChildren_helper(rv, objectName, re, mo, list);
     }
     return;
 }
 
 /* Should mimic Qt4's QObject::findChildren method with this syntax:
-     obj.findChildren(Qt::Widget, "Optional Widget Name")
+     obj.findChildren("Object Type", "Optional Widget Name")
 */
 XS(XS_find_qobject_children) {
     dXSARGS;
-    if (items != 0) {
-        croak("Invalid argument list supplied to Qt::Object::findChildren, %d", items);
+    if (items > 2 && items < 1) {
+        croak("Qt::Object::findChildren takes 1 or 2 arguments, got %d", items);
         XSRETURN_UNDEF;
     }
 
-    SV* self = sv_this;
-    QString name;
+    QString objectName;
     SV* re = &PL_sv_undef;
-    if (items == 1) {
-        // If the second arg isn't a String, assume it's a regular expression
-        if (SvTYPE(ST(0)) == SVt_PV) {
-            name = QString::fromLatin1(SvPV_nolen(ST(0)));
+    if (items > 1) {
+        // If the second arg isn't a String, assume it's a Qt::RegExp
+        if (SvTYPE(ST(1)) == SVt_PV) {
+            objectName = QString::fromLatin1(SvPV_nolen(ST(1)));
         } else {
-            re = ST(0);
+            re = ST(1);
         }
     }
 
-    QObject* sv_this_ptr = (QObject*)sv_obj_info(self)->ptr;
-    const QMetaObject* metaobject = sv_this_ptr->metaObject();
+    SV* metaobjectSV;
+    if (SvOK(ST(0)) && SvTYPE(ST(0)) == SVt_PV) {
+        dSP; ENTER; SAVETMPS;
+        PUSHMARK(SP);
+        XPUSHs(ST(0));
+        PUTBACK;
+        int count = call_pv( "Qt::_internal::getMetaObject", G_SCALAR );
+        SPAGAIN;
+        metaobjectSV = POPs;
+        PUTBACK;
+        // metaobjectSV is now mortal.  Don't FREETMPS.
+    }
+    else {
+        croak("First argument to Qt::Object::findChildren should be a string specifying a type");
+    }
+
+    smokeperl_object* metao = sv_obj_info(metaobjectSV);
+    if(!metao) 
+        croak("Call to get metaObject failed.");
+    const QMetaObject* metaobject = (QMetaObject*)metao->ptr;
     AV* list = newAV();
-    pl_qFindChildren_helper(self, name, re, *metaobject, list);
+    pl_qFindChildren_helper(sv_this, objectName, re, *metaobject, list);
     SV* result = newRV_noinc((SV*)list);
     ST(0) = result;
     XSRETURN(1);

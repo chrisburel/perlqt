@@ -795,6 +795,14 @@ sub getMetaObject {
     # was asked for, return the saved one.
     return $meta->{object} if $meta->{object} and !$meta->{changed};
 
+    # If this is a native Qt class, call metaObject() on that class directly
+    if ( $package2classId{$class} ) {
+        my $classId = $package2classId{$class};
+        my $cxxClass = classFromId( $classId );
+        my ( $methodId ) = do_autoload( $classId, 'metaObject', $cxxClass );
+        return $meta->{object} = getNativeMetaObject( $methodId );
+    }
+
     # Get the super class's meta object for sig/slot inheritance
     # Look up through ISA to find it
     my $parentMeta = undef;
