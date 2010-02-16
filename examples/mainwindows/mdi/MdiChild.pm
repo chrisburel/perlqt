@@ -93,7 +93,6 @@ sub userFriendlyCurrentFile {
 
 sub closeEvent {
     my ( $event ) = @_;
-    print "In MdiChild close event\n";
     if (maybeSave()) {
         $event->accept();
     } else {
@@ -107,12 +106,13 @@ sub documentWasModified {
 
 sub maybeSave {
     if (this->document()->isModified()) {
-        my $ret = QMessageBox::warning(this, "MDI",
-                     sprintf "'%s' has been modified.\n" .
+        my $ret = Qt::QMessageBox::warning(
+                     this,
+                     "MDI",
+                     sprintf( "'%s' has been modified.\n" .
                          "Do you want to save your changes?",
-                         userFriendlyCurrentFile(),
-                     CAST Qt::QMessageBox::Save() | Qt::QMessageBox::Discard()
-		     | Qt::QMessageBox::Cancel(), 'QMessageBox::StandardButtons');
+                         userFriendlyCurrentFile() ),
+                     CAST Qt::QMessageBox::Save() | Qt::QMessageBox::Discard() | Qt::QMessageBox::Cancel(), 'QMessageBox::StandardButtons');
         if ($ret == Qt::QMessageBox::Save()) {
             return save();
         }

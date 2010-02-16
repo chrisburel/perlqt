@@ -49,10 +49,7 @@ sub NEW {
 sub closeEvent {
     my ( $event ) = @_;
 
-    $DB::single=1;
-    Qt::_internal::setDebug(0xffffff);
     this->{mdiArea}->closeAllSubWindows();
-    Qt::_internal::setDebug(0);
     if (activeMdiChild()) {
         $event->ignore();
     } else {
