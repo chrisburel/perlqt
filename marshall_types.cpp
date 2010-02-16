@@ -16,20 +16,20 @@ public:
     Smoke::StackItem &item() { return _stack[0]; }
     SV *var() { return _retval; }
     void unsupported() {
-	croak("Cannot handle '%s' as return-type of virtual method %s::%s",
-		type().name(),
-		_smoke->className(method().classId),
-		_smoke->methodNames[method().name]);
+        croak("Cannot handle '%s' as return-type of virtual method %s::%s",
+                type().name(),
+                _smoke->className(method().classId),
+                _smoke->methodNames[method().name]);
     }
     Smoke *smoke() { return _smoke; }
     void next() {}
     bool cleanup() { return false; }
     VirtualMethodReturnValue(Smoke *smoke, Smoke::Index meth, Smoke::Stack stack, SV *retval) :
-	_smoke(smoke), _method(meth), _stack(stack), _retval(retval) {
-	_st.set(_smoke, method().ret);
- 	Marshall::HandlerFn fn = getMarshallFn(type());
+      _smoke(smoke), _method(meth), _stack(stack), _retval(retval) {
+        _st.set(_smoke, method().ret);
+        Marshall::HandlerFn fn = getMarshallFn(type());
         (*fn)(this);
-   }
+    }
 };
 
 namespace PerlQt {
@@ -62,7 +62,7 @@ namespace PerlQt {
     void MethodCallBase::next() {
         int oldcur = _cur;
         _cur++;
-        while(!_called && _cur < items() ) {
+        while( _cur < items() ) {
             Marshall::HandlerFn fn = getMarshallFn(type());
             (*fn)(this);
             _cur++;
@@ -95,7 +95,7 @@ namespace PerlQt {
         _savethis = sv_this;
         sv_this = newSVsv(obj);
         _sp = SP + 1;
-        for(int i = 0; i < method().numArgs; i++)
+        for(int i = 0; i < items(); i++)
             _sp[i] = sv_newmortal();
         _args = _smoke->argumentList + method().args;
     }
@@ -123,6 +123,7 @@ namespace PerlQt {
 
         // This is the stack pointer we'll pass to the perl call
         dSP;
+        // This defines how many arguments we're sending to the perl sub
         SP = _sp + items() - 1;
         PUTBACK;
         // Call the perl sub

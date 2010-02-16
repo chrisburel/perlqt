@@ -10,6 +10,7 @@ BEGIN {
 package myStringListModel;
 use Qt;
 use Qt::isa qw(Qt::QAbstractListModel);
+use Devel::Peek;
 
 my @stringList;
 
@@ -32,15 +33,31 @@ sub data {
         return Qt::QVariant();
     }
 
-    if ($index->row() >= scalar @stringList){
+    my $modelRow = $index->row();
+    if ($modelRow >= scalar @stringList){
         return Qt::QVariant();
     }
 
     if ($role == 0 ) { #Qt::DisplayRole
-        return Qt::QVariant($stringList[$index->row()]);
+        return Qt::QVariant($stringList[$modelRow]);
     }
     else {
         return Qt::QVariant();
+    }
+}
+
+sub headerData {
+    my ( $section, $orientation, $role ) = @_;
+    if ( $role != 0 ) { #Qt::DisplayRole
+        return Qt::QVariant();
+    }
+
+$DB::single=1;
+    if ( $orientation == 0x01 ) { #Qt::Horizontal
+        return Qt::QVariant("Column " . $section);
+    }
+    else {
+        return Qt::QVariant("Row " . $section);
     }
 }
 
@@ -54,8 +71,14 @@ use myStringListModel;
 my $model = myStringListModel( [qw( Hello world you are awesome )] );
 my $numRows = $model->rowCount();
 
-my $listview = Qt::QTableView();
-my $modelIndex = Qt::QModelIndex();
+my $splitter = Qt::QSplitter();
+
+my $tableview = Qt::QTableView($splitter);
+$tableview->setModel( $model );
+
+my $listview = Qt::QListView($splitter);
 $listview->setModel( $model );
-$listview->show();
+
+$tableview->setSelectionModel( $listview->selectionModel() );
+$splitter->show();
 exit Qt::appexec;

@@ -54,6 +54,19 @@ void marshall_basetype(Marshall *m) {
             break;
         }
         break;
+      case Smoke::t_enum:
+        switch(m->action()) {
+          case Marshall::FromSV:
+            m->item().s_enum = (long)SvIV(m->var());
+            break;
+          case Marshall::ToSV:
+            sv_setiv_mg(m->var(), (IV)m->item().s_enum);
+            break;
+          default:
+            m->unsupported();
+            break;
+        }
+        break;
       case Smoke::t_class:
         switch(m->action()) {
           case Marshall::FromSV:
