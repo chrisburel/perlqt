@@ -43,7 +43,6 @@ sub NEW {
 
     my $filterSyntaxComboBox = Qt::ComboBox();
     this->{filterSyntaxComboBox} = $filterSyntaxComboBox;
-    $DB::single=1;
     $filterSyntaxComboBox->addItem(this->tr('Regular expression'), Qt::Variant(Qt::RegExp::RegExp()));
     $filterSyntaxComboBox->addItem(this->tr('Wildcard'), Qt::Variant(Qt::RegExp::Wildcard()));
     $filterSyntaxComboBox->addItem(this->tr('Fixed string'), Qt::Variant(Qt::RegExp::FixedString()));

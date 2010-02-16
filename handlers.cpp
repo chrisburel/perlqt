@@ -240,7 +240,7 @@ void marshall_basetype(Marshall* m) {
         case Smoke::t_bool:
             marshall_it<bool>(m);
         break;
-/*
+
         case Smoke::t_char:
             marshall_it<signed char>(m);
         break;
@@ -256,7 +256,7 @@ void marshall_basetype(Marshall* m) {
         case Smoke::t_ushort:
             marshall_it<unsigned short>(m);
         break;
-*/
+
         case Smoke::t_int:
             marshall_it<int>(m);
         break;
@@ -264,7 +264,7 @@ void marshall_basetype(Marshall* m) {
         case Smoke::t_uint:
             marshall_it<unsigned int>(m);
         break;
-/*
+
         case Smoke::t_long:
             marshall_it<long>(m);
         break;
@@ -276,7 +276,7 @@ void marshall_basetype(Marshall* m) {
         case Smoke::t_float:
             marshall_it<float>(m);
         break;
-*/
+
         case Smoke::t_double:
             marshall_it<double>(m);
         break;
@@ -1851,30 +1851,30 @@ DEF_VALUELIST_MARSHALLER( QPrinterInfoList, QList<QPrinterInfo>, QPrinterInfo )
 #endif
 
 Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
-    //{ "bool*", marshall_it<bool *> },
-    //{ "bool&", marshall_it<bool *> },
+    { "bool*", marshall_it<bool *> },
+    { "bool&", marshall_it<bool *> },
     { "char**", marshall_charP_array },
     { "char*",marshall_it<char *> },
-    //{ "DOM::DOMTimeStamp", marshall_it<long long> },
+    { "DOM::DOMTimeStamp", marshall_it<long long> },
     { "double*", marshall_doubleR },
     { "double&", marshall_doubleR },
     { "int*", marshall_it<int *> },
     { "int&", marshall_it<int *> },
-    //{ "KIO::filesize_t", marshall_it<long long> },
-    //{ "long long int", marshall_it<long long> },
-    //{ "long long int&", marshall_it<long long> },
+    { "KIO::filesize_t", marshall_it<long long> },
+    { "long long int", marshall_it<long long> },
+    { "long long int&", marshall_it<long long> },
     //{ "QDBusVariant", marshall_QDBusVariant },
     //{ "QDBusVariant&", marshall_QDBusVariant },
     { "QList<QFileInfo>", marshall_QFileInfoList },
     { "QFileInfoList", marshall_QFileInfoList },
     { "QGradiantStops", marshall_QPairqrealQColor },
     { "QGradiantStops&", marshall_QPairqrealQColor },
-    //{ "unsigned int&", marshall_it<unsigned int *> },
-    //{ "quint32&", marshall_it<unsigned int *> },
-    //{ "uint&", marshall_it<unsigned int *> },
+    { "unsigned int&", marshall_it<unsigned int *> },
+    { "quint32&", marshall_it<unsigned int *> },
+    { "uint&", marshall_it<unsigned int *> },
     { "qint32&", marshall_it<int *> },
-    //{ "qint64", marshall_it<long long> },
-    //{ "qint64&", marshall_it<long long> },
+    { "qint64", marshall_it<long long> },
+    { "qint64&", marshall_it<long long> },
     { "QList<const char*>", marshall_QListCharStar },
     { "QList<int>", marshall_QListInt },
     { "QList<int>&", marshall_QListInt },
@@ -1930,8 +1930,8 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     { "QList<QVariant>&", marshall_QVariantList },
     { "QList<QWidget*>", marshall_QWidgetPtrList },
     { "QList<QWidget*>&", marshall_QWidgetPtrList },
-    //{ "qlonglong", marshall_it<long long> },
-    //{ "qlonglong&", marshall_it<long long> },
+    { "qlonglong", marshall_it<long long> },
+    { "qlonglong&", marshall_it<long long> },
     //{ "QMap<int,QVariant>", marshall_QMapintQVariant },
     { "QMap<int,QVariant>", marshall_QMapIntQVariant },
     { "QMap<int,QVariant>&", marshall_QMapIntQVariant },
@@ -1946,7 +1946,7 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     { "QObjectList", marshall_QObjectList },
     { "QObjectList&", marshall_QObjectList },
     { "QPair<int,int>&", marshall_QPairintint },
-    //{ "Q_PID", marshall_it<Q_PID> },
+    { "Q_PID", marshall_it<Q_PID> },
     { "qreal*", marshall_doubleR },
     { "qreal&", marshall_doubleR },
     { "QRgb*", marshall_QRgb_array },
@@ -1959,10 +1959,10 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     { "QByteArray", marshall_QByteArray },
     { "QByteArray*", marshall_QByteArray },
     { "QByteArray&", marshall_QByteArray },
-    //{ "quint64", marshall_it<unsigned long long> },
-    //{ "quint64&", marshall_it<unsigned long long> },
-    //{ "qulonglong", marshall_it<unsigned long long> },
-    //{ "qulonglong&", marshall_it<unsigned long long> },
+    { "quint64", marshall_it<unsigned long long> },
+    { "quint64&", marshall_it<unsigned long long> },
+    { "qulonglong", marshall_it<unsigned long long> },
+    { "qulonglong&", marshall_it<unsigned long long> },
     { "QVariantList&", marshall_QVariantList },
     { "QVector<int>", marshall_QVectorint },
     { "QVector<int>&", marshall_QVectorint },
@@ -1998,11 +1998,11 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     { "QwtArray<int>&", marshall_QVectorint },
     { "signed int&", marshall_it<int *> },
     //{ "uchar*", marshall_ucharP },
-    //{ "unsigned long long int", marshall_it<long long> },
-    //{ "unsigned long long int&", marshall_it<long long> },
+    { "unsigned long long int", marshall_it<long long> },
+    { "unsigned long long int&", marshall_it<long long> },
     { "void", marshall_void },
     { "void**", marshall_voidP_array },
-    //{ "WId", marshall_it<WId> },
+    { "WId", marshall_it<WId> },
 #if QT_VERSION >= 0x40200
     { "QList<QGraphicsItem*>", marshall_QGraphicsItemList },
     { "QList<QGraphicsItem*>&", marshall_QGraphicsItemList },

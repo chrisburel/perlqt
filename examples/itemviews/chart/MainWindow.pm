@@ -125,7 +125,7 @@ sub saveFile {
         my $stream = Qt::TextStream($file);
 
         if ($file->open(Qt::File::WriteOnly() | Qt::File::Text())) {
-            foreach my $row (0..$model->rowCount(Qt::ModelIndex())) {
+            foreach my $row (0..$model->rowCount(Qt::ModelIndex())-1) {
 
                 my @pieces;
 
@@ -138,8 +138,7 @@ sub saveFile {
 
                 {
                     no warnings qw(void);
-                    $stream << [ join ',', @pieces ];
-                    $stream << "\n";
+                    $stream << join ( ',', @pieces ) . "\n";
                 }
             }
         }

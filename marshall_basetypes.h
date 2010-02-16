@@ -4,9 +4,17 @@
 template <class T> T* smoke_ptr(Marshall *m) { return (T*) m->item().s_voidp; }
 
 template<> bool* smoke_ptr<bool>(Marshall *m) { return &m->item().s_bool; }
+template<> signed char* smoke_ptr<signed char>(Marshall *m) { return &m->item().s_char; }
+template<> unsigned char* smoke_ptr<unsigned char>(Marshall *m) { return &m->item().s_uchar; }
+template<> short* smoke_ptr<short>(Marshall *m) { return &m->item().s_short; }
+template<> unsigned short* smoke_ptr<unsigned short>(Marshall *m) { return &m->item().s_ushort; }
 template<> int* smoke_ptr<int>(Marshall *m) { return &m->item().s_int; }
 template<> unsigned int* smoke_ptr<unsigned int>(Marshall *m) { return &m->item().s_uint; }
+template<> long* smoke_ptr<long>(Marshall *m) { 	return &m->item().s_long; }
+template<> unsigned long* smoke_ptr<unsigned long>(Marshall *m) { return &m->item().s_ulong; }
+template<> float* smoke_ptr<float>(Marshall *m) { return &m->item().s_float; }
 template<> double* smoke_ptr<double>(Marshall *m) { return &m->item().s_double; }
+template<> void* smoke_ptr<void>(Marshall *m) { return m->item().s_voidp; }
 
 template <class T> T perl_to_primitive(SV*);
 template <class T> SV* primitive_to_perl(T);
@@ -45,4 +53,11 @@ void marshall_to_perl<char*>(Marshall* m) {
 
     sv_setsv_mg(m->var(), obj);
 }
+
+template <>
+void marshall_to_perl<unsigned char *>(Marshall *m)
+{
+	m->unsupported();
+}
+
 #endif //MARSHALL_BASETYPES_H

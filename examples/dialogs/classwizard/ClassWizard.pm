@@ -331,10 +331,10 @@ sub NEW {
 #! [3]
 sub accept {
 #! [3] //! [4]
-    my $className = this->field('className')->toByteArray();
-    my $baseClass = this->field('baseClass')->toByteArray();
-    my $macroName = this->field('macroName')->toByteArray();
-    my $baseInclude = this->field('baseInclude')->toByteArray();
+    my $className = this->field('className')->toString();
+    my $baseClass = this->field('baseClass')->toString();
+    my $macroName = this->field('macroName')->toString();
+    my $baseInclude = this->field('baseInclude')->toString();
 
     my $outputDir = this->field('outputDir')->toString();
     my $header = this->field('header')->toString();
