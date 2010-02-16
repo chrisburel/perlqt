@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Qt;
 use Ui_MainWindowBase;
-use Qt::isa qw( Qt::MainWindow, private Ui::MainWindowBase );
+use Qt::isa qw( Qt::MainWindow );
 #typedef Qt::List<Qt::TreeWidgetItem *> StyleItems;
 use Qt::slots
     on_clearAction_triggered => [],
@@ -36,27 +36,27 @@ sub NEW
 {
     my ($class, $parent) = @_;
     $class->SUPER::NEW($parent);
-    this->{ui} = this->setupUi(this);
+    this->{ui} = Ui_MainWindowBase->setupUi(this);
 
     this->{sampleSizes} = [qw( 32 24 16 14 12 8 4 2 1 )];
     this->{markedCount} = 0;
     this->setupFontTree();
 
-    this->connect(this->quitAction, SIGNAL 'triggered()', qApp, SLOT 'quit()');
-    this->connect(this->fontTree, SIGNAL 'currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)',
+    this->connect(this->{ui}->quitAction, SIGNAL 'triggered()', qApp, SLOT 'quit()');
+    this->connect(this->{ui}->fontTree, SIGNAL 'currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)',
             this, SLOT 'showFont(QTreeWidgetItem *)');
-    this->connect(this->fontTree, SIGNAL 'itemChanged(QTreeWidgetItem *, int)',
+    this->connect(this->{ui}->fontTree, SIGNAL 'itemChanged(QTreeWidgetItem *, int)',
             this, SLOT 'updateStyles(QTreeWidgetItem *, int)');
 
-    this->fontTree->setItemSelected(this->fontTree->topLevelItem(0), 1);
-    this->showFont(this->fontTree->topLevelItem(0));
+    this->{ui}->fontTree->setItemSelected(this->{ui}->fontTree->topLevelItem(0), 1);
+    this->showFont(this->{ui}->fontTree->topLevelItem(0));
 }
 
 sub setupFontTree
 {
     my $database = Qt::FontDatabase();
-    $fontTree->setColumnCount(1);
-    $fontTree->setHeaderLabels([this->tr('Font')]);
+    this->{ui}->fontTree->setColumnCount(1);
+    this->{ui}->fontTree->setHeaderLabels([this->tr('Font')]);
 
     foreach my $family ( @{$database->families()} ) {
         my $styles = $database->styles($family);
@@ -64,7 +64,7 @@ sub setupFontTree
             next;
         }
 
-        my $familyItem = Qt::TreeWidgetItem($fontTree);
+        my $familyItem = Qt::TreeWidgetItem(this->{ui}->fontTree);
         $familyItem->setText(0, $family);
         $familyItem->setCheckState(0, Qt::Unchecked());
 
@@ -82,11 +82,11 @@ sub setupFontTree
 
 sub on_clearAction_triggered
 {
-    my $currentItem = this->fontTree->currentItem();
-    foreach my $item (@{this->fontTree->selectedItems()}) {
-        this->fontTree->setItemSelected($item, 0);
+    my $currentItem = this->{ui}->fontTree->currentItem();
+    foreach my $item (@{this->{ui}->fontTree->selectedItems()}) {
+        this->{ui}->fontTree->setItemSelected($item, 0);
     }
-    this->fontTree->setItemSelected($currentItem, 1);
+    this->{ui}->fontTree->setItemSelected($currentItem, 1);
 }
 
 sub on_markAction_triggered
@@ -102,10 +102,11 @@ sub on_unmarkAction_triggered
 sub markUnmarkFonts
 {
     my ($state) = @_;
-    my $items = this->fontTree->selectedItems();
+    my $items = this->{ui}->fontTree->selectedItems();
     foreach my $item (@{$items}) {
-        if ($item->checkState(0) != $state)
+        if ($item->checkState(0) != $state) {
             $item->setCheckState(0, $state);
+        }
     }
 }
 
@@ -133,12 +134,13 @@ sub showFont
         $italic = $item->child(0)->data(0, Qt::UserRole() + 1)->toBool();
     }
 
-    my $oldText = this->textEdit->toPlainText()->trimmed();
-    my $modified = this->textEdit->document()->isModified();
-    this->textEdit->clear();
-    this->textEdit->document()->setDefaultFont(Qt::Font($family, 32, $weight, $italic));
+    my $oldText = this->{ui}->textEdit->toPlainText();
+    $oldText =~ s/[\s]+$//g;
+    my $modified = this->{ui}->textEdit->document()->isModified();
+    this->{ui}->textEdit->clear();
+    this->{ui}->textEdit->document()->setDefaultFont(Qt::Font($family, 32, $weight, $italic));
 
-    my $cursor = this->textEdit->textCursor();
+    my $cursor = this->{ui}->textEdit->textCursor();
     my $blockFormat = Qt::TextBlockFormat();
     $blockFormat->setAlignment(Qt::AlignCenter());
     $cursor->insertBlock($blockFormat);
@@ -150,7 +152,7 @@ sub showFont
         $cursor->insertText("$family $style");
     }
 
-    this->textEdit->document()->setModified($modified);
+    this->{ui}->textEdit->document()->setModified($modified);
 }
 
 sub updateStyles
@@ -167,10 +169,10 @@ sub updateStyles
 
         # Only count style items.
         if ($state == Qt::Checked()) {
-            ++this->{markedCount};
+            ++(this->{markedCount});
         }
         else {
-            --this->{markedCount};
+            --(this->{markedCount});
         }
 
         if ($state == Qt::Checked() &&
@@ -219,8 +221,8 @@ sub updateStyles
         }
     }
 
-    this->{ui}->printAction->setEnabled($markedCount > 0);
-    this->{ui}->printPreviewAction->setEnabled($markedCount > 0);
+    this->{ui}->printAction->setEnabled(this->markedCount > 0);
+    this->{ui}->printPreviewAction->setEnabled(this->markedCount > 0);
 }
 
 sub on_printAction_triggered
@@ -268,7 +270,7 @@ sub printDocument
             $printer->newPage();
         }
 
-        $qApp->processEvents();
+        qApp->processEvents();
         if ($progress->wasCanceled()) {
             last;
         }
@@ -300,8 +302,8 @@ sub currentPageMap
 {
     my %pageMap;
 
-    for (my $row = 0; $row < this->fontTree->topLevelItemCount(); ++$row) {
-        my $familyItem = this->fontTree->topLevelItem($row);
+    for (my $row = 0; $row < this->{ui}->fontTree->topLevelItemCount(); ++$row) {
+        my $familyItem = this->{ui}->fontTree->topLevelItem($row);
         my $family;
 
         if ($familyItem->checkState(0) == Qt::Checked()) {
@@ -345,13 +347,13 @@ sub printPage
         }
     }
 
-    my $xScale =  = $printer->pageRect()->width() / $width;
-    my $yScale =  = $printer->pageRect()->height() / $height;
-    my $scale =  = min($xScale, $yScale);
+    my $xScale = $printer->pageRect()->width() / $width;
+    my $yScale = $printer->pageRect()->height() / $height;
+    my $scale = min($xScale, $yScale);
 
-    my $remainingHeight =  = $printer->pageRect()->height()/$scale - $height;
-    my $spaceHeight =  = ($remainingHeight/4.0) / scalar @items + 1);
-    my $interLineHeight =  = ($remainingHeight/4.0) / (scalar @{this->sampleSizes} * scalar @items);
+    my $remainingHeight = $printer->pageRect()->height()/$scale - $height;
+    my $spaceHeight = ($remainingHeight/4.0) / scalar @items + 1;
+    my $interLineHeight = ($remainingHeight/4.0) / (scalar @{this->sampleSizes} * scalar @items);
 
     $painter->save();
     $painter->translate($printer->pageRect()->width()/2.0, $printer->pageRect()->height()/2.0);
