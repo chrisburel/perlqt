@@ -34,30 +34,30 @@ use strict;
 
 no strict 'refs';
 use overload
-    "fallback" => 1,
-    "==" => "Qt::base::_overload::op_equal",
-    "!=" => "Qt::base::_overload::op_not_equal",
-    "+=" => "Qt::base::_overload::op_plus_equal",
-    "-=" => "Qt::base::_overload::op_minus_equal",
-    "*=" => "Qt::base::_overload::op_mul_equal",
-    "/=" => "Qt::base::_overload::op_div_equal",
-    ">>" => "Qt::base::_overload::op_shift_right",
-    "<<" => "Qt::base::_overload::op_shift_left",
-    "<=" => "Qt::base::_overload::op_lesser_equal",
-    ">=" => "Qt::base::_overload::op_greater_equal",
-    "^=" => "Qt::base::_overload::op_xor_equal",
-    "|=" => "Qt::base::_overload::op_or_equal",
-    ">"  => "Qt::base::_overload::op_greater",
-    "<"  => "Qt::base::_overload::op_lesser",
-    "+"  => "Qt::base::_overload::op_plus",
-    "-"  => "Qt::base::_overload::op_minus",
-    "*"  => "Qt::base::_overload::op_mul",
-    "/"  => "Qt::base::_overload::op_div",
-    "^"  => "Qt::base::_overload::op_xor",
-    "|"  => "Qt::base::_overload::op_or",
-    "--" => "Qt::base::_overload::op_decrement",
-    "++" => "Qt::base::_overload::op_increment",
-    "neg"=> "Qt::base::_overload::op_negate";
+    'fallback' => 1,
+    '==' => 'Qt::base::_overload::op_equal',
+    '!=' => 'Qt::base::_overload::op_not_equal',
+    '+=' => 'Qt::base::_overload::op_plus_equal',
+    '-=' => 'Qt::base::_overload::op_minus_equal',
+    '*=' => 'Qt::base::_overload::op_mul_equal',
+    '/=' => 'Qt::base::_overload::op_div_equal',
+    '>>' => 'Qt::base::_overload::op_shift_right',
+    '<<' => 'Qt::base::_overload::op_shift_left',
+    '<=' => 'Qt::base::_overload::op_lesser_equal',
+    '>=' => 'Qt::base::_overload::op_greater_equal',
+    '^=' => 'Qt::base::_overload::op_xor_equal',
+    '|=' => 'Qt::base::_overload::op_or_equal',
+    '>'  => 'Qt::base::_overload::op_greater',
+    '<'  => 'Qt::base::_overload::op_lesser',
+    '+'  => 'Qt::base::_overload::op_plus',
+    '-'  => 'Qt::base::_overload::op_minus',
+    '*'  => 'Qt::base::_overload::op_mul',
+    '/'  => 'Qt::base::_overload::op_div',
+    '^'  => 'Qt::base::_overload::op_xor',
+    '|'  => 'Qt::base::_overload::op_or',
+    '--' => 'Qt::base::_overload::op_decrement',
+    '++' => 'Qt::base::_overload::op_increment',
+    'neg'=> 'Qt::base::_overload::op_negate';
 
 sub op_equal {
     $Qt::AutoLoad::AUTOLOAD = ref($_[0]).'::operator==';
@@ -373,18 +373,32 @@ use strict;
 no strict 'refs';
 
 use overload
-    "fallback" => 1,
-    "==" => "Qt::enum::_overload::op_equal",
-    "!=" => "Qt::enum::_overload::op_not_equal",
-    "+"  => "Qt::enum::_overload::op_plus",
-    "|"  => "Qt::enum::_overload::op_or",
+    'fallback' => 1,
+    '==' => 'Qt::enum::_overload::op_equal',
+    '!=' => 'Qt::enum::_overload::op_not_equal',
+    '+=' => 'Qt::enum::_overload::op_plus_equal',
+    '-=' => 'Qt::enum::_overload::op_minus_equal',
+    '*=' => 'Qt::enum::_overload::op_mul_equal',
+    '/=' => 'Qt::enum::_overload::op_div_equal',
+    '>>' => 'Qt::enum::_overload::op_shift_right',
+    '<<' => 'Qt::enum::_overload::op_shift_left',
+    '<=' => 'Qt::enum::_overload::op_lesser_equal',
+    '>=' => 'Qt::enum::_overload::op_greater_equal',
+    '^=' => 'Qt::enum::_overload::op_xor_equal',
+    '|=' => 'Qt::enum::_overload::op_or_equal',
+    '&=' => 'Qt::enum::_overload::op_and_equal',
+    '>'  => 'Qt::enum::_overload::op_greater',
+    '<'  => 'Qt::enum::_overload::op_lesser',
+    '+'  => 'Qt::enum::_overload::op_plus',
+    '-'  => 'Qt::enum::_overload::op_minus',
+    '*'  => 'Qt::enum::_overload::op_mul',
+    '/'  => 'Qt::enum::_overload::op_div',
     '^'  => 'Qt::enum::_overload::op_xor',
-    "<=" => "Qt::enum::_overload::op_lesser_equal",
-    ">=" => "Qt::enum::_overload::op_greater_equal",
-    "<"  => "Qt::enum::_overload::op_lesser",
-    ">"  => "Qt::enum::_overload::op_greater",
-    "--" => "Qt::enum::_overload::op_decrement",
-    "++" => "Qt::enum::_overload::op_increment";
+    '|'  => 'Qt::enum::_overload::op_or',
+    '&'  => 'Qt::enum::_overload::op_and',
+    '--' => 'Qt::enum::_overload::op_decrement',
+    '++' => 'Qt::enum::_overload::op_increment',
+    'neg'=> 'Qt::enum::_overload::op_negate';
 
 sub op_equal {
     if( ref $_[0] ) {
@@ -424,30 +438,57 @@ sub op_not_equal {
     # this function will never be called.
 }
 
-sub op_plus {
+sub op_plus_equal {
     if ( ref $_[1] ) {
-        return bless( \(${$_[0]} + ${$_[1]}), ref $_[0] );
+        return ${$_[0]} += ${$_[1]};
     }
     else {
-        return bless( \(${$_[0]} + $_[1]), ref $_[0] );
+        return ${$_[0]} += $_[1];
     }
 }
 
-sub op_or {
+sub op_minus_equal {
     if ( ref $_[1] ) {
-        return bless( \(${$_[0]} | ${$_[1]}), ref $_[0] );
+        return ${$_[0]} -= ${$_[1]};
     }
     else {
-        return bless( \(${$_[0]} | $_[1]), ref $_[0] );
+        return ${$_[0]} -= $_[1];
     }
 }
 
-sub op_xor {
+sub op_mul_equal {
     if ( ref $_[1] ) {
-        return bless( \(${$_[0]} ^ ${$_[1]}), ref $_[0] );
+        return ${$_[0]} *= ${$_[1]};
     }
     else {
-        return bless( \(${$_[0]} ^ $_[1]), ref $_[0] );
+        return ${$_[0]} *= $_[1];
+    }
+}
+
+sub op_div_equal {
+    if ( ref $_[1] ) {
+        return ${$_[0]} /= ${$_[1]};
+    }
+    else {
+        return ${$_[0]} /= $_[1];
+    }
+}
+
+sub op_shift_right {
+    if ( ref $_[1] ) {
+        return ${$_[0]} >> ${$_[1]};
+    }
+    else {
+        return ${$_[0]} >> $_[1];
+    }
+}
+
+sub op_shift_left {
+    if ( ref $_[1] ) {
+        return ${$_[0]} << ${$_[1]};
+    }
+    else {
+        return ${$_[0]} << $_[1];
     }
 }
 
@@ -469,12 +510,30 @@ sub op_greater_equal {
     }
 }
 
-sub op_lesser {
+sub op_xor_equal {
     if ( ref $_[1] ) {
-        return ${$_[0]} < ${$_[1]};
+        return ${$_[0]} ^= ${$_[1]};
     }
     else {
-        return ${$_[0]} < $_[1];
+        return ${$_[0]} ^= $_[1];
+    }
+}
+
+sub op_or_equal {
+    if ( ref $_[1] ) {
+        return ${$_[0]} |= ${$_[1]};
+    }
+    else {
+        return ${$_[0]} |= $_[1];
+    }
+}
+
+sub op_and_equal {
+    if ( ref $_[1] ) {
+        return ${$_[0]} &= ${$_[1]};
+    }
+    else {
+        return ${$_[0]} &= $_[1];
     }
 }
 
@@ -487,12 +546,88 @@ sub op_greater {
     }
 }
 
-sub op_increment {
-    return ++${$_[0]};
+sub op_lesser {
+    if ( ref $_[1] ) {
+        return ${$_[0]} < ${$_[1]};
+    }
+    else {
+        return ${$_[0]} < $_[1];
+    }
+}
+
+sub op_plus {
+    if ( ref $_[1] ) {
+        return bless( \(${$_[0]} + ${$_[1]}), ref $_[0] );
+    }
+    else {
+        return bless( \(${$_[0]} + $_[1]), ref $_[0] );
+    }
+}
+
+sub op_minus {
+    if ( ref $_[1] ) {
+        return bless( \(${$_[0]} - ${$_[1]}), ref $_[0] );
+    }
+    else {
+        return bless( \(${$_[0]} - $_[1]), ref $_[0] );
+    }
+}
+
+sub op_mul {
+    if ( ref $_[1] ) {
+        return bless( \(${$_[0]} * ${$_[1]}), ref $_[0] );
+    }
+    else {
+        return bless( \(${$_[0]} * $_[1]), ref $_[0] );
+    }
+}
+
+sub op_div {
+    if ( ref $_[1] ) {
+        return bless( \(${$_[0]} / ${$_[1]}), ref $_[0] );
+    }
+    else {
+        return bless( \(${$_[0]} / $_[1]), ref $_[0] );
+    }
+}
+
+sub op_xor {
+    if ( ref $_[1] ) {
+        return bless( \(${$_[0]} ^ ${$_[1]}), ref $_[0] );
+    }
+    else {
+        return bless( \(${$_[0]} ^ $_[1]), ref $_[0] );
+    }
+}
+
+sub op_or {
+    if ( ref $_[1] ) {
+        return bless( \(${$_[0]} | ${$_[1]}), ref $_[0] );
+    }
+    else {
+        return bless( \(${$_[0]} | $_[1]), ref $_[0] );
+    }
+}
+
+sub op_and {
+    if ( ref $_[1] ) {
+        return bless( \(${$_[0]} & ${$_[1]}), ref $_[0] );
+    }
+    else {
+        return bless( \(${$_[0]} & $_[1]), ref $_[0] );
+    }
 }
 
 sub op_decrement {
     return --${$_[0]};
+}
+
+sub op_increment {
+    return ++${$_[0]};
+}
+
+sub op_negate {
+    return -${$_[0]};
 }
 
 package Qt::DBusReply;
