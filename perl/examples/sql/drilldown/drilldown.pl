@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Qt4;
 
+use lib '../';
 use Connection;
 use View;
 
