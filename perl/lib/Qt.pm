@@ -584,6 +584,8 @@ my %customClasses = (
     'Qt::DBusVariant' => 'Qt::Variant',
 );
 
+our $ambiguousSignature = undef;
+
 sub argmatch {
     my ( $methodIds, $args, $argNum ) = @_;
     my %match;
@@ -662,7 +664,7 @@ sub dumpCandidates {
         $method .= " )";
         push @methods, $method;
     }
-    return join "\n\t", @methods;
+    return @methods;
 }
 
 
@@ -701,6 +703,18 @@ sub do_autoload {
             @methodIds = @matching if @matching;
         }
 
+        # Look for the user-defined signature
+        if ( @methodIds > 1 && defined $ambiguousSignature ) {
+            foreach my $methodId ( @methodIds ) {
+                my ($signature) = dumpCandidates( $classname, $methodname, scalar @_, [$methodId] );
+                if ( $signature eq $ambiguousSignature ) {
+                    @methodIds = ($methodId);
+                    $ambiguousSignature = undef;
+                    last;
+                }
+            }
+        }
+
         # If we still have more than 1 match, use the first one.
         if ( @methodIds > 1 ) {
             # A constructor call will be 4 levels deep on the stack, everything
@@ -710,7 +724,7 @@ sub do_autoload {
                 ' called at ' . (caller($stackDepth))[1] .
                 ' line ' . (caller($stackDepth))[2] . "\n";
             $msg .= "Candidates are:\n\t";
-            $msg .= dumpCandidates( $classname, $methodname, scalar @_, \@methodIds );
+            $msg .= join "\n\t", dumpCandidates( $classname, $methodname, scalar @_, \@methodIds );
             $msg .= "\nChoosing first one...\n";
             warn $msg;
             @methodIds = $methodIds[0];
@@ -788,6 +802,8 @@ sub init_class {
 
     my ($cxxClassName) = @_;
 
+    #$DB::single=1 if $cxxClassName eq 'QTextEdit::ExtraSelection';
+
     my $perlClassName = normalize_classname($cxxClassName);
     my $classId = idClass($cxxClassName);
 
@@ -831,6 +847,10 @@ sub init_class {
     *{ "$perlClassName\::NEW" } = sub {
         # Removes $perlClassName from the front of @_
         my $perlClassName = shift;
+
+        # If we have a cxx classname that's in some other namespace, like
+        # QTextEdit::ExtraSelection, remove the first bit.
+        $cxxClassName =~ s/.*://;
         $Qt::AutoLoad::AUTOLOAD = "$perlClassName\::$cxxClassName";
         my $_utoload = "$perlClassName\::_UTOLOAD";
         {
@@ -1059,6 +1079,10 @@ sub CAST ($$) {
 }
 
 sub import { goto &Exporter::import }
+
+sub setSignature {
+    $Qt::_internal::ambiguousSignature = shift;
+}
 
 # Called in the DESTROY method for all QObjects to see if they still have a
 # parent, and avoid deleting them if they do.
