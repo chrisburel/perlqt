@@ -61,7 +61,7 @@ sub NEW
 
         this->operationComboBoxes->[$i] = Qt::ComboBox();
         this->operationComboBoxes->[$i]->addItem(this->tr('No transformation'));
-        this->operationComboBoxes->[$i]->addItem(this->tr('Rotate by 60\xB0'));
+        this->operationComboBoxes->[$i]->addItem(this->tr("Rotate by 60\xB0"));
         this->operationComboBoxes->[$i]->addItem(this->tr('Scale to 75%'));
         this->operationComboBoxes->[$i]->addItem(this->tr('Translate by (50, 50)'));
 
@@ -160,6 +160,7 @@ my @operationTable = (
 sub operationChanged
 {
     my @operations;
+    $DB::single=1;
     for (my $i = 0; $i < NumTransformedAreas; ++$i) {
         my $index = this->operationComboBoxes->[$i]->currentIndex();
         push @operations, $operationTable[$index];

@@ -54,7 +54,8 @@ sub NEW
 sub setOperations
 {
     my ($operations) = @_;
-    this->{operations} = $operations;
+    # Make sure to copy the array
+    this->{operations} = [@{$operations}];
     this->update();
 }
 # [1]
@@ -115,7 +116,7 @@ sub paintEvent
 sub drawCoordinates
 {
     my ($painter) = @_;
-    $painter->setPen(Qt::red());
+    $painter->setPen(Qt::Color(Qt::red()));
 
     $painter->drawLine(0, 0, 50, 0);
     $painter->drawLine(48, -2, 50, 0);
