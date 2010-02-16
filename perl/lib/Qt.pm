@@ -628,6 +628,13 @@ sub argmatch {
         elsif ( $argType eq 'r' or $argType eq 'U' ) {
             $match{$methodId} = [0,$methodIdIdx];
         }
+        elsif ( $argType eq 'Qt::String' ) {
+            # This type exists only to resolve ambiguous method calls, so we can return here.
+            if( $typeName =~m/^(?:const )?QString[\*&]?/ ) {
+                $args->[$argNum] = ${$args->[$argNum]};
+                return $methodId;
+            }
+        }
         # objects
         else {
             # Optional const, some words, optional & or *.  Note ?: does not
@@ -1261,6 +1268,10 @@ no strict;
         return Qt::qVariantValue(undef, $this);
     }
 };
+
+sub String {
+    return bless \shift, 'Qt::String';
+}
 
 1;
 

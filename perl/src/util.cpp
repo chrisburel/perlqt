@@ -179,13 +179,21 @@ const char* get_SVt(SV* sv) {
         if(!o) {
             switch (SvTYPE(SvRV(sv))) {
                 case SVt_PVAV:
-                  r = "a";
-                  break;
-                case SVt_PVMG:
-                  r = "e";
-                  break;
+                    r = "a";
+                    break;
+                case SVt_PVMG: {
+                    const char * classname = HvNAME(SvSTASH(SvRV(sv)));
+                    if ( !strcmp( classname, "Qt::String" ) ) {
+                        r = classname;
+                    }
+                    else {
+                        // All enums are blessed scalars.
+                        r = "e";
+                    }
+                    break;
+                }
                 default:
-                  r = "r";
+                    r = "r";
             }
         }
         else
