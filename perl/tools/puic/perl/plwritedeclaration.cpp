@@ -97,7 +97,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     m_output << "use strict;\n";
     m_output << "use warnings;\n";
     m_output << "use utf8;\n";
-    m_output << "use Qt;\n";
+    m_output << "use Qt4;\n";
     m_output << "\n";
 
     const QStringList connections = m_uic->databaseInfo()->connections();
@@ -107,7 +107,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
         if (connection == QLatin1String("(default)"))
             continue;
 
-        m_output << m_option.indent << "@" << connection << "Connection = Qt::SqlDatabase.new\n";
+        m_output << m_option.indent << "@" << connection << "Connection = Qt4::SqlDatabase.new\n";
     }
 
     TreeWalker::acceptWidget(node->elementWidget());
@@ -173,7 +173,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
 void WriteDeclaration::acceptWidget(DomWidget *node)
 {
-    QString className = QLatin1String("Qt::Widget");
+    QString className = QLatin1String("Qt4::Widget");
     if (node->hasAttributeClass())
         className = node->attributeClass();
 
@@ -188,7 +188,7 @@ void WriteDeclaration::acceptWidget(DomWidget *node)
 
 void WriteDeclaration::acceptLayout(DomLayout *node)
 {
-    QString className = QLatin1String("Qt::Layout");
+    QString className = QLatin1String("Qt4::Layout");
     if (node->hasAttributeClass())
         className = node->attributeClass();
 
