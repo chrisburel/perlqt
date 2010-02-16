@@ -450,7 +450,10 @@ void marshall_QString(Marshall* m) {
         case Marshall::FromSV: {
             SV* sv = m->var();
             QString* mystr = 0;
-            if( SvOK(sv) ) {
+            if( SvROK(sv) ) {
+                sv = SvRV(sv);
+            }
+            if( SvPOK(sv) ) {
                 mystr = qstringFromPerlString( sv );
             }
             else {
@@ -459,6 +462,10 @@ void marshall_QString(Marshall* m) {
 
             m->item().s_voidp = (void*)mystr;
             m->next();
+
+            if (!m->type().isConst() && sv != &PL_sv_undef && mystr != 0 && !mystr->isNull()) {
+                sv_setsv( sv, perlstringFromQString(mystr) );
+            }
 
             if ( mystr != 0 && m->cleanup() ) {
                 delete mystr;
