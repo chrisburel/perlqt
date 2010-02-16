@@ -136,10 +136,11 @@ sub textChangedSlot
 
 sub sendClickedSlot
 {
+    # This line is commented out in the source Qt example.
     #emit message(m_nickname, messageLineEdit->text());
     my $msg = Qt4::DBusMessage::createSignal('/', 'com.trolltech.chat', 'message');
     no warnings qw(void);
-    $msg << Qt4::String(this->m_nickname) << Qt4::String(this->ui->messageLineEdit->text());
+    $msg << Qt4::Variant(Qt4::String(this->m_nickname)) << Qt4::Variant(Qt4::String(this->ui->messageLineEdit->text()));
     use warnings;
     Qt4::DBusConnection::sessionBus()->send($msg);
     this->ui->messageLineEdit->setText('');

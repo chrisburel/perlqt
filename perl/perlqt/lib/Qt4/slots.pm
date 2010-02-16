@@ -33,7 +33,7 @@ sub import {
         # Determine the slot return type, if there is one
         my @returnParts = split / +/, $fullslotname;
         my $slotname = pop @returnParts; # Remove actual method name
-        $returnType = @returnParts ? join ' ', @returnParts : undef;
+        my $returnType = @returnParts ? join ' ', @returnParts : undef;
 
         # Build the signature for this slot
         my $signature = join '', ("$slotname(", join(',', @{$slots{$fullslotname}}), ')');

@@ -8,7 +8,7 @@ use warnings;
 use Qt4;
 use Qt4::isa qw( Qt4::DBusAbstractAdaptor );
 use Qt4::classinfo
-    'D-Bus Interface' => 'com.trolltech.Qt4DBus.ComplexPong.Pong';
+    'D-Bus Interface' => 'com.trolltech.QtDBus.ComplexPong.Pong';
 
 use Qt4::signals
     aboutToQuit => [];
@@ -40,22 +40,22 @@ sub query {
     my ( $query ) = @_;
     my $q = lc $query;
     if ($q eq 'hello') {
-        return Qt4::DBusVariant('World');
+        return Qt4::DBusVariant(Qt4::String('World'));
     }
     if ($q eq 'ping') {
-        return Qt4::DBusVariant('Pong');
+        return Qt4::DBusVariant(Qt4::String('Pong'));
     }
     if ($q =~ m/the answer to life, the universe and everything/) {
-        return Qt4::DBusVariant(42);
+        return Qt4::DBusVariant(Qt4::Int(42));
     }
     if ($q =~ m/unladen swallow/) {
         if ($q =~ m/european/) {
-            return Qt4::DBusVariant(11.0);
+            return Qt4::DBusVariant(Qt4::Int(11.0));
         }
-        return Qt4::DBusVariant('african or european?');
+        return Qt4::DBusVariant(Qt4::String('african or european?'));
     }
 
-    return Qt4::DBusVariant('Sorry, I don\'t know the answer');
+    return Qt4::DBusVariant(Qt4::String('Sorry, I don\'t know the answer'));
 }
 
 1;
@@ -64,24 +64,18 @@ package main;
 
 use strict;
 use warnings;
-use blib;
 
 use Qt4;
 use PingCommon qw( SERVICE_NAME );
 use Pong;
-use IO::Handle;
 
 sub main {
-    open OUTPUT, '>', 'dbuslog' or die $!;
-    STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
-    STDERR->fdopen( \*OUTPUT, 'w' ) or die $!;
-
     my $app = Qt4::Application( \@ARGV );
 
     my $obj = Qt4::Object();
     my $pong = Pong($obj);
     $pong->connect($app, SIGNAL 'aboutToQuit()', SIGNAL 'aboutToQuit()' );
-    $pong->setValue(Qt4::Variant('initial value'));
+    $pong->setValue(Qt4::Variant(Qt4::String('initial value')));
     Qt4::DBusConnection::sessionBus()->registerObject('/', $obj);
 
     if (!Qt4::DBusConnection::sessionBus()->registerService(SERVICE_NAME)) {
