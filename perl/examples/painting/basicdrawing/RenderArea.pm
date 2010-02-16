@@ -103,7 +103,7 @@ sub setPen
 sub setBrush
 {
     my ($brush) = @_;
-    this->{brush} = $brush;
+    this->{brush} = Qt::Brush($brush);
     this->update();
 }
 # [5]
@@ -174,40 +174,40 @@ sub paintEvent
 
 # [12]
             if (this->shape == Line) {
-                $painter->drawLine(this->rect->bottomLeft(), this->rect->topRight());
+                $painter->drawLine($rect->bottomLeft(), $rect->topRight());
             }
             elsif (this->shape == Points) {
-                $painter->drawPoints(\@points, 4);
+                $painter->drawPoints(Qt::Polygon(\@points));
             }
             elsif (this->shape == Polyline) {
-                $painter->drawPolyline(\@points, 4);
+                $painter->drawPolyline(Qt::Polygon(\@points));
             }
             elsif (this->shape == Polygon) {
-                $painter->drawPolygon(\@points, 4);
+                $painter->drawPolygon(Qt::Polygon(\@points));
             }
             elsif (this->shape == Rect) {
-                $painter->drawRect(this->rect);
+                $painter->drawRect($rect);
             }
             elsif (this->shape == RoundedRect) {
-                $painter->drawRoundedRect(this->rect, 25, 25, Qt::RelativeSize());
+                $painter->drawRoundedRect($rect, 25, 25, Qt::RelativeSize());
             }
             elsif (this->shape == Ellipse) {
-                $painter->drawEllipse(this->rect);
+                $painter->drawEllipse($rect);
             }
             elsif (this->shape == Arc) {
-                $painter->drawArc(this->rect, $startAngle, $arcLength);
+                $painter->drawArc($rect, $startAngle, $arcLength);
             }
             elsif (this->shape == Chord) {
-                $painter->drawChord(this->rect, $startAngle, $arcLength);
+                $painter->drawChord($rect, $startAngle, $arcLength);
             }
             elsif (this->shape == Pie) {
-                $painter->drawPie(this->rect, $startAngle, $arcLength);
+                $painter->drawPie($rect, $startAngle, $arcLength);
             }
             elsif (this->shape == Path) {
                 $painter->drawPath($path);
             }
             elsif (this->shape == Text) {
-                $painter->drawText(this->rect, Qt::AlignCenter(), this->tr('Qt by\nNokia'));
+                $painter->drawText($rect, Qt::AlignCenter(), this->tr("Qt by\nNokia"));
             }
             elsif (this->shape == Pixmap) {
                 $painter->drawPixmap(10, 10, pixmap);

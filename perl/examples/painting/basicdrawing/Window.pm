@@ -117,28 +117,28 @@ sub NEW
 
 # [3]
     this->{penStyleComboBox} = Qt::ComboBox();
-    this->penStyleComboBox->addItem(this->tr('Solid'), Qt::Variant(Qt::SolidLine()));
-    this->penStyleComboBox->addItem(this->tr('Dash'), Qt::Variant(Qt::DashLine()));
-    this->penStyleComboBox->addItem(this->tr('Dot'), Qt::Variant(Qt::DotLine()));
-    this->penStyleComboBox->addItem(this->tr('Dash Dot'), Qt::Variant(Qt::DashDotLine()));
-    this->penStyleComboBox->addItem(this->tr('Dash Dot Dot'), Qt::Variant(Qt::DashDotDotLine()));
-    this->penStyleComboBox->addItem(this->tr('None'), Qt::Variant(Qt::NoPen()));
+    this->penStyleComboBox->addItem(this->tr('Solid'), Qt::Variant(${Qt::SolidLine()}));
+    this->penStyleComboBox->addItem(this->tr('Dash'), Qt::Variant(${Qt::DashLine()}));
+    this->penStyleComboBox->addItem(this->tr('Dot'), Qt::Variant(${Qt::DotLine()}));
+    this->penStyleComboBox->addItem(this->tr('Dash Dot'), Qt::Variant(${Qt::DashDotLine()}));
+    this->penStyleComboBox->addItem(this->tr('Dash Dot Dot'), Qt::Variant(${Qt::DashDotDotLine()}));
+    this->penStyleComboBox->addItem(this->tr('None'), Qt::Variant(${Qt::NoPen()}));
 
     this->{penStyleLabel} = Qt::Label(this->tr('&Pen Style:'));
     this->penStyleLabel->setBuddy(this->penStyleComboBox);
 
     this->{penCapComboBox} = Qt::ComboBox();
-    this->penCapComboBox->addItem(this->tr('Flat'), Qt::Variant(Qt::FlatCap()));
-    this->penCapComboBox->addItem(this->tr('Square'), Qt::Variant(Qt::SquareCap()));
-    this->penCapComboBox->addItem(this->tr('Round'), Qt::Variant(Qt::RoundCap()));
+    this->penCapComboBox->addItem(this->tr('Flat'), Qt::Variant(${Qt::FlatCap()}));
+    this->penCapComboBox->addItem(this->tr('Square'), Qt::Variant(${Qt::SquareCap()}));
+    this->penCapComboBox->addItem(this->tr('Round'), Qt::Variant(${Qt::RoundCap()}));
 
     this->{penCapLabel} = Qt::Label(this->tr('Pen &Cap:'));
     this->penCapLabel->setBuddy(this->penCapComboBox);
 
     this->{penJoinComboBox} = Qt::ComboBox();
-    this->penJoinComboBox->addItem(this->tr('Miter'), Qt::Variant(Qt::MiterJoin()));
-    this->penJoinComboBox->addItem(this->tr('Bevel'), Qt::Variant(Qt::BevelJoin()));
-    this->penJoinComboBox->addItem(this->tr('Round'), Qt::Variant(Qt::RoundJoin()));
+    this->penJoinComboBox->addItem(this->tr('Miter'), Qt::Variant(${Qt::MiterJoin()}));
+    this->penJoinComboBox->addItem(this->tr('Bevel'), Qt::Variant(${Qt::BevelJoin()}));
+    this->penJoinComboBox->addItem(this->tr('Round'), Qt::Variant(${Qt::RoundJoin()}));
 
     this->{penJoinLabel} = Qt::Label(this->tr('Pen &Join:'));
     this->penJoinLabel->setBuddy(this->penJoinComboBox);
@@ -147,27 +147,27 @@ sub NEW
 # [4]
     this->{brushStyleComboBox} = Qt::ComboBox();
     this->brushStyleComboBox->addItem(this->tr('Linear Gradient'),
-            Qt::Variant(Qt::LinearGradientPattern()));
+            Qt::Variant(${Qt::LinearGradientPattern()}));
     this->brushStyleComboBox->addItem(this->tr('Radial Gradient'),
-            Qt::Variant(Qt::RadialGradientPattern()));
+            Qt::Variant(${Qt::RadialGradientPattern()}));
     this->brushStyleComboBox->addItem(this->tr('Conical Gradient'),
-            Qt::Variant(Qt::ConicalGradientPattern()));
-    this->brushStyleComboBox->addItem(this->tr('Texture'), Qt::Variant(Qt::TexturePattern()));
-    this->brushStyleComboBox->addItem(this->tr('Solid'), Qt::Variant(Qt::SolidPattern()));
-    this->brushStyleComboBox->addItem(this->tr('Horizontal'), Qt::Variant(Qt::HorPattern()));
-    this->brushStyleComboBox->addItem(this->tr('Vertical'), Qt::Variant(Qt::VerPattern()));
-    this->brushStyleComboBox->addItem(this->tr('Cross'), Qt::Variant(Qt::CrossPattern()));
-    this->brushStyleComboBox->addItem(this->tr('Backward Diagonal'), Qt::Variant(Qt::BDiagPattern()));
-    this->brushStyleComboBox->addItem(this->tr('Forward Diagonal'), Qt::Variant(Qt::FDiagPattern()));
-    this->brushStyleComboBox->addItem(this->tr('Diagonal Cross'), Qt::Variant(Qt::DiagCrossPattern()));
-    this->brushStyleComboBox->addItem(this->tr('Dense 1'), Qt::Variant(Qt::Dense1Pattern()));
-    this->brushStyleComboBox->addItem(this->tr('Dense 2'), Qt::Variant(Qt::Dense2Pattern()));
-    this->brushStyleComboBox->addItem(this->tr('Dense 3'), Qt::Variant(Qt::Dense3Pattern()));
-    this->brushStyleComboBox->addItem(this->tr('Dense 4'), Qt::Variant(Qt::Dense4Pattern()));
-    this->brushStyleComboBox->addItem(this->tr('Dense 5'), Qt::Variant(Qt::Dense5Pattern()));
-    this->brushStyleComboBox->addItem(this->tr('Dense 6'), Qt::Variant(Qt::Dense6Pattern()));
-    this->brushStyleComboBox->addItem(this->tr('Dense 7'), Qt::Variant(Qt::Dense7Pattern()));
-    this->brushStyleComboBox->addItem(this->tr('None'), Qt::Variant(Qt::NoBrush()));
+            Qt::Variant(${Qt::ConicalGradientPattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Texture'), Qt::Variant(${Qt::TexturePattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Solid'), Qt::Variant(${Qt::SolidPattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Horizontal'), Qt::Variant(${Qt::HorPattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Vertical'), Qt::Variant(${Qt::VerPattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Cross'), Qt::Variant(${Qt::CrossPattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Backward Diagonal'), Qt::Variant(${Qt::BDiagPattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Forward Diagonal'), Qt::Variant(${Qt::FDiagPattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Diagonal Cross'), Qt::Variant(${Qt::DiagCrossPattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Dense 1'), Qt::Variant(${Qt::Dense1Pattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Dense 2'), Qt::Variant(${Qt::Dense2Pattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Dense 3'), Qt::Variant(${Qt::Dense3Pattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Dense 4'), Qt::Variant(${Qt::Dense4Pattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Dense 5'), Qt::Variant(${Qt::Dense5Pattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Dense 6'), Qt::Variant(${Qt::Dense6Pattern()}));
+    this->brushStyleComboBox->addItem(this->tr('Dense 7'), Qt::Variant(${Qt::Dense7Pattern()}));
+    this->brushStyleComboBox->addItem(this->tr('None'), Qt::Variant(${Qt::NoBrush()}));
 
     this->{brushStyleLabel} = Qt::Label(this->tr('&Brush Style:'));
     this->brushStyleLabel->setBuddy(this->brushStyleComboBox);
@@ -268,22 +268,22 @@ sub brushChanged
 # [14]
     if ($style == Qt::LinearGradientPattern()) {
         my $linearGradient = Qt::LinearGradient(0, 0, 100, 100);
-        linearGradient->setColorAt(0.0, Qt::white());
-        linearGradient->setColorAt(0.2, Qt::green());
-        linearGradient->setColorAt(1.0, Qt::black());
+        $linearGradient->setColorAt(0.0, Qt::Color(Qt::white()));
+        $linearGradient->setColorAt(0.2, Qt::Color(Qt::green()));
+        $linearGradient->setColorAt(1.0, Qt::Color(Qt::black()));
         this->renderArea->setBrush($linearGradient);
 # [14] //! [15]
     } elsif ($style == Qt::RadialGradientPattern()) {
         my $radialGradient = Qt::RadialGradient(50, 50, 50, 70, 70);
-        radialGradient->setColorAt(0.0, Qt::white());
-        radialGradient->setColorAt(0.2, Qt::green());
-        radialGradient->setColorAt(1.0, Qt::black());
+        $radialGradient->setColorAt(0.0, Qt::Color(Qt::white()));
+        $radialGradient->setColorAt(0.2, Qt::Color(Qt::green()));
+        $radialGradient->setColorAt(1.0, Qt::Color(Qt::black()));
         this->renderArea->setBrush($radialGradient);
     } elsif ($style == Qt::ConicalGradientPattern()) {
         my $conicalGradient = Qt::ConicalGradient(50, 50, 150);
-        conicalGradient->setColorAt(0.0, Qt::white());
-        conicalGradient->setColorAt(0.2, Qt::green());
-        conicalGradient->setColorAt(1.0, Qt::black());
+        $conicalGradient->setColorAt(0.0, Qt::Color(Qt::white()));
+        $conicalGradient->setColorAt(0.2, Qt::Color(Qt::green()));
+        $conicalGradient->setColorAt(1.0, Qt::Color(Qt::black()));
         this->renderArea->setBrush($conicalGradient);
 # [15] //! [16]
     } elsif ($style == Qt::TexturePattern()) {
