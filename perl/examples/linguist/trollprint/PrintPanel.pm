@@ -39,7 +39,7 @@ sub NEW
 =begin
 
 /*
-    Qt::Label *label = new Qt::Label(PrintPanel::tr('<b>TROLL PRINT</b>'));
+    Qt::Label *label = new Qt::Label(PrintPanel::tr("<b>TROLL PRINT</b>"));
     label->setAlignment(Qt::AlignCenter);
 */
 
@@ -48,15 +48,15 @@ sub NEW
 # [0]
 
 # [1]
-    this->{twoSidedGroupBox} = Qt::GroupBox(PrintPanel::tr('2-sided'));
-    this->{twoSidedEnabledRadio} = Qt::RadioButton(PrintPanel::tr('Enabled'));
-    this->{twoSidedDisabledRadio} = Qt::RadioButton(PrintPanel::tr('Disabled'));
+    this->{twoSidedGroupBox} = Qt::GroupBox(PrintPanel::tr("2-sided"));
+    this->{twoSidedEnabledRadio} = Qt::RadioButton(PrintPanel::tr("Enabled"));
+    this->{twoSidedDisabledRadio} = Qt::RadioButton(PrintPanel::tr("Disabled"));
 # [1] //! [2]
     this->twoSidedDisabledRadio->setChecked(1);
 
-    this->{colorsGroupBox} = Qt::GroupBox(PrintPanel::tr('Colors'));
-    this->{colorsEnabledRadio} = Qt::RadioButton(PrintPanel::tr('Enabled'));
-    this->{colorsDisabledRadio} = Qt::RadioButton(PrintPanel::tr('Disabled'));
+    this->{colorsGroupBox} = Qt::GroupBox(PrintPanel::tr("Colors"));
+    this->{colorsEnabledRadio} = Qt::RadioButton(PrintPanel::tr("Enabled"));
+    this->{colorsDisabledRadio} = Qt::RadioButton(PrintPanel::tr("Disabled"));
 # [2]
     this->colorsDisabledRadio->setChecked(1);
 
