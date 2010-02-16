@@ -25,6 +25,7 @@
 
 #include "binding.h"
 #include "marshall.h"
+#include "util.h"
 
 #define DEF_HASH_MARSHALLER(HashIdent,Item) namespace { char HashIdent##STR[] = #Item; }  \
         Marshall::HandlerFn marshall_##HashIdent = marshall_Hash<Item,HashIdent##STR>;
@@ -111,17 +112,19 @@ void marshall_ItemList(Marshall *m) {
 
                 SV* obj = getPointerObject(p);
                 if (!obj || !SvOK(obj) ) {
-                    obj = allocSmokePerlSV( p,
-                                            SmokeType( m->smoke(),
-                                                       m->smoke()->idType(ItemSTR) ) );
-
+                    smokeperl_object *o = alloc_smokeperl_object(
+                        false, m->smoke(), m->smoke()->idClass(ItemSTR).index, p );
                     if( !m->cleanup() && m->type().isStack()) {
-                        smokeperl_object *o = sv_obj_info( obj );
                         void *ptr = construct_copy( o );
                         if(ptr) {
                             o->ptr = ptr;
+                            o->allocated = true;
                         }
                     }
+
+                    const char* classname = resolve_classname(o);
+
+                    obj = sv_2mortal( set_obj_info( classname, o ) );
                 }
             
                 av_push(av, obj);
@@ -230,19 +233,19 @@ void marshall_ValueListItem(Marshall *m) {
 
                 SV *obj = getPointerObject(p);
                 if( !obj || !SvOK(obj) ) {
-                    obj = allocSmokePerlSV( p,
-                                            SmokeType( m->smoke(), 
-                                                       m->smoke()->idType(ItemSTR) ) );
-
+                    smokeperl_object *o = alloc_smokeperl_object(
+                        false, m->smoke(), m->smoke()->idClass(ItemSTR).index, p );
                     if( !m->cleanup() && m->type().isStack()) {
-                        smokeperl_object *o = sv_obj_info( obj );
                         void *ptr = construct_copy( o );
                         if(ptr) {
                             o->ptr = ptr;
+                            o->allocated = true;
                         }
                     }
 
-                    //obj = set_obj_info(className, o);
+                    const char* classname = resolve_classname(o);
+
+                    obj = sv_2mortal( set_obj_info( classname, o ) );
                 }
 
                 av_push(av, obj);
