@@ -1,10 +1,6 @@
 binding.cpp
 binding.h
 Changes
-examples/itemviews/simpletreemodel/default.txt
-examples/itemviews/simpletreemodel/sipletreemodel.pl
-examples/itemviews/simpletreemodel/TreeItem.pm
-examples/itemviews/simpletreemodel/TreeModel.pm
 examples/mainwindows/application/application.pl
 examples/mainwindows/application/images/copy.png
 examples/mainwindows/application/images/cut.png
@@ -25,14 +21,9 @@ examples/mainwindows/mdi/images/new.png
 examples/mainwindows/mdi/images/open.png
 examples/mainwindows/mdi/images/paste.png
 examples/mainwindows/mdi/images/save.png
-examples/mainwindows/mdi/log
 examples/mainwindows/mdi/MainWindow.pm
 examples/mainwindows/mdi/MdiChild.pm
 examples/mainwindows/mdi/mdi.pl
-examples/opengl/hellogl/glwidget.h
-examples/opengl/hellogl/GLWidget.pm
-examples/opengl/hellogl/main.pl
-examples/opengl/hellogl/Window.pm
 examples/tutorial/t10/CannonField.pm
 examples/tutorial/t10/LCDRange.pm
 examples/tutorial/t10/t10.pl

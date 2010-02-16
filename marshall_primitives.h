@@ -17,6 +17,8 @@ template<>
 int perl_to_primitive<int>(SV* sv) {
     if ( !SvOK(sv) )
         return 0;
+    if ( SvROK(sv) )
+        return SvIV( SvRV(sv) );
     return SvIV(sv);
 }
 

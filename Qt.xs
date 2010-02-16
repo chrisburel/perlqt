@@ -445,9 +445,7 @@ XS(XS_AUTOLOAD) {
     if( do_debug && ( do_debug & qtdb_autoload ) ) {
         fprintf(stderr, "In XS Autoload for %s::%s()", package, methodname);
         if((do_debug & qtdb_verbose) && (withObject || isSuper)) {
-            QPainter* painter = new QPainter;
             smokeperl_object *o = sv_obj_info(withObject ? ST(0) : sv_this);
-            delete painter;
             if(o)
                 fprintf(stderr, " - this: (%s)%p\n", o->smoke->classes[o->classId].className, o->ptr);
             else
@@ -650,6 +648,7 @@ XS(XS_AUTOLOAD) {
             methodId = *rcid;
         }
         else {
+            // Call do_autoload to get the methodId
             ENTER;
             SAVETMPS;
             PUSHMARK( SP - items + withObject );

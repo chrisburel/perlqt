@@ -292,7 +292,7 @@ sub init_class {
 # Desc: sets up each class
 sub init {
     my $classes = getClassList();
-    foreach my $cxxClassName (@$classes) {
+    foreach my $cxxClassName (@{$classes}) {
         init_class($cxxClassName);
     }
 
@@ -300,7 +300,12 @@ sub init {
     my $enums = getEnumList();
     foreach my $enumName (@$enums) {
         $enumName =~ s/^const //;
-        @{"${enumName}::ISA"} = ('Qt::enum::_overload');
+        if ( !defined @{"${enumName}::ISA"} ) {
+            @{"${enumName}::ISA"} = ('Qt::enum::_overload');
+        }
+        else {
+            @{"${enumName}Enum::ISA"} = ('Qt::enum::_overload');
+        }
     }
 }
 
