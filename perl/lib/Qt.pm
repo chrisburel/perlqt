@@ -69,7 +69,7 @@ sub op_equal {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
-    $ret
+    return $ret;
 }
 
 sub op_not_equal {
@@ -82,7 +82,7 @@ sub op_not_equal {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
-    $ret
+    return $ret;
 }
 
 sub op_plus_equal {
@@ -96,7 +96,7 @@ sub op_plus_equal {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
-    $ret
+    return $ret;
 }
 
 sub op_minus_equal {
@@ -110,7 +110,7 @@ sub op_minus_equal {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
-    $ret
+    return $ret;
 }
 
 sub op_mul_equal {
@@ -124,7 +124,7 @@ sub op_mul_equal {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
-    $ret
+    return $ret;
 }
 
 sub op_div_equal {
@@ -138,7 +138,7 @@ sub op_div_equal {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
-    $ret
+    return $ret;
 }
 
 sub op_shift_right {
@@ -164,7 +164,7 @@ sub op_shift_left {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@;
-    $ret
+    return $ret;
 }
 
 sub op_lesser_equal {
@@ -178,7 +178,7 @@ sub op_lesser_equal {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
-    $ret
+    return $ret;
 }
 
 sub op_greater_equal {
@@ -192,7 +192,7 @@ sub op_greater_equal {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
-    $ret
+    return $ret;
 }
 
 sub op_xor_equal {
@@ -206,7 +206,7 @@ sub op_xor_equal {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
-    $ret
+    return $ret;
 }
 
 sub op_or_equal {
@@ -220,7 +220,7 @@ sub op_or_equal {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload(($_[2] ? (@_)[1,0] : (@_)[0,1])) };
     die $err.$@ if $@; 
-    $ret
+    return $ret;
 }
 
 sub op_greater {
@@ -311,7 +311,7 @@ sub op_negate {
     $autoload = "Qt::GlobalSpace::_UTOLOAD";
     eval { local $SIG{'__DIE__'}; $ret = &$autoload($_[0]) };
     die $err.$@ if $@;
-    $ret
+    return $ret;
 }
 
 sub op_xor {
@@ -364,6 +364,10 @@ sub op_decrement {
     eval { local $SIG{'__DIE__'}; &$autoload($_[0]) };
     die $err.$@ if $@;
     $_[0]
+}
+
+sub op_ref_equal {
+    return Qt::_internal::sv_to_ptr( $_[0] ) == Qt::_internal::sv_to_ptr( $_[1] );
 }
 
 package Qt::enum::_overload;
@@ -771,7 +775,8 @@ sub argmatch {
         }
         # enums
         elsif ( $argType eq 'e' ) {
-            if( $typeName eq ref $args->[$argNum] ) {
+            my $refName = ref $args->[$argNum];
+            if( $typeName =~ m/^$refName[s]?$/ ) {
                 $match{$methodId} = [0,$methodIdIdx];
             }
         }
