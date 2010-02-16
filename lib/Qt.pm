@@ -367,7 +367,8 @@ use overload
     "fallback" => 1,
     "==" => "Qt::enum::_overload::op_equal",
     "+"  => "Qt::enum::_overload::op_plus",
-    "|"  => "Qt::enum::_overload::op_or";
+    "|"  => "Qt::enum::_overload::op_or",
+    '^'  => 'Qt::enum::_overload::op_xor';
 
 sub op_equal {
     if( ref $_[0] ) {
@@ -403,6 +404,15 @@ sub op_or {
     }
     else {
         return bless( \(${$_[0]} | $_[1]), ref $_[0] );
+    }
+}
+
+sub op_xor {
+    if ( ref $_[1] ) {
+        return bless( \(${$_[0]} ^ ${$_[1]}), ref $_[0] );
+    }
+    else {
+        return bless( \(${$_[0]} ^ $_[1]), ref $_[0] );
     }
 }
 
