@@ -47,6 +47,9 @@ void* qapp = 0;
 QHash<Smoke*, PerlQtModule> perlqt_modules;
 static PerlQt::Binding binding;
 
+// There's a comment in QtRuby about possible memory leaks with this...
+QHash<QByteArray, Smoke::Index *> methcache;
+
 SV *prettyPrintMethod(Smoke::Index id);
 
 Smoke::Index getMethod(Smoke *smoke, const char* c, const char* m) {
@@ -248,6 +251,37 @@ void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void
 
 void unmapPointer(smokeperl_object *o, Smoke::Index classId, void *lastptr) {
     //For object deletion
+}
+
+char *get_SVt(SV *sv) {
+    char *r;
+    if(!SvOK(sv))
+        r = "u";
+    else if(SvIOK(sv))
+        r = "i";
+    else if(SvNOK(sv))
+        r = "n";
+    else if(SvPOK(sv))
+        r = "s";
+    else if(SvROK(sv)) {
+        smokeperl_object *o = sv_obj_info(sv);
+        if(!o) {
+            switch (SvTYPE(SvRV(sv))) {
+                case SVt_PVAV:
+                  r = "a";
+                  break;
+                case SVt_PVMG:
+                  r = HvNAME(SvSTASH(SvRV(sv)));
+                default:
+                  r = "r";
+            }
+        }
+        else
+            r = (char*)o->smoke->className(o->classId);
+    }
+    else
+        r = "U";
+    return r;
 }
 
 SV *prettyPrintMethod(Smoke::Index id) {
@@ -632,23 +666,97 @@ XS(XS_AUTOLOAD){
     else {
         Smoke::Index classid = package_classid(package);
         char *classname = (char*)qt_Smoke->className(classid);
+        Smoke::Index methodid = 0;
 
-        // Loop over the arguments and see what kind we have
-        for(int i = 0 + withObject; i < items; i++) {
-            SV* arg = ST(i);
-            if( sv_obj_info( arg ) ){
-                strcat( methodname, "#" );
+        // Look in the cache; if this method was called before with the same
+        // arguments, we already know the methodid
+        // The key to the methodcache looks like this:
+        // class      method     arg types
+        // QPopupMenu;insertItem;s;QApplication;s
+        int lclassname = strlen(classname);
+        int lmethodname = strlen(methodname);
+        char mcid[256];
+        strncpy(mcid, classname, lclassname);
+        char *ptr = mcid + lclassname;
+        *(ptr++) = ';'; //Set the current position to ; then increment
+        strncpy(ptr, methodname, lmethodname);
+        ptr += lmethodname;
+
+        // that gives us the first 2 parts of the methcache key, now for the
+        // args
+        for(int i = withObject; i < items; i++) {
+            *(ptr++) = ';';
+            char *type = get_SVt(ST(i));
+            int typelen = strlen(type);
+            strncpy(ptr, type, typelen );
+            ptr += typelen;
+        }
+        *ptr = 0; // Don't forget to null-terminate the string
+
+        // See if it's cached
+        Smoke::Index* rcid = methcache.value(mcid);
+        if(rcid) {
+            // Got a hit
+            methodid = *rcid;
+        }
+        else {
+            // Loop over the arguments and see what kind we have
+            for(int i = withObject; i < items; i++) {
+                SV* arg = ST(i);
+                if( sv_obj_info( arg ) ){
+                    strcat( methodname, "#" );
+                }
+                else if( SvROK(arg) && (SvTYPE(SvRV(arg)) == SVt_PVAV || SvTYPE(SvRV(arg)) == SVt_PVHV ) ) {
+                    strcat( methodname, "?" );
+                }
+                else if( SvIOK(arg) || SvNOK(arg) || SvPOK(arg) || SvUOK(arg) || (SvROK(arg) && SvTYPE(SvRV(arg)) == SVt_PVMG) ){
+                    strcat( methodname, "$" );
+                }
             }
-            else if( SvROK(arg) && (SvTYPE(SvRV(arg)) == SVt_PVAV || SvTYPE(SvRV(arg)) == SVt_PVHV ) ) {
-                strcat( methodname, "?" );
+
+            methodid = getMethod( qt_Smoke, classname, methodname );
+
+            // The lookup for the methodid resulted in an ambiguous method.  Run
+            // resolveMethod on the returned id to run argMatch on each possible
+            // methodid to find the correct method.
+            if(methodid < 0) {
+                if(do_debug && (do_debug & qtdb_ambiguous)){
+                    fprintf(stderr, "Ambiguous method %s\n", methodname);
+                    if(do_debug & qtdb_verbose) {
+                        fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(SP - items + 1 + withObject, items - withObject))));
+                    }
+                }
+                methodid = resolveMethod( methodid, SP - items + 1 + withObject );
             }
-            else if( SvIOK(arg) || SvNOK(arg) || SvPOK(arg) || SvUOK(arg) || (SvROK(arg) && SvTYPE(SvRV(arg)) == SVt_PVMG) ){
-                strcat( methodname, "$" );
+            // Make sure we're good
+            // Not sure we want to do this...
+            /*
+            else {
+                if( !argmatch( methodid, SP - items + 1 + withObject ) )
+                    croak( "--- Arguments don't match for %d %s::%s:\n%s\n%s\n", methodid, classname, methodname,
+                               SvPV_nolen(sv_2mortal(prettyPrintMethod(methodid))),
+                               SvPV_nolen(sv_2mortal(catArguments(SP - items + 1 + withObject, items - withObject))) );
+            }
+            */
+
+            // Make sure the resolveMethod resolved the method.
+            if(methodid == 0) {
+                croak( "--- No method to call for %s::%s\n", classname, methodname );
+            }
+
+            // Save our lookup
+            methcache.insert(mcid, new Smoke::Index(methodid));
+        }
+
+        if(do_debug && (do_debug & qtdb_calls)) {
+            fprintf(stderr, "Calling method\t%s\t%s\n", methodname, SvPV_nolen(sv_2mortal(prettyPrintMethod(methodid))));
+            if(do_debug & qtdb_verbose) {
+                fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(SP - items + 1 + withObject, items - withObject))));
             }
         }
 
-        smokeperl_object temp = { 0, 0, 0, false };
-        smokeperl_object *call_this;
+        static smokeperl_object nothis = { 0, 0, 0, false };
+        smokeperl_object *call_this = 0;
         if( withObject ){
             if( isSuper ){
                 call_this = sv_obj_info( sv_this );
@@ -658,44 +766,7 @@ XS(XS_AUTOLOAD){
             }
         }
         else{
-            call_this = &temp;
-        }
-
-        Smoke::Index methodid = getMethod( qt_Smoke, classname, methodname );
-
-        // The lookup for the methodid resulted in an ambiguous method.  Run
-        // resolveMethod on the returned id to run argMatch on each possible
-        // methodid to find the correct method.
-        if(methodid < 0) {
-            if(do_debug && (do_debug & qtdb_ambiguous)){
-                fprintf(stderr, "Ambiguous method %s\n", methodname);
-                if(do_debug & qtdb_verbose) {
-                    fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(SP - items + 1 + withObject, items - withObject))));
-                }
-            }
-            methodid = resolveMethod( methodid, SP - items + 1 + withObject );
-        }
-        // Make sure we're good
-        // Not sure we want to do this...
-        /*
-        else {
-            if( !argmatch( methodid, SP - items + 1 + withObject ) )
-                croak( "--- Arguments don't match for %d %s::%s:\n%s\n%s\n", methodid, classname, methodname,
-                           SvPV_nolen(sv_2mortal(prettyPrintMethod(methodid))),
-                           SvPV_nolen(sv_2mortal(catArguments(SP - items + 1 + withObject, items - withObject))) );
-        }
-        */
-
-        // Make sure the resolveMethod resolved the method.
-        if(methodid == 0) {
-            croak( "--- No method to call for %s::%s\n", classname, methodname );
-        }
-
-        if(do_debug && (do_debug & qtdb_calls)) {
-            fprintf(stderr, "Calling method\t%s\t%s\n", methodname, SvPV_nolen(sv_2mortal(prettyPrintMethod(methodid))));
-            if(do_debug & qtdb_verbose) {
-                fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(SP - items + 1 + withObject, items - withObject))));
-            }
+            call_this = &nothis;
         }
 
         // We need current_object, methodid, and args to call the method
