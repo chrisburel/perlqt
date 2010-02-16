@@ -27,6 +27,7 @@ extern Q_DECL_EXPORT void init_qt_Smoke();
 extern TypeHandler Qt_handlers[];
 
 SV *sv_this = 0;
+HV *pointer_map = 0;
 
 char *myargv = "Hello";
 int myargc = 1;
@@ -34,6 +35,112 @@ QApplication *qapp = new QApplication(myargc, &myargv);
 
 QHash<Smoke*, PerlQtModule> perlqt_modules;
 static PerlQt::Binding binding;
+
+class VirtualMethodReturnValue : public Marshall {
+    Smoke *_smoke;
+    Smoke::Index _method;
+    Smoke::Stack _stack;
+    SmokeType _st;
+    SV *_retval;
+public:
+    const Smoke::Method &method() { return _smoke->methods[_method]; }
+    SmokeType type() { return _st; }
+    Marshall::Action action() { return Marshall::FromSV; }
+    Smoke::StackItem &item() { return _stack[0]; }
+    SV *var() { return _retval; }
+    void unsupported() {
+	croak("Cannot handle '%s' as return-type of virtual method %s::%s",
+		type().name(),
+		_smoke->className(method().classId),
+		_smoke->methodNames[method().name]);
+    }
+    Smoke *smoke() { return _smoke; }
+    void next() {}
+    bool cleanup() { return false; }
+    VirtualMethodReturnValue(Smoke *smoke, Smoke::Index meth, Smoke::Stack stack, SV *retval) :
+	_smoke(smoke), _method(meth), _stack(stack), _retval(retval) {
+	_st.set(_smoke, method().ret);
+ 	Marshall::HandlerFn fn = getMarshallFn(type());
+	(*fn)(this);
+   }
+};
+
+class VirtualMethodCall : public Marshall {
+    Smoke *_smoke;
+    Smoke::Index _methodIndex;
+    Smoke::Stack _stack;
+    GV *_gv;
+    int _curArgIndex;
+    Smoke::Index *_args;
+    SV **_sp;
+    bool _called;
+    SV *_savethis;
+
+    void _castArgs() {
+        int oldArgIndex = _curArgIndex;
+        _curArgIndex++; // Start at 0
+        while( _curArgIndex < method().numArgs ) {
+            // We need to know the datatype of each argument
+            Marshall::HandlerFn fn = getMarshallFn(type());
+            (*fn)(this); // Modifies _stack
+            _curArgIndex++;
+        }
+
+        _curArgIndex = oldArgIndex;
+    }
+
+public:
+    VirtualMethodCall(Smoke *smoke, Smoke::Index meth, Smoke::Stack stack, SV *obj, GV *gv) :
+        _smoke(smoke), _methodIndex(meth), _stack(stack), _gv(gv), _curArgIndex(-1), _sp(0), _called(false) {
+        dSP;
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        EXTEND(SP, method().numArgs);
+        _savethis = sv_this;
+        sv_this = newSVsv(obj);
+        _sp = SP + 1;
+        for(int i = 0; i < method().numArgs; i++)
+            _sp[i] = sv_newmortal();
+        _args = _smoke->argumentList + method().args;
+    }
+    ~VirtualMethodCall() {
+        SvREFCNT_dec(sv_this);
+        sv_this = _savethis;
+    }
+    SmokeType type() { return SmokeType(_smoke, _args[_curArgIndex]); }
+    Marshall::Action action() { return Marshall::ToSV; }
+    Smoke::StackItem &item() { return _stack[_curArgIndex + 1]; };
+    SV *var() { return _sp[_curArgIndex]; }
+    const Smoke::Method &method() { return _smoke->methods[_methodIndex]; };
+    void unsupported() {
+        croak("Cannot handle '%s' as argument of virtual method %s::%s",
+                type().name(),
+                _smoke->className(method().classId),
+                _smoke->methodNames[method().name]);
+    }
+    Smoke *smoke() { return _smoke; }
+    void callMethod() {
+        // This is the stack pointer we'll pass to the perl call
+        dSP;
+        SP = _sp + method().numArgs - 1;
+        PUTBACK;
+        // Call the perl sub
+        int count = call_sv((SV*)GvCV(_gv), G_SCALAR);
+        // Get the stack the perl sub returned
+        SPAGAIN;
+        // Marshall the return value back to c++, using the top of the stack
+        VirtualMethodReturnValue r(_smoke, _methodIndex, _stack, POPs);
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+    }
+    void next() {
+        _castArgs();
+        callMethod();
+    }
+    bool cleanup() { return false; }
+};
 
 class MethodReturnValue : public Marshall {
     Smoke *_smoke;
@@ -62,7 +169,7 @@ public:
             _smoke->methodNames[method().name]);
     }
 
-	Smoke *smoke() { return _smoke; }
+        Smoke *smoke() { return _smoke; }
     void next() {}
     bool cleanup() { return false; }
 
@@ -130,11 +237,11 @@ public:
 
     Smoke *smoke() { return _smoke; };
 
-	void next() {
+    void next() {
         // Marshall incoming arguments
-		_castArgs();
-		callMethod();
-	}
+        _castArgs();
+        callMethod();
+    }
 
     bool cleanup() { return true; }
 
@@ -169,6 +276,54 @@ public:
         _retval = callreturn.var();
     }
 };
+
+namespace PerlQt {
+Binding::Binding() : SmokeBinding(0) {};
+Binding::Binding(Smoke *s) : SmokeBinding(s) {};
+
+void Binding::deleted(Smoke::Index classId, void *ptr) {
+    // Ignore deletion
+}
+
+bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool isAbstract) {
+    // Look for a perl sv associated with this pointer
+    SV *obj = getPointerObject(ptr);
+    smokeperl_object *o = sv_obj_info(obj);
+
+    // Didn't find one
+    if(!o) {
+        if(!PL_dirty) // If not in global destruction
+            fprintf(stderr, "Cannot find object for virtual method\n");
+        return false;
+    }
+
+    // Now find the stash for this perl object
+    HV *stash = SvSTASH(SvRV(obj));
+    if(*HvNAME(stash) == ' ') // if withObject, look for a diff stash
+        stash = gv_stashpv(HvNAME(stash) + 1, TRUE);
+
+    // Get the name of the method being called
+    const char *methodname = smoke->methodNames[smoke->methods[method].name];
+    // Look up the autoload subroutine for that method
+    GV *gv = gv_fetchmethod_autoload(stash, methodname, 0);
+    // Found no autoload function
+    if(!gv) return false;
+
+    fprintf(stderr, "In Virtual for %s\n", methodname);
+
+    VirtualMethodCall call(smoke, method, args, obj, gv);
+    call.next();
+    return true;
+}
+
+char* Binding::className(Smoke::Index classId) {
+    const char *className = smoke->className(classId);
+    char *buf = new char[strlen(className) + 12];
+    strcpy(buf, " Qt::");
+    strcat(buf, className);
+    return buf;
+}
+} // End namespace PerlQt
 
 Smoke::Index getMethod(Smoke *smoke, const char* c, const char* m) {
     Smoke::Index method = smoke->findMethod(c, m).index;
@@ -240,6 +395,60 @@ Smoke::Index package_classid(const char *package) {
     // Found nothing, so
     return (Smoke::Index) 0;
 }
+
+// The pointer map gives us the relationship between an arbitrary c++ pointer
+// and a perl SV.  If you have a virtual function call, you only start with a
+// c++ pointer.  This reference allows you to trace back to a perl package, and
+// find a subroutine in that package to call.
+SV *getPointerObject(void *ptr) {
+    HV *hv = pointer_map;
+    SV *keysv = newSViv((IV)ptr);
+    STRLEN len;
+    char *key = SvPV(keysv, len);
+    // Look to see in the pointer_map for a ptr->perlSV reference
+    SV **svp = hv_fetch(hv, key, len, 0);
+    // Nothing found, exit out
+    if(!svp){
+        SvREFCNT_dec(keysv);
+        return 0;
+    }
+    // Corrupt entry, not sure how this would happen
+    if(!SvOK(*svp)){
+        hv_delete(hv, key, len, G_DISCARD);
+        SvREFCNT_dec(keysv);
+        return 0;
+    }
+    SvREFCNT_dec(keysv);
+    return *svp;
+}
+
+// Store pointer in pointer_map hash : "pointer_to_Qt_object" => weak ref to associated Perl object
+// Recurse to store it also as casted to its parent classes.
+void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void *lastptr) {
+    void *ptr = o->smoke->cast(o->ptr, o->classId, classId);
+    // This ends the recursion
+    if(ptr != lastptr) {
+        lastptr = ptr;
+        SV *keysv = newSViv((IV)ptr);
+        STRLEN len;
+        char *key = SvPV(keysv, len);
+        SV *rv = newSVsv(obj);
+        sv_rvweaken(rv); // weak reference! What's this?
+        hv_store(hv, key, len, rv, 0);
+        SvREFCNT_dec(keysv);
+    }
+    for(Smoke::Index *i = o->smoke->inheritanceList + o->smoke->classes[classId].parents;
+        *i;
+        i++) {
+        mapPointer(obj, o, hv, *i, lastptr);
+    }
+}
+
+void unmapPointer(smokeperl_object *o, Smoke::Index classId, void *lastptr) {
+
+}
+
+
 
 XS(XS_Qt__myQTableView_setRootIndex){
     dXSARGS;
@@ -316,17 +525,33 @@ XS(XS_AUTOLOAD){
             PUSHMARK(SP - items + withObject);
             // What context are we calling this subroutine in?
             I32 gimme = GIMME_V;
+            // Make the call, save number of returned values
             int count = call_sv((SV*)GvCV(gv), gimme|G_EVAL);
+            // Get the return value
+            SPAGAIN;
+            SP -= count;
+            if (withObject)
+                for (int i=0; i<count; i++)
+                    ST(i) = ST(i+1);
             PUTBACK;
-            FREETMPS;
-            LEAVE;
+            //FREETMPS;
+            //LEAVE;
 
+            // Clean up
             if(withObject && !isSuper){
                 SvREFCNT_dec(sv_this);
                 sv_this = old_this;
             }
+            else if(isSuper)
+                delete[] package;
 
-            XSRETURN(count);
+            // Error out if necessary
+            if(SvTRUE(ERRSV))
+                croak(SvPV_nolen(ERRSV));
+            if (gimme == G_VOID)
+                XSRETURN_UNDEF;
+            else
+                XSRETURN(count);
         }
     // }
     else if(!strcmp(methodname, "DESTROY")) {
@@ -364,7 +589,13 @@ XS(XS_AUTOLOAD){
             call_this = &temp;
         }
 
-        Smoke::Index methodid = getMethod(qt_Smoke, classname, methodname );
+        Smoke::Index methodid;
+        if(!strcmp(methodname, "QVariant$")){
+            methodid = 18373;
+        }
+        else {
+            methodid = getMethod(qt_Smoke, classname, methodname );
+        }
 
         // We need current_object, methodid, and args to call the method
         MethodCall call( qt_Smoke,
@@ -503,6 +734,7 @@ this()
 int
 appexec()
     CODE:
+        fprintf( stderr, "In QApplication::exec\n" );
         RETVAL = qapp->exec();
     OUTPUT:
         RETVAL
@@ -515,4 +747,5 @@ BOOT:
 
     install_handlers(Qt_handlers);
     sv_this = newSV(0);
+    pointer_map = newHV();
     //newXS(" Qt::QTableView::setRootIndex", XS_Qt__myQTableView_setRootIndex, file);

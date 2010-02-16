@@ -1,0 +1,61 @@
+#!/usr/local/bin/perl -w
+use strict;
+
+BEGIN {
+        chdir "$ENV{HOME}/src/qt/4/PerlQt";
+        unshift @INC, 'blib/arch';
+        unshift @INC, 'blib/lib';
+}
+
+package myStringListModel;
+use Qt;
+use Qt::isa qw(Qt::QAbstractListModel);
+
+my @stringList;
+
+sub NEW {
+    my $class = shift;
+    my( $stringListRef, $parent ) = @_;
+    $class->SUPER::NEW();
+    @stringList = @{$stringListRef};
+}
+
+sub rowCount {
+    my( $parent ) = @_;
+    return scalar @stringList;
+}
+
+sub data {
+    my( $index, $role ) = @_;
+
+    if (!$index->isValid()){
+        return Qt::QVariant();
+    }
+
+    if ($index->row() >= scalar @stringList){
+        return Qt::QVariant();
+    }
+
+    if ($role == 0 ) { #Qt::DisplayRole
+        return Qt::QVariant($stringList[$index->row()]);
+    }
+    else {
+        return Qt::QVariant();
+    }
+}
+
+1;
+
+package main;
+
+use Qt;
+use myStringListModel;
+
+my $model = myStringListModel( [qw( Hello world you are awesome )] );
+my $numRows = $model->rowCount();
+
+my $listview = Qt::QTableView();
+my $modelIndex = Qt::QModelIndex();
+$listview->setModel( $model );
+$listview->show();
+exit Qt::appexec;

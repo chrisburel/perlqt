@@ -3,6 +3,7 @@
 #include "QtCore/qstring.h"
 #include "QtCore/QHash"
 
+extern HV* pointer_map;
 // The only reason magic is there is to deallocate memory on qt objects when
 // their associated perl scalar goes out of scope
 // struct mgvtbl vtbl_smoke = { 0, 0, 0, 0, smokeperl_free };
@@ -30,6 +31,19 @@ void marshall_QString(Marshall *m){
 
 void marshall_basetype(Marshall *m) {
     switch(m->type().elem()) {
+      case Smoke::t_bool:
+        switch(m->action()) {
+          case Marshall::FromSV:
+            m->item().s_bool = SvTRUE(m->var()) ? true : false;
+            break;
+          case Marshall::ToSV:
+            sv_setsv_mg(m->var(), boolSV(m->item().s_bool));
+            break;
+          default:
+            m->unsupported();
+            break;
+        }
+        break;
       case Smoke::t_int:
         switch(m->action()) {
           case Marshall::FromSV:
@@ -85,6 +99,10 @@ void marshall_basetype(Marshall *m) {
                 // Copy our local var into the marshaller's var, and make
                 // sure to copy our magic with it
                 SvSetMagicSV(m->var(), var);
+
+                // Store this into the ptr map for reference from virtual
+                // function calls.
+                mapPointer(var, &o, pointer_map, o.classId, 0);
 
                 // We're done with our local var
                 SvREFCNT_dec(var);

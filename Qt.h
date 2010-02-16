@@ -1,6 +1,8 @@
 #ifndef QT_H
 #define QT_H
 
+#include "smokeperl.h"
+
 #ifdef do_open
 #undef do_open
 #endif
@@ -11,30 +13,21 @@
 #include "QtCore/QHash"
 
 namespace PerlQt {
-class Binding : public SmokeBinding {
+class Q_DECL_EXPORT Binding : public SmokeBinding {
 public:
-    Binding() : SmokeBinding(0) {};
-
-    Binding(Smoke *s) : SmokeBinding(s) {}
-
-    void deleted(Smoke::Index classId, void *ptr) {
-        // Ignore deletion
-    }
-
-    bool callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool) {
-        return false;
-    }
-
-    char *className(Smoke::Index classId) {
-        const char *className = smoke->className(classId);
-        char *buf = new char[strlen(className) + 12];
-        strcpy(buf, " Qt::");
-        strcat(buf, className);
-        return buf;
-    }
+    Binding();
+    Binding(Smoke *s);
+    void deleted(Smoke::Index classId, void *ptr);
+    bool callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool isAbstract);
+    char *className(Smoke::Index classId);
 };
 }
 
+extern Q_DECL_EXPORT SV *getPointerObject(void *ptr);
+extern Q_DECL_EXPORT void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void *lastptr);
+extern Q_DECL_EXPORT void unmapPointer(smokeperl_object *o, Smoke::Index classId, void *lastptr);
+
+// These guys support the new qt_Smoke->binding implementation
 struct PerlQtModule {
     char* name;
     PerlQt::Binding *binding;
