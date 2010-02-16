@@ -1115,7 +1115,7 @@ void marshall_QMapQStringQString(Marshall *m) {
             char* key;
             SV* val;
             I32* keylen = new I32;
-            while( val = hv_iternextsv( hash, &key, keylen ) ) {
+            while( ( val = hv_iternextsv( hash, &key, keylen ) ) ) {
                 (*map)[QString(key)] = QString(SvPV_nolen(val));
             }
             delete keylen;
@@ -1174,7 +1174,7 @@ void marshall_QMapQStringQVariant(Marshall *m) {
             char* key;
             SV* value;
             I32* keylen = new I32;
-            while( value = hv_iternextsv( hash, &key, keylen ) ) {
+            while( ( value = hv_iternextsv( hash, &key, keylen ) ) ) {
                 smokeperl_object *o = sv_obj_info(value);
                 if (!o || !o->ptr || o->classId != o->smoke->findClass("QVariant").index) {
                     continue;
@@ -1258,7 +1258,7 @@ void marshall_QMapIntQVariant(Marshall *m) {
             char* key;
             SV* value;
             I32* keylen = new I32;
-            while( value = hv_iternextsv( hash, &key, keylen ) ) {
+            while( ( value = hv_iternextsv( hash, &key, keylen ) ) ) {
                 smokeperl_object *o = sv_obj_info(value);
                 if (!o || !o->ptr || o->classId != o->smoke->findClass("QVariant").index) {
                     continue;
@@ -1512,26 +1512,26 @@ void marshall_QPairQStringQStringList(Marshall *m) {
         }
         break;
 
-        /*
         case Marshall::ToSV: {
             QList<QPair<QString,QString> > *pairlist = static_cast<QList<QPair<QString,QString> > * >(m->item().s_voidp);
             if (pairlist == 0) {
-                *(m->var()) = Qnil;
+                sv_setsv(m->var(), &PL_sv_undef);
                 break;
             }
 
-            VALUE av = rb_ary_new();
+            AV *av = newAV();
+
             for (QList<QPair<QString,QString> >::Iterator it = pairlist->begin(); it != pairlist->end(); ++it) {
                 QPair<QString,QString> * pair = &(*it);
-                VALUE rv1 = rstringFromQString(&(pair->first));
-                VALUE rv2 = rstringFromQString(&(pair->second));
-                VALUE pv = rb_ary_new();
-                rb_ary_push(pv, rv1);
-                rb_ary_push(pv, rv2);
-                rb_ary_push(av, pv);
+                SV *rv1 = perlstringFromQString(&(pair->first));
+                SV *rv2 = perlstringFromQString(&(pair->second));
+                AV *pv = newAV();
+                av_push(pv, rv1);
+                av_push(pv, rv2);
+                av_push(av, newRV_noinc((SV*)pv) );
             }
 
-            *(m->var()) = av;
+            sv_setsv( m->var(), newRV_noinc( (SV*)av ) );
 
             if (m->cleanup()) {
                 delete pairlist;
@@ -1539,129 +1539,146 @@ void marshall_QPairQStringQStringList(Marshall *m) {
 
         }
         break;
-        */
         default:
             m->unsupported();
         break;
     }
 }
 
-/*
 void marshall_QPairqrealQColor(Marshall *m) {
     UNTESTED_HANDLER("marshall_QPairqrealQColor");
-	switch(m->action()) {
-	case Marshall::FromSV:
-	{
-		VALUE list = *(m->var());
-		if (TYPE(list) != T_ARRAY || RARRAY_LEN(list) != 2) {
-			m->item().s_voidp = 0;
-			break;
-	    }
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *listref = m->var();
+            if( !listref || !SvROK( listref ) || SvTYPE(listref) != SVt_PVAV ) {
+                m->item().s_voidp = 0;
+                break;
+            }
+            AV *list = (AV*)SvRV(listref);
+            if ( av_len(list) != 2 ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-		qreal real;
-		VALUE item1 = rb_ary_entry(list, 0);
-		if (TYPE(item1) != T_FLOAT) {
-		    real = 0;
-		} else {
-			real = NUM2DBL(item1);
-		}
-		
-		VALUE item2 = rb_ary_entry(list, 1);
+            qreal real;
+            SV **item = av_fetch(list, 0, 0);
+            if ( !item || !SvOK( *item ) || SvTYPE(*item) != SVt_NV ) {
+                real = 0;
+            }
+            else {
+                real = SvNV(*item);
+            }
 
-		smokeruby_object *o = value_obj_info(item2);
-		if (o == 0 || o->ptr == 0) {
-			m->item().s_voidp = 0;
-			break;
-		}
-		
-		QPair<qreal,QColor> * qpair = new QPair<qreal,QColor>(real, *((QColor *) o->ptr));
-		m->item().s_voidp = qpair;
-		m->next();
+            SV **item2 = av_fetch(list, 1, 0);
+            smokeperl_object *o;
 
-		if (m->cleanup()) {
-			delete qpair;
-		}
-	}
-	break;
-	case Marshall::ToSV:
-	{
-		QPair<qreal,QColor> * qpair = static_cast<QPair<qreal,QColor> * >(m->item().s_voidp); 
-		if (qpair == 0) {
-			*(m->var()) = Qnil;
-			break;
-		}
+            if ( !item2 || !SvOK( *item2 ) || SvTYPE(*item2) != SVt_PVMG ) {
+                // Error
+            }
+            else {
+                o = sv_obj_info(*item2);
+                if (o == 0 || o->ptr == 0) {
+                    m->item().s_voidp = 0;
+                    break;
+                }
+            }
 
-		VALUE rv1 = rb_float_new(qpair->first);
+            // This should check to make sure o->ptr can be a QColor
 
-		void *p = (void *) &(qpair->second);
-		VALUE rv2 = getPointerObject(p);
-		if (rv2 == Qnil) {
-			smokeruby_object  * o = alloc_smokeruby_object(	false, 
-															m->smoke(), 
-															m->smoke()->idClass("QColor").index, 
-															p );
-			rv2 = set_obj_info("Qt::Color", o);
-		}
+            QPair<qreal,QColor> * qpair = new QPair<qreal,QColor>(real, *((QColor *) o->ptr));
+            m->item().s_voidp = qpair;
+            m->next();
 
-		VALUE av = rb_ary_new();
-		rb_ary_push(av, rv1);
-		rb_ary_push(av, rv2);
-		*(m->var()) = av;
+            if (m->cleanup()) {
+                delete qpair;
+            }
+        }
+        break;
+        case Marshall::ToSV: {
+            QPair<qreal,QColor> * qpair = static_cast<QPair<qreal,QColor> * >(m->item().s_voidp); 
+            if (qpair == 0) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
 
-		if (m->cleanup()) {
-//			delete qpair;
-		}
-	}
-		break;
-	default:
-		m->unsupported();
-		break;
+            SV *rv1 = newSVnv(qpair->first);
+
+            void *p = (void *) &(qpair->second);
+            SV *rv2 = getPointerObject(p);
+            if ( !SvOK( rv2 ) ) {
+                rv2 = allocSmokePerlSV(
+                    p, SmokeType( m->smoke(), 
+                                  m->smoke()->idClass("QColor").index ) );
+                //rv2 = set_obj_info("Qt::Color", o);
+            }
+
+            AV *av = newAV();
+            av_push(av, rv1);
+            av_push(av, rv2);
+            sv_setsv(m->var(), newRV_noinc((SV*)av));
+
+            if (m->cleanup()) {
+                // This is commented out in QtRuby.
+                //delete qpair;
+            }
+        }
+        break;
+        default:
+            m->unsupported();
+            break;
     }
 }
 
 void marshall_QPairintint(Marshall *m) {
     UNTESTED_HANDLER("marshall_QPairintint");
-	switch(m->action()) {
-	case Marshall::FromSV:
-	{
-		VALUE list = *(m->var());
-		if (TYPE(list) != T_ARRAY || RARRAY_LEN(list) != 2) {
-			m->item().s_voidp = 0;
-			break;
-	    }
-		int int0;
-		int int1;
-		VALUE item = rb_ary_entry(list, 0);
-		if (TYPE(item) != T_FIXNUM && TYPE(item) != T_BIGNUM) {
-		    int0 = 0;
-		} else {
-			int0 = NUM2INT(item);
-		}
-		
-		item = rb_ary_entry(list, 1);
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *listref = m->var();
+            if( !listref || !SvROK( listref ) || SvTYPE(listref) != SVt_PVAV ) {
+                m->item().s_voidp = 0;
+                break;
+            }
+            AV *list = (AV*)SvRV(listref);
+            if ( av_len(list) != 2 ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-		if (TYPE(item) != T_FIXNUM && TYPE(item) != T_BIGNUM) {
-		    int1 = 0;
-		} else {
-			int1 = NUM2INT(item);
-		}
-		
-		QPair<int,int> * qpair = new QPair<int,int>(int0,int1);
-		m->item().s_voidp = qpair;
-		m->next();
+            int int0;
+            int int1;
+            SV **item = av_fetch(list, 0, 0);
+            if ( !item || !SvOK( *item ) || SvTYPE(*item) != SVt_IV ) {
+                int0 = 0;
+            }
+            else {
+                int0 = SvIV(*item);
+            }
 
-		if (m->cleanup()) {
-			delete qpair;
-		}
-	}
-	break;
-      case Marshall::ToSV:
-      default:
-	m->unsupported();
-	break;
+            item = av_fetch(list, 1, 0);
+
+            if ( !item || !SvOK( *item ) || SvTYPE(*item) != SVt_IV ) {
+                int1 = 0;
+            }
+            else {
+                int1 = SvIV(*item);
+            }
+
+            QPair<int,int> * qpair = new QPair<int,int>(int0,int1);
+            m->item().s_voidp = qpair;
+            m->next();
+
+            if (m->cleanup()) {
+                delete qpair;
+            }
+        }
+        break;
+        case Marshall::ToSV:
+        default:
+            m->unsupported();
+        break;
     }
 }
-*/
+
 void marshall_voidP_array(Marshall *m) {
     // This is a hack that should be removed.
     switch(m->action()) {
@@ -1704,8 +1721,8 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     //{ "QDBusVariant&", marshall_QDBusVariant },
     //{ "QList<QFileInfo>", marshall_QFileInfoList },
     //{ "QFileInfoList", marshall_QFileInfoList },
-    //{ "QGradiantStops", marshall_QPairqrealQColor },
-    //{ "QGradiantStops&", marshall_QPairqrealQColor },
+    { "QGradiantStops", marshall_QPairqrealQColor },
+    { "QGradiantStops&", marshall_QPairqrealQColor },
     //{ "unsigned int&", marshall_it<unsigned int *> },
     //{ "quint32&", marshall_it<unsigned int *> },
     //{ "uint&", marshall_it<unsigned int *> },
@@ -1735,8 +1752,8 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     //{ "QList<QModelIndex>&", marshall_QModelIndexList },
     //{ "QList<QNetworkAddressEntry>", marshall_QNetworkAddressEntryList },
     //{ "QList<QNetworkInterface>", marshall_QNetworkInterfaceList },
-    //{ "QList<QPair<QString,QString> >", marshall_QPairQStringQStringList },
-    //{ "QList<QPair<QString,QString> >&", marshall_QPairQStringQStringList },
+    { "QList<QPair<QString,QString> >", marshall_QPairQStringQStringList },
+    { "QList<QPair<QString,QString> >&", marshall_QPairQStringQStringList },
     //{ "QList<QPixmap>", marshall_QPixmapList },
     //{ "QList<QPolygonF>", marshall_QPolygonFList },
     //{ "QList<QRectF>", marshall_QRectFList },
@@ -1782,11 +1799,11 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     //{ "QModelIndexList&", marshall_QModelIndexList },
     //{ "QObjectList", marshall_QObjectList },
     //{ "QObjectList&", marshall_QObjectList },
-    //{ "QPair<int,int>&", marshall_QPairintint },
+    { "QPair<int,int>&", marshall_QPairintint },
     //{ "Q_PID", marshall_it<Q_PID> },
     { "qreal*", marshall_doubleR },
     { "qreal&", marshall_doubleR },
-    //{ "QRgb*", marshall_QRgb_array },
+    { "QRgb*", marshall_QRgb_array },
     { "QStringList", marshall_QStringList },
     { "QStringList*", marshall_QStringList },
     { "QStringList&", marshall_QStringList },
