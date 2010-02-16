@@ -91,18 +91,21 @@ Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
         Smoke::Index curIdx = qt_Smoke->ambiguousMethodList[methodIndex];
         Smoke::Method method = qt_Smoke->methods[curIdx];
         Smoke::Index* args = qt_Smoke->argumentList + method.args;
-        //fprintf( stderr, "%s, id %d: ", qt_Smoke->methodNames[method.name], curIdx );
 
+        //fprintf( stderr, "%s, id %d: ", qt_Smoke->methodNames[method.name], curIdx );
         // Compare this method's arguments with perl's arguments
         bool argmatch = false;
         for(int i=0; i<method.numArgs; i++) {
             SmokeType curType( qt_Smoke, args[i] );
 
+            //fprintf( stderr, "arg %d: %s ", i, curType.name() );
+
             if( curType.isClass() ) {
-                //fprintf( stderr, "c++ %d: %s ", i, curType.name() );
                 // Test to see if the perl argument is the same class type
                 smokeperl_object *o = sv_obj_info(_sp[i]);
-                if(o && (o->classId == curType.classId()) )
+                SmokeClass perlClass(qt_Smoke, o->classId);
+                SmokeClass curArgClass(qt_Smoke, curType.classId());
+                if(o && (perlClass.isa(curArgClass)) )
                     argmatch = true;
                 else {
                     argmatch = false;
@@ -121,13 +124,23 @@ Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
                     *ref = 0;
                 }
 
-                //fprintf( stderr, "c++ %d: %s ", i, name );
-
                 // Check for QString validity
                 if(!strcmp(name, "QString") && SvPOK(_sp[i])) {
                     argmatch = true;
                 }
-                else if((!strcmp(name, "double") || (!strcmp(name, "int")) && SvIOK(_sp[i]))) {
+                // Check for numerical validity
+                else if(!strcmp(name, "double") && SvNOK(_sp[i])) {
+                    argmatch = true;
+                }
+                // Valid cases are iok, uok, or it's a ref of type SVt_PVMG
+                else if(!strcmp(name, "int") &&
+                    (SvIOK(_sp[i]) || SvUOK(_sp[i]) || 
+                    (SvROK(_sp[i]) && SvTYPE(SvRV(_sp[i])) == SVt_PVMG) )) {
+                    argmatch = true;
+                }
+                // Check for enumerations.  They will be blessed into a package
+                // that has the same name as the name of the argument.
+                else if(SvROK(_sp[i]) && !strcmp(name, HvNAME(SvSTASH(SvRV(_sp[i]))))) {
                     argmatch = true;
                 }
                 else {
@@ -139,11 +152,11 @@ Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
         if( argmatch ) {
             retval = curIdx;
         }
-        //fprintf( stderr, "\t" );
+        //fprintf( stderr, "\n" );
         ++methodIndex;
     }
 
-    //fprintf( stderr, "\nReturning id %d\n", retval );
+    //fprintf( stderr, "Returning id %d\n", retval );
 
     return retval;
 }
@@ -263,6 +276,23 @@ void unmapPointer(smokeperl_object *o, Smoke::Index classId, void *lastptr) {
 
 }
 
+SV *prettyPrintMethod(Smoke::Index id) {
+    SV *r = newSVpvf("");
+    Smoke::Method &meth = qt_Smoke->methods[id];
+    const char *tname = qt_Smoke->types[meth.ret].name;
+    if(meth.flags & Smoke::mf_static) sv_catpv(r, "static ");
+    sv_catpvf(r, "%s ", (tname ? tname:"void"));
+    sv_catpvf(r, "%s::%s(", qt_Smoke->classes[meth.classId].className, qt_Smoke->methodNames[meth.name]);
+    for(int i = 0; i < meth.numArgs; i++) {
+        if(i) sv_catpv(r, ", ");
+        tname = qt_Smoke->types[qt_Smoke->argumentList[meth.args+i]].name;
+        sv_catpv(r, (tname ? tname:"void"));
+    }
+    sv_catpv(r, ")");
+    if(meth.flags & Smoke::mf_const) sv_catpv(r, " const");
+    return r;
+}
+
 SV *catArguments(SV** sp, int n) {
     SV* r=newSVpvf("");
     for(int i = 0; i < n; i++) {
@@ -273,6 +303,8 @@ SV *catArguments(SV** sp, int n) {
             smokeperl_object *o = sv_obj_info(sp[i]);
             if(o)
                 sv_catpv(r, o->smoke->className(o->classId));
+            else if (SvTYPE(SvRV(sp[i])) == SVt_PVMG)
+                sv_catpv(r, SvPV_nolen(SvRV(sp[i])));
             else
                 sv_catsv(r, sp[i]);
         } else {
@@ -458,7 +490,8 @@ XS(XS_qt_metacall){
 
     // Get my arguments off the stack
     QObject* sv_this_ptr = (QObject*)sv_obj_info(sv_this)->ptr;
-    QMetaObject::Call _c = (QMetaObject::Call)SvIV(ST(0));
+    // This is an enum value, so it's stored as a scalar reference.
+    QMetaObject::Call _c = (QMetaObject::Call)SvIV(SvRV(ST(0)));
     int _id = (int)SvIV(ST(1));
     void** _a = (void**)sv_obj_info(ST(2))->ptr;
 
@@ -632,10 +665,10 @@ XS(XS_AUTOLOAD){
             if( sv_obj_info( arg ) ){
                 strcat( methodname, "#" );
             }
-            else if( SvROK(arg) ) {
+            else if( SvROK(arg) && (SvTYPE(SvRV(arg)) == SVt_PVAV || SvTYPE(SvRV(arg)) == SVt_PVHV ) ) {
                 strcat( methodname, "?" );
             }
-            else if( SvIOK(arg) || SvNOK(arg) || SvPOK(arg) ){
+            else if( SvIOK(arg) || SvNOK(arg) || SvPOK(arg) || SvUOK(arg) || (SvROK(arg) && SvTYPE(SvRV(arg)) == SVt_PVMG) ){
                 strcat( methodname, "$" );
             }
         }
@@ -654,32 +687,21 @@ XS(XS_AUTOLOAD){
             call_this = &temp;
         }
 
-        Smoke::Index methodid;
-        if(!strcmp(methodname, "QVariant$")){
-            methodid = 18373;
-        }
-        else if(!strcmp(methodname, "drawPie#$$")){
-            methodid = 11080;
-        }
-        else if(!strcmp(methodname, "QBrush$")){
-            methodid = 1640;
-        }
-        else {
-            methodid = getMethod( qt_Smoke, classname, methodname );
-            if(methodid < 0) {
-                methodid = resolveMethod( methodid, SP - items + 1 + withObject );
+        Smoke::Index methodid = getMethod( qt_Smoke, classname, methodname );
+        if(methodid < 0) {
+            if(do_debug && (do_debug & qtdb_ambiguous)){
+                fprintf(stderr, "Ambiguous method %s\n", methodname);
             }
-            if(methodid == 0) {
-                croak( "--- No method to call for %s::%s\n", classname, methodname );
-            }
+            methodid = resolveMethod( methodid, SP - items + 1 + withObject );
+        }
+        if(methodid == 0) {
+            croak( "--- No method to call for %s::%s\n", classname, methodname );
         }
 
         if(do_debug && (do_debug & qtdb_calls)) {
-            fprintf(stderr, "Calling method\t\n" );
+            fprintf(stderr, "Calling method\t%s\t%s\n", methodname, SvPV_nolen(sv_2mortal(prettyPrintMethod(methodid))));
             if(do_debug & qtdb_verbose) {
                 fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(SP - items + 1 + withObject, items - withObject))));
-                // See cop.h in the perl src for more info on Control ops
-                fprintf(stderr, "called at line %d in %s\n", (int)CopLINE(PL_curcop), GvNAME(CopFILEGV(PL_curcop))+2 );
             }
         }
 
@@ -717,7 +739,7 @@ XS(XS_signal){
         if(do_debug & qtdb_verbose) {
             fprintf(stderr, "with arguments (%s) ", SvPV_nolen(sv_2mortal(catArguments(SP - items + 1, items ))));
             // See cop.h in the perl src for more info on Control ops
-            fprintf(stderr, "called at line %d in %s\n", (int)CopLINE(PL_curcop), GvNAME(CopFILEGV(PL_curcop))+2 );
+            fprintf(stderr, "called at line %lu in %s\n", CopLINE(PL_curcop), GvNAME(CopFILEGV(PL_curcop))+2 );
         }
     }
 

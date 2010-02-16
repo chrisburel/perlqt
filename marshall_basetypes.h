@@ -11,7 +11,13 @@ template <class T> SV* primitive_to_perl(T);
 
 template <class T>
 static void marshall_from_perl(Marshall *m) {
-    (*smoke_ptr<T>(m)) = perl_to_primitive<T>(m->var());
+    SV* var;
+    if(SvROK(m->var())){
+        var = SvRV(m->var());
+    }
+    else 
+        var = m->var();
+    (*smoke_ptr<T>(m)) = perl_to_primitive<T>(var);
 }
 
 template <class T>

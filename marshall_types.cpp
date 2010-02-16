@@ -1,8 +1,13 @@
 #include "marshall_types.h"
 #include "handlers.h"
+#include "perlqt.h"
 
 extern SV* sv_this;
 extern Smoke* qt_Smoke;
+extern int do_debug;
+
+// this doesn't belong here
+SV *catArguments(SV** sp, int n);
 
 #include "QtCore/QList"
 #include "QtCore/QHash"
@@ -483,10 +488,17 @@ namespace PerlQt {
 
         GV *gv = gv_fetchmethod_autoload(stash, _methodname, 0);
         if(!gv) {
-            fprintf( stderr, "Found no method to call in slot\n" );
+            fprintf( stderr, "Found no method named %s to call in slot\n", _methodname );
             return;
         }
 
+        if(do_debug && (do_debug & qtdb_slots)) {
+            fprintf( stderr, "In slot call %s::%s\n", HvNAME(stash), _methodname );
+            if(do_debug & qtdb_verbose) {
+                fprintf(stderr, "with arguments (%s)\n", SvPV_nolen(sv_2mortal(catArguments(_sp, _items-1))));
+            }
+        }
+        
         dSP;
         SP = _sp + _items - 1;
         PUTBACK;
@@ -556,6 +568,7 @@ namespace PerlQt {
         _called = true;
 
         // Create the stack to send to the slots
+        // +1 to _items to accomidate the return value
         void** o = new void*[_items+1];
         smokeStackToQtStack(_stack, o + 1, 1, _items + 1, _args);
         // The 0 index stores the return value

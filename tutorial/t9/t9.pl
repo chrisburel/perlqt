@@ -51,7 +51,6 @@ package main;
 
 use Qt;
 use MyWidget;
-#use Qt::debug qw(all);
 
 sub dumpMetaMethods {
     my ( $meta ) = @_;

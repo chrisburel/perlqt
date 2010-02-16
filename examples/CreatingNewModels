@@ -5,7 +5,6 @@ use blib;
 package myStringListModel;
 use Qt;
 use Qt::isa qw(Qt::QAbstractListModel);
-#use Qt::signals dataChanged => ['int', 'int'];
 
 my @stringList;
 
@@ -33,7 +32,7 @@ sub data {
         return Qt::QVariant();
     }
 
-    if ($role == Qt::Qt::DisplayRole()) {
+    if ($role == ${Qt::Qt::DisplayRole()}) {
         return Qt::QVariant($stringList[$modelRow]);
     }
     else {
@@ -43,11 +42,11 @@ sub data {
 
 sub headerData {
     my ( $section, $orientation, $role ) = @_;
-    if ( $role != Qt::Qt::DisplayRole() ) {
+    if ( $role != ${Qt::Qt::DisplayRole()} ) {
         return Qt::QVariant();
     }
 
-    if ( $orientation == Qt::Qt::Horizontal() ) {
+    if ( $$orientation == ${Qt::Qt::Horizontal()} ) {
         return Qt::QVariant("Column " . $section);
     }
     else {
@@ -62,12 +61,12 @@ sub flags {
         return Qt::Qt::ItemIsEnabled();
     }
 
-    return SUPER->flags(this, $index) | Qt::Qt::ItemIsEditable();
+    return SUPER->flags(this, $index) | ${Qt::Qt::ItemIsEditable()};
 }
 
 sub setData {
     my( $index, $value, $role ) = @_;
-    if ($index->isValid() && $role == Qt::Qt::EditRole()) { 
+    if ($index->isValid() && $role == ${Qt::Qt::EditRole()}) { 
         @stringList[$index->row()] = $value->toString();
         this->dataChanged( $index, $index );
         #this->emit( 'dataChanged( $index, $index );
@@ -81,7 +80,6 @@ sub setData {
 package main;
 
 use Qt;
-#use Qt::debug qw(all);
 use myStringListModel;
 
 sub dumpMetaMethods {

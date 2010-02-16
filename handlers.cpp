@@ -68,29 +68,16 @@ static void marshall_charP(Marshall *m) {
     }
 }
 
-static void marshall_doubleR(Marshall *m) {
-    fprintf(stderr, "marshalling %f\n", SvNV(m->var()));
-    switch(m->action()) {
-        case Marshall::FromSV:
-            m->item().s_voidp = new double(SvNV(m->var()));
-        break;
-        case Marshall::ToSV:
-            sv_setnv_mg(m->var(), *(double*)m->item().s_voidp);
-        break;
-    }
-}
-
 void marshall_voidP_array(Marshall *m) {
     switch(m->action()) {
         case Marshall::FromSV:
         {
-            SV* sv = m->var();
-            fprintf( stderr, "FromSV\n" );
             m->unsupported();
         }
         break;
         case Marshall::ToSV:
         {
+            // This is ghetto.
             //fprintf( stderr, "ToSV\n" );
 
             void* cxxptr = m->item().s_voidp;
@@ -152,7 +139,12 @@ void marshall_basetype(Marshall *m) {
       case Smoke::t_int:
         switch(m->action()) {
           case Marshall::FromSV:
-            m->item().s_int = (int)SvIV(m->var());
+            if(SvROK(m->var())){
+                // Enumeration, will be a scalar ref.
+                m->item().s_int = (int)SvIV(SvRV(m->var()));
+            }
+            else
+                m->item().s_int = (int)SvIV(m->var());
             break;
           case Marshall::ToSV:
             sv_setiv_mg(m->var(), (IV)m->item().s_int);
@@ -168,11 +160,14 @@ void marshall_basetype(Marshall *m) {
       case Smoke::t_enum:
         switch(m->action()) {
           case Marshall::FromSV:
-            m->item().s_enum = (long)SvIV(m->var());
+            m->item().s_enum = (long)SvIV(SvRV(m->var()));
             break;
-          case Marshall::ToSV:
-            sv_setiv_mg(m->var(), (IV)m->item().s_enum);
+          case Marshall::ToSV:{
+            SV* rv = newRV(newSViv((IV)m->item().s_enum));
+            sv_bless( rv, gv_stashpv(m->type().name(), TRUE) );
+            sv_setsv(m->var(), rv);
             break;
+          }
           default:
             m->unsupported();
             break;

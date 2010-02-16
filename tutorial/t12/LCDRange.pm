@@ -29,7 +29,8 @@ sub init {
     $slider->setRange(0, 99);
     $slider->setValue(0);
     my $label = Qt::QLabel();
-    $label->setAlignment(Qt::Qt::AlignHCenter() | Qt::Qt::AlignTop());
+    #This is ugly.  It should be temporary. tag=enum
+    $label->setAlignment(bless \(${Qt::Qt::AlignHCenter()} | ${Qt::Qt::AlignTop()}), 'Qt::AlignmentFlag');
 
     this->connect($slider, SIGNAL "valueChanged(int)",
                   $lcd, SLOT "display(int)");
