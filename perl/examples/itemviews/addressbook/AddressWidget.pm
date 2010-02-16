@@ -70,8 +70,8 @@ sub addEntry2 {
 }
 
 sub editEntry {
-    my $temp = CAST this->currentWidget(), ' Qt::TableView';
-    my $proxy = CAST $temp->model(), ' Qt::SortFilterProxyModel';
+    my $temp = CAST this->currentWidget(), 'Qt::TableView';
+    my $proxy = CAST $temp->model(), 'Qt::SortFilterProxyModel';
     my $selectionModel = $temp->selectionModel();
     my $table = this->{table};
 
@@ -109,8 +109,8 @@ sub editEntry {
 }
 
 sub removeEntry {
-    my $temp = CAST this->currentWidget(), ' Qt::TableView';
-    my $proxy = CAST $temp->model(), ' Qt::SortFilterProxyModel';
+    my $temp = CAST this->currentWidget(), 'Qt::TableView';
+    my $proxy = CAST $temp->model(), 'Qt::SortFilterProxyModel';
     my $selectionModel = $temp->selectionModel();
     my $table = this->{table};
 

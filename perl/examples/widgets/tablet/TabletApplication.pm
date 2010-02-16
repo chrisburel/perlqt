@@ -21,7 +21,7 @@ sub event {
     my ($event) = @_;
     if ($event->type() == Qt::Event::TabletEnterProximity() ||
         $event->type() == Qt::Event::TabletLeaveProximity()) {
-        CAST( $event, ' Qt::TabletEvent' );
+        CAST( $event, 'Qt::TabletEvent' );
         this->myCanvas->setTabletDevice(
             $event->device());
         return 1;

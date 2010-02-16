@@ -66,6 +66,11 @@ sub NEW {
 
     this->{itemInMotion} = 0;
 
+    this->{circlePath} = Qt::PainterPath();
+    this->{squarePath} = Qt::PainterPath();
+    this->{trianglePath} = Qt::PainterPath();
+    this->{shapeItems} = [];
+
 # [3]
     this->{newCircleButton} = createToolButton(this->tr('New Circle'),
                                        Qt::Icon('images/circle.png'),
@@ -79,8 +84,8 @@ sub NEW {
                                          Qt::Icon('images/triangle.png'),
                                          SLOT 'createNewTriangle()');
 
-    this->circlePath->addEllipse(Qt::Rect(0, 0, 100, 100));
-    this->squarePath->addRect(Qt::Rect(0, 0, 100, 100));
+    this->circlePath->addEllipse(Qt::RectF(0, 0, 100, 100));
+    this->squarePath->addRect(Qt::RectF(0, 0, 100, 100));
 
     my $x = this->trianglePath->currentPosition()->x();
     my $y = this->trianglePath->currentPosition()->y();
@@ -107,8 +112,8 @@ sub event {
 # [5] //! [6]
     my ($event) = @_;
     if ($event->type() == Qt::Event::ToolTip()) {
-        my $helpEvent = CAST $event, ' Qt::HelpEvent';
-        my $index = this->itemAt(this->helpEvent->pos());
+        my $helpEvent = CAST $event, 'Qt::HelpEvent';
+        my $index = this->itemAt($helpEvent->pos());
         if ($index != -1) {
             Qt::ToolTip::showText($helpEvent->globalPos(), this->shapeItems->[$index]->toolTip());
         } else {
@@ -126,7 +131,7 @@ sub event {
 sub resizeEvent {
     my $margin = this->style()->pixelMetric(Qt::Style::PM_DefaultTopLevelMargin());
     my $x = this->width() - $margin;
-    int $y = this->height() - $margin;
+    my $y = this->height() - $margin;
 
     $y = this->updateButtonGeometry(this->newCircleButton, $x, $y);
     $y = this->updateButtonGeometry(this->newSquareButton, $x, $y);
@@ -142,7 +147,7 @@ sub paintEvent {
 # [8] //! [9]
         $painter->translate($shapeItem->position());
 # [9] //! [10]
-        $painter->setBrush($shapeItem->color());
+        $painter->setBrush(Qt::Brush($shapeItem->color()));
         $painter->drawPath($shapeItem->path());
         $painter->translate(-$shapeItem->position());
     }
@@ -153,12 +158,13 @@ sub paintEvent {
 # [11]
 sub mousePressEvent {
     my ($event) = @_;
+    CAST $event, 'Qt::MouseEvent';
     if ($event->button() == Qt::LeftButton()) {
         my $index = this->itemAt($event->pos());
         if ($index != -1) {
             this->{itemInMotion} = this->shapeItems->[$index];
             this->{previousPosition} = $event->pos();
-            this->shapeItems->move($index, shapeItems->size() - 1);
+            push @{this->shapeItems}, splice @{this->shapeItems}, $index, 1;
             this->update();
         }
     }
@@ -168,7 +174,8 @@ sub mousePressEvent {
 # [12]
 sub mouseMoveEvent {
     my ($event) = @_;
-    if (($event->buttons() & Qt::LeftButton()) && this->itemInMotion) {
+    CAST $event, 'Qt::MouseEvent';
+    if (($event->buttons() & ${Qt::LeftButton()}) && this->itemInMotion) {
         this->moveItemTo($event->pos());
     }
 }
@@ -177,7 +184,8 @@ sub mouseMoveEvent {
 # [13]
 sub mouseReleaseEvent {
     my ($event) = @_;
-    if ($event->button() == Qt::LeftButton() && this->itemInMotion) {
+    CAST $event, 'Qt::MouseEvent';
+    if ($event->button() == ${Qt::LeftButton()} && this->itemInMotion) {
         this->moveItemTo($event->pos());
         this->{itemInMotion} = 0;
     }
@@ -214,10 +222,11 @@ sub createNewTriangle {
 # [17]
 sub itemAt {
     my ($pos) = @_;
-    foreach my $i ( reverse 0..$#{@this->shapeItems} ) {
+    foreach my $i ( reverse 0..$#{this->shapeItems} ) {
         my $item = this->shapeItems->[$i];
-        if ($item->path()->contains($pos - $item->position()))
+        if ($item->path()->contains(Qt::PointF($pos - $item->position()))) {
             return $i;
+        }
     }
     return -1;
 }
@@ -238,11 +247,17 @@ sub moveItemTo {
 sub updateButtonGeometry {
     my ($button, $x, $y) = @_;
     my $size = $button->sizeHint();
-    $button->setGeometry($x - $size->rwidth(), $y - $size->rheight(),
-                        $size->rwidth(), $size->rheight());
+    $button->setGeometry($x - $size->width(), $y - $size->height(),
+                        $size->width(), $size->height());
 
-    return $y - $size->rheight()
-           - this->style()->pixelMetric(Qt::Style::PM_DefaultLayoutSpacing);
+    return $y - $size->height() -
+        this->style()->pixelMetric(Qt::Style::PM_DefaultLayoutSpacing());
+
+    #$button->setGeometry($x - $size->rwidth(), $y - $size->rheight(),
+                        #$size->rwidth(), $size->rheight());
+
+    #return $y - $size->rheight() -
+        #this->style()->pixelMetric(Qt::Style::PM_DefaultLayoutSpacing());
 }
 # [20]
 
@@ -276,13 +291,13 @@ sub createToolButton {
 sub initialItemPosition {
     my ($path) = @_;
     my $x;
-    my $y = (this->height() - (int)$path->controlPointRect()->height()) / 2;
+    my $y = (this->height() - int($path->controlPointRect()->height())) / 2;
     if (scalar @{this->shapeItems} == 0) {
-        $x = ((3 * this->width()) / 2 - (int)$path->controlPointRect()->width()) / 2;
+        $x = ((3 * this->width()) / 2 - int($path->controlPointRect()->width())) / 2;
     }
     else {
-        $x = (this->width() / scalar @{this->shapeItems}
-             - (int)$path->controlPointRect()->width()) / 2;
+        $x = (this->width() / scalar( @{this->shapeItems} )
+             - int($path->controlPointRect()->width())) / 2;
     }
 
     return Qt::Point($x, $y);

@@ -8,7 +8,7 @@ use Qt;
 use SortingBox;
 
 sub main {
-    my $app = Qt::Application(argc, argv);
+    my $app = Qt::Application( \@ARGV );
     srand(Qt::Time(0,0,0)->secsTo(Qt::Time::currentTime()));
     my $sortingBox = SortingBox();
     $sortingBox->show();

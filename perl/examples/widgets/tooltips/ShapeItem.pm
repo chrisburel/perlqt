@@ -72,7 +72,7 @@ sub setPosition {
 
 # [7]
 sub setColor {
-    this->{myColor} =shiftcolor;
+    this->{myColor} = shift;
 }
 # [7]
 

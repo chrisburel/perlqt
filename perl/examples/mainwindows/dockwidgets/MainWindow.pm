@@ -128,7 +128,7 @@ sub insertCustomer {
         return;
     }
     my @customerList = split /", "/, $customer;
-    my $document = CAST this->{textEdit}->document(), ' Qt::TextDocument';
+    my $document = CAST this->{textEdit}->document(), 'Qt::TextDocument';
     my $cursor = $document->find('NAME');
     if (!$cursor->isNull()) {
         $cursor->beginEditBlock();
@@ -154,7 +154,7 @@ sub addParagraph {
     if (!$paragraph) {
         return;
     }
-    my $document = CAST this->{textEdit}->document(), ' Qt::TextDocument';
+    my $document = CAST this->{textEdit}->document(), 'Qt::TextDocument';
     my $cursor = $document->find('Yours sincerely,');
     if ($cursor->isNull()){
         return;

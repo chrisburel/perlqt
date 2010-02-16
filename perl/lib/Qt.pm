@@ -1172,6 +1172,9 @@ sub emit (@) { return pop @_ }
 sub CAST ($$) {
     my( $var, $class ) = @_;
     if( ref $var ) {
+        if ( $class->isa( 'Qt::base' ) ) {
+            $class = " $class";
+        }
         return bless( $var, $class );
     }
     else {
