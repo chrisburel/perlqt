@@ -752,6 +752,9 @@ sub do_autoload {
 
     if ( !@methodIds ) {
         my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
+        while ( (caller($stackDepth))[1] =~ m/Qt\.pm$/ ) {
+            ++$stackDepth;
+        }
         print STDERR "--- No method found in lookup for $classname\::$methodname,".
             ' called at ' . (caller($stackDepth))[1] .
             ' line ' . (caller($stackDepth))[2] . "\n" and die;
@@ -1033,6 +1036,18 @@ sub objmatch {
         return 0 if classIsa($argtype, $typename) == -1;
     }
     return 1;
+}
+
+sub Qt::CoreApplication::NEW {
+    my $class = shift;
+    my $argv = shift;
+    unshift @$argv, $0;
+    my $count = scalar @$argv;
+    my $retval = Qt::CoreApplication::QCoreApplication( $count, $argv );
+    bless( $retval, " $class" );
+    setThis( $retval );
+    setQApp( $retval );
+    shift @$argv;
 }
 
 sub Qt::Application::NEW {
