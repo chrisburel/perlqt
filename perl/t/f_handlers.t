@@ -80,8 +80,10 @@ my $app = Qt::Application( \@ARGV );
 
 {
     # Test char and uchar marshalling
+    Qt::setSignature( 'QChar::QChar( int )' );
     my $char = Qt::Char( 87 );
     is ( $char->toAscii(), 87, 'signed char' );
+    Qt::setSignature( 'QChar::QChar( uchar )' );
     $char = Qt::Char( 'f' );
     is ( $char->toAscii(), ord('f'), 'signed char' );
     $char = Qt::Char( 'f', 3 );
@@ -112,6 +114,7 @@ my $app = Qt::Application( \@ARGV );
 
 {
     # Test marshall_ValueListItem ToSV
+    Qt::setSignature( 'QKeySequence::QKeySequence( int )' );
     my $shortcut1 = Qt::KeySequence( Qt::Key_Enter() );
     my $shortcut2 = Qt::KeySequence( Qt::Key_Tab() );
     my $shortcuts = [ $shortcut1, $shortcut2 ];

@@ -10,14 +10,17 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Qt.c
 # Make sure we build Qt.c as c++ code
 set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
 
+set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+
 set(perlqt_LIB_SRCS
     binding.cpp
     handlers.cpp
     marshall_types.cpp
+    util.cpp
     Qt.c
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/blib/arch/auto/Qt)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/Qt)
 add_library(perlqt4 SHARED ${perlqt_LIB_SRCS})
 
 target_link_libraries(perlqt4 ${QT_QTCORE_LIBRARY} ${PERL_LIBRARY} ${QT_QTNETWORK_LIBRARY} smokeqt)
