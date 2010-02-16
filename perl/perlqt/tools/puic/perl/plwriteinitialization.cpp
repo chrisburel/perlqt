@@ -1083,8 +1083,6 @@ void WriteInitialization::writeProperties(const QString &varName,
         QString propertyName = p->attributeName();
         QString propertyValue;
 
-        qDebug() << "Processing property: " << propertyName;
-
         // special case for the property `geometry': Do not use position
         if (isTopLevel && propertyName == QLatin1String("geometry") && p->elementRect()) {
             const DomRect *r = p->elementRect();
@@ -1298,7 +1296,6 @@ void WriteInitialization::writeProperties(const QString &varName,
             break;
         }
         case DomProperty::String: {
-            qDebug() << propertyName << " is a string";
             if (p->elementString()->hasAttributeNotr()
                     && toBool(p->elementString()->attributeNotr())) {
                 propertyValue = fixString(p->elementString()->text(), m_option.indent);
