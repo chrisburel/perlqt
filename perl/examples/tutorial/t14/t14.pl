@@ -2,7 +2,6 @@
 
 use strict;
 use warnings;
-use blib;
 
 package main;
 

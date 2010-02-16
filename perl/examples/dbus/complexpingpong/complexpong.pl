@@ -4,7 +4,6 @@ package Pong;
 
 use strict;
 use warnings;
-use blib;
 
 use Qt;
 use Qt::isa qw( Qt::DBusAbstractAdaptor );

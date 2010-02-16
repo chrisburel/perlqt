@@ -4,7 +4,6 @@ package Ping;
 
 use strict;
 use warnings;
-use blib;
 
 use Qt;
 use Qt::isa qw( Qt::Object );

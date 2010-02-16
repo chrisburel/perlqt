@@ -2,7 +2,6 @@
 
 use strict;
 use warnings;
-use blib;
 
 use Qt;
 use TetrixWindow;

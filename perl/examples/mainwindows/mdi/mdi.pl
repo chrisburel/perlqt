@@ -1,7 +1,6 @@
 #!/usr/bin/perl -w
 
 use strict;
-use blib;
 
 use Qt;
 
