@@ -1,14 +1,14 @@
 use Test::More tests => 3;
 
-use Qt;
+use Qt4;
 
 $a=0;
 
-# Test if the Qt::Application ctor works
+# Test if the Qt4::Application ctor works
 
-eval { $a = Qt::Application( \@ARGV ) };
+eval { $a = Qt4::Application( \@ARGV ) };
 
-ok( !+$@, 'Qt::Application ctor' );
+ok( !+$@, 'Qt4::Application ctor' );
 
 # Test wether the global qApp object is properly set up
 
@@ -18,6 +18,6 @@ ok( !+$@, 'qApp properly set up' ) or diag( $@ );
 
 # One second test of the event loop
 
-Qt::Timer::singleShot( 300, qApp, SLOT 'quit()' );
+Qt4::Timer::singleShot( 300, qApp, SLOT 'quit()' );
 
 ok( !qApp->exec, 'One second event loop' );

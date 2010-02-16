@@ -103,10 +103,10 @@ else {
 }
 
 my $builder = QtBuilder->new(
-  module_name           => 'Qt',
+  module_name           => 'Qt4',
   license               => 'gpl',
   dist_author           => 'Chris Burel <chrisburel@gmail.com>',
-  dist_version_from     => 'lib/Qt.pm',
+  dist_version_from     => 'lib/Qt4.pm',
   dynamic_config        => 1,
   create_readme         => 1,
   recursive_test_files  => 1,
@@ -119,7 +119,7 @@ my $builder = QtBuilder->new(
   # Location of our special C and XS source files
   c_source => 'src',
   xs_files => {
-    'src/Qt.xs' => 'lib/Qt.xs'
+    'src/Qt4.xs' => 'lib/Qt4.xs'
   },
 
   extra_compiler_flags  => \@flags,

@@ -1,6 +1,6 @@
 #ifndef PERLQT_UTIL_H
 #define PERLQT_UTIL_H
-// Include Qt headers first, to avoid weirdness that the perl headers cause
+// Include Qt4 headers first, to avoid weirdness that the perl headers cause
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QMetaMethod>
@@ -27,7 +27,7 @@ extern "C" {
 
 // Now my own headers
 #include "smoke.h"
-#include "Qt.h"
+#include "Qt4.h"
 #include "binding.h"
 #include "smokeperl.h"
 #include "marshall_types.h" // Method call classes

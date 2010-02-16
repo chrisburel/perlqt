@@ -1,4 +1,4 @@
-option(ENABLE_PERLQT "build PerlQt" ON)
+option(ENABLE_PERLQT "build PerlQt4" ON)
 
 set(PERLQT_ENABLED "no")
 if(ENABLE_PERLQT)
@@ -17,4 +17,4 @@ if(PERLQT_ENABLED)
 
 endif(PERLQT_ENABLED)
 
-message(STATUS "Build PerlQt... " ${PERLQT_ENABLED})
+message(STATUS "Build PerlQt4... " ${PERLQT_ENABLED})

@@ -2,7 +2,7 @@
 
 #include "marshall_types.h"
 #include "binding.h"
-#include "Qt.h"
+#include "Qt4.h"
 #include "smokeperl.h"
 
 #include "EXTERN.h"
@@ -13,7 +13,7 @@
 extern Q_DECL_EXPORT Smoke *qt_Smoke;
 extern Q_DECL_EXPORT int do_debug;
 
-namespace PerlQt {
+namespace PerlQt4 {
 
 Binding::Binding() : SmokeBinding(0) {};
 Binding::Binding(Smoke *s) : SmokeBinding(s) {};
@@ -43,7 +43,7 @@ void Binding::deleted(Smoke::Index /*classId*/, void *ptr) {
 }
 
 bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool isAbstract) {
-    // If the Qt process forked, we want to make sure we can see the
+    // If the Qt4 process forked, we want to make sure we can see the
     // interpreter
     PERL_SET_CONTEXT(PL_curinterp);
 #ifdef DEBUG
@@ -92,7 +92,7 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
 // Returns: char* containing the perl package name
 char* Binding::className(Smoke::Index classId) {
     // Find the classId->package hash
-    HV* classId2package = get_hv( "Qt::_internal::classId2package", FALSE );
+    HV* classId2package = get_hv( "Qt4::_internal::classId2package", FALSE );
     if( !classId2package ) croak( "Internal error: Unable to find classId2package hash" );
 
     // Look up the package's name in the hash
@@ -112,4 +112,4 @@ char* Binding::className(Smoke::Index classId) {
     return SvPV_nolen(retval);
 }
 
-} // End namespace PerlQt
+} // End namespace PerlQt4

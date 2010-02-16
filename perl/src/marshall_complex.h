@@ -82,7 +82,7 @@ void marshall_from_perl<unsigned int *>(Marshall *m) {
         m->item().s_voidp = 0;
         return;
         //} else if (TYPE(sv) == T_OBJECT) {
-        // A Qt::Integer has been passed as an integer value
+        // A Qt4::Integer has been passed as an integer value
         //SV *temp = rb_funcall(qt_internal_module, rb_intern("get_qinteger"), 1, sv);
         //*i = NUM2INT(temp);
         //m->item().s_voidp = i;
@@ -210,12 +210,12 @@ void marshall_from_perl<bool *>(Marshall *m) {
     bool * b = new bool;
 
     //if (TYPE(sv) == T_OBJECT) {
-    // A Qt::Boolean has been passed as a value
+    // A Qt4::Boolean has been passed as a value
     //SV *temp = rb_funcall(qt_internal_module, rb_intern("get_qboolean"), 1, sv);
-    //*b = (temp == Qtrue ? true : false);
+    //*b = (temp == Qt4rue ? true : false);
     //m->item().s_voidp = b;
     //m->next();
-    //rb_funcall(qt_internal_module, rb_intern("set_qboolean"), 2, sv, (*b ? Qtrue : Qfalse));
+    //rb_funcall(qt_internal_module, rb_intern("set_qboolean"), 2, sv, (*b ? Qt4rue : Qfalse));
     //} else {
     *b = SvTRUE(sv);
     m->item().s_voidp = b;

@@ -6,7 +6,7 @@ use ExtUtils::MakeMaker;
 my $perl = $ARGV[0];
 
 my $mm = ExtUtils::MakeMaker->new( {
-    NAME => 'PerlQt',
+    NAME => 'PerlQt4',
     NEEDS_LINKING => 1,
 } );
 
@@ -18,5 +18,5 @@ my $xsubpp = "$xsubppdir/xsubpp";
 
 my $xsubppargs = (map{ my $foo = $_; $foo =~ s/XSUBPPARGS = //; $foo } grep{ m/^XSUBPPARGS =/ } @xsubinfo)[0];
 
-my $cmd = "$perl $xsubpp $xsubppargs Qt.xs > Qt.c";
+my $cmd = "$perl $xsubpp $xsubppargs Qt4.xs > Qt4.c";
 system $cmd;

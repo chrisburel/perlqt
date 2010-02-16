@@ -1,4 +1,4 @@
-// Include Qt headers first, to avoid weirdness that the perl headers cause
+// Include Qt4 headers first, to avoid weirdness that the perl headers cause
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QEvent>
 #include <QtCore/QHash>
@@ -31,7 +31,7 @@ extern "C" {
 
 // Now my own headers
 #include "smoke.h"
-#include "Qt.h"
+#include "Qt4.h"
 #include "binding.h"
 #include "smokeperl.h"
 #include "marshall_types.h" // Method call classes
@@ -41,8 +41,8 @@ extern "C" {
 extern Q_DECL_EXPORT Smoke* qt_Smoke;
 extern Q_DECL_EXPORT void init_qt_Smoke();
 
-PerlQt::Binding binding;
-QHash<Smoke*, PerlQtModule> perlqt_modules;
+PerlQt4::Binding binding;
+QHash<Smoke*, PerlQt4Module> perlqt_modules;
 
 // Global variables
 SV* sv_this = 0;
@@ -50,7 +50,7 @@ SV* sv_qapp = 0;
 HV* pointer_map = 0;
 int do_debug = 0;
 
-// There's a comment in QtRuby about possible memory leaks with these.
+// There's a comment in Qt4Ruby about possible memory leaks with these.
 // Method caches, to avoid expensive lookups
 QHash<QByteArray, Smoke::Index *> methcache;
 
@@ -154,14 +154,14 @@ const char* get_SVt(SV* sv) {
                     break;
                 case SVt_PVMG: {
                     const char * classname = HvNAME(SvSTASH(SvRV(sv)));
-                    if ( !strcmp( classname, "Qt::String" ) ||
-                         !strcmp( classname, "Qt::CString" ) ||
-                         !strcmp( classname, "Qt::Int" ) ||
-                         !strcmp( classname, "Qt::Uint" ) ||
-                         !strcmp( classname, "Qt::Short" ) ||
-                         !strcmp( classname, "Qt::Ushort" ) ||
-                         !strcmp( classname, "Qt::Uchar" ) ||
-                         !strcmp( classname, "Qt::Bool" ) ) {
+                    if ( !strcmp( classname, "Qt4::String" ) ||
+                         !strcmp( classname, "Qt4::CString" ) ||
+                         !strcmp( classname, "Qt4::Int" ) ||
+                         !strcmp( classname, "Qt4::Uint" ) ||
+                         !strcmp( classname, "Qt4::Short" ) ||
+                         !strcmp( classname, "Qt4::Ushort" ) ||
+                         !strcmp( classname, "Qt4::Uchar" ) ||
+                         !strcmp( classname, "Qt4::Bool" ) ) {
                         r = classname;
                     }
                     else {
@@ -222,7 +222,7 @@ QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName, QList<Q
                 // in a PlasmaScripting::Applet
                 /*
 				if (typeId == 0) {
-					QHash<Smoke*, PerlQtModule>::const_iterator it;
+					QHash<Smoke*, PerlQt4Module>::const_iterator it;
 					for (it = perlqt_modules.constBegin(); it != perlqt_modules.constEnd(); ++it) {
 						smoke = it.key();
 						targetType = name;
@@ -366,10 +366,10 @@ void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void
 
 // Given the perl package, look up the smoke classid
 // Depends on the classcache_ext hash being defined, which gets set in the
-// init_class function in Qt::_internal
+// init_class function in Qt4::_internal
 Smoke::Index package_classId( const char *package ) {
     // Get the cache hash
-    HV* classcache_ext = get_hv( "Qt::_internal::package2classId", false );
+    HV* classcache_ext = get_hv( "Qt4::_internal::package2classId", false );
     U32 klen = strlen( package );
     SV** classcache = hv_fetch( classcache_ext, package, klen, 0 );
     Smoke::Index item = 0;
@@ -733,7 +733,7 @@ void* sv_to_ptr(SV* sv) {
 }
 
 // Remove the values entered in pointer_map hash, called from
-// PerlQt::Binding::deleted when the destructor of a smoke object is called
+// PerlQt4::Binding::deleted when the destructor of a smoke object is called
 void unmapPointer( smokeperl_object* o, Smoke::Index classId, void* lastptr) {
     HV* hv = pointer_map;
     void* ptr = o->smoke->cast( o->ptr, o->classId, classId );
@@ -849,20 +849,20 @@ XS(XS_qobject_qt_metacast) {
     XSRETURN(1);
 }
 
-/* Should mimic Qt4's QObject::findChildren method with this syntax:
+/* Should mimic Qt44's QObject::findChildren method with this syntax:
      obj.findChildren("Object Type", "Optional Widget Name")
 */
 XS(XS_find_qobject_children) {
     dXSARGS;
     if (items > 2 && items < 1) {
-        croak("Qt::Object::findChildren takes 1 or 2 arguments, got %d", items);
+        croak("Qt4::Object::findChildren takes 1 or 2 arguments, got %d", items);
         XSRETURN_UNDEF;
     }
 
     QString objectName;
     SV* re = &PL_sv_undef;
     if (items > 1) {
-        // If the second arg isn't a String, assume it's a Qt::RegExp
+        // If the second arg isn't a String, assume it's a Qt4::RegExp
         if (SvTYPE(ST(1)) == SVt_PV) {
             objectName = QString::fromLatin1(SvPV_nolen(ST(1)));
         } else {
@@ -876,14 +876,14 @@ XS(XS_find_qobject_children) {
         PUSHMARK(SP);
         XPUSHs(ST(0));
         PUTBACK;
-        int count = call_pv( "Qt::_internal::getMetaObject", G_SCALAR );
+        int count = call_pv( "Qt4::_internal::getMetaObject", G_SCALAR );
         SPAGAIN;
         metaobjectSV = POPs;
         PUTBACK;
         // metaobjectSV is now mortal.  Don't FREETMPS.
     }
     else {
-        croak("First argument to Qt::Object::findChildren should be a string specifying a type");
+        croak("First argument to Qt4::Object::findChildren should be a string specifying a type");
     }
 
     smokeperl_object* metao = sv_obj_info(metaobjectSV);
@@ -912,7 +912,7 @@ XS(XS_qabstract_item_model_rowcount) {
 		XSRETURN_IV(model->rowCount(*modelIndex));
 	}
     else {
-        croak("%s", "Invalid argument list to Qt::AbstractItemModel::rowCount");
+        croak("%s", "Invalid argument list to Qt4::AbstractItemModel::rowCount");
     }
 }
 
@@ -931,7 +931,7 @@ XS(XS_qabstract_item_model_columncount) {
 		XSRETURN_IV(model->columnCount(*modelIndex));
 	}
     else {
-        croak("%s", "Invalid argument list to Qt::AbstractItemModel::columnCount");
+        croak("%s", "Invalid argument list to Qt4::AbstractItemModel::columnCount");
     }
 }
 
@@ -947,7 +947,7 @@ XS(XS_qabstract_item_model_data) {
 	} else if (items == 3) {
 		value = model->data(*modelIndex, SvIV(SvRV(ST(2))));
 	} else {
-		croak("%s", "Invalid argument list to Qt::AbstractItemModel::data");
+		croak("%s", "Invalid argument list to Qt4::AbstractItemModel::data");
 	}
 
     smokeperl_object* obj = alloc_smokeperl_object(
@@ -956,7 +956,7 @@ XS(XS_qabstract_item_model_data) {
         o->smoke->idClass("QVariant").index,
         new QVariant(value) );
 
-    SV* retval = set_obj_info( " Qt::Variant", obj );
+    SV* retval = set_obj_info( " Qt4::Variant", obj );
 
     ST(0) = sv_2mortal( retval );
     XSRETURN(1);
@@ -965,7 +965,7 @@ XS(XS_qabstract_item_model_data) {
 XS(XS_qabstract_item_model_setdata) {
     dXSARGS;
     if ( items < 1 || items > 4 ) {
-        croak("%s\n", "Invalid argument list to Qt::AbstractItemModel::setData");
+        croak("%s\n", "Invalid argument list to Qt4::AbstractItemModel::setData");
     }
     smokeperl_object *o = sv_obj_info(ST(0));
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
@@ -1028,7 +1028,7 @@ XS(XS_qabstract_item_model_insertrows) {
         }
 	}
 
-	croak("%s", "Invalid argument list to Qt::AbstractItemModel::insertRows");
+	croak("%s", "Invalid argument list to Qt4::AbstractItemModel::insertRows");
 }
 
 XS(XS_qabstract_item_model_insertcolumns) {
@@ -1057,7 +1057,7 @@ XS(XS_qabstract_item_model_insertcolumns) {
         }
 	}
 
-	croak("%s", "Invalid argument list to Qt::AbstractItemModel::insertColumns");
+	croak("%s", "Invalid argument list to Qt4::AbstractItemModel::insertColumns");
 }
 
 XS(XS_qabstract_item_model_removerows) {
@@ -1086,7 +1086,7 @@ XS(XS_qabstract_item_model_removerows) {
         }
 	}
 
-	croak("%s", "Invalid argument list to Qt::AbstractItemModel::removeRows");
+	croak("%s", "Invalid argument list to Qt4::AbstractItemModel::removeRows");
 }
 
 XS(XS_qabstract_item_model_removecolumns) {
@@ -1115,7 +1115,7 @@ XS(XS_qabstract_item_model_removecolumns) {
         }
 	}
 
-	croak("%s", "Invalid argument list to Qt::AbstractItemModel::removeColumns");
+	croak("%s", "Invalid argument list to Qt4::AbstractItemModel::removeColumns");
 }
 
 //qabstractitemmodel_createindex(int argc, VALUE * argv, VALUE self)
@@ -1124,7 +1124,7 @@ XS(XS_qabstractitemmodel_createindex) {
     if (items == 2 || items == 3) {
         smokeperl_object* o = sv_obj_info(sv_this);
         if (!o)
-            croak( "%s", "Qt::AbstractItemModel::createIndex must be called as a method on a Qt::AbstractItemModel object, eg. $model->createIndex" );
+            croak( "%s", "Qt4::AbstractItemModel::createIndex must be called as a method on a Qt4::AbstractItemModel object, eg. $model->createIndex" );
         Smoke::ModuleIndex nameId = o->smoke->idMethodName("createIndex$$$");
         Smoke::ModuleIndex meth = o->smoke->findMethod(qt_Smoke->findClass("QAbstractItemModel"), nameId);
         Smoke::Index i = meth.smoke->methodMaps[meth.index].method;
@@ -1158,7 +1158,7 @@ XS(XS_qabstractitemmodel_createindex) {
                     stack[0].s_voidp
                 );
 
-                ST(0) = set_obj_info(" Qt::ModelIndex", result);
+                ST(0) = set_obj_info(" Qt4::ModelIndex", result);
                 XSRETURN(1);
             }
 
@@ -1193,7 +1193,7 @@ XS(XS_qvariant_value) {
 	SV *retval = &PL_sv_undef;
 
     if ( items < 1 ) {
-        croak( "%s", "Usage: Qt::qVariantValue( Qt::Variant, $typeName )" );
+        croak( "%s", "Usage: Qt4::qVariantValue( Qt4::Variant, $typeName )" );
     }
 
     smokeperl_object *o = sv_obj_info(ST(0));
@@ -1257,7 +1257,7 @@ XS(XS_qvariant_value) {
     }
 
     if ( items != 2 ) {
-        croak( "%s", "Usage: Qt::qVariantValue( Qt::Variant, $typeName )" );
+        croak( "%s", "Usage: Qt4::qVariantValue( Qt4::Variant, $typeName )" );
     }
 	const char * classname = SvPV_nolen(ST(1));
     Smoke::ModuleIndex * sv_class_id = new Smoke::ModuleIndex;
@@ -1269,63 +1269,63 @@ XS(XS_qvariant_value) {
         XSRETURN(1);
 	}
 
-	if (qstrcmp(classname, "Qt::Pixmap") == 0) {
+	if (qstrcmp(classname, "Qt4::Pixmap") == 0) {
 		QPixmap v = qVariantValue<QPixmap>(*variant);
 		sv_ptr = (void *) new QPixmap(v);
-	} else if (qstrcmp(classname, "Qt::Font") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Font") == 0) {
 		QFont v = qVariantValue<QFont>(*variant);
 		sv_ptr = (void *) new QFont(v);
-	} else if (qstrcmp(classname, "Qt::Brush") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Brush") == 0) {
 		QBrush v = qVariantValue<QBrush>(*variant);
 		sv_ptr = (void *) new QBrush(v);
-	} else if (qstrcmp(classname, "Qt::Color") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Color") == 0) {
 		QColor v = qVariantValue<QColor>(*variant);
 		sv_ptr = (void *) new QColor(v);
-	} else if (qstrcmp(classname, "Qt::Palette") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Palette") == 0) {
 		QPalette v = qVariantValue<QPalette>(*variant);
 		sv_ptr = (void *) new QPalette(v);
-	} else if (qstrcmp(classname, "Qt::Icon") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Icon") == 0) {
 		QIcon v = qVariantValue<QIcon>(*variant);
 		sv_ptr = (void *) new QIcon(v);
-	} else if (qstrcmp(classname, "Qt::Image") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Image") == 0) {
 		QImage v = qVariantValue<QImage>(*variant);
 		sv_ptr = (void *) new QImage(v);
-	} else if (qstrcmp(classname, "Qt::Polygon") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Polygon") == 0) {
 		QPolygon v = qVariantValue<QPolygon>(*variant);
 		sv_ptr = (void *) new QPolygon(v);
-	} else if (qstrcmp(classname, "Qt::Region") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Region") == 0) {
 		QRegion v = qVariantValue<QRegion>(*variant);
 		sv_ptr = (void *) new QRegion(v);
-	} else if (qstrcmp(classname, "Qt::Bitmap") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Bitmap") == 0) {
 		QBitmap v = qVariantValue<QBitmap>(*variant);
 		sv_ptr = (void *) new QBitmap(v);
-	} else if (qstrcmp(classname, "Qt::Cursor") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Cursor") == 0) {
 		QCursor v = qVariantValue<QCursor>(*variant);
 		sv_ptr = (void *) new QCursor(v);
-	} else if (qstrcmp(classname, "Qt::SizePolicy") == 0) {
+	} else if (qstrcmp(classname, "Qt4::SizePolicy") == 0) {
 		QSizePolicy v = qVariantValue<QSizePolicy>(*variant);
 		sv_ptr = (void *) new QSizePolicy(v);
-	} else if (qstrcmp(classname, "Qt::KeySequence") == 0) {
+	} else if (qstrcmp(classname, "Qt4::KeySequence") == 0) {
 		QKeySequence v = qVariantValue<QKeySequence>(*variant);
 		sv_ptr = (void *) new QKeySequence(v);
-	} else if (qstrcmp(classname, "Qt::Pen") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Pen") == 0) {
 		QPen v = qVariantValue<QPen>(*variant);
 		sv_ptr = (void *) new QPen(v);
-	} else if (qstrcmp(classname, "Qt::TextLength") == 0) {
+	} else if (qstrcmp(classname, "Qt4::TextLength") == 0) {
 		QTextLength v = qVariantValue<QTextLength>(*variant);
 		sv_ptr = (void *) new QTextLength(v);
-	} else if (qstrcmp(classname, "Qt::TextFormat") == 0) {
+	} else if (qstrcmp(classname, "Qt4::TextFormat") == 0) {
 		QTextFormat v = qVariantValue<QTextFormat>(*variant);
 		sv_ptr = (void *) new QTextFormat(v);
-	} else if (qstrcmp(classname, "Qt::Variant") == 0) {
+	} else if (qstrcmp(classname, "Qt4::Variant") == 0) {
 		sv_ptr = (void *) new QVariant(*((QVariant *) variant->constData()));
 	} else {
-		// Assume the value of the Qt::Variant can be obtained
-		// with a call such as Qt::Variant.toPoint()
+		// Assume the value of the Qt4::Variant can be obtained
+		// with a call such as Qt4::Variant.toPoint()
         /*
 		QByteArray toValueMethodName(classname);
-		if (toValueMethodName.startsWith("Qt::")) {
-			toValueMethodName.remove(0, strlen("Qt::"));
+		if (toValueMethodName.startsWith("Qt4::")) {
+			toValueMethodName.remove(0, strlen("Qt4::"));
 		}
 		toValueMethodName.prepend("to");
 		return rb_funcall(variant_value, rb_intern(toValueMethodName), 1, variant_value);
@@ -1370,7 +1370,7 @@ XS(XS_qvariant_from_value) {
                         HvNAME(ST(1)) ) == 0 )
             {
                 Smoke::Index methodId = meth.smoke->ambiguousMethodList[i];
-                PerlQt::MethodCall c(qt_Smoke, methodId, o, SP, 0);
+                PerlQt4::MethodCall c(qt_Smoke, methodId, o, SP, 0);
                 c.next();
                 ST(0) = sv_2mortal(c.var());
                 XSRETURN(1);
@@ -1390,43 +1390,43 @@ XS(XS_qvariant_from_value) {
     }
 
     if(o) {
-        if (qstrcmp(classname, " Qt::Pixmap") == 0) {
+        if (qstrcmp(classname, " Qt4::Pixmap") == 0) {
             v = new QVariant(qVariantFromValue(*(QPixmap*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Font") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Font") == 0) {
             v = new QVariant(qVariantFromValue(*(QFont*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Brush") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Brush") == 0) {
             v = new QVariant(qVariantFromValue(*(QBrush*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Color") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Color") == 0) {
             v = new QVariant(qVariantFromValue(*(QColor*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Palette") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Palette") == 0) {
             v = new QVariant(qVariantFromValue(*(QPalette*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Icon") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Icon") == 0) {
             v = new QVariant(qVariantFromValue(*(QIcon*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Image") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Image") == 0) {
             v = new QVariant(qVariantFromValue(*(QImage*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Polygon") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Polygon") == 0) {
             v = new QVariant(qVariantFromValue(*(QPolygon*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Region") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Region") == 0) {
             v = new QVariant(qVariantFromValue(*(QRegion*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Bitmap") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Bitmap") == 0) {
             v = new QVariant(qVariantFromValue(*(QBitmap*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Cursor") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Cursor") == 0) {
             v = new QVariant(qVariantFromValue(*(QCursor*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::SizePolicy") == 0) {
+        } else if (qstrcmp(classname, " Qt4::SizePolicy") == 0) {
             v = new QVariant(qVariantFromValue(*(QSizePolicy*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::KeySequence") == 0) {
+        } else if (qstrcmp(classname, " Qt4::KeySequence") == 0) {
             v = new QVariant(qVariantFromValue(*(QKeySequence*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::Pen") == 0) {
+        } else if (qstrcmp(classname, " Qt4::Pen") == 0) {
             v = new QVariant(qVariantFromValue(*(QPen*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::TextLength") == 0) {
+        } else if (qstrcmp(classname, " Qt4::TextLength") == 0) {
             v = new QVariant(qVariantFromValue(*(QTextLength*) o->ptr));
-        } else if (qstrcmp(classname, " Qt::TextFormat") == 0) {
+        } else if (qstrcmp(classname, " Qt4::TextFormat") == 0) {
             v = new QVariant(qVariantFromValue(*(QTextFormat*) o->ptr));
         } else if (QVariant::nameToType(o->smoke->classes[o->classId].className) >= QVariant::UserType) {
             v = new QVariant(QMetaType::type(o->smoke->classes[o->classId].className), o->ptr);
         } else {
-            // Assume the Qt::Variant can be created with a
-            // Qt::Variant.new(obj) call
+            // Assume the Qt4::Variant can be created with a
+            // Qt4::Variant.new(obj) call
             fprintf( stderr, "Cannot handle type %s in qVariantToValue", classname );
             XSRETURN_UNDEF;
             //return rb_funcall(qvariant_class, rb_intern("new"), 1, ST(0));
@@ -1461,7 +1461,7 @@ XS(XS_AUTOLOAD) {
     PERL_SET_CONTEXT(PL_curinterp);
     // Figure out which package and method is being called, based on the
     // autoload variable
-    SV* autoload = get_sv( "Qt::AutoLoad::AUTOLOAD", TRUE );
+    SV* autoload = get_sv( "Qt4::AutoLoad::AUTOLOAD", TRUE );
     char* package = SvPV_nolen( autoload );
     char* methodname = 0;
     // Splits off the method name from the package
@@ -1649,7 +1649,7 @@ XS(XS_AUTOLOAD) {
     else {
         // We're calling a c++ method
 
-        // Get the classId (eventually converting SUPER to the right Qt class)
+        // Get the classId (eventually converting SUPER to the right Qt4 class)
         Smoke::Index classId = package_classId( package );
         char* classname = (char*) qt_Smoke->className( classId );
         Smoke::Index methodId = 0;
@@ -1706,7 +1706,7 @@ XS(XS_AUTOLOAD) {
             PUSHs(sv_2mortal(newSVpv(methodname, 0)));
             PUSHs(sv_2mortal(newSVpv(classname, 0)));
             PUTBACK;
-            int count = call_pv( "Qt::_internal::getSmokeMethodId", G_ARRAY|G_EVAL );
+            int count = call_pv( "Qt4::_internal::getSmokeMethodId", G_ARRAY|G_EVAL );
             SPAGAIN;
             // See if getSmokeMethodId die'd
             if (SvTRUE(ERRSV)) {
@@ -1761,7 +1761,7 @@ XS(XS_AUTOLOAD) {
         }
 #endif
 
-        PerlQt::MethodCall call( qt_Smoke,
+        PerlQt4::MethodCall call( qt_Smoke,
                          methodId,
                          call_this,
                          savestack,
@@ -1863,7 +1863,7 @@ XS(XS_qt_metacall){
             }
             name.replace(*rx, "");
 
-            PerlQt::InvokeSlot slot( sv_this, name.toLatin1().data(), mocArgs, _a );
+            PerlQt4::InvokeSlot slot( sv_this, name.toLatin1().data(), mocArgs, _a );
             slot.next();
         }
     }
@@ -1931,12 +1931,12 @@ XS(XS_signal){
     // qobj: Whoever is emitting the signal, cast to a QObject*
     // index: The index of the current signal in QMetaObject's array of sig/slots
     // items: The number of arguments we are calling with
-    // args: A QList, whose length is items + 1, that tell us how to convert the args to ones Qt likes
+    // args: A QList, whose length is items + 1, that tell us how to convert the args to ones Qt4 likes
     // SP: ...not sure if this is correct.  If items=0, we'll pass sp+1, which
     // should be out of bounds.  But it doesn't matter, since the signal won't
     // do anything with those.
     // retval: Will (at some point, maybe) get populated with the return value from the signal.
-    PerlQt::EmitSignal signal(qobj, index, items, args, SP - items + 1, retval);
+    PerlQt4::EmitSignal signal(qobj, index, items, args, SP - items + 1, retval);
     signal.next();
 
     // TODO: Handle signal return value

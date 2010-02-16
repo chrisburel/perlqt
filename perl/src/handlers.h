@@ -33,7 +33,7 @@ void marshall_unknown(Marshall *m);
 void marshall_void(Marshall* m);
 
 extern HV* type_handlers;
-extern TypeHandler Qt_handlers[];
+extern TypeHandler Qt4_handlers[];
 void install_handlers(TypeHandler* h);
 
 Marshall::HandlerFn getMarshallFn(const SmokeType& type);

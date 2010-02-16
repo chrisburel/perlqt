@@ -2,12 +2,12 @@ package MyApp;
 
 use Test::More;
 
-use Qt;
-use Qt::isa('Qt::Application');
-use Qt::slots
+use Qt4;
+use Qt4::isa('Qt4::Application');
+use Qt4::slots
         foo => ['int'],
         baz => [];
-use Qt::signals
+use Qt4::signals
         bar => ['int'];
 
 sub NEW {
@@ -36,8 +36,8 @@ package MySubApp;
 
 use Test::More;
 
-use Qt;
-use Qt::isa('MyApp');
+use Qt4;
+use Qt4::isa('MyApp');
 
 sub NEW 
 {
@@ -52,7 +52,7 @@ sub baz
    # 3) testing Perl to Perl SUPER
    this->SUPER::baz();
    # 4) 5) 6) testing non-qualified enum calls vs. Perl method/static calls
-   ok( eval { Qt::blue } );
+   ok( eval { Qt4::blue } );
    ok( !$@ ) or diag( $@ );
    coincoin('a','b');
 }
@@ -63,12 +63,12 @@ package main;
 
 use Test::More tests => 7;
 
-use Qt;
+use Qt4;
 use MySubApp;
 
 $a = 0;
 $a = MySubApp(\@ARGV);
 
-Qt::Timer::singleShot( 300, qApp, SLOT "quit()" );
+Qt4::Timer::singleShot( 300, qApp, SLOT "quit()" );
 
 exit qApp->exec;
