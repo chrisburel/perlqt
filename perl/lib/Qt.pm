@@ -25,7 +25,6 @@ sub new {
 # class.
 sub tr {
     my $context = ref Qt::this();
-    return unless $context;
     $context =~ s/^ *//;
     return Qt::qApp()->translate( $context, @_ );
 }
