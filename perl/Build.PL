@@ -24,13 +24,17 @@ use QtBuilder;
 
 my( $userSmokeDir, $userSmokeIncDir, $userSmokeLibDir,
     $userQtDir,    $userQtIncDir,    $userQtLibDir );
+my @flags;
+my @libs;
+
 GetOptions(
     '--with-smoke-dir:s' => \$userSmokeDir,
     '--with-smoke-inc-dir:s' => \$userSmokeIncDir,
     '--with-smoke-lib-dir:s' => \$userSmokeLibDir,
     '--with-qt-dir:s' => \$userQtDir,
     '--with-qt-inc-dir:s' => \$userQtIncDir,
-    '--with-qt-lib-dir:s' => \$userQtLibDir
+    '--with-qt-lib-dir:s' => \$userQtLibDir,
+    '--build-debug' => sub {push(@flags, '-DDEBUG')},
 );
 
 if( $userSmokeDir ) {
@@ -41,9 +45,6 @@ if( $userQtDir ) {
     $userQtIncDir = "$userQtDir/include" if !$userQtIncDir;
     $userQtLibDir = "$userQtDir/lib" if !$userQtLibDir;
 }
-
-my @flags;
-my @libs;
 
 # The bindings should be compiled with the flags for libsmokeqt and qt4
 push(@flags,
