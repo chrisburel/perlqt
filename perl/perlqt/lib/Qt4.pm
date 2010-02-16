@@ -1701,23 +1701,118 @@ sub Uchar {
 
 =head1 NAME
 
-Qt4 - Perl bindings for the Qt4 version 4 library
+Qt4 - Perl bindings for the Qt version 4 library
 
 =head1 SYNOPSIS
 
   use Qt4;
+  my $app = Qt4::Application(\@ARGV);
+  my $button = Qt4::PushButton( 'Hello, World!', undef);
+  $button->show();
+  exit $app->exit();
 
 =head1 DESCRIPTION
 
-This module is a port of the PerlQt43 package to work with Qt4 version 4.
+This module provides a Perl interface to the Qt version 4 library.
 
-=head2 EXPORT
+=head2 EXPORTS
 
-None by default.
+=over
+
+Each of the exported subroutines is prototyped.
+
+=item qApp
+
+Returns a reference to the Qt4::CoreApplication/Qt4::Application object.  This
+mimics Qt's global qApp variable.
+
+=item SIGNAL, SLOT
+
+Used to format arguments to be passed to Qt4::Object::connect().
+
+=item emit
+
+This subroutine is actually syntactic sugar.  It is used to signify that the
+following subroutine call is activating a signal.
+
+=item CAST REF,CLASSNAME
+
+Serves a similar function to bless(), but takes care of Qt4's specific quirks.
+
+=back
+
+=head2 INTRODUCTION
+
+This module provides bindings to a large part of the Qt library from Perl.
+This includes the QtCore, QtGui, QtNetwork, QtDBus, QtSql, and QtSvg modules.
+
+The module has been designed to work like writing Qt applications in C++.
+However, a few things have been renamed.  Everything is in the Qt4::namespace.
+This means that the first 'Q' in the Qt class name has been replaced with
+Qt4::.  So QWidget becomes Qt4::Widget, QListView becomes Qt4::ListView, etc.
+Also, for classes that use public data members, like QStyleOption and its
+subclasses, a set<PropertyName> method is defined to assign to those variables.
+For instance, QStyleOption has a 'version' property.  To assign to it, call
+$option->setVersion( $value );
+
+=head2 CONSTRUCTOR SYNTAX
+
+A Qt object is constructed by calling a function called Qt4::<ClassName>(), not
+Qt4::<ClassName>->new().  For instance, to make a QApplication, call
+Qt4::Application( \@ARGV );
+
+=head2 SUBCLASSING
+
+To create a subclass of a Qt class, declare a package, and then declare that
+package's base class by using Qt4::isa and passing it an argument.  Multiple
+inheritance is not supported.  This package must implement a subroutine called
+NEW.  The NEW method is the constructor for that class.  The first argument to
+this method will be the name of the class being constructed, followed by the
+arguments passed to the constructor (just like in normal object-oriented Perl).
+The first thing that this method should do is call $class->SUPER::NEW().  This
+call constructs that parent's base class, and also sets the special this()
+value.  You don't need to return anything from NEW(), PerlQt will return the
+value of this() to the caller, regardless of what is returned from NEW().  Any
+package that wants to use your subclass should explicitly 'use' it, even if the
+two packages are defined in the same file.
+
+This is a stub of a class called 'MyWidget', that subclasses Qt4::Widget:
+    package MyWidget;
+    use Qt4;
+    use Qt4::isa qw( Qt4::Widget );
+
+    sub NEW {
+        my ( $class, $parent ) = @_;
+        $class->SUPER::NEW( $parent );
+    }
+
+    package main;
+    use Qt4;
+    use MyWidget;
+
+    my $app = Qt4::Application(\@ARGV);
+    my $widget = MyWidget();
+    $widget->show();
+    exit $app->exec();
+
+=head2 THE this() VALUE
+
+In a subclass, you don't get a reference to $self.  Instead, you use 'this'.
+Not '$this', just 'this'.  In reality, it is a prototyped subroutine that
+returns a hash reference, but you should use it any place you would use $self.
+Since it is a hash reference, you can create hash keys and assign to them just
+like you would any other hashref.
+
+=head2 REIMPLEMENTING C++ FUNCTIONS
+
+To reimplement a C++ function in Perl, just declare a subroutine with the same
+name.  Since that instance of the class can already get a reference to itself
+by calling 'this', it is not passed in as the first argument.  If the C++
+function takes 2 arguments, @_ will contain 2 items.
 
 =head2 PERL-SPECIFIC DOCUMENTATION
 
-The following is a list of perl-specific implementation details, broken up by
+The following is a list of Perl-specific implementation details, broken up by
 class.
 
 =over
@@ -1748,7 +1843,7 @@ An object of type $typename, or undef if the conversion cannot be made.
 Args:
 $variant: A Qt4::Variant object.
 $typename: The name of the type of data you want out of the Qt4::Variant.  This
-parameter is optional if the variant contains a perl hash or array ref.
+parameter is optional if the variant contains a Perl hash or array ref.
 
 Description:
 Equivalent to Qt4's qVariantValue() function.
@@ -1771,6 +1866,12 @@ respectively.
 
 =back
 
+=head1 EXAMPLES
+
+This module ships with a large number of examples.  These examples have been
+directly translated to Perl from the C++ examples that ship with the Qt
+library.  They can be accessed in the examples/ directory in the source tree.
+
 =head1 SEE ALSO
 
 The existing Qt4 documentation is very complete.  Use it for your reference.
@@ -1783,7 +1884,14 @@ Chris Burel, E<lt>chrisburel@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2008 by Chris Burel
+Copyright (C) 2008-2009 by Chris Burel
+
+Based on PerlQt3,
+Copyright (C) 2002, Ashley Winters <jahqueel@yahoo.com>
+Copyright (C) 2003, Germain Garand <germain@ebooksfrance.org>
+
+Also based on QtRuby,
+Copyright (C) 2003-2004, Richard Dale
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.8 or,
