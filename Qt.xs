@@ -26,6 +26,8 @@ extern Q_DECL_EXPORT Smoke *qt_Smoke;
 extern Q_DECL_EXPORT void init_qt_Smoke();
 extern TypeHandler Qt_handlers[];
 
+SV *sv_this = 0;
+
 char *myargv = "Hello";
 int myargc = 1;
 QApplication *qapp = new QApplication(myargc, &myargv);
@@ -265,7 +267,6 @@ XS(XS_AUTOLOAD){
     dXSARGS;
     SV *autoload = get_sv("Qt::AutoLoad::AUTOLOAD", TRUE);
     char *package = SvPV_nolen(autoload);
-    fprintf(stderr, "In XS Autoload for %s\n", SvPV_nolen( autoload ));
     char *methodname = 0;
     // Splits off the method name from the package.
     for(char *s = package; *s; s++ ) {
@@ -279,22 +280,36 @@ XS(XS_AUTOLOAD){
     *(methodname++ - 1) = 0;    
 
     int withObject = (*package == ' ') ? 1 : 0;
+    int isSuper = 0;
     if(withObject) {
         package++;
+        if(*package == ' ') {
+            isSuper = 1;
+            package++;
+            char *super = new char[strlen(package) + 7];
+            sprintf( super, "%s::SUPER", package );
+            package = super;
+        }
     }
-
-    Smoke::Index classid = package_classid(package);
-    char *classname = (char*)qt_Smoke->className(classid);
+    fprintf(stderr, "In XS Autoload for %s::%s\n", package, methodname);
 
     // Look to see if there's a perl subroutine for this method
-    HV* classcache_ext = get_hv( "Qt::_internal::package2classid", false);
-    U32 klen = strlen( package );
-    SV** classcache = hv_fetch( classcache_ext, package, klen, 0 );
-    if( !classcache ) {
+    // HV* classcache_ext = get_hv( "Qt::_internal::package2classid", false);
+    // U32 klen = strlen( package );
+    // SV** classcache = hv_fetch( classcache_ext, package, klen, 0 );
+    // if( !classcache ) {
         HV *stash = gv_stashpv(package, TRUE);
         GV *gv = gv_fetchmethod_autoload(stash, methodname, 0);
 
         if(gv){
+            fprintf(stderr, "\tfound in %s's Perl stash\n", package);
+
+            SV *old_this;
+            if(withObject && !isSuper){
+                old_this = sv_this;
+                sv_this = newSVsv(ST(0));
+            }
+
             // Call the found method
             ENTER;
             SAVETMPS;
@@ -305,13 +320,22 @@ XS(XS_AUTOLOAD){
             PUTBACK;
             FREETMPS;
             LEAVE;
+
+            if(withObject && !isSuper){
+                SvREFCNT_dec(sv_this);
+                sv_this = old_this;
+            }
+
             XSRETURN(count);
         }
-    }
+    // }
     else if(!strcmp(methodname, "DESTROY")) {
         //fprintf( stderr, "DESTROY: coming soon.\n" );
     }
     else {
+        Smoke::Index classid = package_classid(package);
+        char *classname = (char*)qt_Smoke->className(classid);
+
         // Loop over the arguments and see what kind we have
         for(int i = 0 + withObject; i < items; i++) {
             SV* arg = ST(i);
@@ -329,7 +353,12 @@ XS(XS_AUTOLOAD){
         smokeperl_object temp = { 0, 0, 0, false };
         smokeperl_object *call_this;
         if( withObject ){
-            call_this = sv_obj_info( ST(0) );
+            if( isSuper ){
+                call_this = sv_obj_info( sv_this );
+            }
+            else {
+                call_this = sv_obj_info( ST(0) );
+            }
         }
         else{
             call_this = &temp;
@@ -351,6 +380,39 @@ XS(XS_AUTOLOAD){
         ST(0) = sv_2mortal(retval);
         XSRETURN(1);
     }
+}
+
+XS(XS_super) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    SV **svp = 0;
+    // If we have a valid 'sv_this'
+    if(SvROK(sv_this) && SvTYPE(SvRV(sv_this)) == SVt_PVHV){
+        // Get the reference to this object's super hash
+        HV *copstash = (HV*)CopSTASH(PL_curcop); //wtf is the cop?
+        if(!copstash) XSRETURN_UNDEF;
+        
+        // Get the _INTERNAL_STATIC_ hash
+        svp = hv_fetch(copstash, "_INTERNAL_STATIC_", 17, 0);
+        if(!svp) XSRETURN_UNDEF;
+        
+        // Get the glob value from that hash key
+        copstash = GvHV((GV*)*svp);
+        if(!copstash) XSRETURN_UNDEF;
+        
+        svp = hv_fetch(copstash, "SUPER", 5, 0);
+    }
+    if(svp) {
+        ST(0) = *svp;
+        XSRETURN(1);
+    }
+}
+
+XS(XS_this) {
+    dXSARGS;
+    PERL_UNUSED_VAR(items);
+    ST(0) = sv_this;
+    XSRETURN(1);
 }
 
 MODULE = Qt   PACKAGE = Qt::_internal
@@ -399,9 +461,44 @@ installautoload(package)
         newXS(autoload, XS_AUTOLOAD, file);
         delete[] autoload;
 
+void
+installsuper(package)
+        char *package
+    CODE:
+        if(!package) XSRETURN_EMPTY;
+        char *attr = new char[strlen(package) + 8];
+        sprintf(attr, "%s::SUPER", package);
+        // *{ $name } = sub () : lvalue;
+        CV *attrsub = newXS(attr, XS_super, __FILE__);
+        sv_setpv((SV*)attrsub, ""); // sub this () : lvalue; perldoc perlsub
+        delete[] attr;
+
+void
+installthis(package)
+        char *package
+    CODE:
+        if(!package) XSRETURN_EMPTY;
+        char *attr = new char[strlen(package) + 7];
+        sprintf(attr, "%s::this", package);
+        // *{ $name } = sub () : lvalue;
+        CV *attrsub = newXS(attr, XS_this, __FILE__);
+        sv_setpv((SV*)attrsub, ""); // sub this () : lvalue; perldoc perlsub
+        delete[] attr;
+
+void
+setThis(obj)
+        SV *obj
+    CODE:
+        sv_setsv_mg(sv_this, obj);
+
 MODULE = Qt   PACKAGE = Qt
 
-PROTOTYPES: DISABLE
+SV *
+this()
+    CODE:
+        RETVAL = newSVsv(sv_this);
+    OUTPUT:
+        RETVAL
 
 int
 appexec()
@@ -412,10 +509,10 @@ appexec()
 
 BOOT:
     init_qt_Smoke();
-    //qt_Smoke->binding = new MySmokeBinding(qt_Smoke);
     binding = PerlQt::Binding(qt_Smoke);
     PerlQtModule module = { "PerlQt", &binding };
     perlqt_modules[qt_Smoke] = module;
 
     install_handlers(Qt_handlers);
+    sv_this = newSV(0);
     //newXS(" Qt::QTableView::setRootIndex", XS_Qt__myQTableView_setRootIndex, file);

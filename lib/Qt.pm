@@ -1,9 +1,20 @@
 package Qt::base;
 
 use strict;
+sub this () {}
 
 sub new {
-    return shift->NEW(@_);
+    no strict 'refs';
+    # Store whatever current 'this' value we've got
+    my $packageThis = Qt::this();
+    # Overwrites the 'this' value
+    shift->NEW(@_);
+    # Get the return value
+    my $ret = Qt::this();
+    # Restore package's this
+    Qt::_internal::setThis($packageThis);
+    # Give back the new value
+    return $ret;
 }
 
 package Qt::_internal;
@@ -53,12 +64,10 @@ sub init_class {
         my $perlClassName = shift;
         $Qt::AutoLoad::AUTOLOAD = "$perlClassName\::$cxxClassName";
         my $autoload = "$perlClassName\::_UTOLOAD";
-        my $retval; 
         {
             no warnings;
-            $retval = &$autoload;
+            setThis( bless &$autoload, " $perlClassName" );
         }
-        return $retval;
     } unless defined &{"$perlClassName\::NEW"};
 
     *{ $perlClassName } = sub {

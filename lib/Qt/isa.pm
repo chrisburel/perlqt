@@ -6,7 +6,8 @@ sub import {
     my $class = shift;
     my $caller = (caller)[0];
 
-    # Trick 'use' into believing the file for this class has been read, and associate it with this file
+    # Trick 'use' into believing the file for this class has been read, and
+    # associate it with this file
     my $pm = $caller . ".pm";
     $pm =~ s!::!/!g;
     unless(exists $::INC{$pm}) {
@@ -18,43 +19,45 @@ sub import {
         push @{ $caller . '::ISA' }, $super;
     }
 
+    # This hash is used to get an object blessed to the right thing, so that
+    # when we call SUPER(), we get this blessed object back.
+    ${$caller.'::_INTERNAL_STATIC_'}{'SUPER'} = bless {}, "  $caller";
+    Qt::_internal::installsuper($caller) unless defined &{ $caller.'::SUPER' };
+
+    # Make it so that 'use <packagename>' makes a subroutine called
+    # <packagename> that calls ->new
     *{ $caller . '::import' } = sub {
-        print "Running $caller\::import\n";
-        # Name is the full package name being loaded, incaller is the package doing the loading.
+        # Name is the full package name being loaded, incaller is the package
+        # doing the loading
         my $name = shift;    # classname = function-name
         my $incaller = (caller)[0];
-        $incaller = (caller(1))[0] if $incaller eq 'if'; # work-around bug in package 'if'  pre 0.02
-        printf("name=%s incaller=%s\n", $name, $incaller);
-
-        # cname is the 'filename' of the package, everything after the last '::'
-        # p is the 'basename', everything up to and including the last '::'
-        my $cname = $name;
-        $cname =~ s/.*:://;
-        $p =~ s/(.*::).*/$1/;
-
-        
+        $incaller = (caller(1))[0] if $incaller eq 'if';
         { 
             *{ "$name" } = sub {
 
                 $name->new(@_);
             } unless defined &{ "$name" };
         };
-        $p eq ($incaller=~ /.*::/ ? ($p ? $& : '') : '') and do
         {
-            *{ "$incaller\::$cname" } = sub {
+            *{ "$incaller\::$name" } = sub {
                 $name->new(@_);
-            } unless defined &{ "$incaller\::$cname" };
+            } unless defined &{ "$incaller\::$name" };
         };
     };
 
+    Qt::_internal::installautoload("  $caller");
     Qt::_internal::installautoload(" $caller");
     Qt::_internal::installautoload($caller);
     {
         package Qt::AutoLoad;
-        my $autosub = \&{ " $caller\::_UTOLOAD" };
+        my $autosub = \&{ "  $caller\::_UTOLOAD" };
         *{ "  $caller\::AUTOLOAD" } = sub { &$autosub };        
+        $autosub = \&{ " $caller\::_UTOLOAD" };
+        *{ " $caller\::AUTOLOAD" } = sub { &$autosub };        
         $autosub = \&{ "$caller\::_UTOLOAD" };
         *{ "$caller\::AUTOLOAD" } = sub { &$autosub };
     }
+
+    Qt::_internal::installthis($caller);
 }
 1; # Is the loneliest number that you'll ever do

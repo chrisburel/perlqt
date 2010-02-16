@@ -1,0 +1,38 @@
+#!/usr/local/bin/perl -w
+use strict;
+
+BEGIN {
+        chdir "$ENV{HOME}/src/qt/4/PerlQt";
+        unshift @INC, 'blib/arch';
+        unshift @INC, 'blib/lib';
+}
+
+package Button;
+use Qt;
+use Qt::isa qw(Qt::QPushButton);
+
+sub NEW {
+    shift->SUPER::NEW(@_[0..2]);
+}
+
+sub myresize {
+    SUPER()->resize(130, 40);
+}
+
+sub resize {
+    printf( "%30s\n", "found here \\/" );
+    this->myresize();
+    printf( "%30s\n", "/\\" );
+}
+1;
+
+package main;
+
+use Qt;
+use Button;
+
+#my $a = Qt::Application(\@ARGV);
+my $w = Button("Hello World!", undef);
+$w->resize(130, 40);
+$w->show;
+exit Qt::appexec();
