@@ -729,9 +729,14 @@ sub do_autoload {
             # A constructor call will be 4 levels deep on the stack, everything
             # else will be 2
             my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
+            my @caller = caller($stackDepth);
+            while ( $caller[1] =~ m/Qt\.pm$/ || $caller[1] =~ m/Qt\/isa\.pm/ ) {
+                ++$stackDepth;
+                @caller = caller($stackDepth);
+            }
             my $msg = "--- Ambiguous method ${classname}::$methodname" .
-                ' called at ' . (caller($stackDepth))[1] .
-                ' line ' . (caller($stackDepth))[2] . "\n";
+                ' called at ' . $caller[1] .
+                ' line ' . $caller[2] . "\n";
             $msg .= "Candidates are:\n\t";
             $msg .= join "\n\t", dumpCandidates( $classname, $methodname, \@methodIds );
             $msg .= "\nChoosing first one...\n";
@@ -749,11 +754,16 @@ sub do_autoload {
         # args don't match
         if (!objmatch($methodIds[0], \@_)) {
             my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
+            my @caller = caller($stackDepth);
+            while ( $caller[1] =~ m/Qt\.pm$/ || $caller[1] =~ m/Qt\/isa\.pm/ ) {
+                ++$stackDepth;
+                @caller = caller($stackDepth);
+            }
             my $errStr = '--- Arguments for method call ' .
                 "$classname\::$methodname did not match C++ method ".
                 "signature," .
-                ' called at ' . (caller($stackDepth))[1] .
-                ' line ' . (caller($stackDepth))[2] . "\n";
+                ' called at ' . $caller[1] .
+                ' line ' . $caller[2] . "\n";
             $errStr .= "Method call was:\n\t";
             $errStr .= "$classname\::$methodname( " . dumpArgs(@_) . " )\n";
             $errStr .= "C++ signature is:\n\t";

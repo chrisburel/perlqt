@@ -424,7 +424,7 @@ Smoke::Index package_classId( const char *package ) {
             // Recurse until we find a match
             Smoke::Index ix = package_classId( SvPV_nolen( *np ) );
             if( ix ) {
-                ;// Cache the result - to do, does it depend on cache?
+                ;// Cache the result - TODO
                 return ix;
             }
         }
