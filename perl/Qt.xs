@@ -1,11 +1,19 @@
 // Include Qt headers first, to avoid weirdness that the perl headers cause
-#include "QtCore/QHash"
-#include "QtCore/QList"
-#include "QtCore/QMetaMethod"
-#include "QtCore/QMetaObject"
-#include "QtCore/QRegExp"
-#include "QtGui/QPainter"
-#include "QtGui/QPaintEngine"
+#include <QtCore/QHash>
+#include <QtCore/QList>
+#include <QtCore/QMetaMethod>
+#include <QtCore/QMetaObject>
+#include <QtCore/QRegExp>
+#include <QtGui/QPainter>
+#include <QtGui/QPaintEngine>
+#include <QtGui/QPalette>
+#include <QtGui/QIcon>
+#include <QtGui/QBitmap>
+#include <QtGui/QCursor>
+#include <QtGui/QSizePolicy>
+#include <QtGui/QKeySequence>
+#include <QtGui/QTextLength>
+#include <QtGui/QTextFormat>
 
 // Perl headers
 extern "C" {
@@ -450,6 +458,124 @@ void unmapPointer( smokeperl_object* o, Smoke::Index classId, void* lastptr) {
     for(Smoke::Index *i = o->smoke->inheritanceList + o->smoke->classes[classId].parents; *i; i++) {
         unmapPointer(o, *i, lastptr);
     }
+}
+
+XS(XS_qvariant_value) {
+    dXSARGS;
+	void * sv_ptr = 0;
+	SV *retval = &PL_sv_undef;
+	smokeperl_object * vo = 0;
+
+    smokeperl_object *o = sv_obj_info(ST(1));
+	if (o == 0 || o->ptr == 0) {
+		ST(0) = retval;
+        XSRETURN(1);
+	}
+
+	QVariant * variant = (QVariant*) o->ptr;
+
+	// If the QVariant contains a user type, don't bother to look at the Ruby class argument
+	if (variant->type() >= QVariant::UserType) { 
+        fprintf( stderr, "User types in QVariant unsupported\n" );
+        XSRETURN_UNDEF;
+        /*
+#ifdef QT_QTDBUS 
+		if (qstrcmp(variant->typeName(), "QDBusObjectPath") == 0) {
+			QString s = qVariantValue<QDBusObjectPath>(*variant).path();
+			return rb_str_new2(s.toLatin1());
+		} else if (qstrcmp(variant->typeName(), "QDBusSignature") == 0) {
+			QString s = qVariantValue<QDBusSignature>(*variant).signature();
+			return rb_str_new2(s.toLatin1());
+		}
+#endif
+
+		value_ptr = QMetaType::construct(QMetaType::type(variant->typeName()), (void *) variant->constData());
+		Smoke::ModuleIndex mi = o->smoke->findClass(variant->typeName());
+		vo = alloc_smokeruby_object(true, mi.smoke, mi.index, value_ptr);
+		return set_obj_info(qtruby_modules[mi.smoke].binding->className(mi.index), vo);
+        */
+	}
+
+	const char * classname = SvPV_nolen(ST(0));
+    Smoke::ModuleIndex * sv_class_id = new Smoke::ModuleIndex;
+    sv_class_id->index = package_classId(classname);
+    sv_class_id->smoke = qt_Smoke;
+
+	if (sv_class_id == 0) {
+		ST(0) = retval;
+        XSRETURN(1);
+	}
+
+	if (qstrcmp(classname, "Qt::Pixmap") == 0) {
+		QPixmap v = qVariantValue<QPixmap>(*variant);
+		sv_ptr = (void *) new QPixmap(v);
+	} else if (qstrcmp(classname, "Qt::Font") == 0) {
+		QFont v = qVariantValue<QFont>(*variant);
+		sv_ptr = (void *) new QFont(v);
+	} else if (qstrcmp(classname, "Qt::Brush") == 0) {
+		QBrush v = qVariantValue<QBrush>(*variant);
+		sv_ptr = (void *) new QBrush(v);
+	} else if (qstrcmp(classname, "Qt::Color") == 0) {
+		QColor v = qVariantValue<QColor>(*variant);
+		sv_ptr = (void *) new QColor(v);
+	} else if (qstrcmp(classname, "Qt::Palette") == 0) {
+		QPalette v = qVariantValue<QPalette>(*variant);
+		sv_ptr = (void *) new QPalette(v);
+	} else if (qstrcmp(classname, "Qt::Icon") == 0) {
+		QIcon v = qVariantValue<QIcon>(*variant);
+		sv_ptr = (void *) new QIcon(v);
+	} else if (qstrcmp(classname, "Qt::Image") == 0) {
+		QImage v = qVariantValue<QImage>(*variant);
+		sv_ptr = (void *) new QImage(v);
+	} else if (qstrcmp(classname, "Qt::Polygon") == 0) {
+		QPolygon v = qVariantValue<QPolygon>(*variant);
+		sv_ptr = (void *) new QPolygon(v);
+	} else if (qstrcmp(classname, "Qt::Region") == 0) {
+		QRegion v = qVariantValue<QRegion>(*variant);
+		sv_ptr = (void *) new QRegion(v);
+	} else if (qstrcmp(classname, "Qt::Bitmap") == 0) {
+		QBitmap v = qVariantValue<QBitmap>(*variant);
+		sv_ptr = (void *) new QBitmap(v);
+	} else if (qstrcmp(classname, "Qt::Cursor") == 0) {
+		QCursor v = qVariantValue<QCursor>(*variant);
+		sv_ptr = (void *) new QCursor(v);
+	} else if (qstrcmp(classname, "Qt::SizePolicy") == 0) {
+		QSizePolicy v = qVariantValue<QSizePolicy>(*variant);
+		sv_ptr = (void *) new QSizePolicy(v);
+	} else if (qstrcmp(classname, "Qt::KeySequence") == 0) {
+		QKeySequence v = qVariantValue<QKeySequence>(*variant);
+		sv_ptr = (void *) new QKeySequence(v);
+	} else if (qstrcmp(classname, "Qt::Pen") == 0) {
+		QPen v = qVariantValue<QPen>(*variant);
+		sv_ptr = (void *) new QPen(v);
+	} else if (qstrcmp(classname, "Qt::TextLength") == 0) {
+		QTextLength v = qVariantValue<QTextLength>(*variant);
+		sv_ptr = (void *) new QTextLength(v);
+	} else if (qstrcmp(classname, "Qt::TextFormat") == 0) {
+		QTextFormat v = qVariantValue<QTextFormat>(*variant);
+		sv_ptr = (void *) new QTextFormat(v);
+	} else if (qstrcmp(classname, "Qt::Variant") == 0) {
+		sv_ptr = (void *) new QVariant(*((QVariant *) variant->constData()));
+	} else {
+		// Assume the value of the Qt::Variant can be obtained
+		// with a call such as Qt::Variant.toPoint()
+        /*
+		QByteArray toValueMethodName(classname);
+		if (toValueMethodName.startsWith("Qt::")) {
+			toValueMethodName.remove(0, strlen("Qt::"));
+		}
+		toValueMethodName.prepend("to");
+		return rb_funcall(variant_value, rb_intern(toValueMethodName), 1, variant_value);
+        */
+	}
+
+	retval = allocSmokePerlSV(sv_ptr, SmokeType( sv_class_id->smoke,
+         sv_class_id->smoke->idType(sv_class_id->smoke->className(sv_class_id->index))));
+
+    delete sv_class_id;
+
+	ST(0) = sv_2mortal(retval);
+    XSRETURN(1);
 }
 
 XS(XS_qvariant_from_value) {
@@ -1390,6 +1516,7 @@ BOOT:
     pointer_map = get_hv( "Qt::_internal::pointer_map", FALSE );
 
     newXS("Qt::qVariantFromValue", XS_qvariant_from_value, __FILE__);
+    newXS("Qt::qVariantValue", XS_qvariant_value, __FILE__);
 
     sv_this = newSV(0);
     sv_qapp = newSV(0);

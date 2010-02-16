@@ -376,9 +376,16 @@ no strict 'refs';
 use overload
     "fallback" => 1,
     "==" => "Qt::enum::_overload::op_equal",
+    "!=" => "Qt::enum::_overload::op_not_equal",
     "+"  => "Qt::enum::_overload::op_plus",
     "|"  => "Qt::enum::_overload::op_or",
-    '^'  => 'Qt::enum::_overload::op_xor';
+    '^'  => 'Qt::enum::_overload::op_xor',
+    "<=" => "Qt::enum::_overload::op_lesser_equal",
+    ">=" => "Qt::enum::_overload::op_greater_equal",
+    "<"  => "Qt::enum::_overload::op_lesser",
+    ">"  => "Qt::enum::_overload::op_greater",
+    "--" => "Qt::enum::_overload::op_decrement",
+    "++" => "Qt::enum::_overload::op_increment";
 
 sub op_equal {
     if( ref $_[0] ) {
@@ -393,6 +400,25 @@ sub op_equal {
     }
     else {
         return 1 if $_[0] == ${$_[1]};
+        return 0;
+    }
+    # Never have to check for both not being references.  If neither is a ref,
+    # this function will never be called.
+}
+
+sub op_not_equal {
+    if( ref $_[0] ) {
+        if( ref $_[1] ) {
+            return 1 if ${$_[0]} != ${$_[1]};
+            return 0;
+        }
+        else {
+            return 1 if ${$_[0]} != $_[1];
+            return 0;
+        }
+    }
+    else {
+        return 1 if $_[0] != ${$_[1]};
         return 0;
     }
     # Never have to check for both not being references.  If neither is a ref,
@@ -426,6 +452,49 @@ sub op_xor {
     }
 }
 
+sub op_lesser_equal {
+    if ( ref $_[1] ) {
+        return ${$_[0]} <= ${$_[1]};
+    }
+    else {
+        return ${$_[0]} <= $_[1];
+    }
+}
+
+sub op_greater_equal {
+    if ( ref $_[1] ) {
+        return ${$_[0]} >= ${$_[1]};
+    }
+    else {
+        return ${$_[0]} >= $_[1];
+    }
+}
+
+sub op_lesser {
+    if ( ref $_[1] ) {
+        return ${$_[0]} < ${$_[1]};
+    }
+    else {
+        return ${$_[0]} < $_[1];
+    }
+}
+
+sub op_greater {
+    if ( ref $_[1] ) {
+        return ${$_[0]} > ${$_[1]};
+    }
+    else {
+        return ${$_[0]} > $_[1];
+    }
+}
+
+sub op_increment {
+    return ++${$_[0]};
+}
+
+sub op_decrement {
+    return --${$_[0]};
+}
 package Qt::_internal;
 
 use strict;
@@ -498,6 +567,23 @@ sub argmatch {
     return sort { $match{$b}[0] <=> $match{$a}[0] or $match{$a}[1] <=> $match{$b}[1] } keys %match;
 }
 
+sub dumpArgs {
+    return join ', ', map{ my $refName = ref $_; $refName =~ s/^ *//; $refName } @_;
+}
+
+sub dumpCandidates {
+    my ( $classname, $methodname, $numArgs, $methodIds ) = @_;
+    my @methods;
+    foreach my $id ( @{$methodIds} ) {
+        my $method = "$classname\::$methodname( ";
+        $method .= join ', ', map{ getTypeNameOfArg( $id, $_ ) } ( 0..$numArgs-1 );
+        $method .= " )";
+        push @methods, $method;
+    }
+    return join "\n\t", @methods;
+}
+
+
 # Args: @_: the args to the method being called
 #       $classname: the c++ class being called
 #       $methodname: the c++ method name being called
@@ -538,9 +624,13 @@ sub do_autoload {
             # A constructor call will be 4 levels deep on the stack, everything
             # else will be 2
             my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
-             #"--- Ambiguous method ${classname}::$methodname " .
-                #"called at " . (caller($stackDepth))[1] .
-                #" line " . (caller($stackDepth))[2] . "\n";
+            my $msg = "--- Ambiguous method ${classname}::$methodname" .
+                ' called at ' . (caller($stackDepth))[1] .
+                ' line ' . (caller($stackDepth))[2] . "\n";
+            $msg .= "Candidates are:\n\t";
+            $msg .= dumpCandidates( $classname, $methodname, scalar @_, \@methodIds );
+            $msg .= "\nChoosing first one...\n";
+            warn $msg;
             @methodIds = $methodIds[0];
         }
     }
@@ -550,12 +640,23 @@ sub do_autoload {
         # args don't match
         if (!objmatch($methodIds[0], \@_)) {
             @methodIds = ();
-            die "--- Objects didn't match signature in call to $methodname\n";
+            my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
+            my $errStr = '--- Arguments for method call ' .
+                "$classname\::$methodname did not match C++ method ".
+                "signature," .
+                ' called at ' . (caller($stackDepth))[1] .
+                ' line ' . (caller($stackDepth))[2] . "\n";
+            $errStr .= "Method call was:\n";
+            $errStr .= "\t$classname\::$methodname( " . dumpArgs(@_) . " )\n";
+            print STDERR $errStr and die;
         }
     }
 
     if ( !@methodIds ) {
-        die "--- No method found in lookup for $classname\::$methodname\n";
+        my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
+        print STDERR "--- No method found in lookup for $classname\::$methodname,".
+            ' called at ' . (caller($stackDepth))[1] .
+            ' line ' . (caller($stackDepth))[2] . "\n" and die;
     }
 
     return $methodIds[0];

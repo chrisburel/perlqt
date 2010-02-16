@@ -1009,6 +1009,48 @@ void marshall_QListqreal(Marshall *m) {
     }
 }
 
+void marshall_QListLocaleCountry(Marshall *m){
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            m->unsupported();
+        }
+        break;
+
+        case Marshall::ToSV: {
+            QList<QLocale::Country> *valuelist = (QList<QLocale::Country>*)m->item().s_voidp;
+            if(!valuelist) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
+
+            AV* av = newAV();
+            SV* avref = newRV_noinc((SV*)av);
+
+            for(int i=0; i < valuelist->size(); ++i) {
+                void *p = (void *) &(valuelist->at(i));
+
+                SV *rv = newRV_noinc(newSViv(*(IV*)p));
+                sv_bless( rv, gv_stashpv("QLocale::Country", TRUE) );
+                av_push(av, rv);
+            }
+
+            sv_setsv(m->var(), avref);
+            m->next();
+
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+
+        }
+        break;
+
+        default:
+            m->unsupported();
+        break;
+    }
+}
+
+
 void marshall_QVectorqreal(Marshall *m) {
     UNTESTED_HANDLER("marshall_QVectorqreal");
     switch(m->action()) {
@@ -1892,6 +1934,7 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     { "QList<QImageTextKeyLang>", marshall_QImageTextKeyLangList },
     { "QList<QKeySequence>", marshall_QKeySequenceList },
     { "QList<QKeySequence>&", marshall_QKeySequenceList },
+    { "QList<QLocale::Country>", marshall_QListLocaleCountry },
     { "QList<QListWidgetItem*>", marshall_QListWidgetItemList },
     { "QList<QListWidgetItem*>&", marshall_QListWidgetItemList },
     { "QList<QModelIndex>", marshall_QModelIndexList },
