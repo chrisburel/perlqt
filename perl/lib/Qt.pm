@@ -26,6 +26,9 @@ sub new {
 sub tr {
     my $context = ref Qt::this();
     $context =~ s/^ *//;
+    if( !$context ) {
+        ($context) = $Qt::AutoLoad::AUTOLOAD =~ m/(.*).:tr$/;
+    }
     return Qt::qApp()->translate( $context, @_ );
 }
 
