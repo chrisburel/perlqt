@@ -37,8 +37,10 @@ sub import {
 
     # This hash is used to get an object blessed to the right thing, so that
     # when we call SUPER(), we get this blessed object back.
-    $X->($caller.'::_INTERNAL_STATIC_')->{'SUPER'} = bless {}, "  $caller";
-    Qt::_internal::installsuper($caller);# unless defined &{ $caller.'::SUPER' };
+    {
+      my $superthing = bless {}, "  $caller";
+      $X->($caller.'::SUPER') = sub {$superthing};
+    }
 
     # Make it so that 'use <packagename>' makes a subroutine called
     # <packagename> that calls ->new

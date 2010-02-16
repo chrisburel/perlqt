@@ -1965,38 +1965,6 @@ XS(XS_signal){
     // TODO: Handle signal return value
 }
 
-XS(XS_super) {
-    dXSARGS;
-    PERL_UNUSED_VAR(items);
-    SV **svp = 0;
-    // Only return the _INTERNAL_STATIC_ hashref if we're in a package that has
-    // called SUPER::NEW()
-    if(SvROK(sv_this) && SvTYPE(SvRV(sv_this)) == SVt_PVHV){
-		// Figure out who's calling us
-        HV *stash = (HV*)SvSTASH(SvRV(sv_this));
-        if(*HvNAME(stash) == ' ') // if withObject, look for a diff stash
-            stash = gv_stashpv(HvNAME(stash) + 1, TRUE);
-        if(!stash) XSRETURN_UNDEF;
-        
-        // Get the _INTERNAL_STATIC_ hash
-        svp = hv_fetch(stash, "_INTERNAL_STATIC_", 17, 0);
-        if(!svp) XSRETURN_UNDEF;
-        
-        // Get the hash value from that hash key, remember it's a hash of
-        // hashes
-        stash = GvHV((GV*)*svp);
-        if(!stash) XSRETURN_UNDEF;
-
-        // Now get the value of the 'SUPER' key in the retrieved
-        // _INTERNAL_STATIC_ hash
-        svp = hv_fetch(stash, "SUPER", 5, 0);
-        if(svp) {
-            ST(0) = *svp;
-            XSRETURN(1);
-        }
-    }
-}
-
 XS(XS_this) {
     dXSARGS;
     PERL_UNUSED_VAR(items);

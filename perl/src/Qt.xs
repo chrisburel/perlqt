@@ -217,19 +217,6 @@ installsignal(signalname)
         newXS(signalname, XS_signal, __FILE__);
 
 void
-installsuper( package )
-        char* package
-    CODE:
-        if( !package ) XSRETURN_EMPTY;
-        char* attr = new char[strlen(package) + 8];
-        strcpy(attr, package);
-        strcat(attr, "::SUPER");
-        // *{ $name } = sub () : lvalue;
-        CV *attrsub = newXS(attr, XS_super, __FILE__);
-        sv_setpv((SV*)attrsub, ""); // sub this () : lvalue; perldoc perlsub
-        delete[] attr;
-
-void
 installthis( package )
         char* package
     CODE:
