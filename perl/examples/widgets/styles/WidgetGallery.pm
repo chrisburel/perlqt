@@ -4,10 +4,10 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Dialog );
-use Qt::slots
+use Qt4::isa qw( Qt4::Dialog );
+use Qt4::slots
     changeStyle => ['const QString &'],
     changePalette => [],
     advanceProgressBar => [];
@@ -118,19 +118,19 @@ sub progressBar() {
 sub NEW {
     my ($class, $parent) = @_;
     $class->SUPER::NEW( $parent );
-    this->{originalPalette} = Qt::Application::palette();
+    this->{originalPalette} = Qt4::Application::palette();
 
-    this->{styleComboBox} = Qt::ComboBox();
+    this->{styleComboBox} = Qt4::ComboBox();
     this->styleComboBox->addItem('NorwegianWood');
-    this->styleComboBox->addItems(Qt::StyleFactory::keys());
+    this->styleComboBox->addItems(Qt4::StyleFactory::keys());
 
-    this->{styleLabel} = Qt::Label(this->tr('&Style:'));
+    this->{styleLabel} = Qt4::Label(this->tr('&Style:'));
     this->styleLabel->setBuddy(this->styleComboBox);
 
-    this->{useStylePaletteCheckBox} = Qt::CheckBox(this->tr('&Use style\'s standard palette'));
+    this->{useStylePaletteCheckBox} = Qt4::CheckBox(this->tr('&Use style\'s standard palette'));
     this->useStylePaletteCheckBox->setChecked(1);
 
-    this->{disableWidgetsCheckBox} = Qt::CheckBox(this->tr('&Disable widgets'));
+    this->{disableWidgetsCheckBox} = Qt4::CheckBox(this->tr('&Disable widgets'));
 
     this->createTopLeftGroupBox();
     this->createTopRightGroupBox();
@@ -156,7 +156,7 @@ sub NEW {
 # [2]
 
 # [3]
-    my $topLayout = Qt::HBoxLayout();
+    my $topLayout = Qt4::HBoxLayout();
 # [3] //! [4]
     $topLayout->addWidget(this->styleLabel);
     $topLayout->addWidget(this->styleComboBox);
@@ -164,7 +164,7 @@ sub NEW {
     $topLayout->addWidget(this->useStylePaletteCheckBox);
     $topLayout->addWidget(this->disableWidgetsCheckBox);
 
-    my $mainLayout = Qt::GridLayout();
+    my $mainLayout = Qt4::GridLayout();
     $mainLayout->addLayout($topLayout, 0, 0, 1, 2);
     $mainLayout->addWidget(this->topLeftGroupBox, 1, 0);
     $mainLayout->addWidget(this->topRightGroupBox, 1, 1);
@@ -187,9 +187,9 @@ sub changeStyle {
 # [5] //! [6]
     my ($styleName) = @_;
     if ($styleName eq 'NorwegianWood') {
-        #Qt::Application::setStyle(NorwegianWoodStyle());
+        #Qt4::Application::setStyle(NorwegianWoodStyle());
     } else {
-        Qt::Application::setStyle(Qt::StyleFactory::create($styleName));
+        Qt4::Application::setStyle(Qt4::StyleFactory::create($styleName));
     }
     this->changePalette();
 }
@@ -199,11 +199,11 @@ sub changeStyle {
 sub changePalette {
 # [7] //! [8]
     if (this->useStylePaletteCheckBox->isChecked()) {
-        my $palette = Qt::Application::style()->standardPalette();
-        Qt::Application::setPalette($palette);
+        my $palette = Qt4::Application::style()->standardPalette();
+        Qt4::Application::setPalette($palette);
     }
     else {
-        Qt::Application::setPalette(this->originalPalette);
+        Qt4::Application::setPalette(this->originalPalette);
     }
 }
 # [8]
@@ -220,18 +220,18 @@ sub advanceProgressBar {
 # [11]
 sub createTopLeftGroupBox {
 # [11] //! [12]
-    this->{topLeftGroupBox} = Qt::GroupBox(this->tr('Group 1'));
+    this->{topLeftGroupBox} = Qt4::GroupBox(this->tr('Group 1'));
 
-    this->{radioButton1} = Qt::RadioButton(this->tr('Radio button 1'));
-    this->{radioButton2} = Qt::RadioButton(this->tr('Radio button 2'));
-    this->{radioButton3} = Qt::RadioButton(this->tr('Radio button 3'));
+    this->{radioButton1} = Qt4::RadioButton(this->tr('Radio button 1'));
+    this->{radioButton2} = Qt4::RadioButton(this->tr('Radio button 2'));
+    this->{radioButton3} = Qt4::RadioButton(this->tr('Radio button 3'));
     this->radioButton1->setChecked(1);
 
-    this->{checkBox} = Qt::CheckBox(this->tr('Tri-state check box'));
+    this->{checkBox} = Qt4::CheckBox(this->tr('Tri-state check box'));
     this->checkBox->setTristate(1);
-    this->checkBox->setCheckState(Qt::PartiallyChecked());
+    this->checkBox->setCheckState(Qt4::PartiallyChecked());
 
-    my $layout = Qt::VBoxLayout();
+    my $layout = Qt4::VBoxLayout();
     $layout->addWidget(this->radioButton1);
     $layout->addWidget(this->radioButton2);
     $layout->addWidget(this->radioButton3);
@@ -242,19 +242,19 @@ sub createTopLeftGroupBox {
 # [12]
 
 sub createTopRightGroupBox {
-    this->{topRightGroupBox} = Qt::GroupBox(this->tr('Group 2'));
+    this->{topRightGroupBox} = Qt4::GroupBox(this->tr('Group 2'));
 
-    this->{defaultPushButton} = Qt::PushButton(this->tr('Default Push Button'));
+    this->{defaultPushButton} = Qt4::PushButton(this->tr('Default Push Button'));
     this->defaultPushButton->setDefault(1);
 
-    this->{togglePushButton} = Qt::PushButton(this->tr('Toggle Push Button'));
+    this->{togglePushButton} = Qt4::PushButton(this->tr('Toggle Push Button'));
     this->togglePushButton->setCheckable(1);
     this->togglePushButton->setChecked(1);
 
-    this->{flatPushButton} = Qt::PushButton(this->tr('Flat Push Button'));
+    this->{flatPushButton} = Qt4::PushButton(this->tr('Flat Push Button'));
     this->flatPushButton->setFlat(1);
 
-    my $layout = Qt::VBoxLayout();
+    my $layout = Qt4::VBoxLayout();
     $layout->addWidget(this->defaultPushButton);
     $layout->addWidget(this->togglePushButton);
     $layout->addWidget(this->flatPushButton);
@@ -263,20 +263,20 @@ sub createTopRightGroupBox {
 }
 
 sub createBottomLeftTabWidget {
-    this->{bottomLeftTabWidget} = Qt::TabWidget();
-    this->bottomLeftTabWidget->setSizePolicy(Qt::SizePolicy::Preferred(),
-                                       Qt::SizePolicy::Ignored());
+    this->{bottomLeftTabWidget} = Qt4::TabWidget();
+    this->bottomLeftTabWidget->setSizePolicy(Qt4::SizePolicy::Preferred(),
+                                       Qt4::SizePolicy::Ignored());
 
-    my $tab1 = Qt::Widget();
-    this->{tableWidget} = Qt::TableWidget(10, 10);
+    my $tab1 = Qt4::Widget();
+    this->{tableWidget} = Qt4::TableWidget(10, 10);
 
-    my $tab1hbox = Qt::HBoxLayout();
+    my $tab1hbox = Qt4::HBoxLayout();
     $tab1hbox->setMargin(5);
     $tab1hbox->addWidget(this->tableWidget);
     $tab1->setLayout($tab1hbox);
 
-    my $tab2 = Qt::Widget();
-    this->{textEdit} = Qt::TextEdit();
+    my $tab2 = Qt4::Widget();
+    this->{textEdit} = Qt4::TextEdit();
 
     this->textEdit->setPlainText(this->tr("Twinkle, twinkle, little star,\n" .
                               "How I wonder what you are.\n" .
@@ -285,7 +285,7 @@ sub createBottomLeftTabWidget {
                               "Twinkle, twinkle, little star,\n" .
                               "How I wonder what you are!\n"));
                      
-    my $tab2hbox = Qt::HBoxLayout();
+    my $tab2hbox = Qt4::HBoxLayout();
     $tab2hbox->setMargin(5);
     $tab2hbox->addWidget(this->textEdit);
     $tab2->setLayout($tab2hbox);
@@ -295,30 +295,30 @@ sub createBottomLeftTabWidget {
 }
 
 sub createBottomRightGroupBox {
-    this->{bottomRightGroupBox} = Qt::GroupBox(this->tr('Group 3'));
+    this->{bottomRightGroupBox} = Qt4::GroupBox(this->tr('Group 3'));
     this->bottomRightGroupBox->setCheckable(1);
     this->bottomRightGroupBox->setChecked(1);
 
-    this->{lineEdit} = Qt::LineEdit('s3cRe7');
-    this->lineEdit->setEchoMode(Qt::LineEdit::Password());
+    this->{lineEdit} = Qt4::LineEdit('s3cRe7');
+    this->lineEdit->setEchoMode(Qt4::LineEdit::Password());
 
-    this->{spinBox} = Qt::SpinBox(this->bottomRightGroupBox);
+    this->{spinBox} = Qt4::SpinBox(this->bottomRightGroupBox);
     this->spinBox->setValue(50);
 
-    this->{dateTimeEdit} = Qt::DateTimeEdit(this->bottomRightGroupBox);
-    this->dateTimeEdit->setDateTime(Qt::DateTime::currentDateTime());
+    this->{dateTimeEdit} = Qt4::DateTimeEdit(this->bottomRightGroupBox);
+    this->dateTimeEdit->setDateTime(Qt4::DateTime::currentDateTime());
 
-    this->{slider} = Qt::Slider(Qt::Horizontal(), this->bottomRightGroupBox);
+    this->{slider} = Qt4::Slider(Qt4::Horizontal(), this->bottomRightGroupBox);
     this->slider->setValue(40);
 
-    this->{scrollBar} = Qt::ScrollBar(Qt::Horizontal(), this->bottomRightGroupBox);
+    this->{scrollBar} = Qt4::ScrollBar(Qt4::Horizontal(), this->bottomRightGroupBox);
     this->scrollBar->setValue(60);
 
-    this->{dial} = Qt::Dial(this->bottomRightGroupBox);
+    this->{dial} = Qt4::Dial(this->bottomRightGroupBox);
     this->dial->setValue(30);
     this->dial->setNotchesVisible(1);
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget(this->lineEdit, 0, 0, 1, 2);
     $layout->addWidget(this->spinBox, 1, 0, 1, 2);
     $layout->addWidget(this->dateTimeEdit, 2, 0, 1, 2);
@@ -331,11 +331,11 @@ sub createBottomRightGroupBox {
 
 # [13]
 sub createProgressBar {
-    this->{progressBar} = Qt::ProgressBar();
+    this->{progressBar} = Qt4::ProgressBar();
     this->progressBar->setRange(0, 10000);
     this->progressBar->setValue(0);
 
-    my $timer = Qt::Timer(this);
+    my $timer = Qt4::Timer(this);
     this->connect($timer, SIGNAL 'timeout()', this, SLOT 'advanceProgressBar()');
     $timer->start(1000);
 }

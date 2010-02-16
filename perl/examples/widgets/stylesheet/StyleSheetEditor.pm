@@ -4,12 +4,12 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::Dialog );
+use Qt4;
+use Qt4::isa qw( Qt4::Dialog );
 
 use Ui_StyleSheetEditor;
 
-use Qt::slots
+use Qt4::slots
     on_styleCombo_activated => ['QString'],
     on_styleSheetCombo_activated => ['QString'],
     on_styleTextEdit_textChanged => [],
@@ -21,17 +21,17 @@ sub NEW {
     my $ui = Ui_StyleSheetEditor->setupUi(this);
     this->{ui} = $ui;
 
-    my $regExp = Qt::RegExp("Q(.*)Style");
-    my $defaultStyle = Qt::Application::style()->metaObject()->className();
+    my $regExp = Qt4::RegExp("Q(.*)Style");
+    my $defaultStyle = Qt4::Application::style()->metaObject()->className();
 
-    if ($defaultStyle eq 'Qt::MacStyle') {
+    if ($defaultStyle eq 'Qt4::MacStyle') {
         $defaultStyle = 'Macintosh (Aqua)';
     }
     elsif ($regExp->exactMatch($defaultStyle)) {
         $defaultStyle = $regExp->cap(1);
     }
 
-    $ui->styleCombo()->addItems(Qt::StyleFactory::keys());
+    $ui->styleCombo()->addItems(Qt4::StyleFactory::keys());
     $ui->styleCombo()->setCurrentIndex($ui->styleCombo->findText($defaultStyle));
     $ui->styleSheetCombo()->setCurrentIndex($ui->styleSheetCombo->findText('Coffee'));
     loadStyleSheet('Coffee');
@@ -61,8 +61,8 @@ sub on_applyButton_clicked {
 sub loadStyleSheet {
     my ($sheetName) = @_;
     my $ui = this->{ui};
-    my $file = Qt::File('qss/' . lc($sheetName) . '.qss');
-    $file->open(Qt::File::ReadOnly());
+    my $file = Qt4::File('qss/' . lc($sheetName) . '.qss');
+    $file->open(Qt4::File::ReadOnly());
     my $styleSheet = $file->readAll()->data();
 
     $ui->styleTextEdit()->setPlainText($styleSheet);

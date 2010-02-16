@@ -3,11 +3,11 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 use Dialog;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
 
     my $dialog = Dialog();
     $dialog->show();

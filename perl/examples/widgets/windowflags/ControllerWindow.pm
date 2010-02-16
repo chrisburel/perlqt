@@ -2,7 +2,7 @@ package ControllerWindow;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 use PreviewWindow;
 
 # FIXME
@@ -17,8 +17,8 @@ use constant {
 };
 
 # [0]
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     updatePreview => [];
 
 sub previewWindow() {
@@ -134,14 +134,14 @@ sub NEW {
     this->createTypeGroupBox();
     this->createHintsGroupBox();
 
-    my $quitButton = this->{quitButton} = Qt::PushButton(this->tr('&Quit'));
+    my $quitButton = this->{quitButton} = Qt4::PushButton(this->tr('&Quit'));
     this->connect($quitButton, SIGNAL 'clicked()', qApp, SLOT 'quit()');
 
-    my $bottomLayout = Qt::HBoxLayout();
+    my $bottomLayout = Qt4::HBoxLayout();
     $bottomLayout->addStretch();
     $bottomLayout->addWidget($quitButton);
 
-    my $mainLayout = Qt::VBoxLayout();
+    my $mainLayout = Qt4::VBoxLayout();
     $mainLayout->addWidget(this->typeGroupBox);
     $mainLayout->addWidget(this->hintsGroupBox);
     $mainLayout->addLayout($bottomLayout);
@@ -157,17 +157,17 @@ sub updatePreview {
     my $flags = 0;
 
     if (this->windowRadioButton->isChecked()) {
-        $flags = Qt::Window();
+        $flags = Qt4::Window();
     } elsif (this->dialogRadioButton->isChecked()) {
         $flags = Dialog;
     } elsif (this->sheetRadioButton->isChecked()) {
-        $flags = Qt::Sheet();
+        $flags = Qt4::Sheet();
     } elsif (this->drawerRadioButton->isChecked()) {
-        $flags = Qt::Drawer();
+        $flags = Qt4::Drawer();
     } elsif (this->popupRadioButton->isChecked()) {
-        $flags = Qt::Popup();
+        $flags = Qt4::Popup();
     } elsif (this->toolRadioButton->isChecked()) {
-        $flags = Qt::Tool();
+        $flags = Qt4::Tool();
     } elsif (this->toolTipRadioButton->isChecked()) {
         $flags = ToolTip;
     } elsif (this->splashScreenRadioButton->isChecked()) {
@@ -177,43 +177,43 @@ sub updatePreview {
 # [2] //! [3]
 
     if (msWindowsFixedSizeDialogCheckBox->isChecked()) {
-        $flags |= Qt::MSWindowsFixedSizeDialogHint();
+        $flags |= Qt4::MSWindowsFixedSizeDialogHint();
     }
     if (x11BypassWindowManagerCheckBox->isChecked()) {
-        $flags |= Qt::X11BypassWindowManagerHint();
+        $flags |= Qt4::X11BypassWindowManagerHint();
     }
     if (framelessWindowCheckBox->isChecked()) {
-        $flags |= Qt::FramelessWindowHint();
+        $flags |= Qt4::FramelessWindowHint();
     }
     if (windowTitleCheckBox->isChecked()) {
-        $flags |= Qt::WindowTitleHint();
+        $flags |= Qt4::WindowTitleHint();
     }
     if (windowSystemMenuCheckBox->isChecked()) {
-        $flags |= Qt::WindowSystemMenuHint();
+        $flags |= Qt4::WindowSystemMenuHint();
     }
     if (windowMinimizeButtonCheckBox->isChecked()) {
-        $flags |= Qt::WindowMinimizeButtonHint();
+        $flags |= Qt4::WindowMinimizeButtonHint();
     }
     if (windowMaximizeButtonCheckBox->isChecked()) {
-        $flags |= Qt::WindowMaximizeButtonHint();
+        $flags |= Qt4::WindowMaximizeButtonHint();
     }
     if (windowCloseButtonCheckBox->isChecked()) {
-        $flags |= Qt::WindowCloseButtonHint();
+        $flags |= Qt4::WindowCloseButtonHint();
     }
     if (windowContextHelpButtonCheckBox->isChecked()) {
-        $flags |= Qt::WindowContextHelpButtonHint();
+        $flags |= Qt4::WindowContextHelpButtonHint();
     }
     if (windowShadeButtonCheckBox->isChecked()) {
-        $flags |= Qt::WindowShadeButtonHint();
+        $flags |= Qt4::WindowShadeButtonHint();
     }
     if (windowStaysOnTopCheckBox->isChecked()) {
-        $flags |= Qt::WindowStaysOnTopHint();
+        $flags |= Qt4::WindowStaysOnTopHint();
     }
     if (windowStaysOnBottomCheckBox->isChecked()) {
-        $flags |= Qt::WindowStaysOnBottomHint();
+        $flags |= Qt4::WindowStaysOnBottomHint();
     }
     if (customizeWindowHintCheckBox->isChecked()) {
-        $flags |= Qt::CustomizeWindowHint();
+        $flags |= Qt4::CustomizeWindowHint();
     }
 
     this->previewWindow->setWindowFlags($flags);
@@ -233,7 +233,7 @@ sub updatePreview {
 
 # [5]
 sub createTypeGroupBox {
-    this->{typeGroupBox} = Qt::GroupBox(this->tr('Type'));
+    this->{typeGroupBox} = Qt4::GroupBox(this->tr('Type'));
 
     this->{windowRadioButton} = createRadioButton(this->tr('Window'));
     this->{dialogRadioButton} = createRadioButton(this->tr('Dialog'));
@@ -245,7 +245,7 @@ sub createTypeGroupBox {
     this->{splashScreenRadioButton} = createRadioButton(this->tr('Splash screen'));
     this->{windowRadioButton}->setChecked(1);
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget(this->windowRadioButton, 0, 0);
     $layout->addWidget(this->dialogRadioButton, 1, 0);
     $layout->addWidget(this->sheetRadioButton, 2, 0);
@@ -260,7 +260,7 @@ sub createTypeGroupBox {
 
 # [6]
 sub createHintsGroupBox {
-    this->{hintsGroupBox} = Qt::GroupBox(this->tr('Hints'));
+    this->{hintsGroupBox} = Qt4::GroupBox(this->tr('Hints'));
 
     this->{msWindowsFixedSizeDialogCheckBox} =
             this->createCheckBox(this->tr('MS Windows fixed size dialog'));
@@ -279,7 +279,7 @@ sub createHintsGroupBox {
     this->{windowStaysOnBottomCheckBox} = this->createCheckBox(this->tr('Window stays on bottom'));
     this->{customizeWindowHintCheckBox} = this->createCheckBox(this->tr('Customize window'));
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget(this->msWindowsFixedSizeDialogCheckBox, 0, 0);
     $layout->addWidget(this->x11BypassWindowManagerCheckBox, 1, 0);
     $layout->addWidget(this->framelessWindowCheckBox, 2, 0);
@@ -300,7 +300,7 @@ sub createHintsGroupBox {
 # [7]
 sub createCheckBox {
     my ($text) = @_;
-    my $checkBox = Qt::CheckBox($text);
+    my $checkBox = Qt4::CheckBox($text);
     this->connect($checkBox, SIGNAL 'clicked()', this, SLOT 'updatePreview()');
     return $checkBox;
 }
@@ -309,7 +309,7 @@ sub createCheckBox {
 # [8]
 sub createRadioButton {
     my ($text) = @_;
-    my $button = Qt::RadioButton($text);
+    my $button = Qt4::RadioButton($text);
     this->connect($button, SIGNAL 'clicked()', this, SLOT 'updatePreview()');
     return $button;
 }

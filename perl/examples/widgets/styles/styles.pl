@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 use WidgetGallery;
 
 sub main {
@@ -11,7 +11,7 @@ sub main {
 
     print "This example lacks necessary support from the underlying Smoke " .
         "object.  Displaying what I can...\n";
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
     my $gallery = WidgetGallery();
     $gallery->show();
     return $app->exec();

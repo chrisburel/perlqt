@@ -3,11 +3,11 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 use DigitalClock;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
     my $clock = DigitalClock();
     $clock->show();
     exit $app->exec();

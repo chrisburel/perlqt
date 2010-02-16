@@ -4,10 +4,10 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     changePrecision => ['int'],
     setFormatString => ['const QString&'];
 
@@ -53,7 +53,7 @@ sub NEW {
     this->createDateTimeEdits();
     this->createDoubleSpinBoxes();
 
-    my $layout = Qt::HBoxLayout();
+    my $layout = Qt4::HBoxLayout();
     $layout->addWidget(this->spinBoxesGroup);
     $layout->addWidget(this->editsGroup);
     $layout->addWidget(this->doubleSpinBoxesGroup);
@@ -65,11 +65,11 @@ sub NEW {
 
 # [1]
 sub createSpinBoxes {
-    my $spinBoxesGroup = this->{spinBoxesGroup} = Qt::GroupBox(this->tr('Spinboxes'));
+    my $spinBoxesGroup = this->{spinBoxesGroup} = Qt4::GroupBox(this->tr('Spinboxes'));
 
     my $integerLabel = this->{integerLabel} =
-        Qt::Label( sprintf this->tr('Enter a value between %d and %d:'), -20, 20 );
-    my $integerSpinBox = this->{integerSpinBox} = Qt::SpinBox();
+        Qt4::Label( sprintf this->tr('Enter a value between %d and %d:'), -20, 20 );
+    my $integerSpinBox = this->{integerSpinBox} = Qt4::SpinBox();
     $integerSpinBox->setRange(-20, 20);
     $integerSpinBox->setSingleStep(1);
     $integerSpinBox->setValue(0);
@@ -77,9 +77,9 @@ sub createSpinBoxes {
 
 # [2]
     my $zoomLabel = this->{zoomLabel} =
-        Qt::Label( sprintf this->tr('Enter a zoom value between %d and %d:'), 0, 1000 );
+        Qt4::Label( sprintf this->tr('Enter a zoom value between %d and %d:'), 0, 1000 );
 # [3]
-    my $zoomSpinBox = this->{zoomSpinBox} = Qt::SpinBox();
+    my $zoomSpinBox = this->{zoomSpinBox} = Qt4::SpinBox();
     $zoomSpinBox->setRange(0, 1000);
     $zoomSpinBox->setSingleStep(10);
     $zoomSpinBox->setSuffix('%');
@@ -89,15 +89,15 @@ sub createSpinBoxes {
 
 # [4]
     my $priceLabel = this->{priceLabel} =
-        Qt::Label( sprintf this->tr('Enter a price between %d and %d:'), 0, 999 );
-    my $priceSpinBox = this->{priceSpinBox} = Qt::SpinBox();
+        Qt4::Label( sprintf this->tr('Enter a price between %d and %d:'), 0, 999 );
+    my $priceSpinBox = this->{priceSpinBox} = Qt4::SpinBox();
     $priceSpinBox->setRange(0, 999);
     $priceSpinBox->setSingleStep(1);
     $priceSpinBox->setPrefix('$');
     $priceSpinBox->setValue(99);
 # [4] //! [5]
 
-    my $spinBoxLayout = this->{spinBoxLayout} = Qt::VBoxLayout();
+    my $spinBoxLayout = this->{spinBoxLayout} = Qt4::VBoxLayout();
     $spinBoxLayout->addWidget($integerLabel);
     $spinBoxLayout->addWidget($integerSpinBox);
     $spinBoxLayout->addWidget($zoomLabel);
@@ -110,35 +110,35 @@ sub createSpinBoxes {
 
 # [6]
 sub createDateTimeEdits {
-    my $editsGroup = Qt::GroupBox(this->tr('Date and time spin boxes'));
+    my $editsGroup = Qt4::GroupBox(this->tr('Date and time spin boxes'));
     this->{editsGroup} = $editsGroup;
 
-    my $dateLabel = Qt::Label();
-    my $dateEdit = Qt::DateEdit(Qt::Date::currentDate());
-    $dateEdit->setDateRange(Qt::Date(2005, 1, 1), Qt::Date(2010, 12, 31));
+    my $dateLabel = Qt4::Label();
+    my $dateEdit = Qt4::DateEdit(Qt4::Date::currentDate());
+    $dateEdit->setDateRange(Qt4::Date(2005, 1, 1), Qt4::Date(2010, 12, 31));
     $dateLabel->setText(sprintf this->tr('Appointment date (between %s and %s):'),
-                       $dateEdit->minimumDate()->toString(Qt::ISODate()),
-                       ($dateEdit->maximumDate()->toString(Qt::ISODate())));
+                       $dateEdit->minimumDate()->toString(Qt4::ISODate()),
+                       ($dateEdit->maximumDate()->toString(Qt4::ISODate())));
 # [6]
 
 # [7]
-    my $timeLabel = Qt::Label();
-    my $timeEdit = Qt::TimeEdit(Qt::Time::currentTime());
-    $timeEdit->setTimeRange(Qt::Time(9, 0, 0, 0), Qt::Time(16, 30, 0, 0));
+    my $timeLabel = Qt4::Label();
+    my $timeEdit = Qt4::TimeEdit(Qt4::Time::currentTime());
+    $timeEdit->setTimeRange(Qt4::Time(9, 0, 0, 0), Qt4::Time(16, 30, 0, 0));
     $timeLabel->setText(sprintf this->tr('Appointment time (between %s and %s):'),
-                       $timeEdit->minimumTime()->toString(Qt::ISODate()),
-                       $timeEdit->maximumTime()->toString(Qt::ISODate()));
+                       $timeEdit->minimumTime()->toString(Qt4::ISODate()),
+                       $timeEdit->maximumTime()->toString(Qt4::ISODate()));
 # [7]
 
 # [8]
-    my $meetingLabel = this->{meetingLabel} = Qt::Label();
-    my $meetingEdit = this->{meetingEdit} = Qt::DateTimeEdit(Qt::DateTime::currentDateTime());
+    my $meetingLabel = this->{meetingLabel} = Qt4::Label();
+    my $meetingEdit = this->{meetingEdit} = Qt4::DateTimeEdit(Qt4::DateTime::currentDateTime());
 # [8]
 
 # [9]
-    my $formatLabel = Qt::Label(sprintf this->tr('Format string for the meeting date ' .
+    my $formatLabel = Qt4::Label(sprintf this->tr('Format string for the meeting date ' .
                                         'and time:'));
-    my $formatComboBox = Qt::ComboBox();
+    my $formatComboBox = Qt4::ComboBox();
     $formatComboBox->addItem('yyyy-MM-dd hh:mm:ss (zzz \'ms\')');
     $formatComboBox->addItem('hh:mm:ss MM/dd/yyyy');
     $formatComboBox->addItem('hh:mm:ss dd/MM/yyyy');
@@ -153,7 +153,7 @@ sub createDateTimeEdits {
     this->setFormatString($formatComboBox->currentText());
 
 # [11]
-    my $editsLayout = Qt::VBoxLayout();
+    my $editsLayout = Qt4::VBoxLayout();
     $editsLayout->addWidget($dateLabel);
     $editsLayout->addWidget($dateEdit);
     $editsLayout->addWidget($timeLabel);
@@ -171,44 +171,44 @@ sub setFormatString {
     my ($formatString) = @_;
     this->meetingEdit->setDisplayFormat($formatString);
 # [12] //! [13]
-    if (this->meetingEdit->displayedSections() & Qt::DateTimeEdit::DateSections_Mask()) {
-        this->meetingEdit->setDateRange(Qt::Date(2004, 11, 1), Qt::Date(2005, 11, 30));
+    if (this->meetingEdit->displayedSections() & Qt4::DateTimeEdit::DateSections_Mask()) {
+        this->meetingEdit->setDateRange(Qt4::Date(2004, 11, 1), Qt4::Date(2005, 11, 30));
         this->meetingLabel->setText(sprintf this->tr('Meeting date (between %s and %s):'),
-            this->meetingEdit->minimumDate()->toString(Qt::ISODate()),
-	    this->meetingEdit->maximumDate()->toString(Qt::ISODate()));
+            this->meetingEdit->minimumDate()->toString(Qt4::ISODate()),
+	    this->meetingEdit->maximumDate()->toString(Qt4::ISODate()));
     } else {
-        this->meetingEdit->setTimeRange(Qt::Time(0, 7, 20, 0), Qt::Time(21, 0, 0, 0));
+        this->meetingEdit->setTimeRange(Qt4::Time(0, 7, 20, 0), Qt4::Time(21, 0, 0, 0));
         this->meetingLabel->setText( sprintf this->tr('Meeting time (between %s and %s):'),
-            this->meetingEdit->minimumTime()->toString(Qt::ISODate()),
-	    this->meetingEdit->maximumTime()->toString(Qt::ISODate()) );
+            this->meetingEdit->minimumTime()->toString(Qt4::ISODate()),
+	    this->meetingEdit->maximumTime()->toString(Qt4::ISODate()) );
     }
 }
 # [13]
 
 # [14]
 sub createDoubleSpinBoxes {
-    my $doubleSpinBoxesGroup = this->{doubleSpinBoxesGroup} = Qt::GroupBox(this->tr('Double precision spinboxes'));
+    my $doubleSpinBoxesGroup = this->{doubleSpinBoxesGroup} = Qt4::GroupBox(this->tr('Double precision spinboxes'));
 
-    my $precisionLabel = Qt::Label(this->tr('Number of decimal places ' .
+    my $precisionLabel = Qt4::Label(this->tr('Number of decimal places ' .
                                            'to show:'));
-    my $precisionSpinBox = Qt::SpinBox();
+    my $precisionSpinBox = Qt4::SpinBox();
     $precisionSpinBox->setRange(0, 100);
     $precisionSpinBox->setValue(2);
 # [14]
 
 # [15]
-    my $doubleLabel = Qt::Label(sprintf this->tr('Enter a value between ' .
+    my $doubleLabel = Qt4::Label(sprintf this->tr('Enter a value between ' .
         '%d and %d:'), -20, 20);
-    my $doubleSpinBox = this->{doubleSpinBox} = Qt::DoubleSpinBox();
+    my $doubleSpinBox = this->{doubleSpinBox} = Qt4::DoubleSpinBox();
     $doubleSpinBox->setRange(-20.0, 20.0);
     $doubleSpinBox->setSingleStep(1.0);
     $doubleSpinBox->setValue(0.0);
 # [15]
 
 # [16]
-    my $scaleLabel = Qt::Label(sprintf this->tr('Enter a scale factor between ' .
+    my $scaleLabel = Qt4::Label(sprintf this->tr('Enter a scale factor between ' .
         '%d and %d:'), 0, 1000);
-    my $scaleSpinBox = this->{scaleSpinBox} = Qt::DoubleSpinBox();
+    my $scaleSpinBox = this->{scaleSpinBox} = Qt4::DoubleSpinBox();
     $scaleSpinBox->setRange(0.0, 1000.0);
     $scaleSpinBox->setSingleStep(10.0);
     $scaleSpinBox->setSuffix('%');
@@ -217,9 +217,9 @@ sub createDoubleSpinBoxes {
 # [16]
 
 # [17]
-    my $priceLabel = Qt::Label(sprintf this->tr('Enter a price between ' .
+    my $priceLabel = Qt4::Label(sprintf this->tr('Enter a price between ' .
         '%d and %d:'), 0, 1000);
-    my $priceSpinBox = this->{priceSpinBox} = Qt::DoubleSpinBox();
+    my $priceSpinBox = this->{priceSpinBox} = Qt4::DoubleSpinBox();
     $priceSpinBox->setRange(0.0, 1000.0);
     $priceSpinBox->setSingleStep(1.0);
     $priceSpinBox->setPrefix('$');
@@ -230,7 +230,7 @@ sub createDoubleSpinBoxes {
             this, SLOT 'changePrecision(int)');
 
 # [18]
-    my $spinBoxLayout = Qt::VBoxLayout();
+    my $spinBoxLayout = Qt4::VBoxLayout();
     $spinBoxLayout->addWidget($precisionLabel);
     $spinBoxLayout->addWidget($precisionSpinBox);
     $spinBoxLayout->addWidget($doubleLabel);

@@ -4,9 +4,9 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::LCDNumber );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::LCDNumber );
+use Qt4::slots
     showTime => [];
 
 # [0]
@@ -16,9 +16,9 @@ sub NEW {
     my ( $class, $parent ) = @_;
     $DB::single=1;
     $class->SUPER::NEW( $parent );
-    this->setSegmentStyle(Qt::LCDNumber::Filled());
+    this->setSegmentStyle(Qt4::LCDNumber::Filled());
 
-    my $timer = Qt::Timer(this);
+    my $timer = Qt4::Timer(this);
     this->connect($timer, SIGNAL 'timeout()', this, SLOT 'showTime()');
     $timer->start(1000);
 
@@ -32,7 +32,7 @@ sub NEW {
 # [1]
 sub showTime {
 # [1] //! [2]
-    my $time = Qt::Time::currentTime();
+    my $time = Qt4::Time::currentTime();
     my $text;
     if (($time->second() % 2) == 0) {
         $text = $time->toString('hh mm');

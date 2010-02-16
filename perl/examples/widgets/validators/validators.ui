@@ -33,7 +33,7 @@
      <item>
       <spacer>
        <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt4::Horizontal</enum>
        </property>
        <property name="sizeHint" >
         <size>
@@ -79,7 +79,7 @@
              <string>Min:</string>
             </property>
             <property name="alignment" >
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -105,7 +105,7 @@
              <string>Max:</string>
             </property>
             <property name="alignment" >
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -157,7 +157,7 @@
               <pixmap resource="validators.qrc" >:/ledoff.png</pixmap>
              </property>
              <property name="alignment" >
-              <set>Qt::AlignCenter</set>
+              <set>Qt4::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -176,7 +176,7 @@
       <item>
        <spacer>
         <property name="orientation" >
-         <enum>Qt::Vertical</enum>
+         <enum>Qt4::Vertical</enum>
         </property>
         <property name="sizeType" >
          <enum>QSizePolicy::Fixed</enum>
@@ -229,7 +229,7 @@
              <string>Min:</string>
             </property>
             <property name="alignment" >
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -258,7 +258,7 @@
              <string>Format:</string>
             </property>
             <property name="alignment" >
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -282,7 +282,7 @@
              <string>Max:</string>
             </property>
             <property name="alignment" >
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -311,7 +311,7 @@
              <string>Decimals:</string>
             </property>
             <property name="alignment" >
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             <set>Qt4::AlignRight|Qt4::AlignTrailing|Qt4::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -348,7 +348,7 @@
               <pixmap resource="validators.qrc" >:/ledoff.png</pixmap>
              </property>
              <property name="alignment" >
-              <set>Qt::AlignCenter</set>
+              <set>Qt4::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -367,7 +367,7 @@
       <item>
        <spacer>
         <property name="orientation" >
-         <enum>Qt::Vertical</enum>
+         <enum>Qt4::Vertical</enum>
         </property>
         <property name="sizeType" >
          <enum>QSizePolicy::Fixed</enum>
@@ -389,7 +389,7 @@
    <item>
     <spacer>
      <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+      <enum>Qt4::Vertical</enum>
      </property>
      <property name="sizeHint" >
       <size>
@@ -410,7 +410,7 @@
      <item>
       <spacer>
        <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt4::Horizontal</enum>
        </property>
        <property name="sizeHint" >
         <size>

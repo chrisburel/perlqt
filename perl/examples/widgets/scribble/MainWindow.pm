@@ -4,10 +4,10 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::MainWindow );
-use Qt::slots
+use Qt4::isa qw( Qt4::MainWindow );
+use Qt4::slots
     open => [],
     save => [],
     penColor => [],
@@ -104,8 +104,8 @@ sub closeEvent {
 sub open {
 # [3] //! [4]
     if (maybeSave()) {
-        my $fileName = Qt::FileDialog::getOpenFileName(this,
-                                   this->tr('Open File'), Qt::Dir::currentPath());
+        my $fileName = Qt4::FileDialog::getOpenFileName(this,
+                                   this->tr('Open File'), Qt4::Dir::currentPath());
         if ($fileName) {
             this->scribbleArea->openImage($fileName);
         }
@@ -125,7 +125,7 @@ sub save {
 # [7]
 sub penColor {
 # [7] //! [8]
-    my $newColor = Qt::ColorDialog::getColor(this->scribbleArea->penColor());
+    my $newColor = Qt4::ColorDialog::getColor(this->scribbleArea->penColor());
     if ($newColor->isValid()) {
         this->scribbleArea->setPenColor($newColor);
     }
@@ -136,7 +136,7 @@ sub penColor {
 sub penWidth {
 # [9] //! [10]
     my $ok = 0;
-    my $newWidth = Qt::InputDialog::getInteger(this, this->tr('Scribble'),
+    my $newWidth = Qt4::InputDialog::getInteger(this, this->tr('Scribble'),
                                             this->tr('Select pen width:'),
                                             this->scribbleArea->penWidth(),
                                             1, 50, 1, $ok);
@@ -149,17 +149,17 @@ sub penWidth {
 # [11]
 sub about {
 # [11] //! [12]
-    Qt::MessageBox::about(this, this->tr('About Scribble'),
-            this->tr('<p>The <b>Scribble</b> example shows how to use Qt::MainWindow as the ' .
+    Qt4::MessageBox::about(this, this->tr('About Scribble'),
+            this->tr('<p>The <b>Scribble</b> example shows how to use Qt4::MainWindow as the ' .
                'base widget for an application, and how to reimplement some of ' .
-               'Qt::Widget\'s event handlers to receive the events generated for ' .
+               'Qt4::Widget\'s event handlers to receive the events generated for ' .
                'the application\'s widgets:</p><p> We reimplement the mouse event ' .
                'handlers to facilitate drawing, the paint event handler to ' .
                'update the application and the resize event handler to optimize ' .
                'the application\'s appearance. In addition we reimplement the ' .
                'close event handler to intercept the close events before ' .
                'terminating the application.</p><p> The example also demonstrates ' .
-               'how to use Qt::Painter to draw an image in real time, as well as ' .
+               'how to use Qt4::Painter to draw an image in real time, as well as ' .
                'to repaint widgets.</p>'));
 }
 # [12]
@@ -167,41 +167,41 @@ sub about {
 # [13]
 sub createActions {
 # [13] //! [14]
-    this->{openAct} = Qt::Action(this->tr('&Open...'), this);
-    this->openAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+O')));
+    this->{openAct} = Qt4::Action(this->tr('&Open...'), this);
+    this->openAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+O')));
     this->connect(this->openAct, SIGNAL 'triggered()', this, SLOT 'open()');
 
-    foreach my $format ( @{Qt::ImageWriter::supportedImageFormats()} ) {
+    foreach my $format ( @{Qt4::ImageWriter::supportedImageFormats()} ) {
         my $text = sprintf this->tr('%s...'), uc $format;
 
-        my $action = Qt::Action($text, this);
-        $action->setData(Qt::Variant(Qt::String($format)));
+        my $action = Qt4::Action($text, this);
+        $action->setData(Qt4::Variant(Qt4::String($format)));
         this->connect($action, SIGNAL 'triggered()', this, SLOT 'save()');
         push @{this->{saveAsActs}}, $action;
     }
 
-    this->{printAct} = Qt::Action(this->tr('&Print...'), this);
+    this->{printAct} = Qt4::Action(this->tr('&Print...'), this);
     this->connect(this->printAct, SIGNAL 'triggered()', this->scribbleArea, SLOT 'print()');
 
-    this->{exitAct} = Qt::Action(this->tr('E&xit'), this);
-    this->exitAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+Q')));
+    this->{exitAct} = Qt4::Action(this->tr('E&xit'), this);
+    this->exitAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+Q')));
     this->connect(this->exitAct, SIGNAL 'triggered()', this, SLOT 'close()');
 
-    this->{penColorAct} = Qt::Action(this->tr('&Pen Color...'), this);
+    this->{penColorAct} = Qt4::Action(this->tr('&Pen Color...'), this);
     this->connect(this->penColorAct, SIGNAL 'triggered()', this, SLOT 'penColor()');
 
-    this->{penWidthAct} = Qt::Action(this->tr('Pen &Width...'), this);
+    this->{penWidthAct} = Qt4::Action(this->tr('Pen &Width...'), this);
     this->connect(this->penWidthAct, SIGNAL 'triggered()', this, SLOT 'penWidth()');
 
-    this->{clearScreenAct} = Qt::Action(this->tr('&Clear Screen'), this);
-    this->clearScreenAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+L')));
+    this->{clearScreenAct} = Qt4::Action(this->tr('&Clear Screen'), this);
+    this->clearScreenAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+L')));
     this->connect(this->clearScreenAct, SIGNAL 'triggered()',
             this->scribbleArea, SLOT 'clearImage()');
 
-    this->{aboutAct} = Qt::Action(this->tr('&About'), this);
+    this->{aboutAct} = Qt4::Action(this->tr('&About'), this);
     this->connect(this->aboutAct, SIGNAL 'triggered()', this, SLOT 'about()');
 
-    this->{aboutQtAct} = Qt::Action(this->tr('About &Qt'), this);
+    this->{aboutQtAct} = Qt4::Action(this->tr('About &Qt'), this);
     this->connect(this->aboutQtAct, SIGNAL 'triggered()', qApp, SLOT 'aboutQt()');
 }
 # [14]
@@ -209,25 +209,25 @@ sub createActions {
 # [15]
 sub createMenus {
 # [15] //! [16]
-    this->{saveAsMenu} = Qt::Menu(this->tr('&Save As'), this);
+    this->{saveAsMenu} = Qt4::Menu(this->tr('&Save As'), this);
     foreach my $action ( @{this->{saveAsActs}} ) {
         this->saveAsMenu->addAction($action);
     }
 
-    this->{fileMenu} = Qt::Menu(this->tr('&File'), this);
+    this->{fileMenu} = Qt4::Menu(this->tr('&File'), this);
     this->fileMenu->addAction(this->openAct);
     this->fileMenu->addMenu(this->saveAsMenu);
     this->fileMenu->addAction(this->printAct);
     this->fileMenu->addSeparator();
     this->fileMenu->addAction(this->exitAct);
 
-    this->{optionMenu} = Qt::Menu(this->tr('&Options'), this);
+    this->{optionMenu} = Qt4::Menu(this->tr('&Options'), this);
     this->optionMenu->addAction(this->penColorAct);
     this->optionMenu->addAction(this->penWidthAct);
     this->optionMenu->addSeparator();
     this->optionMenu->addAction(this->clearScreenAct);
 
-    this->{helpMenu} = Qt::Menu(this->tr('&Help'), this);
+    this->{helpMenu} = Qt4::Menu(this->tr('&Help'), this);
     this->helpMenu->addAction(this->aboutAct);
     this->helpMenu->addAction(this->aboutQtAct);
 
@@ -241,14 +241,14 @@ sub createMenus {
 sub maybeSave {
 # [17] //! [18]
     if (this->scribbleArea->isModified()) {
-        my $ret = Qt::MessageBox::warning(this, this->tr('Scribble'),
+        my $ret = Qt4::MessageBox::warning(this, this->tr('Scribble'),
                           this->tr("The image has been modified.\n" .
                              'Do you want to save your changes?'),
-                          CAST Qt::MessageBox::Save() | Qt::MessageBox::Discard()
-			  | Qt::MessageBox::Cancel(), 'QMessageBox::StandardButtons');
-        if ($ret == Qt::MessageBox::Save()) {
+                          CAST Qt4::MessageBox::Save() | Qt4::MessageBox::Discard()
+			  | Qt4::MessageBox::Cancel(), 'QMessageBox::StandardButtons');
+        if ($ret == Qt4::MessageBox::Save()) {
             return this->saveFile('png');
-        } elsif ($ret == Qt::MessageBox::Cancel()) {
+        } elsif ($ret == Qt4::MessageBox::Cancel()) {
             return 0;
         }
     }
@@ -260,9 +260,9 @@ sub maybeSave {
 sub saveFile {
 # [19] //! [20]
     my ($fileFormat) = @_;
-    my $initialPath = Qt::Dir::currentPath() . '/untitled.' . $fileFormat;
+    my $initialPath = Qt4::Dir::currentPath() . '/untitled.' . $fileFormat;
 
-    my $fileName = Qt::FileDialog::getSaveFileName(this, this->tr('Save As'),
+    my $fileName = Qt4::FileDialog::getSaveFileName(this, this->tr('Save As'),
                                $initialPath,
                                sprintf( this->tr('%s Files (*.%s);;All Files (*)'),
                                    uc $fileFormat,

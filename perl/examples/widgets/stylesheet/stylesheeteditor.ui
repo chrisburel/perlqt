@@ -22,7 +22,7 @@
    <item row="0" column="6" >
     <spacer>
      <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt4::Horizontal</enum>
      </property>
      <property name="sizeType" >
       <enum>QSizePolicy::MinimumExpanding</enum>
@@ -38,7 +38,7 @@
    <item row="0" column="0" >
     <spacer>
      <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt4::Horizontal</enum>
      </property>
      <property name="sizeType" >
       <enum>QSizePolicy::MinimumExpanding</enum>
@@ -73,7 +73,7 @@
    <item row="0" column="3" >
     <spacer>
      <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt4::Horizontal</enum>
      </property>
      <property name="sizeType" >
       <enum>QSizePolicy::Fixed</enum>
@@ -124,7 +124,7 @@
      <item>
       <spacer>
        <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt4::Horizontal</enum>
        </property>
        <property name="sizeHint" >
         <size>

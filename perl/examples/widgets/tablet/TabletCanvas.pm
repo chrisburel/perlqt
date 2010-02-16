@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::Widget );
+use Qt4;
+use Qt4::isa qw( Qt4::Widget );
 
 use Exporter;
 use base qw( Exporter );
@@ -45,7 +45,7 @@ sub setLineWidthType {
 }
 
 sub setColor {
-    this->{myColor} = Qt::Color(shift);
+    this->{myColor} = Qt4::Color(shift);
 }
 
 sub color {
@@ -110,22 +110,22 @@ sub NEW {
     my ( $class ) = @_;
     $class->SUPER::NEW();
     this->resize(500, 500);
-    this->{myBrush} = Qt::Brush();
-    this->{myPen} = Qt::Pen();
+    this->{myBrush} = Qt4::Brush();
+    this->{myPen} = Qt4::Pen();
     this->initImage();
     this->setAutoFillBackground(1);
     this->{deviceDown} = 0;
-    this->setColor( Qt::red() );
-    this->{myTabletDevice} = Qt::TabletEvent::Stylus();
+    this->setColor( Qt4::red() );
+    this->{myTabletDevice} = Qt4::TabletEvent::Stylus();
     this->{alphaChannelType} = NoAlpha;
     this->{colorSaturationType} = NoSaturation;
     this->{lineWidthType} = LineWidthPressure;
 }
 
 sub initImage {
-    my $newImage = Qt::Image(this->width(), this->height(), Qt::Image::Format_ARGB32());
-    my $painter = Qt::Painter($newImage);
-    $painter->fillRect(0, 0, $newImage->width(), $newImage->height(), Qt::Brush(Qt::white()));
+    my $newImage = Qt4::Image(this->width(), this->height(), Qt4::Image::Format_ARGB32());
+    my $painter = Qt4::Painter($newImage);
+    $painter->fillRect(0, 0, $newImage->width(), $newImage->height(), Qt4::Brush(Qt4::white()));
     if (this->image && !this->image->isNull()) {
         $painter->drawImage(0, 0, this->image);
     }
@@ -158,23 +158,23 @@ sub loadImage {
 sub tabletEvent {
     my ($event) = @_;
 
-    if ( $event->type() == Qt::Event::TabletPress() ) {
+    if ( $event->type() == Qt4::Event::TabletPress() ) {
         if (!this->deviceDown) {
             this->{deviceDown} = 1;
         }
     }
-    elsif ( $event->type() == Qt::Event::TabletRelease() ) {
+    elsif ( $event->type() == Qt4::Event::TabletRelease() ) {
         if (this->deviceDown) {
             this->{deviceDown} = 0;
         }
     }
-    elsif ( $event->type() == Qt::Event::TabletMove() ) {
+    elsif ( $event->type() == Qt4::Event::TabletMove() ) {
         unshift @{this->polyLine}, $event->pos();
         delete this->polyLine->[3];
 
         if (this->deviceDown) {
             this->updateBrush($event);
-            my $painter = Qt::Painter(this->image);
+            my $painter = Qt4::Painter(this->image);
             this->paintImage($painter, $event);
             $painter->end();
         }
@@ -185,8 +185,8 @@ sub tabletEvent {
 
 # [4]
 sub paintEvent {
-    my $painter = Qt::Painter(this);
-    $painter->drawImage(Qt::Point(0, 0), this->image);
+    my $painter = Qt4::Painter(this);
+    $painter->drawImage(Qt4::Point(0, 0), this->image);
     $painter->end();
 }
 # [4]
@@ -194,28 +194,28 @@ sub paintEvent {
 # [5]
 sub paintImage {
     my ($painter, $event) = @_;
-    my $brushAdjust = Qt::Point(10, 10);
+    my $brushAdjust = Qt4::Point(10, 10);
 
     my $myTabletDevice = this->myTabletDevice;
-    if ( $myTabletDevice == Qt::TabletEvent::Stylus() ) {
+    if ( $myTabletDevice == Qt4::TabletEvent::Stylus() ) {
         $painter->setBrush(this->myBrush);
         $painter->setPen(this->myPen);
         $painter->drawLine(this->polyLine->[1], $event->pos());
     }
-    elsif ( $myTabletDevice == Qt::TabletEvent::Airbrush() ) {
+    elsif ( $myTabletDevice == Qt4::TabletEvent::Airbrush() ) {
         this->myBrush->setColor(this->myColor);
         this->myBrush->setStyle(this->brushPattern($event->pressure()));
-        $painter->setPen(Qt::NoPen());
+        $painter->setPen(Qt4::NoPen());
         $painter->setBrush(this->myBrush);
 
         foreach my $i (0..2) {
-            $painter->drawEllipse(Qt::Rect(this->polyLine->[$i] - $brushAdjust,
+            $painter->drawEllipse(Qt4::Rect(this->polyLine->[$i] - $brushAdjust,
                                 this->polyLine->[$i] + $brushAdjust));
         }
     }
-    elsif ( $myTabletDevice == Qt::TabletEvent::Puck() ||
-         $myTabletDevice == Qt::TabletEvent::FourDMouse() ||
-         $myTabletDevice == Qt::TabletEvent::RotationStylus() ) {
+    elsif ( $myTabletDevice == Qt4::TabletEvent::Puck() ||
+         $myTabletDevice == Qt4::TabletEvent::FourDMouse() ||
+         $myTabletDevice == Qt4::TabletEvent::RotationStylus() ) {
         warn("This input device is not supported by the example.");
     }
     else {
@@ -230,28 +230,28 @@ sub brushPattern {
     my $pattern = int(($value) * 100.0) % 7;
 
     if ( $pattern == 0 ) {
-        return Qt::SolidPattern();
+        return Qt4::SolidPattern();
     }
     elsif ( $pattern == 1 ) {
-        return Qt::Dense1Pattern();
+        return Qt4::Dense1Pattern();
     }
     elsif ( $pattern == 2 ) {
-        return Qt::Dense2Pattern();
+        return Qt4::Dense2Pattern();
     }
     elsif ( $pattern == 3 ) {
-        return Qt::Dense3Pattern();
+        return Qt4::Dense3Pattern();
     }
     elsif ( $pattern == 4 ) {
-        return Qt::Dense4Pattern();
+        return Qt4::Dense4Pattern();
     }
     elsif ( $pattern == 5 ) {
-        return Qt::Dense5Pattern();
+        return Qt4::Dense5Pattern();
     }
     elsif ( $pattern == 6 ) {
-        return Qt::Dense6Pattern();
+        return Qt4::Dense6Pattern();
     }
     else {
-        return Qt::Dense7Pattern();
+        return Qt4::Dense7Pattern();
     }
 }
 # [6]
@@ -302,9 +302,9 @@ sub updateBrush {
     }
 
 # [10] //! [11]
-    if ($event->pointerType() == Qt::TabletEvent::Eraser()) {
-        this->myBrush->setColor(Qt::white());
-        this->myPen->setColor(Qt::white());
+    if ($event->pointerType() == Qt4::TabletEvent::Eraser()) {
+        this->myBrush->setColor(Qt4::white());
+        this->myPen->setColor(Qt4::white());
         this->myPen->setWidthF($event->pressure() * 10 + 1);
     } else {
         this->myBrush->setColor(this->myColor);
@@ -317,7 +317,7 @@ sub resizeEvent {
     my ($event) = @_;
     this->initImage();
     this->{polyLine} = [];
-    this->polyLine->[0] = this->polyLine->[1] = this->polyLine->[2] = Qt::Point();
+    this->polyLine->[0] = this->polyLine->[1] = this->polyLine->[2] = Qt4::Point();
 }
 
 1;

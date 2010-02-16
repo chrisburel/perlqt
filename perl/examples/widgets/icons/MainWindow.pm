@@ -4,11 +4,11 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
+use Qt4;
 
 # [0]
-use Qt::isa qw( Qt::MainWindow );
-use Qt::slots
+use Qt4::isa qw( Qt4::MainWindow );
+use Qt4::slots
     about => [],
     changeStyle => ['bool'],
     changeSize => ['bool'],
@@ -16,7 +16,7 @@ use Qt::slots
     changeIcon => [],
     addImages => [],
     removeAllImages => [];
-#use Qt::debug qw(all);
+#use Qt4::debug qw(all);
 
 use IconPreviewArea;
 use ImageDelegate;
@@ -226,7 +226,7 @@ sub NEW {
     my ( $class ) = @_;
     $class->SUPER::NEW();
 
-    this->setCentralWidget(Qt::Widget());
+    this->setCentralWidget(Qt4::Widget());
 
     this->createPreviewGroupBox();
     this->createImagesGroupBox();
@@ -236,7 +236,7 @@ sub NEW {
     this->createMenus();
     this->createContextMenu();
 
-    my $mainLayout = Qt::GridLayout();
+    my $mainLayout = Qt4::GridLayout();
     $mainLayout->addWidget(this->previewGroupBox, 0, 0, 1, 2);
     $mainLayout->addWidget(this->imagesGroupBox, 1, 0);
     $mainLayout->addWidget(this->iconSizeGroupBox, 1, 1);
@@ -252,8 +252,8 @@ sub NEW {
 
 # [1]
 sub about {
-    Qt::MessageBox::about(this, this->tr('About Icons'),
-            this->tr('The <b>Icons</b> example illustrates how Qt renders an icon in ' .
+    Qt4::MessageBox::about(this, this->tr('About Icons'),
+            this->tr('The <b>Icons</b> example illustrates how Qt4 renders an icon in ' .
                'different modes (active, normal, disabled, and selected) and ' .
                'states (on and off) based on a set of images.'));
 }
@@ -266,31 +266,31 @@ sub changeStyle {
         return;
     }
 
-    #my $action = Qt::Action() = qobject_cast<Qt::Action *>(sender());
+    #my $action = Qt4::Action() = qobject_cast<Qt4::Action *>(sender());
     my $action = this->sender();
 # [2] //! [3]
-    my $style = Qt::StyleFactory::create($action->data()->toString());
+    my $style = Qt4::StyleFactory::create($action->data()->toString());
 # [3] //! [4]
-    Qt::Application::setStyle($style);
+    Qt4::Application::setStyle($style);
 
     this->smallRadioButton->setText(sprintf this->tr('Small (%d x %d)'),
-            $style->pixelMetric(Qt::Style::PM_SmallIconSize(), undef, undef),
-            $style->pixelMetric(Qt::Style::PM_SmallIconSize(), undef, undef));
+            $style->pixelMetric(Qt4::Style::PM_SmallIconSize(), undef, undef),
+            $style->pixelMetric(Qt4::Style::PM_SmallIconSize(), undef, undef));
     this->largeRadioButton->setText(sprintf this->tr('Large (%d x %d)'),
-            $style->pixelMetric(Qt::Style::PM_LargeIconSize(), undef, undef),
-            $style->pixelMetric(Qt::Style::PM_LargeIconSize(), undef, undef));
+            $style->pixelMetric(Qt4::Style::PM_LargeIconSize(), undef, undef),
+            $style->pixelMetric(Qt4::Style::PM_LargeIconSize(), undef, undef));
     this->toolBarRadioButton->setText(sprintf this->tr('Toolbars (%d x %d)'),
-            $style->pixelMetric(Qt::Style::PM_ToolBarIconSize(), undef, undef),
-            $style->pixelMetric(Qt::Style::PM_ToolBarIconSize(), undef, undef));
+            $style->pixelMetric(Qt4::Style::PM_ToolBarIconSize(), undef, undef),
+            $style->pixelMetric(Qt4::Style::PM_ToolBarIconSize(), undef, undef));
     this->listViewRadioButton->setText(sprintf this->tr('List views (%d x %d)'),
-            $style->pixelMetric(Qt::Style::PM_ListViewIconSize(), undef, undef),
-            $style->pixelMetric(Qt::Style::PM_ListViewIconSize(), undef, undef));
+            $style->pixelMetric(Qt4::Style::PM_ListViewIconSize(), undef, undef),
+            $style->pixelMetric(Qt4::Style::PM_ListViewIconSize(), undef, undef));
     this->iconViewRadioButton->setText(sprintf this->tr('Icon views (%d x %d)'),
-            $style->pixelMetric(Qt::Style::PM_IconViewIconSize(), undef, undef),
-            $style->pixelMetric(Qt::Style::PM_IconViewIconSize(), undef, undef));
+            $style->pixelMetric(Qt4::Style::PM_IconViewIconSize(), undef, undef),
+            $style->pixelMetric(Qt4::Style::PM_IconViewIconSize(), undef, undef));
     this->tabBarRadioButton->setText(sprintf this->tr('Tab bars (%d x %d)'),
-            $style->pixelMetric(Qt::Style::PM_TabBarIconSize(), undef, undef),
-            $style->pixelMetric(Qt::Style::PM_TabBarIconSize(), undef, undef));
+            $style->pixelMetric(Qt4::Style::PM_TabBarIconSize(), undef, undef),
+            $style->pixelMetric(Qt4::Style::PM_TabBarIconSize(), undef, undef));
 
     this->changeSize(1);
 }
@@ -315,60 +315,60 @@ sub changeSize {
         my $metric;
 
         if (this->smallRadioButton->isChecked()) {
-            $metric = Qt::Style::PM_SmallIconSize();
+            $metric = Qt4::Style::PM_SmallIconSize();
         } elsif (this->largeRadioButton->isChecked()) {
-            $metric = Qt::Style::PM_LargeIconSize();
+            $metric = Qt4::Style::PM_LargeIconSize();
         } elsif (this->toolBarRadioButton->isChecked()) {
-            $metric = Qt::Style::PM_ToolBarIconSize();
+            $metric = Qt4::Style::PM_ToolBarIconSize();
         } elsif (this->listViewRadioButton->isChecked()) {
-            $metric = Qt::Style::PM_ListViewIconSize();
+            $metric = Qt4::Style::PM_ListViewIconSize();
         } elsif (this->iconViewRadioButton->isChecked()) {
-            $metric = Qt::Style::PM_IconViewIconSize();
+            $metric = Qt4::Style::PM_IconViewIconSize();
         } else {
-            $metric = Qt::Style::PM_TabBarIconSize();
+            $metric = Qt4::Style::PM_TabBarIconSize();
         }
-        $extent = Qt::Application::style()->pixelMetric($metric, undef, undef);
+        $extent = Qt4::Application::style()->pixelMetric($metric, undef, undef);
     }
-    this->previewArea->setSize(Qt::Size($extent, $extent));
+    this->previewArea->setSize(Qt4::Size($extent, $extent));
     this->otherSpinBox->setEnabled(this->otherRadioButton->isChecked());
 }
 # [5]
 
 # [6]
 sub changeIcon {
-    my $icon = Qt::Icon();
+    my $icon = Qt4::Icon();
 
     for (my $row = 0; $row < this->imagesTable->rowCount(); ++$row) {
         my $item0 = this->imagesTable->item($row, 0);
         my $item1 = this->imagesTable->item($row, 1);
         my $item2 = this->imagesTable->item($row, 2);
 
-        if ($item0->checkState() == Qt::Checked()) {
+        if ($item0->checkState() == Qt4::Checked()) {
             my $mode;
             if ($item1->text() eq this->tr('Normal')) {
-                $mode = Qt::Icon::Normal();
+                $mode = Qt4::Icon::Normal();
             } elsif ($item1->text() eq this->tr('Active')) {
-                $mode = Qt::Icon::Active();
+                $mode = Qt4::Icon::Active();
             } elsif ($item1->text() eq this->tr('Disabled')) {
-                $mode = Qt::Icon::Disabled();
+                $mode = Qt4::Icon::Disabled();
             } else {
-                $mode = Qt::Icon::Selected();
+                $mode = Qt4::Icon::Selected();
             }
 
             my $state;
             if ($item2->text() eq this->tr('On')) {
-                $state = Qt::Icon::On();
+                $state = Qt4::Icon::On();
             } else {
-                $state = Qt::Icon::Off();
+                $state = Qt4::Icon::Off();
 # [6] //! [7]
             }
 # [7]
 
 # [8]
-            my $fileName = $item0->data(Qt::UserRole())->toString();
-            my $image = Qt::Image(Qt::String($fileName));
+            my $fileName = $item0->data(Qt4::UserRole())->toString();
+            my $image = Qt4::Image(Qt4::String($fileName));
             if ($image) {
-                $icon->addPixmap(Qt::Pixmap::fromImage($image), $mode, $state);
+                $icon->addPixmap(Qt4::Pixmap::fromImage($image), $mode, $state);
             }
 # [8] //! [9]
         }
@@ -383,7 +383,7 @@ sub changeIcon {
 
 # [12]
 sub addImages {
-    my $fileNames = Qt::FileDialog::getOpenFileNames(this,
+    my $fileNames = Qt4::FileDialog::getOpenFileNames(this,
                                     this->tr('Open Images'), '',
                                     this->tr('Images (*.png *.xpm *.jpg);;') .
                                     this->tr('All Files (*)'));
@@ -394,17 +394,17 @@ sub addImages {
 # [12]
 
 # [13]
-            my $imageName = Qt::FileInfo($fileName)->baseName();
+            my $imageName = Qt4::FileInfo($fileName)->baseName();
 # [13] //! [14]
-            my $item0 = Qt::TableWidgetItem($imageName);
-            $item0->setData(Qt::UserRole(), Qt::Variant(Qt::String($fileName)));
-            $item0->setFlags($item0->flags()&~${Qt::ItemIsEditable()});
+            my $item0 = Qt4::TableWidgetItem($imageName);
+            $item0->setData(Qt4::UserRole(), Qt4::Variant(Qt4::String($fileName)));
+            $item0->setFlags($item0->flags()&~${Qt4::ItemIsEditable()});
 # [14]
 
 # [15]
-            my $item1 = Qt::TableWidgetItem(this->tr('Normal'));
+            my $item1 = Qt4::TableWidgetItem(this->tr('Normal'));
 # [15] //! [16]
-            my $item2 = Qt::TableWidgetItem(this->tr('Off'));
+            my $item2 = Qt4::TableWidgetItem(this->tr('Off'));
 
             if (this->guessModeStateAct->isChecked()) {
                 if ($fileName =~ m/_act/) {
@@ -430,7 +430,7 @@ sub addImages {
             this->imagesTable->openPersistentEditor($item1);
             this->imagesTable->openPersistentEditor($item2);
 
-            $item0->setCheckState(Qt::Checked());
+            $item0->setCheckState(Qt4::Checked());
         }
     }
 }
@@ -444,11 +444,11 @@ sub removeAllImages {
 # [20]
 
 sub createPreviewGroupBox {
-    this->setPreviewGroupBox( Qt::GroupBox(this->tr('Preview')) );
+    this->setPreviewGroupBox( Qt4::GroupBox(this->tr('Preview')) );
 
     this->setPreviewArea( IconPreviewArea() );
 
-    my $layout = Qt::VBoxLayout();
+    my $layout = Qt4::VBoxLayout();
     $layout->addWidget(this->previewArea);
     this->previewGroupBox->setLayout($layout);
     return;
@@ -456,10 +456,10 @@ sub createPreviewGroupBox {
 
 # [21]
 sub createImagesGroupBox {
-    this->setImagesGroupBox( Qt::GroupBox(this->tr('Images')) );
+    this->setImagesGroupBox( Qt4::GroupBox(this->tr('Images')) );
 
-    this->setImagesTable( Qt::TableWidget() );
-    this->imagesTable->setSelectionMode(Qt::AbstractItemView::NoSelection());
+    this->setImagesTable( Qt4::TableWidget() );
+    this->imagesTable->setSelectionMode(Qt4::AbstractItemView::NoSelection());
     this->imagesTable->setItemDelegate(ImageDelegate(this));
 # [21]
 
@@ -471,9 +471,9 @@ sub createImagesGroupBox {
     this->imagesTable->horizontalHeader()->setDefaultSectionSize(90);
     this->imagesTable->setColumnCount(3);
     this->imagesTable->setHorizontalHeaderLabels(\@labels);
-    this->imagesTable->horizontalHeader()->setResizeMode(0, Qt::HeaderView::Stretch());
-    this->imagesTable->horizontalHeader()->setResizeMode(1, Qt::HeaderView::Fixed());
-    this->imagesTable->horizontalHeader()->setResizeMode(2, Qt::HeaderView::Fixed());
+    this->imagesTable->horizontalHeader()->setResizeMode(0, Qt4::HeaderView::Stretch());
+    this->imagesTable->horizontalHeader()->setResizeMode(1, Qt4::HeaderView::Fixed());
+    this->imagesTable->horizontalHeader()->setResizeMode(2, Qt4::HeaderView::Fixed());
     this->imagesTable->verticalHeader()->hide();
 # [23]
 
@@ -482,7 +482,7 @@ sub createImagesGroupBox {
 # [24] //! [25]
             this, SLOT 'changeIcon()');
 
-    my $layout = Qt::VBoxLayout();
+    my $layout = Qt4::VBoxLayout();
     $layout->addWidget(this->imagesTable);
     this->imagesGroupBox->setLayout($layout);
 }
@@ -490,15 +490,15 @@ sub createImagesGroupBox {
 
 # [26]
 sub createIconSizeGroupBox {
-    this->setIconSizeGroupBox( Qt::GroupBox(this->tr('Icon Size')) );
+    this->setIconSizeGroupBox( Qt4::GroupBox(this->tr('Icon Size')) );
 
-    this->setSmallRadioButton( Qt::RadioButton() );
-    this->setLargeRadioButton( Qt::RadioButton() );
-    this->setToolBarRadioButton( Qt::RadioButton() );
-    this->setListViewRadioButton( Qt::RadioButton() );
-    this->setIconViewRadioButton( Qt::RadioButton() );
-    this->setTabBarRadioButton( Qt::RadioButton() );
-    this->setOtherRadioButton( Qt::RadioButton(this->tr('Other:')) );
+    this->setSmallRadioButton( Qt4::RadioButton() );
+    this->setLargeRadioButton( Qt4::RadioButton() );
+    this->setToolBarRadioButton( Qt4::RadioButton() );
+    this->setListViewRadioButton( Qt4::RadioButton() );
+    this->setIconViewRadioButton( Qt4::RadioButton() );
+    this->setTabBarRadioButton( Qt4::RadioButton() );
+    this->setOtherRadioButton( Qt4::RadioButton(this->tr('Other:')) );
 
     this->setOtherSpinBox( IconSizeSpinBox() );
     this->otherSpinBox->setRange(8, 128);
@@ -522,12 +522,12 @@ sub createIconSizeGroupBox {
             this, SLOT 'changeSize(bool)');
     this->connect(this->otherSpinBox, SIGNAL 'valueChanged(int)', this, SLOT 'changeSizeBool()');
 
-    my $otherSizeLayout = Qt::HBoxLayout();
+    my $otherSizeLayout = Qt4::HBoxLayout();
     $otherSizeLayout->addWidget(this->otherRadioButton);
     $otherSizeLayout->addWidget(this->otherSpinBox);
     $otherSizeLayout->addStretch();
 
-    my $layout = Qt::GridLayout();
+    my $layout = Qt4::GridLayout();
     $layout->addWidget(this->smallRadioButton, 0, 0);
     $layout->addWidget(this->largeRadioButton, 1, 0);
     $layout->addWidget(this->toolBarRadioButton, 2, 0);
@@ -542,37 +542,37 @@ sub createIconSizeGroupBox {
 
 # [28]
 sub createActions {
-    this->setAddImagesAct( Qt::Action(this->tr('&Add Images...'), this) );
-    this->addImagesAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+A')));
+    this->setAddImagesAct( Qt4::Action(this->tr('&Add Images...'), this) );
+    this->addImagesAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+A')));
     this->connect(this->addImagesAct, SIGNAL 'triggered()', this, SLOT 'addImages()');
 
-    this->setRemoveAllImagesAct( Qt::Action(this->tr('&Remove All Images'), this) );
-    this->removeAllImagesAct->setShortcut( Qt::KeySequence(this->tr('Ctrl+R')) );
+    this->setRemoveAllImagesAct( Qt4::Action(this->tr('&Remove All Images'), this) );
+    this->removeAllImagesAct->setShortcut( Qt4::KeySequence(this->tr('Ctrl+R')) );
     this->connect(this->removeAllImagesAct, SIGNAL 'triggered()',
             this, SLOT 'removeAllImages()');
 
-    this->setExitAct( Qt::Action(this->tr('&Quit'), this) );
-    this->exitAct->setShortcut( Qt::KeySequence(this->tr('Ctrl+Q')) );
+    this->setExitAct( Qt4::Action(this->tr('&Quit'), this) );
+    this->exitAct->setShortcut( Qt4::KeySequence(this->tr('Ctrl+Q')) );
     this->connect(this->exitAct, SIGNAL 'triggered()', this, SLOT 'close()');
 
-    this->setStyleActionGroup( Qt::ActionGroup(this) );
-    foreach my $styleName ( @{Qt::StyleFactory::keys()} ) {
+    this->setStyleActionGroup( Qt4::ActionGroup(this) );
+    foreach my $styleName ( @{Qt4::StyleFactory::keys()} ) {
         utf8::encode( $styleName );
-        my $action = Qt::Action(this->styleActionGroup);
+        my $action = Qt4::Action(this->styleActionGroup);
         $action->setText( sprintf this->tr('%s Style'), $styleName );
-        $action->setData(Qt::Variant(Qt::String($styleName)));
+        $action->setData(Qt4::Variant(Qt4::String($styleName)));
         $action->setCheckable(1);
         this->connect($action, SIGNAL 'triggered(bool)', this, SLOT 'changeStyle(bool)');
     }
 
-    this->setGuessModeStateAct( Qt::Action(this->tr('&Guess Image Mode/State'), this) );
+    this->setGuessModeStateAct( Qt4::Action(this->tr('&Guess Image Mode/State'), this) );
     this->guessModeStateAct->setCheckable(1);
     this->guessModeStateAct->setChecked(1);
 
-    this->setAboutAct( Qt::Action(this->tr('&About'), this) );
+    this->setAboutAct( Qt4::Action(this->tr('&About'), this) );
     this->connect(this->aboutAct, SIGNAL 'triggered()', this, SLOT 'about()');
 
-    this->setAboutQtAct( Qt::Action(this->tr('About &Qt'), this) );
+    this->setAboutQtAct( Qt4::Action(this->tr('About &Qt'), this) );
     this->connect(this->aboutQtAct, SIGNAL 'triggered()', qApp, SLOT 'aboutQt()');
 }
 # [28]
@@ -602,7 +602,7 @@ sub createMenus {
 
 # [30]
 sub createContextMenu {
-    this->imagesTable->setContextMenuPolicy(Qt::ActionsContextMenu());
+    this->imagesTable->setContextMenuPolicy(Qt4::ActionsContextMenu());
     this->imagesTable->addAction(this->addImagesAct);
     this->imagesTable->addAction(this->removeAllImagesAct);
 }
@@ -612,11 +612,11 @@ sub createContextMenu {
 sub checkCurrentStyle {
     foreach my $action ( @{this->styleActionGroup->actions()} ) {
         my $styleName = $action->data()->toString();
-        my $candidate = Qt::StyleFactory::create($styleName);
-        #printf "AppStyle: 0x%x\n", Qt::_internal::sv_to_ptr(Qt::Application::style());
-        Qt::_internal::sv_to_ptr(Qt::Application::style());
+        my $candidate = Qt4::StyleFactory::create($styleName);
+        #printf "AppStyle: 0x%x\n", Qt4::_internal::sv_to_ptr(Qt4::Application::style());
+        Qt4::_internal::sv_to_ptr(Qt4::Application::style());
         if ($candidate->metaObject()->className()
-                eq Qt::Application::style()->metaObject()->className()) {
+                eq Qt4::Application::style()->metaObject()->className()) {
             $action->trigger();
             return;
         }

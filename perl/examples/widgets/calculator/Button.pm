@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::ToolButton );
+use Qt4;
+use Qt4::isa qw( Qt4::ToolButton );
 
 use List::Util qw(max);
 
@@ -13,7 +13,7 @@ use List::Util qw(max);
 sub NEW {
     my ( $class, $text, $parent ) = @_;
     $class->SUPER::NEW( $parent );
-    this->setSizePolicy(Qt::SizePolicy::Expanding(), Qt::SizePolicy::Preferred());
+    this->setSizePolicy(Qt4::SizePolicy::Expanding(), Qt4::SizePolicy::Preferred());
     this->setText($text);
 }
 # [0]
@@ -24,7 +24,7 @@ sub sizeHint {
     my $size = this->SUPER::sizeHint();
     $size->setHeight( $size->height() + 20 );
     $size->setWidth( max($size->width(), $size->height()));
-    return Qt::Size($size);
+    return Qt4::Size($size);
 }
 
 # [2]

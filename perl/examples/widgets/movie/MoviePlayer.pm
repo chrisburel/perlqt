@@ -4,9 +4,9 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::Widget );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::Widget );
+use Qt4::slots
     open => [],
     goToFrame => ['int'],
     fitToWindow => [],
@@ -81,15 +81,15 @@ sub mainLayout() {
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
-    my $movie = Qt::Movie(this);
+    my $movie = Qt4::Movie(this);
     this->{movie} = $movie;
-    $movie->setCacheMode(Qt::Movie::CacheAll());
+    $movie->setCacheMode(Qt4::Movie::CacheAll());
 
-    my $movieLabel = Qt::Label(this->tr('No movie loaded'));
+    my $movieLabel = Qt4::Label(this->tr('No movie loaded'));
     this->{movieLabel} = $movieLabel;
-    $movieLabel->setAlignment(Qt::AlignCenter());
-    $movieLabel->setSizePolicy(Qt::SizePolicy::Ignored(), Qt::SizePolicy::Ignored());
-    $movieLabel->setBackgroundRole(Qt::Palette::Dark());
+    $movieLabel->setAlignment(Qt4::AlignCenter());
+    $movieLabel->setSizePolicy(Qt4::SizePolicy::Ignored(), Qt4::SizePolicy::Ignored());
+    $movieLabel->setBackgroundRole(Qt4::Palette::Dark());
     $movieLabel->setAutoFillBackground(1);
 
     my $currentMovieDirectory = 'movies';
@@ -106,7 +106,7 @@ sub NEW {
     this->connect(this->speedSpinBox, SIGNAL 'valueChanged(int)',
             $movie, SLOT 'setSpeed(int)');
 
-    my $mainLayout = Qt::VBoxLayout();
+    my $mainLayout = Qt4::VBoxLayout();
     $mainLayout->addWidget($movieLabel);
     $mainLayout->addLayout(this->controlsLayout);
     $mainLayout->addLayout(this->buttonsLayout);
@@ -120,7 +120,7 @@ sub NEW {
 }
 
 sub open {
-    my $fileName = Qt::FileDialog::getOpenFileName(this, this->tr('Open a Movie'),
+    my $fileName = Qt4::FileDialog::getOpenFileName(this, this->tr('Open a Movie'),
                                this->currentMovieDirectory);
     if ($fileName) {
         this->openFile($fileName);
@@ -129,7 +129,7 @@ sub open {
 
 sub openFile {
     my ($fileName) = @_;
-    this->{currentMovieDirectory} = Qt::FileInfo($fileName)->path();
+    this->{currentMovieDirectory} = Qt4::FileInfo($fileName)->path();
 
     this->movie->stop();
     this->movieLabel->setMovie(this->movie);
@@ -170,34 +170,34 @@ sub updateFrameSlider {
 
 sub updateButtons {
     this->playButton->setEnabled(this->movie->isValid() && this->movie->frameCount() != 1
-                           && this->movie->state() == Qt::Movie::NotRunning());
-    this->pauseButton->setEnabled(this->movie->state() != Qt::Movie::NotRunning());
-    this->pauseButton->setChecked(this->movie->state() == Qt::Movie::Paused());
-    this->stopButton->setEnabled(this->movie->state() != Qt::Movie::NotRunning());
+                           && this->movie->state() == Qt4::Movie::NotRunning());
+    this->pauseButton->setEnabled(this->movie->state() != Qt4::Movie::NotRunning());
+    this->pauseButton->setChecked(this->movie->state() == Qt4::Movie::Paused());
+    this->stopButton->setEnabled(this->movie->state() != Qt4::Movie::NotRunning());
 }
 
 sub createControls {
-    my $fitCheckBox = Qt::CheckBox(this->tr('Fit to Window'));
+    my $fitCheckBox = Qt4::CheckBox(this->tr('Fit to Window'));
     this->{fitCheckBox} = $fitCheckBox;
 
-    my $frameLabel = Qt::Label(this->tr('Current frame:'));
+    my $frameLabel = Qt4::Label(this->tr('Current frame:'));
     this->{frameLabel} = $frameLabel;
 
-    my $frameSlider = Qt::Slider(Qt::Horizontal());
+    my $frameSlider = Qt4::Slider(Qt4::Horizontal());
     this->{frameSlider} = $frameSlider;
-    this->frameSlider->setTickPosition(Qt::Slider::TicksBelow());
+    this->frameSlider->setTickPosition(Qt4::Slider::TicksBelow());
     this->frameSlider->setTickInterval(10);
 
-    my $speedLabel = Qt::Label(this->tr('Speed:'));
+    my $speedLabel = Qt4::Label(this->tr('Speed:'));
     this->{speedLabel} = $speedLabel;
 
-    my $speedSpinBox = Qt::SpinBox();
+    my $speedSpinBox = Qt4::SpinBox();
     this->{speedSpinBox} = $speedSpinBox;
     this->speedSpinBox->setRange(1, 9999);
     this->speedSpinBox->setValue(100);
     this->speedSpinBox->setSuffix(this->tr('%'));
 
-    my $controlsLayout = Qt::GridLayout();
+    my $controlsLayout = Qt4::GridLayout();
     this->{controlsLayout} = $controlsLayout;
     this->controlsLayout->addWidget($fitCheckBox, 0, 0, 1, 2);
     this->controlsLayout->addWidget($frameLabel, 1, 0);
@@ -207,45 +207,45 @@ sub createControls {
 }
 
 sub createButtons {
-    my $iconSize = Qt::Size(36, 36);
+    my $iconSize = Qt4::Size(36, 36);
 
-    my $openButton = Qt::ToolButton();
+    my $openButton = Qt4::ToolButton();
     this->{openButton} = $openButton;
-    $openButton->setIcon(this->style()->standardIcon(Qt::Style::SP_DialogOpenButton()));
+    $openButton->setIcon(this->style()->standardIcon(Qt4::Style::SP_DialogOpenButton()));
     $openButton->setIconSize($iconSize);
     $openButton->setToolTip(this->tr('Open File'));
     this->connect($openButton, SIGNAL 'clicked()', this, SLOT 'open()');
 
-    my $playButton = Qt::ToolButton();
+    my $playButton = Qt4::ToolButton();
     this->{playButton} = $playButton;
-    $playButton->setIcon(this->style()->standardIcon(Qt::Style::SP_MediaPlay()));
+    $playButton->setIcon(this->style()->standardIcon(Qt4::Style::SP_MediaPlay()));
     $playButton->setIconSize($iconSize);
     $playButton->setToolTip(this->tr('Play'));
     this->connect($playButton, SIGNAL 'clicked()', this->movie, SLOT 'start()');
 
-    my $pauseButton = Qt::ToolButton();
+    my $pauseButton = Qt4::ToolButton();
     this->{pauseButton} = $pauseButton;
     $pauseButton->setCheckable(1);
-    $pauseButton->setIcon(this->style()->standardIcon(Qt::Style::SP_MediaPause()));
+    $pauseButton->setIcon(this->style()->standardIcon(Qt4::Style::SP_MediaPause()));
     $pauseButton->setIconSize($iconSize);
     $pauseButton->setToolTip(this->tr('Pause'));
     this->connect($pauseButton, SIGNAL 'clicked(bool)', this->movie, SLOT 'setPaused(bool)');
 
-    my $stopButton = Qt::ToolButton();
+    my $stopButton = Qt4::ToolButton();
     this->{stopButton} = $stopButton;
-    $stopButton->setIcon(this->style()->standardIcon(Qt::Style::SP_MediaStop()));
+    $stopButton->setIcon(this->style()->standardIcon(Qt4::Style::SP_MediaStop()));
     $stopButton->setIconSize($iconSize);
     $stopButton->setToolTip(this->tr('Stop'));
     this->connect($stopButton, SIGNAL 'clicked()', this->movie, SLOT 'stop()');
 
-    my $quitButton = Qt::ToolButton();
+    my $quitButton = Qt4::ToolButton();
     this->{quitButton} = $quitButton;
-    $quitButton->setIcon(this->style()->standardIcon(Qt::Style::SP_DialogCloseButton()));
+    $quitButton->setIcon(this->style()->standardIcon(Qt4::Style::SP_DialogCloseButton()));
     $quitButton->setIconSize($iconSize);
     $quitButton->setToolTip(this->tr('Quit'));
     this->connect($quitButton, SIGNAL 'clicked()', this, SLOT 'close()');
 
-    my $buttonsLayout = Qt::HBoxLayout();
+    my $buttonsLayout = Qt4::HBoxLayout();
     this->{buttonsLayout} = $buttonsLayout;
     $buttonsLayout->addStretch();
     $buttonsLayout->addWidget($openButton);

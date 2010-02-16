@@ -5,12 +5,12 @@ use warnings;
 use blib;
 
 use List::Util qw( max );
-use Qt;
+use Qt4;
 
 #[codeeditordefinition]
 
-use Qt::isa qw( Qt::PlainTextEdit );
-use Qt::slots
+use Qt4::isa qw( Qt4::PlainTextEdit );
+use Qt4::slots
     updateLineNumberAreaWidth => ['int'],
     highlightCurrentLine => [],
     updateLineNumberArea => ['const QRect &', 'int'];
@@ -32,8 +32,8 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::Widget );
+use Qt4;
+use Qt4::isa qw( Qt4::Widget );
 
 sub codeEditor() {
     return this->{codeEditor};
@@ -50,7 +50,7 @@ sub NEW {
 }
 
 sub sizeHint {
-    return Qt::Size(this->codeEditor->lineNumberAreaWidth(), 0);
+    return Qt4::Size(this->codeEditor->lineNumberAreaWidth(), 0);
 }
 
 sub paintEvent {
@@ -94,7 +94,7 @@ sub lineNumberAreaWidth {
         ++$digits;
     }
 
-    my $space = 3 + this->fontMetrics()->width(Qt::Char('9')) * $digits;
+    my $space = 3 + this->fontMetrics()->width(Qt4::Char(Qt4::Int(9))) * $digits;
 
     return $space;
 }
@@ -134,7 +134,7 @@ sub resizeEvent {
     this->SUPER::resizeEvent($e);
 
     my $cr = this->contentsRect();
-    this->lineNumberArea->setGeometry(Qt::Rect($cr->left(), $cr->top(), this->lineNumberAreaWidth(), $cr->height()));
+    this->lineNumberArea->setGeometry(Qt4::Rect($cr->left(), $cr->top(), this->lineNumberAreaWidth(), $cr->height()));
 }
 
 #[resizeEvent]
@@ -145,13 +145,13 @@ sub highlightCurrentLine {
     my $extraSelections = [];
 
     if (!this->isReadOnly()) {
-        my $selection = Qt::TextEdit::ExtraSelection();
+        my $selection = Qt4::TextEdit::ExtraSelection();
         
-        my $lineColor = Qt::Color(Qt::yellow())->lighter(160);
+        my $lineColor = Qt4::Color(Qt4::yellow())->lighter(160);
 
-        $selection->format->setBackground( Qt::Brush( $lineColor ) );
-        Qt::setSignature( 'QVariant::QVariant( bool )' );
-        $selection->format->setProperty(Qt::TextFormat::FullWidthSelection(), Qt::Variant(1));
+        $selection->format->setBackground( Qt4::Brush( $lineColor ) );
+        Qt4::setSignature( 'QVariant::QVariant( bool )' );
+        $selection->format->setProperty(Qt4::TextFormat::FullWidthSelection(), Qt4::Variant(1));
         $selection->setCursor( this->textCursor() );
         $selection->cursor->clearSelection();
         push @{$extraSelections}, $selection;
@@ -166,8 +166,8 @@ sub highlightCurrentLine {
 
 sub lineNumberAreaPaintEvent {
     my ($event) = @_;
-    my $painter = Qt::Painter(this->lineNumberArea);
-    $painter->fillRect($event->rect(), Qt::lightGray());
+    my $painter = Qt4::Painter(this->lineNumberArea);
+    $painter->fillRect($event->rect(), Qt4::Brush(Qt4::Color(Qt4::lightGray())));
 
 #[extraAreaPaintEvent_0]
 
@@ -182,9 +182,9 @@ sub lineNumberAreaPaintEvent {
     while ($block->isValid() && $top <= $event->rect()->bottom()) {
         if ($block->isVisible() && $bottom >= $event->rect()->top()) {
             my $number = $blockNumber + 1;
-            $painter->setPen(Qt::Color(Qt::black()));
+            $painter->setPen(Qt4::Color(Qt4::black()));
             $painter->drawText(0, $top, this->lineNumberArea->width(), this->fontMetrics()->height(),
-                             Qt::AlignRight(), $number);
+                             Qt4::AlignRight(), $number);
         }
 
         $block = $block->next();

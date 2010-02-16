@@ -4,13 +4,13 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::Widget );
+use Qt4;
+use Qt4::isa qw( Qt4::Widget );
 
 use ShapeItem;
 
 # [0]
-use Qt::slots
+use Qt4::slots
     createNewCircle => [],
     createNewSquare => [],
     createNewTriangle => [];
@@ -61,31 +61,31 @@ sub NEW {
 # [0] //! [1]
     this->setMouseTracking(1);
 # [1] //! [2]
-    this->setBackgroundRole(Qt::Palette::Base());
+    this->setBackgroundRole(Qt4::Palette::Base());
 # [2]
 
     this->{itemInMotion} = 0;
 
-    this->{circlePath} = Qt::PainterPath();
-    this->{squarePath} = Qt::PainterPath();
-    this->{trianglePath} = Qt::PainterPath();
+    this->{circlePath} = Qt4::PainterPath();
+    this->{squarePath} = Qt4::PainterPath();
+    this->{trianglePath} = Qt4::PainterPath();
     this->{shapeItems} = [];
 
 # [3]
     this->{newCircleButton} = createToolButton(this->tr('New Circle'),
-                                       Qt::Icon('images/circle.png'),
+                                       Qt4::Icon('images/circle.png'),
                                        SLOT 'createNewCircle()');
 
     this->{newSquareButton} = createToolButton(this->tr('New Square'),
-                                       Qt::Icon('images/square.png'),
+                                       Qt4::Icon('images/square.png'),
                                        SLOT 'createNewSquare()');
 
     this->{newTriangleButton} = createToolButton(this->tr('New Triangle'),
-                                         Qt::Icon('images/triangle.png'),
+                                         Qt4::Icon('images/triangle.png'),
                                          SLOT 'createNewTriangle()');
 
-    this->circlePath->addEllipse(Qt::RectF(0, 0, 100, 100));
-    this->squarePath->addRect(Qt::RectF(0, 0, 100, 100));
+    this->circlePath->addEllipse(Qt4::RectF(0, 0, 100, 100));
+    this->squarePath->addRect(Qt4::RectF(0, 0, 100, 100));
 
     my $x = this->trianglePath->currentPosition()->x();
     my $y = this->trianglePath->currentPosition()->y();
@@ -111,13 +111,13 @@ sub NEW {
 sub event {
 # [5] //! [6]
     my ($event) = @_;
-    if ($event->type() == Qt::Event::ToolTip()) {
-        my $helpEvent = CAST $event, 'Qt::HelpEvent';
+    if ($event->type() == Qt4::Event::ToolTip()) {
+        my $helpEvent = CAST $event, 'Qt4::HelpEvent';
         my $index = this->itemAt($helpEvent->pos());
         if ($index != -1) {
-            Qt::ToolTip::showText($helpEvent->globalPos(), this->shapeItems->[$index]->toolTip());
+            Qt4::ToolTip::showText($helpEvent->globalPos(), this->shapeItems->[$index]->toolTip());
         } else {
-            Qt::ToolTip::hideText();
+            Qt4::ToolTip::hideText();
             $event->ignore();
         }
 
@@ -130,7 +130,7 @@ sub event {
 # [7]
 sub resizeEvent {
     # TODO figure out why the 1 and 2 argument form aren't correct in smoke.
-    my $margin = this->style()->pixelMetric(Qt::Style::PM_DefaultTopLevelMargin(), undef, undef);
+    my $margin = this->style()->pixelMetric(Qt4::Style::PM_DefaultTopLevelMargin(), undef, undef);
     my $x = this->width() - $margin;
     my $y = this->height() - $margin;
 
@@ -142,13 +142,13 @@ sub resizeEvent {
 
 # [8]
 sub paintEvent {
-    my $painter = Qt::Painter(this);
-    $painter->setRenderHint(Qt::Painter::Antialiasing());
+    my $painter = Qt4::Painter(this);
+    $painter->setRenderHint(Qt4::Painter::Antialiasing());
     foreach my $shapeItem (@{this->{shapeItems}}) {
 # [8] //! [9]
         $painter->translate($shapeItem->position());
 # [9] //! [10]
-        $painter->setBrush(Qt::Brush($shapeItem->color()));
+        $painter->setBrush(Qt4::Brush($shapeItem->color()));
         $painter->drawPath($shapeItem->path());
         $painter->translate(-$shapeItem->position());
     }
@@ -159,8 +159,8 @@ sub paintEvent {
 # [11]
 sub mousePressEvent {
     my ($event) = @_;
-    CAST $event, 'Qt::MouseEvent';
-    if ($event->button() == Qt::LeftButton()) {
+    CAST $event, 'Qt4::MouseEvent';
+    if ($event->button() == Qt4::LeftButton()) {
         my $index = this->itemAt($event->pos());
         if ($index != -1) {
             this->{itemInMotion} = this->shapeItems->[$index];
@@ -175,8 +175,8 @@ sub mousePressEvent {
 # [12]
 sub mouseMoveEvent {
     my ($event) = @_;
-    CAST $event, 'Qt::MouseEvent';
-    if (($event->buttons() & ${Qt::LeftButton()}) && this->itemInMotion) {
+    CAST $event, 'Qt4::MouseEvent';
+    if (($event->buttons() & ${Qt4::LeftButton()}) && this->itemInMotion) {
         this->moveItemTo($event->pos());
     }
 }
@@ -185,8 +185,8 @@ sub mouseMoveEvent {
 # [13]
 sub mouseReleaseEvent {
     my ($event) = @_;
-    CAST $event, 'Qt::MouseEvent';
-    if ($event->button() == ${Qt::LeftButton()} && this->itemInMotion) {
+    CAST $event, 'Qt4::MouseEvent';
+    if ($event->button() == ${Qt4::LeftButton()} && this->itemInMotion) {
         this->moveItemTo($event->pos());
         this->{itemInMotion} = 0;
     }
@@ -225,7 +225,7 @@ sub itemAt {
     my ($pos) = @_;
     foreach my $i ( reverse 0..$#{this->shapeItems} ) {
         my $item = this->shapeItems->[$i];
-        if ($item->path()->contains(Qt::PointF($pos - $item->position()))) {
+        if ($item->path()->contains(Qt4::PointF($pos - $item->position()))) {
             return $i;
         }
     }
@@ -253,7 +253,7 @@ sub updateButtonGeometry {
 
     # TODO figure out why the 1 and 2 argument form aren't correct in smoke.
     return $y - $size->rheight() -
-        this->style()->pixelMetric(Qt::Style::PM_DefaultLayoutSpacing(), undef, undef);
+        this->style()->pixelMetric(Qt4::Style::PM_DefaultLayoutSpacing(), undef, undef);
 }
 # [20]
 
@@ -273,10 +273,10 @@ sub createShapeItem {
 # [22]
 sub createToolButton {
     my ($toolTip, $icon, $member) = @_;
-    my $button = Qt::ToolButton(this);
+    my $button = Qt4::ToolButton(this);
     $button->setToolTip($toolTip);
     $button->setIcon($icon);
-    $button->setIconSize(Qt::Size(32, 32));
+    $button->setIconSize(Qt4::Size(32, 32));
     this->connect($button, SIGNAL 'clicked()', this, $member);
 
     return $button;
@@ -296,7 +296,7 @@ sub initialItemPosition {
              - int($path->controlPointRect()->width())) / 2;
     }
 
-    return Qt::Point($x, $y);
+    return Qt4::Point($x, $y);
 }
 # [23]
 
@@ -304,20 +304,20 @@ sub initialItemPosition {
 sub randomItemPosition {
     # 2147483647 is the value of RAND_MAX, defined in stdlib.h, at least on
     # my machine.
-    # See the Qt documentation on qrand() for more details.
-    return Qt::Point(rand(2147483647) % (this->width() - 120), rand(2147483647) % (this->height() - 120));
+    # See the Qt4 documentation on qrand() for more details.
+    return Qt4::Point(rand(2147483647) % (this->width() - 120), rand(2147483647) % (this->height() - 120));
 }
 # [24]
 
 # [25]
 sub initialItemColor {
-    return Qt::Color::fromHsv(((scalar @{this->shapeItems} + 1) * 85) % 256, 255, 190);
+    return Qt4::Color::fromHsv(((scalar @{this->shapeItems} + 1) * 85) % 256, 255, 190);
 }
 # [25]
 
 # [26]
 sub randomItemColor {
-    return Qt::Color::fromHsv(rand(2147483647) % 256, 255, 190);
+    return Qt4::Color::fromHsv(rand(2147483647) % 256, 255, 190);
 }
 # [26]
 

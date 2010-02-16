@@ -5,9 +5,9 @@ use warnings;
 use blib;
 
 use List::Util qw( max );
-use Qt;
-use Qt::isa qw( Qt::MainWindow );
-use Qt::slots
+use Qt4;
+use Qt4::isa qw( Qt4::MainWindow );
+use Qt4::slots
     findStyles => ['QFont'],
     findSizes => ['QFont'],
     insertCharacter => ['QString'],
@@ -84,19 +84,19 @@ sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
 
-    my $centralWidget = Qt::Widget();
+    my $centralWidget = Qt4::Widget();
 
-    my $fontLabel = Qt::Label(this->tr('Font:'));
-    this->setFontCombo( Qt::FontComboBox() );
-    my $sizeLabel = Qt::Label(this->tr('Size:'));
-    this->setSizeCombo( Qt::ComboBox() );
-    my $styleLabel = Qt::Label(this->tr('Style:'));
-    this->setStyleCombo( Qt::ComboBox() );
-    my $fontMergingLabel = Qt::Label(this->tr('Automatic Font Merging:'));
-    this->setFontMerging( Qt::CheckBox() );
+    my $fontLabel = Qt4::Label(this->tr('Font:'));
+    this->setFontCombo( Qt4::FontComboBox() );
+    my $sizeLabel = Qt4::Label(this->tr('Size:'));
+    this->setSizeCombo( Qt4::ComboBox() );
+    my $styleLabel = Qt4::Label(this->tr('Style:'));
+    this->setStyleCombo( Qt4::ComboBox() );
+    my $fontMergingLabel = Qt4::Label(this->tr('Automatic Font Merging:'));
+    this->setFontMerging( Qt4::CheckBox() );
     this->fontMerging->setChecked(1);
 
-    this->setScrollArea( Qt::ScrollArea() );
+    this->setScrollArea( Qt4::ScrollArea() );
     this->setCharacterWidget( CharacterWidget() );
     this->scrollArea->setWidget(this->characterWidget);
 # [0]
@@ -107,12 +107,12 @@ sub NEW {
     this->findSizes(this->fontCombo->currentFont());
 
 # [2]
-    this->setLineEdit( Qt::LineEdit() );
-    my $clipboardButton = Qt::PushButton(this->tr('&To clipboard'));
+    this->setLineEdit( Qt4::LineEdit() );
+    my $clipboardButton = Qt4::PushButton(this->tr('&To clipboard'));
 # [2]
 
 # [3]
-    this->setClipboard( Qt::Application::clipboard() );
+    this->setClipboard( Qt4::Application::clipboard() );
 # [3]
 
 # [4]
@@ -134,7 +134,7 @@ sub NEW {
     this->connect(this->fontMerging, SIGNAL 'toggled(bool)', this->characterWidget, SLOT 'updateFontMerging(bool)');
 
 # [6]
-    my $controlsLayout = Qt::HBoxLayout();
+    my $controlsLayout = Qt4::HBoxLayout();
     $controlsLayout->addWidget($fontLabel);
     $controlsLayout->addWidget(this->fontCombo, 1);
     $controlsLayout->addWidget($sizeLabel);
@@ -145,12 +145,12 @@ sub NEW {
     $controlsLayout->addWidget(this->fontMerging, 1);
     $controlsLayout->addStretch(1);
 
-    my $lineLayout = Qt::HBoxLayout();
+    my $lineLayout = Qt4::HBoxLayout();
     $lineLayout->addWidget(this->lineEdit, 1);
     $lineLayout->addSpacing(12);
     $lineLayout->addWidget($clipboardButton);
 
-    my $centralLayout = Qt::VBoxLayout();
+    my $centralLayout = Qt4::VBoxLayout();
     $centralLayout->addLayout($controlsLayout);
     $centralLayout->addWidget(this->scrollArea, 1);
     $centralLayout->addSpacing(4);
@@ -165,7 +165,7 @@ sub NEW {
 # [7]
 sub findStyles {
     my ($font) = @_;
-    my $fontDatabase = Qt::FontDatabase();
+    my $fontDatabase = Qt4::FontDatabase();
     my $currentItem = this->styleCombo->currentText();
     this->styleCombo->clear();
 # [7]
@@ -188,13 +188,13 @@ sub findStyles {
 
 sub findSizes {
     my ($font) = @_;
-    my $fontDatabase = Qt::FontDatabase();
+    my $fontDatabase = Qt4::FontDatabase();
     my $currentSize = this->sizeCombo->currentText();
     this->sizeCombo->blockSignals(1);
     this->sizeCombo->clear();
 
     if($fontDatabase->isSmoothlyScalable($font->family(), $fontDatabase->styleString($font))) {
-        foreach my $size ( @{Qt::FontDatabase::standardSizes()} ) {
+        foreach my $size ( @{Qt4::FontDatabase::standardSizes()} ) {
             this->sizeCombo->addItem("$size");
             this->sizeCombo->setEditable(1);
         }
@@ -228,9 +228,9 @@ sub insertCharacter {
 # [10]
 sub updateClipboard {
 # [11]
-    this->clipboard->setText(this->lineEdit->text(), Qt::Clipboard::Clipboard());
+    this->clipboard->setText(this->lineEdit->text(), Qt4::Clipboard::Clipboard());
 # [11]
-    this->clipboard->setText(this->lineEdit->text(), Qt::Clipboard::Selection());
+    this->clipboard->setText(this->lineEdit->text(), Qt4::Clipboard::Selection());
 }
 # [10]
 

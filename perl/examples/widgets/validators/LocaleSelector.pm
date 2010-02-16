@@ -3,11 +3,11 @@ package LocaleSelector;
 use strict;
 use warnings;
 
-use Qt;
-use Qt::isa qw( Qt::ComboBox );
-use Qt::signals
+use Qt4;
+use Qt4::isa qw( Qt4::ComboBox );
+use Qt4::signals
     localeSelected => ['const QLocale &'];
-use Qt::slots
+use Qt4::slots
     emitLocaleSelected => ['int'];
 
 my @SUPPORTED_LOCALES = (
@@ -246,17 +246,17 @@ sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
     my $curIndex = -1;
-    my $curLocale = Qt::Locale();
+    my $curLocale = Qt4::Locale();
 
     foreach my $i (0..$SUPPORTED_LOCALES_COUNT-1) {
         my $l = $SUPPORTED_LOCALES[$i];
         if ($l->{lang} == $curLocale->language() && $l->{country} == $curLocale->country()) {
             $curIndex = $i;
         }
-        my $text = Qt::Locale::languageToString($l->{lang})
+        my $text = Qt4::Locale::languageToString($l->{lang})
                         . '/'
-                        . Qt::Locale::countryToString($l->{country});
-        this->addItem($text, Qt::qVariantFromValue($l));
+                        . Qt4::Locale::countryToString($l->{country});
+        this->addItem($text, Qt4::qVariantFromValue($l));
     }
 
     this->setCurrentIndex($curIndex);
@@ -270,8 +270,8 @@ sub emitLocaleSelected {
     if (!$v->isValid()) {
         return;
     }
-    my $l = Qt::qVariantValue($v);
-    emit localeSelected(Qt::Locale($l->{lang}, $l->{country}));
+    my $l = Qt4::qVariantValue($v);
+    emit localeSelected(Qt4::Locale($l->{lang}, $l->{country}));
 }
 
 1;

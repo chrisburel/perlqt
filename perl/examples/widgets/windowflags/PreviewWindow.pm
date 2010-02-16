@@ -2,7 +2,7 @@ package PreviewWindow;
 
 use strict;
 use warnings;
-use Qt;
+use Qt4;
 
 # FIXME
 use constant {
@@ -17,7 +17,7 @@ use constant {
 
 
 # [0]
-use Qt::isa qw( Qt::Widget );
+use Qt4::isa qw( Qt4::Widget );
 sub textEdit() {
     return this->{textEdit};
 }
@@ -31,14 +31,14 @@ sub closeButton() {
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
-    my $textEdit = this->{textEdit} = Qt::TextEdit();
+    my $textEdit = this->{textEdit} = Qt4::TextEdit();
     $textEdit->setReadOnly(1);
-    $textEdit->setLineWrapMode(Qt::TextEdit::NoWrap());
+    $textEdit->setLineWrapMode(Qt4::TextEdit::NoWrap());
 
-    my $closeButton = this->{closeButton} = Qt::PushButton(this->tr('&Close'));
+    my $closeButton = this->{closeButton} = Qt4::PushButton(this->tr('&Close'));
     this->connect($closeButton, SIGNAL 'clicked()', this, SLOT 'close()');
 
-    my $layout = Qt::VBoxLayout();
+    my $layout = Qt4::VBoxLayout();
     $layout->addWidget($textEdit);
     $layout->addWidget($closeButton);
     this->setLayout($layout);
@@ -54,60 +54,60 @@ sub setWindowFlags {
 
     my $text;
 
-    my $type = ($flags & Qt::WindowType_Mask());
-    if ($type == Qt::Window()) {
-        $text = 'Qt::Window';
+    my $type = ($flags & Qt4::WindowType_Mask());
+    if ($type == Qt4::Window()) {
+        $text = 'Qt4::Window';
     } elsif ($type == Dialog) {
-        $text = 'Qt::Dialog';
-    } elsif ($type == Qt::Sheet()) {
-        $text = 'Qt::Sheet';
-    } elsif ($type == Qt::Drawer()) {
-        $text = 'Qt::Drawer';
-    } elsif ($type == Qt::Popup()) {
-        $text = 'Qt::Popup';
-    } elsif ($type == Qt::Tool()) {
-        $text = 'Qt::Tool';
+        $text = 'Qt4::Dialog';
+    } elsif ($type == Qt4::Sheet()) {
+        $text = 'Qt4::Sheet';
+    } elsif ($type == Qt4::Drawer()) {
+        $text = 'Qt4::Drawer';
+    } elsif ($type == Qt4::Popup()) {
+        $text = 'Qt4::Popup';
+    } elsif ($type == Qt4::Tool()) {
+        $text = 'Qt4::Tool';
     } elsif ($type == ToolTip) {
-        $text = 'Qt::ToolTip';
+        $text = 'Qt4::ToolTip';
     } elsif ($type == SplashScreen) {
-        $text = 'Qt::SplashScreen';
+        $text = 'Qt4::SplashScreen';
     }
 
-    if (${$flags & Qt::MSWindowsFixedSizeDialogHint()}) {
-        $text .= "\n| Qt::MSWindowsFixedSizeDialogHint";
+    if (${$flags & Qt4::MSWindowsFixedSizeDialogHint()}) {
+        $text .= "\n| Qt4::MSWindowsFixedSizeDialogHint";
     }
-    if (${$flags & Qt::X11BypassWindowManagerHint()}) {
-        $text .= "\n| Qt::X11BypassWindowManagerHint";
+    if (${$flags & Qt4::X11BypassWindowManagerHint()}) {
+        $text .= "\n| Qt4::X11BypassWindowManagerHint";
     }
-    if (${$flags & Qt::FramelessWindowHint()}) {
-        $text .= "\n| Qt::FramelessWindowHint";
+    if (${$flags & Qt4::FramelessWindowHint()}) {
+        $text .= "\n| Qt4::FramelessWindowHint";
     }
-    if (${$flags & Qt::WindowTitleHint()}) {
-        $text .= "\n| Qt::WindowTitleHint";
+    if (${$flags & Qt4::WindowTitleHint()}) {
+        $text .= "\n| Qt4::WindowTitleHint";
     }
-    if (${$flags & Qt::WindowSystemMenuHint()}) {
-        $text .= "\n| Qt::WindowSystemMenuHint";
+    if (${$flags & Qt4::WindowSystemMenuHint()}) {
+        $text .= "\n| Qt4::WindowSystemMenuHint";
     }
-    if (${$flags & Qt::WindowMinimizeButtonHint()}) {
-        $text .= "\n| Qt::WindowMinimizeButtonHint";
+    if (${$flags & Qt4::WindowMinimizeButtonHint()}) {
+        $text .= "\n| Qt4::WindowMinimizeButtonHint";
     }
-    if (${$flags & Qt::WindowMaximizeButtonHint()}) {
-        $text .= "\n| Qt::WindowMaximizeButtonHint";
+    if (${$flags & Qt4::WindowMaximizeButtonHint()}) {
+        $text .= "\n| Qt4::WindowMaximizeButtonHint";
     }
-    if (${$flags & Qt::WindowCloseButtonHint()}) {
-        $text .= "\n| Qt::WindowCloseButtonHint";
+    if (${$flags & Qt4::WindowCloseButtonHint()}) {
+        $text .= "\n| Qt4::WindowCloseButtonHint";
     }
-    if (${$flags & Qt::WindowContextHelpButtonHint()}) {
-        $text .= "\n| Qt::WindowContextHelpButtonHint";
+    if (${$flags & Qt4::WindowContextHelpButtonHint()}) {
+        $text .= "\n| Qt4::WindowContextHelpButtonHint";
     }
-    if (${$flags & Qt::WindowShadeButtonHint()}) {
-        $text .= "\n| Qt::WindowShadeButtonHint";
+    if (${$flags & Qt4::WindowShadeButtonHint()}) {
+        $text .= "\n| Qt4::WindowShadeButtonHint";
     }
-    if (${$flags & Qt::WindowStaysOnTopHint()}) {
-        $text .= "\n| Qt::WindowStaysOnTopHint";
+    if (${$flags & Qt4::WindowStaysOnTopHint()}) {
+        $text .= "\n| Qt4::WindowStaysOnTopHint";
     }
-    if (${$flags & Qt::CustomizeWindowHint()}) {
-        $text .= "\n| Qt::CustomizeWindowHint";
+    if (${$flags & Qt4::CustomizeWindowHint()}) {
+        $text .= "\n| Qt4::CustomizeWindowHint";
     }
 
     this->textEdit->setPlainText($text);

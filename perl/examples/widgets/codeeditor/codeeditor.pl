@@ -3,14 +3,14 @@
 use strict;
 use warnings;
 
-use Qt;
+use Qt4;
 use CodeEditor;
 
 sub main {
-    my $app = Qt::Application( \@ARGV );
+    my $app = Qt4::Application( \@ARGV );
 
     my $editor = CodeEditor();
-    $editor->setWindowTitle(Qt::Object::tr('Code Editor Example'));
+    $editor->setWindowTitle(Qt4::Object::tr('Code Editor Example'));
     $editor->show();
 
     exit $app->exec();

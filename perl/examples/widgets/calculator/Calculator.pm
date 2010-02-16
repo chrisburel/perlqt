@@ -4,10 +4,10 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
-use Qt::isa qw( Qt::Dialog );
+use Qt4;
+use Qt4::isa qw( Qt4::Dialog );
 
-use Qt::slots
+use Qt4::slots
     digitClicked => [],
     unaryOperatorClicked => [],
     additiveOperatorClicked => [],
@@ -71,11 +71,11 @@ sub NEW {
 # [0]
 
 # [1]
-    my $display = Qt::LineEdit('0');
+    my $display = Qt4::LineEdit('0');
     this->{display} = $display;
 # [1] //! [2]
     $display->setReadOnly(1);
-    $display->setAlignment(Qt::AlignRight());
+    $display->setAlignment(Qt4::AlignRight());
     $display->setMaxLength(15);
 
     my $font = $display->font();
@@ -131,9 +131,9 @@ sub NEW {
     this->{equalButton} = $equalButton;
 # [4]
 # [5]
-    my $mainLayout = Qt::GridLayout();
+    my $mainLayout = Qt4::GridLayout();
 # [5] //! [6]
-    $mainLayout->setSizeConstraint(Qt::Layout::SetFixedSize());
+    $mainLayout->setSizeConstraint(Qt4::Layout::SetFixedSize());
 
     $mainLayout->addWidget($display, 0, 0, 1, 6);
     $mainLayout->addWidget($backspaceButton, 1, 0, 1, 2);

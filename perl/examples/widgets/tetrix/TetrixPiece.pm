@@ -5,9 +5,9 @@ use warnings;
 use blib;
 
 use List::Util qw(min max);
-use Qt;
-# Make it a Qt::Object, so we can use 'this'.  I'm lazy :-)
-use Qt::isa qw( Qt::Object );
+use Qt4;
+# Make it a Qt4::Object, so we can use 'this'.  I'm lazy :-)
+use Qt4::isa qw( Qt4::Object );
 use TetrixPiece;
 use constant { 
     NoShape => 0,
@@ -79,7 +79,7 @@ sub coords {
 
 sub qrand {
     # 2147483647 is the value of RAND_MAX, defined in stdlib.h, at least on my
-    # machine.  See the Qt 4.2 documentation on qrand() for more details.
+    # machine.  See the Qt4 4.2 documentation on qrand() for more details.
     return rand(2147483647);
 }
 

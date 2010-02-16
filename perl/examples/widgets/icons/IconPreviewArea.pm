@@ -4,9 +4,9 @@ use strict;
 use warnings;
 use blib;
 
-use Qt;
+use Qt4;
 # [0]
-use Qt::isa qw( Qt::Widget );
+use Qt4::isa qw( Qt4::Widget );
 use constant { NumModes => 4, NumStates => 2 };
 
 sub icon() {
@@ -47,7 +47,7 @@ sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
 
-    my $mainLayout = Qt::GridLayout();
+    my $mainLayout = Qt4::GridLayout();
     this->setLayout($mainLayout);
 
     this->setStateLabels( [] );
@@ -74,7 +74,7 @@ sub NEW {
         }
     }
 
-    this->{size} = Qt::Size();
+    this->{size} = Qt4::Size();
 }
 # [0]
 
@@ -99,20 +99,20 @@ sub setSize {
 # [3]
 sub createHeaderLabel {
     my ($text) = @_;
-    my $label = Qt::Label(sprintf this->tr('<b>%s</b>'), $text);
-    $label->setAlignment(Qt::AlignCenter());
+    my $label = Qt4::Label(sprintf this->tr('<b>%s</b>'), $text);
+    $label->setAlignment(Qt4::AlignCenter());
     return $label;
 }
 # [3]
 
 # [4]
 sub createPixmapLabel {
-    my $label = Qt::Label();
+    my $label = Qt4::Label();
     $label->setEnabled(0);
-    $label->setAlignment(Qt::AlignCenter());
-    $label->setFrameShape(Qt::Frame::Box());
-    $label->setSizePolicy(Qt::SizePolicy::Expanding(), Qt::SizePolicy::Expanding());
-    $label->setBackgroundRole(Qt::Palette::Base());
+    $label->setAlignment(Qt4::AlignCenter());
+    $label->setFrameShape(Qt4::Frame::Box());
+    $label->setSizePolicy(Qt4::SizePolicy::Expanding(), Qt4::SizePolicy::Expanding());
+    $label->setBackgroundRole(Qt4::Palette::Base());
     $label->setAutoFillBackground(1);
     $label->setMinimumSize(132, 132);
     return $label;
@@ -124,17 +124,17 @@ sub updatePixmapLabels {
     for (my $i = 0; $i < NumModes; ++$i) {
         my $mode;
         if ($i == 0) {
-            $mode = Qt::Icon::Normal();
+            $mode = Qt4::Icon::Normal();
         } elsif ($i == 1) {
-            $mode = Qt::Icon::Active();
+            $mode = Qt4::Icon::Active();
         } elsif ($i == 2) {
-            $mode = Qt::Icon::Disabled();
+            $mode = Qt4::Icon::Disabled();
         } else {
-            $mode = Qt::Icon::Selected();
+            $mode = Qt4::Icon::Selected();
         }
 
         for (my $j = 0; $j < NumStates; ++$j) {
-            my $state = ($j == 0) ? Qt::Icon::Off() : Qt::Icon::On();
+            my $state = ($j == 0) ? Qt4::Icon::Off() : Qt4::Icon::On();
             my $icon = this->icon;
             if ( $icon ) {
                 my $pixmap = $icon->pixmap(this->size, $mode, $state);
