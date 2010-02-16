@@ -1106,7 +1106,7 @@ findMethod( classname, methodname )
                 croak( "Corrupt method %s::%s", classname, methodname );
             }
             else if ( methodId > 0 ) {     // single match
-                PUSHs( sv_2mortal(newSViv((IV)methodId)) );
+                XPUSHs( sv_2mortal(newSViv((IV)methodId)) );
             }
             else {                  // multiple match
                 // trun into ambiguousMethodList index
@@ -1114,7 +1114,7 @@ findMethod( classname, methodname )
                 
                 // Put all ambiguous method possibilities onto the stack
                 while( qt_Smoke->ambiguousMethodList[methodId] ) {
-                    PUSHs( sv_2mortal(newSViv(
+                    XPUSHs( sv_2mortal(newSViv(
                         (IV)qt_Smoke->ambiguousMethodList[methodId]
                     )) );
                     ++methodId;
