@@ -1,8 +1,10 @@
-#include "handlers.h"
-#include "Qt.h"
 #include "QtCore/QHash"
 #include "QtCore/QString"
 #include "QtCore/QStringList"
+
+#include "binding.h"
+#include "handlers.h"
+#include "Qt.h"
 #include "marshall_basetypes.h"
 extern HV* pointer_map;
 #include "marshall_macros.h"
@@ -101,7 +103,7 @@ void marshall_basetype(Marshall *m) {
                 // What class does the datatype of the return value belong to?
                 Smoke::Index classid = m->type().classId();
                 // What package should I bless as?
-                char *retpackage = perlqt_modules[m->smoke()].binding->className(classid);
+                char *retpackage = binding.className(classid);
                 // Phew.  Bless the sv.
                 sv_bless( var, gv_stashpv(retpackage, TRUE) );
 

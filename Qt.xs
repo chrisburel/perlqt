@@ -1,27 +1,4 @@
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "ppport.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "smoke.h"
-
-#include "marshall.h"
-#include "Qt.h"
-#include "smokeperl.h"
-#include "perlqt.h"
-#include "handlers.h"
-#include "marshall_types.h"
-
-#ifdef do_open
-#undef do_open
-#endif
-
-#ifdef do_close
-#undef do_close
-#endif
+// Include Qt headers first, to avoid weirdness that the perl headers cause
 #include "QtCore/QAbstractItemModel"
 #include "QtCore/QHash"
 #include "QtCore/QList"
@@ -32,9 +9,27 @@
 #include "QtGui/QPainter"
 #include "QtGui/QWidget"
 
+// Perl headers
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include "ppport.h"
+
+// Now my own headers
+#include "smoke.h"
+#include "Qt.h"
+#include "smokeperl.h"
+#include "perlqt.h"
+#include "marshall_types.h" // Method call classes
+#include "handlers.h" // for install_handlers function
+
+// Standard smoke variables
 extern Q_DECL_EXPORT Smoke *qt_Smoke;
 extern Q_DECL_EXPORT void init_qt_Smoke();
 extern TypeHandler Qt_handlers[];
+
+// We only have one binding.
+PerlQt::Binding binding;
 
 SV *sv_this = 0;
 HV *pointer_map = 0;
@@ -43,9 +38,6 @@ int do_debug = qtdb_none;
 int myargc = 1;
 char **myargv = new char*[1];
 void* qapp = 0;
-
-QHash<Smoke*, PerlQtModule> perlqt_modules;
-static PerlQt::Binding binding;
 
 // There's a comment in QtRuby about possible memory leaks with this...
 QHash<QByteArray, Smoke::Index *> methcache;
@@ -118,7 +110,7 @@ void callMethod(Smoke *smoke, void *obj, Smoke::Index method, Smoke::Stack args)
     fn(m->method, obj, args);
     if(m->flags & Smoke::mf_ctor){
         Smoke::StackItem s[2];
-        s[1].s_voidp = perlqt_modules[smoke].binding;
+        s[1].s_voidp = &binding;
         (*fn)(0, args[0].s_voidp, s);
     }
 }
@@ -249,6 +241,7 @@ QList<MocArgument*> get_moc_arguments(Smoke* smoke, const char * typeName, QList
 				// This shouldn't be necessary because the type of the slot arg should always be in the 
 				// smoke module of the slot being invoked. However, that isn't true for a dataUpdated()
 				// slot in a PlasmaScripting::Applet
+                /*
 				if (typeId == 0) {
 					QHash<Smoke*, PerlQtModule>::const_iterator it;
 					for (it = perlqt_modules.constBegin(); it != perlqt_modules.constEnd(); ++it) {
@@ -271,7 +264,8 @@ QList<MocArgument*> get_moc_arguments(Smoke* smoke, const char * typeName, QList
 							}
 						}
 					}
-				}			
+				}
+                */			
 			} else if (staticType == "bool") {
 				arg->argType = xmoc_bool;
 				smoke = qt_Smoke;
@@ -1117,7 +1111,6 @@ BOOT:
     init_qt_Smoke();
     binding = PerlQt::Binding(qt_Smoke);
     PerlQtModule module = { "PerlQt", &binding };
-    perlqt_modules[qt_Smoke] = module;
 
     install_handlers(Qt_handlers);
     sv_this = newSV(0);

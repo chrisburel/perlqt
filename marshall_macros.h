@@ -23,6 +23,7 @@
 #include <QtCore/qlinkedlist.h>
 #include <QtCore/qvector.h>
 
+#include "binding.h"
 #include "marshall.h"
 
 #define DEF_HASH_MARSHALLER(HashIdent,Item) namespace { char HashIdent##STR[] = #Item; }  \
@@ -130,7 +131,7 @@ void marshall_ItemList(Marshall *m) {
     }
                     */
 
-                    char* retpackage = perlqt_modules[m->smoke()].binding->className(classid);
+                    char* retpackage = binding.className(classid);
                     sv_bless( obj, gv_stashpv(retpackage, TRUE) );
 
                     smokeperl_object o;

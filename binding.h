@@ -20,4 +20,6 @@ public:
 
 }
 
+extern PerlQt::Binding binding;
+
 #endif // BINDING_H
