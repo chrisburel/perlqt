@@ -203,40 +203,23 @@ static void marshall_it(Marshall *m) {
 
 void marshall_basetype(Marshall *m) {
     switch(m->type().elem()) {
-      case Smoke::t_bool:
-        switch(m->action()) {
-          case Marshall::FromSV:
-            m->item().s_bool = SvTRUE(m->var()) ? true : false;
-            break;
-          case Marshall::ToSV:
-            sv_setsv_mg(m->var(), boolSV(m->item().s_bool));
-            break;
-          default:
-            m->unsupported();
-            break;
-        }
+
+        case Smoke::t_bool:
+            marshall_it<bool>(m);
         break;
-      case Smoke::t_int:
-        switch(m->action()) {
-          case Marshall::FromSV:
-            if(SvROK(m->var())){
-                // Enumeration, will be a scalar ref.
-                m->item().s_int = (int)SvIV(SvRV(m->var()));
-            }
-            else
-                m->item().s_int = (int)SvIV(m->var());
-            break;
-          case Marshall::ToSV:
-            sv_setiv_mg(m->var(), (IV)m->item().s_int);
-            break;
-        }
-        break;
-      case Smoke::t_uint:
-        marshall_it<unsigned int>(m);
-        break;
-      case Smoke::t_double:
-        marshall_it<double>(m);
-        break;
+
+		case Smoke::t_int:
+			marshall_it<int>(m);
+		break;
+		
+		case Smoke::t_uint:
+			marshall_it<unsigned int>(m);
+		break;
+
+		case Smoke::t_double:
+			marshall_it<double>(m);
+		break;
+
       case Smoke::t_enum:
         switch(m->action()) {
           case Marshall::FromSV:

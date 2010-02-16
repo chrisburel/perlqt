@@ -5,17 +5,20 @@ use ExtUtils::MakeMaker;
 
 $CC = 'g++';
 
-$QT_DIR = '/usr/local/Trolltech/Qt-4.4.0';
+$build = 'release';
+
+$QT_DIR = "/usr/local/Trolltech/Qt-4.4.0/$build";
 $QT_INCLUDE = "$QT_DIR/include";
 $QT_LIB = "$QT_DIR/lib";
 
 #$SMOKE_DIR = '/pts/testPipe/share/Qt4/def/dat/kdebindings/smoke';
-$SMOKE_DIR = '/home/chris/src/kdebindings/smoke';
+$SMOKE_DIR = "/home/chris/src/kdebindings/$build/smoke";
 $SMOKE_LIB = "$SMOKE_DIR/qt";
 
-$CXX_FLAGS = "-g -Wall";
+$CXX_FLAGS = "-Wall";
 $CXX_LIBS = "-L$QT_LIB -L$SMOKE_LIB -lQtCore -lQtGui -lsmokeqt";
 $CXX_INC = "-I. -I$QT_INCLUDE -I$SMOKE_DIR";
+$OPTIMIZE = ( $build eq 'release' ) ? '-O2' : '-g';
 
 WriteMakefile(
     NAME              => 'Qt',
@@ -36,5 +39,6 @@ WriteMakefile(
 
     USE_MM_LD_RUN_PATH => 1,
     # Debugging
+    OPTIMIZE          => $OPTIMIZE,
     CCFLAGS           => "$CXX_FLAGS",
 );
