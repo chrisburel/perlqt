@@ -136,27 +136,6 @@ S_dopoptosub_at(pTHX_ const PERL_CONTEXT *cxstk, I32 startingblock)
 #define dopoptosub_at(a,b)      S_dopoptosub_at(aTHX_ a,b)
 #define dopoptosub(plop)	dopoptosub_at(cxstack, (plop))
 
-/*
-SV* catCallerInfo( int count ) {
-    SV *retval = newSV(0);
-
-    register I32 cxix = dopoptosub(cxstack_ix);
-    register const PERL_CONTEXT *cx;
-    register const PERL_CONTEXT *ccstack = cxstack;
-    const PERL_SI *top_si = PL_curstackinfo;
-    I32 gimme;
-    const char *stashname;
-
-    cx = &ccstack[cxix];
-
-    stashname = CopSTASHPV(cx->blk_oldcop);
-
-    sv_setpv(retval, stashname);
-
-    return retval;
-}
-*/
-
 SV* catCallerInfo( int count ) {
     SV *retval = newSV(0);
 
