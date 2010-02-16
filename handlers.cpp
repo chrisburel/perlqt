@@ -284,11 +284,11 @@ void marshall_basetype(Marshall* m) {
         case Smoke::t_enum:
             switch(m->action()) {
                 case Marshall::FromSV:
-                    if( !SvROK(m->var()) ) {
-                        die( "Corrupt enum value\n" );
+                    if( SvROK(m->var()) ) {
+                        m->item().s_enum = (long)SvIV(SvRV(m->var()));
                     }
                     else {
-                        m->item().s_enum = (long)SvIV(SvRV(m->var()));
+                        m->item().s_enum = (long)SvIV(m->var());
                     }
                 break;
                 case Marshall::ToSV: {
