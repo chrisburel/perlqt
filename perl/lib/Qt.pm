@@ -568,7 +568,16 @@ sub argmatch {
 }
 
 sub dumpArgs {
-    return join ', ', map{ my $refName = ref $_; $refName =~ s/^ *//; $refName } @_;
+    return join ', ', map{
+        my $refName = ref $_;
+        $refName =~ s/^ *//;
+        if($refName) {
+            $refName;
+        }
+        else {
+            $_;
+        }
+    } @_;
 }
 
 sub dumpCandidates {
@@ -639,15 +648,17 @@ sub do_autoload {
         # arguments match what the method is expecting.  Clear methodIds if
         # args don't match
         if (!objmatch($methodIds[0], \@_)) {
-            @methodIds = ();
             my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
             my $errStr = '--- Arguments for method call ' .
                 "$classname\::$methodname did not match C++ method ".
                 "signature," .
                 ' called at ' . (caller($stackDepth))[1] .
                 ' line ' . (caller($stackDepth))[2] . "\n";
-            $errStr .= "Method call was:\n";
-            $errStr .= "\t$classname\::$methodname( " . dumpArgs(@_) . " )\n";
+            $errStr .= "Method call was:\n\t";
+            $errStr .= "$classname\::$methodname( " . dumpArgs(@_) . " )\n";
+            $errStr .= "C++ signature is:\n\t";
+            $errStr .= dumpCandidates( $classname, $methodname, scalar @_, \@methodIds ) . "\n";
+            @methodIds = ();
             print STDERR $errStr and die;
         }
     }

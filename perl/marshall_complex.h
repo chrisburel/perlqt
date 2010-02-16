@@ -131,6 +131,9 @@ void marshall_from_perl<bool *>(Marshall *m) {
     if(m->cleanup() && m->type().isConst()) {
         delete b;
     }
+    else {
+        sv_setsv( m->var(), *b ? &PL_sv_yes : & PL_sv_no );
+    }
 }
 
 template <>

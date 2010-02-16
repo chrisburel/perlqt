@@ -481,7 +481,7 @@ sub drawSquare {
 
     my $color = Qt::Color($colorTable[int $shape]);
     $painter->fillRect($x + 1, $y + 1, this->squareWidth() - 2, this->squareHeight() - 2,
-                     $color);
+                     Qt::Brush($color));
 
     $painter->setPen($color->light());
     $painter->drawLine($x, $y + this->squareHeight() - 1, $x, $y);
