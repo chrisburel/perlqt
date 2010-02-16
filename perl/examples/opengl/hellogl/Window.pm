@@ -2,8 +2,8 @@ package Window;
 
 use strict;
 use warnings;
-use Qt;
-use Qt::isa qw( Qt::Widget );
+use Qt4;
+use Qt4::isa qw( Qt4::Widget );
 use GLWidget;
 
 sub glWidget() {
@@ -27,7 +27,7 @@ sub NEW
 {
     my ($class, $parent) = @_;
     $class->SUPER::NEW($parent);
-    Qt::setSignature( 'QGLWidget::QGLWidget( QWidget* )' );
+    Qt4::setSignature( 'QGLWidget::QGLWidget( QWidget* )' );
     this->{glWidget} = GLWidget();
 
     this->{xSlider} = this->createSlider();
@@ -43,7 +43,7 @@ sub NEW
 # [0]
 
 # [1]
-    my $mainLayout = Qt::HBoxLayout();
+    my $mainLayout = Qt4::HBoxLayout();
     $mainLayout->addWidget(this->glWidget);
     $mainLayout->addWidget(this->xSlider);
     $mainLayout->addWidget(this->ySlider);
@@ -60,12 +60,12 @@ sub NEW
 # [2]
 sub createSlider
 {
-    my $slider = Qt::Slider(Qt::Vertical());
+    my $slider = Qt4::Slider(Qt4::Vertical());
     $slider->setRange(0, 360 * 16);
     $slider->setSingleStep(16);
     $slider->setPageStep(15 * 16);
     $slider->setTickInterval(15 * 16);
-    $slider->setTickPosition(Qt::Slider::TicksRight());
+    $slider->setTickPosition(Qt4::Slider::TicksRight());
     return $slider;
 }
 # [2]
