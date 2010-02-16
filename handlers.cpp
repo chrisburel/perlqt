@@ -1243,87 +1243,95 @@ void marshall_QMapQStringQVariant(Marshall *m) {
     }
 }
 
-/*
 void marshall_QMapIntQVariant(Marshall *m) {
     UNTESTED_HANDLER("marshall_QMapIntQVariant");
-	switch(m->action()) {
-	case Marshall::FromSV:
-	{
-		VALUE hash = *(m->var());
-		if (TYPE(hash) != T_HASH) {
-			m->item().s_voidp = 0;
-			break;
-	    }
-		
-		QMap<int,QVariant> * map = new QMap<int,QVariant>;
-		
-		// Convert the ruby hash to an array of key/value arrays
-		VALUE temp = rb_funcall(hash, rb_intern("to_a"), 0);
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *hashref = m->var();
+            if( !SvROK(hashref) && (SvTYPE(SvRV(hashref)) != SVt_PVHV) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
 
-		for (long i = 0; i < RARRAY_LEN(temp); i++) {
-			VALUE key = rb_ary_entry(rb_ary_entry(temp, i), 0);
-			VALUE value = rb_ary_entry(rb_ary_entry(temp, i), 1);
-			
-			smokeruby_object *o = value_obj_info(value);
-			if (!o || !o->ptr || o->classId != o->smoke->idClass("QVariant").index) {
-				// If the value isn't a Qt::Variant, then try and construct
-				// a Qt::Variant from it
-				value = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, value);
-				if (value == Qnil) {
-					continue;
-				}
-				o = value_obj_info(value);
-			}
-			
-			(*map)[NUM2INT(key)] = (QVariant)*(QVariant*)o->ptr;
-		}
-	    
-		m->item().s_voidp = map;
-		m->next();
-		
-	    if(m->cleanup())
-		delete map;
-	}
-	break;
-      case Marshall::ToSV:
-	{
-	    QMap<int,QVariant> *map = (QMap<int,QVariant>*)m->item().s_voidp;
-		if (!map) {
-			*(m->var()) = Qnil;
-			break;
-	    }
-		
-	    VALUE hv = rb_hash_new();
-			
-		QMap<int,QVariant>::Iterator it;
-		for (it = map->begin(); it != map->end(); ++it) {
-			void *p = new QVariant(it.value());
-			VALUE obj = getPointerObject(p);
-				
-			if (obj == Qnil) {
-				smokeruby_object  * o = alloc_smokeruby_object(	true, 
-																m->smoke(), 
-																m->smoke()->idClass("QVariant").index, 
-																p );
-				obj = set_obj_info("Qt::Variant", o);
-			}
-			
-			rb_hash_aset(hv, INT2NUM(it.key()), obj);
+            HV *hash = (HV*)SvRV(hashref);
+            QMap<int,QVariant> * map = new QMap<int,QVariant>;
+
+            char* key;
+            SV* value;
+            I32* keylen = new I32;
+            while( value = hv_iternextsv( hash, &key, keylen ) ) {
+                smokeperl_object *o = sv_obj_info(value);
+                if (!o || !o->ptr || o->classId != o->smoke->findClass("QVariant").index) {
+                    continue;
+                    /*
+                    // If the value isn't a Qt::Variant, then try and construct
+                    // a Qt::Variant from it
+                    value = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, value);
+                    if ( !value && !SvOK(value) ) {
+                        continue;
+                    }
+                    o = sv_obj_info(value);
+                    */
+                }
+
+                // Convert the char* into an int
+                int intkey;
+                if( EOF == sscanf( key, "%d", &intkey ) ) {
+                    fprintf( stderr, "Error in marshall_QMapIntQVariant while converting key to integer type\n" );
+                }
+
+                (*map)[intkey] = (QVariant)*(QVariant*)o->ptr;
+            }
+            delete keylen;
+
+            m->item().s_voidp = map;
+            m->next();
+
+            if(m->cleanup())
+                delete map;
         }
-		
-		*(m->var()) = hv;
-		m->next();
-		
-	    if(m->cleanup())
-		delete map;
-	}
-	break;
-      default:
-	m->unsupported();
-	break;
+        break;
+        case Marshall::ToSV: {
+            QMap<int,QVariant> *map = (QMap<int,QVariant>*)m->item().s_voidp;
+            if (!map) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
+
+            HV *hv = newHV();
+            SV *sv = newRV_noinc( (SV*)hv );
+
+            QMap<int,QVariant>::Iterator it;
+            for (it = map->begin(); it != map->end(); ++it) {
+                void *p = new QVariant(it.value());
+                SV *obj = getPointerObject(p);
+
+                if ( !obj || !SvOK(obj) ) {
+                    obj = allocSmokePerlSV( p, 
+                            SmokeType( m->smoke(),
+                                       m->smoke()->idClass("QVariant").index )
+                    );
+                }
+
+                SV *key = newSViv(it.key());
+                STRLEN keylen = SvLEN( key );
+                hv_store( hv, SvPV_nolen(key), keylen, obj, 0 );
+            }
+
+            sv_setsv(m->var(), sv);
+            m->next();
+
+            if(m->cleanup())
+                delete map;
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
     }
 }
 
+/*
 void marshall_QMapintQVariant(Marshall *m) {
     UNTESTED_HANDLER("marshall_QMapintQVariant");
     switch(m->action()) {
@@ -1749,8 +1757,8 @@ Q_DECL_EXPORT TypeHandler Qt_handlers[] = {
     //{ "qlonglong", marshall_it<long long> },
     //{ "qlonglong&", marshall_it<long long> },
     //{ "QMap<int,QVariant>", marshall_QMapintQVariant },
-    //{ "QMap<int,QVariant>", marshall_QMapIntQVariant },
-    //{ "QMap<int,QVariant>&", marshall_QMapIntQVariant },
+    { "QMap<int,QVariant>", marshall_QMapIntQVariant },
+    { "QMap<int,QVariant>&", marshall_QMapIntQVariant },
     { "QMap<QString,QString>", marshall_QMapQStringQString },
     { "QMap<QString,QString>&", marshall_QMapQStringQString },
     { "QMap<QString,QVariant>", marshall_QMapQStringQVariant },
