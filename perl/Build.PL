@@ -46,7 +46,6 @@ my @libs;
 push(@flags,
   '-std=gnu++98',
   '-Wall',
-  '-Wno-unused',
   '-xc++',
   '-I.',
 );
