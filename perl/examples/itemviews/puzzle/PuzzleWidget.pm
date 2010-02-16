@@ -34,6 +34,10 @@ sub NEW
     this->setAcceptDrops(1);
     this->setMinimumSize(400, 400);
     this->setMaximumSize(400, 400);
+
+    this->{highlightedRect} = Qt::Rect();
+    this->{pieceRects} = [];
+    this->{piecePixmaps} = [];
 }
 
 sub clear
@@ -96,7 +100,9 @@ sub dropEvent
         my $square = this->targetSquare($event->pos());
         my $pixmap = Qt::Pixmap();
         my $location = Qt::Point();
+        no warnings qw(void); # For bitshift warning;
         $stream >> $pixmap >> $location;
+        use warnings;
 
         push @{this->pieceLocations}, $location;
         push @{this->piecePixmaps}, $pixmap;
@@ -156,7 +162,9 @@ sub mousePressEvent
     my $itemData = Qt::ByteArray();
     my $dataStream = Qt::DataStream($itemData, Qt::IODevice::WriteOnly());
 
+    no warnings qw(void); # For bitshift warning;
     $dataStream << $pixmap << $location;
+    use warnings;
 
     my $mimeData = Qt::MimeData();
     $mimeData->setData('image/x-puzzle-piece', $itemData);
@@ -183,10 +191,10 @@ sub paintEvent
     my ($event) = @_;
     my $painter = Qt::Painter();
     $painter->begin(this);
-    $painter->fillRect($event->rect(), Qt::white());
+    $painter->fillRect($event->rect(), Qt::Brush(Qt::white()));
 
     if (this->highlightedRect->isValid()) {
-        $painter->setBrush(Qt::Color('#ffcccc'));
+        $painter->setBrush(Qt::Brush(Qt::Color(Qt::String('#ffcccc'))));
         $painter->setPen(Qt::NoPen());
         $painter->drawRect(this->highlightedRect->adjusted(0, 0, -1, -1));
     }

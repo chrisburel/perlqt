@@ -5,7 +5,7 @@ use warnings;
 use Qt;
 use Qt::isa qw( Qt::MainWindow );
 use Qt::slots
-    openImage => ['const QString &'],
+    openImage => [],
     setupPuzzle => [],
     setCompleted => [];
 use PiecesModel;
@@ -16,32 +16,16 @@ sub puzzleImage() {
     return this->{puzzleImage};
 }
 
-sub setPuzzleImage($) {
-    return this->{puzzleImage} = shift;
-}
-
 sub piecesList() {
     return this->{piecesList};
-}
-
-sub setPiecesList($) {
-    return this->{piecesList} = shift;
 }
 
 sub puzzleWidget() {
     return this->{puzzleWidget};
 }
 
-sub setPuzzleWidget($) {
-    return this->{puzzleWidget} = shift;
-}
-
 sub model() {
     return this->{model};
-}
-
-sub setModel($) {
-    return this->{model} = shift;
 }
 
 sub NEW
@@ -69,7 +53,7 @@ sub openImage
 
     if ($fileName) {
         my $newImage = Qt::Pixmap();
-        if (!$$newImage->load($fileName)) {
+        if (!$newImage->load($fileName)) {
             Qt::MessageBox::warning(this, this->tr('Open Image'),
                                  this->tr('The image file could not be loaded.'),
                                  Qt::MessageBox::Cancel());

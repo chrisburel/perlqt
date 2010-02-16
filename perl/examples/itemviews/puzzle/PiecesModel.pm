@@ -2,6 +2,7 @@ package PiecesModel;
 
 use strict;
 use warnings;
+use List::Util qw( min max );
 use Qt;
 use Qt::isa qw( Qt::AbstractListModel );
 
@@ -19,6 +20,9 @@ sub NEW
 {
     my ($class, $parent) = @_;
     $class->SUPER::NEW( $parent );
+
+    this->{locations} = [];
+    this->{pixmaps} = [];
 }
 
 sub data
@@ -80,8 +84,8 @@ sub removeRows
         return 0;
     }
 
-    my $beginRow = qMax(0, $row);
-    my $endRow = qMin($row + $count - 1, scalar @{this->pixmaps} - 1);
+    my $beginRow = max(0, $row);
+    my $endRow = min($row + $count - 1, scalar @{this->pixmaps} - 1);
 
     this->beginRemoveRows($parent, $beginRow, $endRow);
 
@@ -110,9 +114,11 @@ sub mimeData
 
     foreach my $index ( @{$indexes} ) {
         if ($index->isValid()) {
-            my $pixmap = Qt::qVariantValue(this->data($index, Qt::UserRole()));
-            my $location = this->data($index, Qt::UserRole()+1)->toPoint();
+            my $pixmap = this->data($index, Qt::UserRole());
+            my $location = this->data($index, Qt::UserRole()+1);
+            no warnings qw(void); # Ignore bitshift warning
             $stream << $pixmap << $location;
+            use warnings;
         }
     }
 
@@ -142,7 +148,7 @@ sub dropMimeData
             $endRow = scalar @{this->pixmaps};
         }
         else {
-            $endRow = qMin($row, scalar @{this->pixmaps});
+            $endRow = min($row, scalar @{this->pixmaps});
         }
     } else {
         $endRow = $parent->row();
@@ -154,7 +160,9 @@ sub dropMimeData
     while (!$stream->atEnd()) {
         my $pixmap = Qt::Pixmap();
         my $location = Qt::Point();
+        no warnings qw(void); # Ignore bitshift warning
         $stream >> $pixmap >> $location;
+        use warnings;
 
         this->beginInsertRows(Qt::ModelIndex(), $endRow, $endRow);
         splice @{this->pixmaps}, $endRow, 0, $pixmap;
@@ -187,8 +195,8 @@ sub addPieces
 {
     my ($pixmap) = @_;
     this->beginRemoveRows(Qt::ModelIndex(), 0, 24);
-    this->pixmaps = [];
-    this->locations = [];
+    this->{pixmaps} = [];
+    this->{locations} = [];
     this->endRemoveRows();
     foreach my $y (0..4) {
         foreach my $x (0..4) {
