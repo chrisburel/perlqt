@@ -61,14 +61,13 @@ sub NEW {
     this->setLayout($gridLayout);
 
     $angle->setValue(60);
-    $force->setValue(27);
+    $force->setValue(25);
     $angle->setFocus();
 
     push @widgets, $angle;
     push @widgets, $force;
     push @widgets, $cannonField;
     push @widgets, $shoot;
-    $cannonField->shoot();
 }
 
 1;

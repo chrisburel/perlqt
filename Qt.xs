@@ -49,14 +49,79 @@ static PerlQt::Binding binding;
 Smoke::Index getMethod(Smoke *smoke, const char* c, const char* m) {
     Smoke::Index method = smoke->findMethod(c, m).index;
     Smoke::Index i = smoke->methodMaps[method].method;
-    if(i <= 0) {
+    if(i == 0) {
         // ambiguous method have i < 0; it's possible to resolve them, see the other bindings
-        fprintf(stderr, "%s method %s::%s\n",
-            i ? "Ambiguous" : "Unknown", c, m);
-        exit(-1);
+        fprintf(stderr, "%s method %s::%s\n", "Unknown", c, m);
     }
     return i;
 }
+
+/*
+Smoke::Index* getMethod2(const char* classname, const char* methodname) {
+    Smoke::Index method = qt_Smoke->findMethod(classname, methodname).index;
+    if(!method) {
+        // empty list
+    }
+    else if(method > 0) {
+        Smoke::Index* retarray;
+        Smoke::Index methodIndex = qt_Smoke->methodMaps[method].method;
+        if(!methodIndex) { // Shouldn't happen
+            croak("Corrupt method %s::%s", classname, methodname);
+        }
+        else if(methodIndex > 0) { // single match
+            // push onto return
+            fprintf( stderr, "Got method index %d for %s::%s\n", methodIndex, classname, methodname );
+            retarray = new Smoke::Index[1];
+            retarray[0] = methodIndex;
+        }
+        else { //multiple match
+            //
+        }
+        return retarray;
+    }
+    return 0;
+}
+*/
+
+Smoke::Index resolveMethod( Smoke::Index methodIndex, SV** _sp ) {
+    methodIndex = -methodIndex; // turn into ambiguousMethodList index
+    Smoke::Index retval = 0;
+    while(qt_Smoke->ambiguousMethodList[methodIndex]) {
+        Smoke::Index curIdx = qt_Smoke->ambiguousMethodList[methodIndex];
+        Smoke::Method method = qt_Smoke->methods[curIdx];
+        Smoke::Index* args = qt_Smoke->argumentList + method.args;
+        //fprintf( stderr, "%s, id %d: ", qt_Smoke->methodNames[method.name], curIdx );
+
+        // Compare this method's arguments with perl's arguments
+        bool argmatch = false;
+        for(int i=0; i<method.numArgs; i++) {
+            SmokeType curType( qt_Smoke, args[i] );
+            //fprintf( stderr, "c++ %d: %s ", i, curType.name() );
+
+            if( curType.isClass() ) {
+                // Test to see if the perl argument is the same class type
+                smokeperl_object *o = sv_obj_info(_sp[i]);
+                if(o && (o->classId == curType.classId()) )
+                    argmatch = true;
+                else
+                    argmatch = false;
+            }
+            else {
+                argmatch = false;
+            }
+        }
+        if( argmatch ) {
+            retval = curIdx;
+        }
+        //fprintf( stderr, "\t" );
+        ++methodIndex;
+    }
+
+    //fprintf( stderr, "\n" );
+
+    return retval;
+}
+
 
 void callMethod(Smoke *smoke, void *obj, Smoke::Index method, Smoke::Stack args) {
     Smoke::Method *m = smoke->methods + method;
@@ -574,20 +639,17 @@ XS(XS_AUTOLOAD){
         else if(!strcmp(methodname, "drawPie#$$")){
             methodid = 11080;
         }
-        else if(!strcmp(methodname, "drawRect#")){
-            methodid = 11049;
-        }
         else if(!strcmp(methodname, "QBrush$")){
             methodid = 1640;
         }
-        else if(!strcmp(methodname, "QPalette#")){
-            methodid = 11302;
-        }
-        else if(!strcmp(methodname, "update#")){
-            methodid = 18634;
-        }
         else {
-            methodid = getMethod(qt_Smoke, classname, methodname );
+            methodid = getMethod( qt_Smoke, classname, methodname );
+            if(methodid < 0) {
+                methodid = resolveMethod( methodid, SP - items + 1 + withObject );
+            }
+            if(methodid == 0) {
+                croak( "--- No method to call for %s::%s\n", classname, methodname );
+            }
         }
 
         // We need current_object, methodid, and args to call the method

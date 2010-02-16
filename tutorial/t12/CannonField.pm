@@ -81,7 +81,7 @@ sub newTarget {
 
     # 2147483647 is the value of RAND_MAX, defined in stdlib.h, at least on my machine.
     # See the Qt 4.2 documentation on qrand() for more details.
-    this->{target} = Qt::QPoint( 200 + rand(2147483647) % 190, 10 + rand(2147483647) % 255);
+    this->{target} = Qt::QPoint( 150 + rand(2147483647) % 190, 10 + rand(2147483647) % 255);
     this->update();
 }
 
