@@ -95,8 +95,7 @@ sub NEW
     $dialog->cancelButton->setVisible(0);
     $dialog->exec();
     this->{m_nickname} = $dialog->nickname->text();
-    my $msg = ' joins the chat';
-    emit this->action(this->m_nickname, $msg);
+    emit this->action(this->m_nickname, 'joins the chat');
 }
 
 sub rebuildHistory
@@ -163,8 +162,7 @@ sub aboutQt()
 
 sub exiting
 {
-    my $msg = ' leaves the chat';
-    emit this->action(this->m_nickname, $msg);
+    emit this->action(this->m_nickname, 'leaves the chat');
 }
 
 package main;

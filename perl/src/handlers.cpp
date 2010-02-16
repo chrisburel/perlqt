@@ -463,7 +463,8 @@ void marshall_QString(Marshall* m) {
             m->item().s_voidp = (void*)mystr;
             m->next();
 
-            if (!m->type().isConst() && sv != &PL_sv_undef && mystr != 0 && !mystr->isNull()) {
+            if (!m->type().isConst() && sv != &PL_sv_undef && !SvREADONLY(sv) &&
+              mystr != 0 && !mystr->isNull()) {
                 sv_setsv( sv, perlstringFromQString(mystr) );
             }
 
