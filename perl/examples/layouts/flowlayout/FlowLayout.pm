@@ -118,7 +118,7 @@ sub heightForWidth
 sub setGeometry
 {
     my ($rect) = @_;
-    this->SUPER->setGeometry($rect);
+    this->SUPER::setGeometry($rect);
     this->doLayout($rect, 0);
 }
 

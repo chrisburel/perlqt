@@ -109,7 +109,7 @@ sub setGeometry
     my $centerHeight = 0;
     my $i;
 
-    this->SUPER->setGeometry($rect);
+    this->SUPER::setGeometry($rect);
 
     for ($i = 0; $i < scalar @{this->list}; ++$i) {
         my $wrapper = this->list->[$i];

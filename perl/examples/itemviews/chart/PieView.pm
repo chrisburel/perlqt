@@ -34,7 +34,7 @@ sub NEW {
 
 sub dataChanged {
     my ($topLeft, $bottomRight) = @_;
-    this->SUPER->dataChanged($topLeft, $bottomRight);
+    this->SUPER::dataChanged($topLeft, $bottomRight);
 
     my $validItems = 0;
     my $totalValue = 0.0;
@@ -57,7 +57,7 @@ sub dataChanged {
 sub edit {
     my ($index, $trigger, $event) = @_;
     if ($index->column() == 0) {
-        return this->SUPER->edit($index, $trigger, $event);
+        return this->SUPER::edit($index, $trigger, $event);
     }
     else {
         return 0;
@@ -243,7 +243,7 @@ sub horizontalOffset {
 sub mousePressEvent {
     my ($event) = @_;
 
-    this->SUPER->mousePressEvent($event);
+    this->SUPER::mousePressEvent($event);
 
     my $origin = Qt::Point($event->pos());
     this->{origin} = $origin;
@@ -262,12 +262,12 @@ sub mouseMoveEvent {
     if ($rubberBand) {
         $rubberBand->setGeometry(Qt::Rect(this->{origin}, $event->pos())->normalized());
     }
-    this->SUPER->mouseMoveEvent($event);
+    this->SUPER::mouseMoveEvent($event);
 }
 
 sub mouseReleaseEvent {
     my ($event) = @_;
-    this->SUPER->mouseReleaseEvent($event);
+    this->SUPER::mouseReleaseEvent($event);
     my $rubberBand = this->{rubberBand};
     if ($rubberBand) {
         $rubberBand->hide();
@@ -421,7 +421,7 @@ sub rowsInserted {
         }
     }
 
-    this->SUPER->rowsInserted($parent, $start, $end);
+    this->SUPER::rowsInserted($parent, $start, $end);
 }
 
 sub rowsAboutToBeRemoved {
@@ -436,7 +436,7 @@ sub rowsAboutToBeRemoved {
         }
     }
 
-    this->SUPER->rowsAboutToBeRemoved($parent, $start, $end);
+    this->SUPER::rowsAboutToBeRemoved($parent, $start, $end);
 }
 
 sub scrollContentsBy {

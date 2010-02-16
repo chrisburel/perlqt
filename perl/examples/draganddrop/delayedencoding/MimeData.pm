@@ -27,7 +27,7 @@ sub retrieveData {
     my ($mimeType, $type) = @_;
     emit dataRequested($mimeType);
 
-    return Qt::Variant(this->SUPER->retrieveData($mimeType, $type));
+    return Qt::Variant(this->SUPER::retrieveData($mimeType, $type));
 }
 #[1]
 

@@ -131,7 +131,7 @@ sub updateLineNumberArea {
 
 sub resizeEvent {
     my ($e) = @_;
-    this->SUPER->resizeEvent($e);
+    this->SUPER::resizeEvent($e);
 
     my $cr = this->contentsRect();
     this->lineNumberArea->setGeometry(Qt::Rect($cr->left(), $cr->top(), this->lineNumberAreaWidth(), $cr->height()));

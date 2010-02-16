@@ -79,10 +79,10 @@ sub pixelMetric {
         return 8;
     }
     elsif ($metric == PM_ScrollBarExtent()) {
-        return this->SUPER->pixelMetric($metric, $option, $widget) + 4;
+        return this->SUPER::pixelMetric($metric, $option, $widget) + 4;
     }
     else {
-        return this->SUPER->pixelMetric($metric, $option, $widget);
+        return this->SUPER::pixelMetric($metric, $option, $widget);
     }
 }
 # [8]
@@ -97,7 +97,7 @@ sub styleHint {
         return 1;
     }
     else {
-        return this->SUPER->styleHint($hint, $option, $widget, $returnData);
+        return this->SUPER::styleHint($hint, $option, $widget, $returnData);
     }
 }
 # [10]
@@ -216,7 +216,7 @@ sub drawPrimitive {
 # [32] //! [33]
     else {
 # [33] //! [34]
-        this->SUPER->drawPrimitive($element, $option, $painter, $widget);
+        this->SUPER::drawPrimitive($element, $option, $painter, $widget);
     }
 }
 # [34]

@@ -91,7 +91,7 @@ sub eventFilter {
             }
         }
     }
-    return this->SUPER->eventFilter($object, $event);
+    return this->SUPER::eventFilter($object, $event);
 }
 
 sub closeEvent {

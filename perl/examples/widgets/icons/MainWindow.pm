@@ -28,7 +28,7 @@ sub centralWidget() {
 
 sub setCentralWidget($) {
     this->{centralWidget} = shift;
-    this->SUPER->setCentralWidget( this->centralWidget );
+    this->SUPER::setCentralWidget( this->centralWidget );
 }
 
 

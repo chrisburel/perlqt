@@ -189,7 +189,7 @@ sub pause {
 # [7]
 sub paintEvent {
     my ($event) = @_;
-    this->SUPER->paintEvent($event);
+    this->SUPER::paintEvent($event);
 
     my $painter = Qt::Painter(this);
     my $rect = this->contentsRect();
@@ -242,7 +242,7 @@ sub keyPressEvent {
     my $isPaused = this->{isPaused};
     my $curPiece = this->{curPiece};
     if (!$isStarted || $isPaused || curPiece->shape() == TetrixPiece::NoShape) {
-        this->SUPER->keyPressEvent($event);
+        this->SUPER::keyPressEvent($event);
         return;
     }
 # [13]
@@ -269,7 +269,7 @@ sub keyPressEvent {
         this->oneLineDown();
     }
     else {
-        this->SUPER->keyPressEvent($event);
+        this->SUPER::keyPressEvent($event);
     }
 # [14]
 }
@@ -286,7 +286,7 @@ sub timerEvent {
             this->oneLineDown();
         }
     } else {
-        this->SUPER->timerEvent($event);
+        this->SUPER::timerEvent($event);
 # [15] //! [16]
     }
 # [16] //! [17]

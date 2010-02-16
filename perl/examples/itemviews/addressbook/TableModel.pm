@@ -145,7 +145,7 @@ sub flags {
         return Qt::ItemIsEnabled();
     }
 
-    return bless( \this->SUPER->flags($index), 'Qt::ItemFlag') | Qt::ItemIsEditable();
+    return bless( \this->SUPER::flags($index), 'Qt::ItemFlag') | Qt::ItemIsEditable();
 }
 
 sub getList {

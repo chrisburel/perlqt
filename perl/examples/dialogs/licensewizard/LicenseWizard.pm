@@ -292,7 +292,7 @@ sub initializePage {
 # [28]
 sub setVisible {
     my ( $visible ) = @_;
-    this->SUPER->setVisible($visible);
+    this->SUPER::setVisible($visible);
 
     if ($visible) {
 # [29]

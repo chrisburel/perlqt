@@ -27,7 +27,8 @@ sub event {
         return 1;
     }
     $DB::single=1;
-    return this->SUPER()->event($event);
+    Qt::_internal::setDebug(0xffffff);
+    return this->SUPER::event($event);
 }
 # [0]
 

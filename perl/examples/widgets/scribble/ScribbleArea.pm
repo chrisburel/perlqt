@@ -166,7 +166,7 @@ sub resizeEvent {
         this->resizeImage(this->image, Qt::Size($newWidth, $newHeight));
         this->update();
     }
-    this->SUPER->resizeEvent($event);
+    this->SUPER::resizeEvent($event);
 }
 # [16]
 

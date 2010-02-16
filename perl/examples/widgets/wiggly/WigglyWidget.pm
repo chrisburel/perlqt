@@ -71,7 +71,7 @@ sub timerEvent {
         ++this->{step};
         this->update();
     } else {
-        this->SUPER->timerEvent($event);
+        this->SUPER::timerEvent($event);
     }
 # [6]
 }

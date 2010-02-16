@@ -464,7 +464,7 @@ sub accept {
     $implementationFile->close();
 
 #! [5]
-    this->SUPER->accept();
+    this->SUPER::accept();
 #! [5] //! [6]
 }
 #! [6]

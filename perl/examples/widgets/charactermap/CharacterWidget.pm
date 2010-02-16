@@ -139,7 +139,7 @@ sub mousePressEvent {
         this->update();
     }
     else {
-        this->SUPER->mousePressEvent($event);
+        this->SUPER::mousePressEvent($event);
     }
 }
 # [5]

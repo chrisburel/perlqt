@@ -50,7 +50,7 @@ sub NEW {
 # [1]
 sub setWindowFlags {
     my ($flags) = @_;
-    this->SUPER->setWindowFlags($flags);
+    this->SUPER::setWindowFlags($flags);
 
     my $text;
 

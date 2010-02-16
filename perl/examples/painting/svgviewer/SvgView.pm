@@ -169,7 +169,7 @@ sub paintEvent
         }
 
         my $imagePainter = Qt::Painter(this->m_image);
-        this->SUPER->render($imagePainter);
+        this->SUPER::render($imagePainter);
         $imagePainter->end();
 
         my $p = Qt::Painter(this->viewport());
@@ -177,7 +177,7 @@ sub paintEvent
         $p->end();
 
     } else {
-        this->SUPER->paintEvent($event);
+        this->SUPER::paintEvent($event);
     }
 }
 

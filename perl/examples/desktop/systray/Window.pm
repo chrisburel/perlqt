@@ -222,7 +222,7 @@ sub setVisible
     this->minimizeAction->setEnabled($visible);
     this->maximizeAction->setEnabled(!this->isMaximized());
     this->restoreAction->setEnabled(this->isMaximized() || !$visible);
-    this->SUPER->setVisible($visible);
+    this->SUPER::setVisible($visible);
 }
 # [1]
 

@@ -123,7 +123,7 @@ sub event {
 
         return 1;
     }
-    return this->SUPER->event($event);
+    return this->SUPER::event($event);
 }
 # [6]
 

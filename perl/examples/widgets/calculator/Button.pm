@@ -21,7 +21,7 @@ sub NEW {
 # [1]
 sub sizeHint {
 # [1] //! [2]
-    my $size = this->SUPER->sizeHint();
+    my $size = this->SUPER::sizeHint();
     $size->setHeight( $size->height() + 20 );
     $size->setWidth( max($size->width(), $size->height()));
     return Qt::Size($size);
