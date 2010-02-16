@@ -144,12 +144,6 @@ sub mousePressEvent {
 }
 # [5]
 
-sub wheelEvent {
-    my ($event) = @_;
-    this->update();
-    this->SUPER->wheelEvent($event);
-}
-
 # [6]
 sub paintEvent {
     my ($event) = @_;
