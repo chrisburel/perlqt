@@ -82,6 +82,7 @@ sub NEW
 sub sendFortune
 {
 # [5]
+    $DB::single=1;
     my $block = Qt::ByteArray();
     my $out = Qt::DataStream($block, Qt::IODevice::WriteOnly());
     $out->setVersion(Qt::DataStream::Qt_4_0());
@@ -89,7 +90,7 @@ sub sendFortune
 # [4] //! [6]
     no warnings qw(void);
     $out << Qt::Ushort(0);
-    $out << Qt::String(this->fortunes->[rand(scalar @{this->fortunes})]);
+    $out << Qt::String(this->fortunes->[rand($#{this->fortunes})]);
     $out->device()->seek(0);
     $out << Qt::Ushort($block->size() - $shortSize);
     use warnings;

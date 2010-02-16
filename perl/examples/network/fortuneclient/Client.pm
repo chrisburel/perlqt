@@ -121,12 +121,14 @@ sub NEW
 # [5]
 
 # [6]
+my $foo = 0;
 sub requestNewFortune
 {
     this->getFortuneButton->setEnabled(0);
     this->{blockSize} = 0;
     this->tcpSocket->abort();
 # [7]
+    print "\n\n\n------Requesting fortune ".$foo++."-----\n\n\n";
     this->tcpSocket->connectToHost(this->hostLineEdit->text(),
                                    this->portLineEdit->text());
 # [7]
@@ -154,6 +156,7 @@ sub readFortune
     }
 
     if (this->tcpSocket->bytesAvailable() < this->blockSize) {
+        print "This fortune too small\n";
         return;
     }
 # [10] //! [11]
@@ -164,6 +167,7 @@ sub readFortune
     use warnings;
 
     if ($nextFortune eq this->currentFortune) {
+        print "This fortune the same\n";
         Qt::Timer::singleShot(0, this, SLOT 'requestNewFortune()');
         return;
     }
