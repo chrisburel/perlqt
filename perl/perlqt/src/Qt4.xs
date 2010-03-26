@@ -272,7 +272,7 @@ make_metaObject(parentClassId,parentMeta,stringdata_sv,data_sv)
             // instance to get it via a smoke library call
             //const char* classname = qt_Smoke->classes[SvIV(parentClassId)].className;
             //Smoke::Index methodId = getMethod(qt_Smoke, classname, "metaObject");
-            Smoke::ModuleIndex nameMId = qt_Smoke->idMethodName("metaObject");
+            Smoke::ModuleIndex nameMId = qt_Smoke->idMethodName("staticMetaObject");
             Smoke::ModuleIndex classMId( qt_Smoke, SvIV(parentClassId) );
             Smoke::ModuleIndex meth = qt_Smoke->findMethod(classMId, nameMId);
             if (meth.index > 0) {
