@@ -4,6 +4,9 @@
 OPTION(ENABLE_PERLQT4 "build PerlQt4" ON)
 OPTION(ENABLE_PERLQTTEST4 "build PerlQtTest4" ON)
 
+FIND_PACKAGE ( Perl )
+FIND_PACKAGE ( PerlLibs )
+
 include (FindPerlMore)
 SET(CUSTOM_PERL_SITE_ARCH_DIR ${PERL_SITE_ARCH_DIR} CACHE DIR "Custom installation directory for perl binary extension" )
 

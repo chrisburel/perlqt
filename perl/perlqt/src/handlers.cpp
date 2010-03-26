@@ -130,7 +130,7 @@ void *construct_copy(smokeperl_object *o) {
         char *ccArg = new char[classNameLen + 8];
         sprintf(ccArg, "const %s&", className);
 
-        Smoke::ModuleIndex classIdx = { o->smoke, o->classId };
+        Smoke::ModuleIndex classIdx( o->smoke, o->classId );
         ccMeth = o->smoke->findMethod( classIdx, ccId ).index;
 
         if(!ccMeth) {

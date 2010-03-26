@@ -39,7 +39,6 @@ extern "C" {
 
 // Standard smoke variables
 extern Q_DECL_EXPORT Smoke* qt_Smoke;
-extern Q_DECL_EXPORT void init_qt_Smoke();
 extern Q_DECL_EXPORT QList<Smoke*> smokeList;
 
 PerlQt4::Binding binding;
@@ -465,7 +464,7 @@ SV* prettyPrintMethod(Smoke::ModuleIndex id) {
 #endif
 
 const char* resolve_classname_qt( smokeperl_object* o ) {
-	if (o->smoke->isDerivedFromByName(o->smoke->classes[o->classId].className, "QEvent")) {
+	if (o->smoke->isDerivedFrom(o->smoke->classes[o->classId].className, "QEvent")) {
 		QEvent * qevent = (QEvent *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QEvent").index);
 		switch (qevent->type()) {
 		case QEvent::Timer:
@@ -685,12 +684,12 @@ const char* resolve_classname_qt( smokeperl_object* o ) {
 		default:
 			break;
 		}
-	} else if (o->smoke->isDerivedFromByName(o->smoke->classes[o->classId].className, "QObject")) {
+	} else if (o->smoke->isDerivedFrom(o->smoke->classes[o->classId].className, "QObject")) {
 		QObject * qobject = (QObject *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QObject").index);
 		const QMetaObject * meta = qobject->metaObject();
 
 		while (meta != 0) {
-			o->smoke = Smoke::classMap[meta->className()];
+			o->smoke = Smoke::classMap[meta->className()].smoke;
 			if (o->smoke != 0) {
 				o->classId = o->smoke->idClass(meta->className()).index;
 				if (o->classId != 0) {
@@ -700,7 +699,7 @@ const char* resolve_classname_qt( smokeperl_object* o ) {
 
 			meta = meta->superClass();
 		}
-	} else if (o->smoke->isDerivedFromByName(o->smoke->classes[o->classId].className, "QGraphicsItem")) {
+	} else if (o->smoke->isDerivedFrom(o->smoke->classes[o->classId].className, "QGraphicsItem")) {
 		QGraphicsItem * item = (QGraphicsItem *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QGraphicsItem").index);
 		switch (item->type()) {
 		case 1:
@@ -733,7 +732,7 @@ const char* resolve_classname_qt( smokeperl_object* o ) {
 			o->classId = o->smoke->idClass("QGraphicsItemGroup").index;
 			break;
 		}
-	} else if (o->smoke->isDerivedFromByName(o->smoke->classes[o->classId].className, "QLayoutItem")) {
+	} else if (o->smoke->isDerivedFrom(o->smoke->classes[o->classId].className, "QLayoutItem")) {
 		QLayoutItem * item = (QLayoutItem *) o->smoke->cast(o->ptr, o->classId, o->smoke->idClass("QLayoutItem").index);
 		if (item->widget() != 0) {
 			o->classId = o->smoke->idClass("QWidgetItem").index;
@@ -1993,7 +1992,7 @@ XS(XS_qt_metacall){
     // Assume the target slot is a C++ one
     smokeperl_object* o = sv_obj_info(sv_this);
     Smoke::ModuleIndex nameId = o->smoke->idMethodName("qt_metacall$$?");
-    Smoke::ModuleIndex classIdx = { o->smoke, o->classId };
+    Smoke::ModuleIndex classIdx( o->smoke, o->classId );
     Smoke::ModuleIndex meth = nameId.smoke->findMethod(classIdx, nameId);
     if (meth.index > 0) {
         Smoke::Method &m = meth.smoke->methods[meth.smoke->methodMaps[meth.index].method];

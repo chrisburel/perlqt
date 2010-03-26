@@ -20,7 +20,7 @@ extern "C" {
 
 extern PerlQt4::Binding binding;
 extern Q_DECL_EXPORT Smoke* qt_Smoke;
-extern Q_DECL_EXPORT void init_qt_Smoke();
+extern "C" void init_qt_Smoke();
 extern Q_DECL_EXPORT QHash<Smoke*, PerlQt4Module> perlqt_modules;
 extern SV* sv_qapp;
 QList<Smoke*> smokeList;
@@ -273,7 +273,7 @@ make_metaObject(parentClassId,parentMeta,stringdata_sv,data_sv)
             //const char* classname = qt_Smoke->classes[SvIV(parentClassId)].className;
             //Smoke::Index methodId = getMethod(qt_Smoke, classname, "metaObject");
             Smoke::ModuleIndex nameMId = qt_Smoke->idMethodName("metaObject");
-            Smoke::ModuleIndex classMId = { qt_Smoke, SvIV(parentClassId) };
+            Smoke::ModuleIndex classMId( qt_Smoke, SvIV(parentClassId) );
             Smoke::ModuleIndex meth = qt_Smoke->findMethod(classMId, nameMId);
             if (meth.index > 0) {
                 Smoke::Method &m = meth.smoke->methods[meth.smoke->methodMaps[meth.index].method];

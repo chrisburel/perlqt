@@ -641,72 +641,6 @@ sub op_negate {
     return -${$_[0]};
 }
 
-package Qt4::DBusReply;
-
-use strict;
-use warnings;
-
-sub new {
-    my ( $class, $reply ) = @_;
-    my $this = bless {}, $class;
-
-    my $error = Qt4::DBusError($reply);
-    $this->{error} = $error;
-    if ( $error->isValid() ) {
-        $this->{data} = Qt4::Variant();
-        return $this;
-    }
-
-    my $arguments = $reply->arguments();
-    if ( ref $arguments eq 'ARRAY' && scalar @{$arguments} >= 1 ) {
-        $this->{data} = $arguments->[0];
-        return $this;
-    }
-
-    # This only gets called if the 2 previous ifs weren't
-    $this->{error} = Qt4::DBusError( Qt4::DBusError::InvalidSignature(),
-                                    'Unexpected reply signature' );
-    $this->{data} = Qt4::Variant();
-    return $this;
-}
-
-sub isValid {
-    my ( $this ) = @_;
-    return !$this->{error}->isValid();
-}
-
-sub value() {
-    my ( $this ) = @_;
-    return $this->{data}->value();
-}
-
-sub error() {
-    my ( $this ) = @_;
-    return $this->{error};
-}
-
-# Create the Qt4::DBusReply() constructor
-Qt4::_internal::installSub('Qt4::DBusReply', sub { Qt4::DBusReply->new(@_) });
-
-1;
-
-package Qt4::DBusVariant;
-
-use strict;
-use warnings;
-
-sub NEW {
-    my ( $class, $value ) = @_;
-    if ( ref $value eq ' Qt4::Variant' ) {
-        $class->SUPER::NEW( $value );
-    }
-    else {
-        $class->SUPER::NEW( $value );
-    }
-}
-
-1;
-
 package Qt4::_internal;
 
 use strict;
@@ -1275,7 +1209,7 @@ sub reportNoMethodFound {
 # Desc: sets up each class
 sub init {
     my $classes = getClassList();
-    push @{$classes}, keys %customClasses;
+    #push @{$classes}, keys %customClasses;
     Qt4::_internal->init_class($_) for(@$classes);
 
     my $enums = getEnumList();
