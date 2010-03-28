@@ -1913,8 +1913,7 @@ XS(XS_AUTOLOAD) {
                 }
 
                 // Error out
-                fprintf( stderr, "How'd I get here?\n" );
-                croak( "Corrupt getSmokeMethodId return value: Got %d value(s), expected 2\n", count );
+                croak( "Corrupt getSmokeMethodId return value: Got %d value(s), expected 3\n", count );
             }
 
             int cacheLookup = POPi;

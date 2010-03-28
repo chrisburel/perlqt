@@ -899,7 +899,7 @@ sub argmatch {
             }
         }
         elsif ( $argType eq 'Qt4::Uchar' ) {
-            if( $typeName =~ m/^u(?=nsigned )?char[\*&]?$/ ) {
+            if( $typeName =~ m/^u(?:nsigned )?char[\*&]?$/ ) {
                 return [$smokeId,$methodId];
             }
             else {
@@ -919,7 +919,7 @@ sub argmatch {
     }
 
     if ( !%match && $explicitType ) {
-        return -1;
+        return [undef,-1];
     }
 
     return map{ $match{$_}->[1] }
@@ -1405,12 +1405,12 @@ sub normalize_classname {
 
     if ($cxxClassName =~ m/^Q3/) {
         # Prepend Qt3:: if this is a Qt3 support class
-        $perlClassName =~ s/^Q3(?=[A-Z])/Qt3::/;
+        $perlClassName =~ s/^Q3(?:[A-Z])/Qt3::/;
     }
     elsif ($cxxClassName =~ m/^Q/) {
         # Only prepend Qt4:: if the name starts with Q and is followed by
         # an uppercase letter
-        $perlClassName =~ s/^Q(?=[A-Z])/Qt4::/;
+        $perlClassName =~ s/^Q(?:[A-Z])/Qt4::/;
     }
 
     return $perlClassName;

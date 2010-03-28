@@ -22,17 +22,6 @@ use Qt4;
 # [0]
 use Qt4::isa qw( Qt4::SyntaxHighlighter );
 
-=begin
-    struct HighlightingRule
-    {
-        Qt4::RegExp pattern;
-        Qt4::TextCharFormat format;
-    };
-    Qt4::Vector<HighlightingRule> highlightingRules;
-
-=cut
-# [0]
-
 # [0]
 sub NEW
 {
@@ -46,7 +35,7 @@ sub NEW
     this->{quotationFormat} = Qt4::TextCharFormat();
     this->{functionFormat} = Qt4::TextCharFormat();
 
-    this->{keywordFormat}->setForeground(Qt4::darkBlue());
+    this->{keywordFormat}->setForeground(Qt4::Brush(Qt4::darkBlue()));
     this->{keywordFormat}->setFontWeight(Qt4::Font::Bold());
     my @keywordPatterns = (
                     "\\bchar\\b", "\\bclass\\b", "\\bconst\\b",
@@ -71,7 +60,7 @@ sub NEW
 
 # [2]
     this->{classFormat}->setFontWeight(Qt4::Font::Bold());
-    this->{classFormat}->setForeground(Qt4::darkMagenta());
+    this->{classFormat}->setForeground(Qt4::Brush(Qt4::darkMagenta()));
     push @{this->{highlightingRules}},
         HighlightingRule->new(
             Qt4::RegExp("\\bQ[A-Za-z]+\\b"),
@@ -80,7 +69,7 @@ sub NEW
 # [2]
 
 # [3]
-    this->{singleLineCommentFormat}->setForeground(Qt4::red());
+    this->{singleLineCommentFormat}->setForeground(Qt4::Brush(Qt4::red()));
     
     push @{this->{highlightingRules}},
         HighlightingRule->new(
@@ -88,11 +77,11 @@ sub NEW
             this->{singleLineCommentFormat}
         );
 
-    this->{multiLineCommentFormat}->setForeground(Qt4::red());
+    this->{multiLineCommentFormat}->setForeground(Qt4::Brush(Qt4::red()));
 # [3]
 
 # [4]
-    this->{quotationFormat}->setForeground(Qt4::darkGreen());
+    this->{quotationFormat}->setForeground(Qt4::Brush(Qt4::darkGreen()));
     push @{this->{highlightingRules}},
         HighlightingRule->new(
             Qt4::RegExp("\'.*\'"),
@@ -102,7 +91,7 @@ sub NEW
 
 # [5]
     this->{functionFormat}->setFontItalic(1);
-    this->{functionFormat}->setForeground(Qt4::blue());
+    this->{functionFormat}->setForeground(Qt4::Brush(Qt4::blue()));
     push @{this->{highlightingRules}},
         HighlightingRule->new(
             Qt4::RegExp("\\b[A-Za-z0-9_]+(?=\\()"),
@@ -119,7 +108,6 @@ sub NEW
 # [7]
 sub highlightBlock
 {
-    $DB::single=1;
     my ($text) = @_;
     foreach my $rule ( @{this->{highlightingRules}} ) {
         my $expression = Qt4::RegExp($rule->pattern());
@@ -142,7 +130,6 @@ sub highlightBlock
 
 # [9] //! [10]
     while ($startIndex >= 0) {
-        $DB::single=1;
 # [10] //! [11]
         my $endIndex = this->{commentEndExpression}->indexIn($text, $startIndex);
         my $commentLength;

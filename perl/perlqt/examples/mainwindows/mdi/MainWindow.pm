@@ -19,7 +19,7 @@ use Qt4::slots
     updateWindowMenu => [''],
     createMdiChild => [''],
     switchLayoutDirection => [''],
-    setActiveSubWindow => ['QObject*'];
+    setActiveSubWindow => ['QWidget*'];
 
 use MdiChild;
 
@@ -32,8 +32,8 @@ sub NEW {
                   this, SLOT 'updateMenus()');
     my $windowMapper = Qt4::SignalMapper(this);
     this->{windowMapper} = $windowMapper;
-    this->connect($windowMapper, SIGNAL 'mapped(QObject*)',
-                  this, SLOT 'setActiveSubWindow(QObject*)');
+    this->connect($windowMapper, SIGNAL 'mapped(QWidget*)',
+                  this, SLOT 'setActiveSubWindow(QWidget*)');
 
     createActions();
     createMenus();

@@ -3,7 +3,7 @@ include_directories( ${QT_INCLUDES} )
 
 # Run doxsubpp.pl to run xsubpp on Qt4.xs
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/QtTest4.c
-                   COMMAND ${PERL_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/perl/perlqt4/src/doxsubpp.pl ${PERL_EXECUTABLE} QtTest4.xs QtTest4.c
+                   COMMAND ${PERL_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/perl/perlqt/src/doxsubpp.pl ${PERL_EXECUTABLE} QtTest4.xs QtTest4.c
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/QtTest4.xs
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
