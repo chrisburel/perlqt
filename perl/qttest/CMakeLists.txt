@@ -1,9 +1,9 @@
 include_directories( ${CMAKE_SOURCE_DIR}/smoke ${PERL_INCLUDE_PATH} ${CMAKE_SOURCE_DIR}/perl/perlqt/src)
 include_directories( ${QT_INCLUDES} )
 
-# Run doxsubpp.pl to run xsubpp on Qt4.xs
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/QtTest4.c
-                   COMMAND ${PERL_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/perl/perlqt/src/doxsubpp.pl ${PERL_EXECUTABLE} QtTest4.xs QtTest4.c
+# Run doxsubpp.pl to run xsubpp on QtTest4.xs
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtTest4.c
+                   COMMAND ${PERL_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/perl/perlqt/src/doxsubpp.pl ${PERL_EXECUTABLE} QtTest4.xs ${CMAKE_CURRENT_BINARY_DIR}/QtTest4.c
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/QtTest4.xs
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -12,7 +12,7 @@ set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
 
 set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
 
-set(perlqttest4_LIBRARY_SRC QtTest4.c qttest4handlers.cpp)
+set(perlqttest4_LIBRARY_SRC ${CMAKE_CURRENT_BINARY_DIR}/QtTest4.c qttest4handlers.cpp)
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtTest4)
 add_library(perlqttest4 MODULE ${perlqttest4_LIBRARY_SRC})

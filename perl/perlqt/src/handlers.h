@@ -1,14 +1,18 @@
 #ifndef HANDLERS_H
 #define HANDLERS_H
 
+extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 #include "ppport.h"
+}
 
 #include "marshall.h"
 #include "smokehelp.h"
 #include "smokeperl.h"
+
+#define DLL_PUBLIC __attribute__ ((visibility("default")))
 
 struct TypeHandler {
     const char* name;
@@ -25,7 +29,7 @@ extern struct mgvtbl vtbl_smoke;
 
 template <class T> static void marshall_it(Marshall* m);
 
-void *construct_copy(smokeperl_object *o);
+DLL_PUBLIC void *construct_copy(smokeperl_object *o);
 void marshall_basetype(Marshall* m);
 void marshall_QString(Marshall* m);
 void marshall_QStringList(Marshall* m);
@@ -34,7 +38,7 @@ void marshall_void(Marshall* m);
 
 extern HV* type_handlers;
 extern TypeHandler Qt4_handlers[];
-void install_handlers(TypeHandler* h);
+DLL_PUBLIC void install_handlers(TypeHandler* h);
 
 Marshall::HandlerFn getMarshallFn(const SmokeType& type);
 

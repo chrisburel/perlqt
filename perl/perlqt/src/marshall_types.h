@@ -7,10 +7,12 @@
 #include "QtCore/QList"
 #include "QtCore/QObject"
 
+extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 #include "ppport.h"
+}
 
 #include "marshall.h"
 #include "binding.h" // for definition of PerlQt4::Binding

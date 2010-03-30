@@ -1,9 +1,8 @@
-include_directories( ${CMAKE_SOURCE_DIR}/smoke ${PERL_INCLUDE_PATH} )
-include_directories( ${QT_INCLUDES} )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/smoke ${PERL_INCLUDE_PATH} ${QT_INCLUDES} )
 
 # Run doxsubpp.pl to run xsubpp on Qt4.xs
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Qt4.c
-                   COMMAND ${PERL_EXECUTABLE} ARGS ${CMAKE_CURRENT_SOURCE_DIR}/doxsubpp.pl ${PERL_EXECUTABLE} Qt4.xs Qt4.c
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Qt4.c
+                   COMMAND ${PERL_EXECUTABLE} ARGS ${CMAKE_CURRENT_SOURCE_DIR}/doxsubpp.pl ${PERL_EXECUTABLE} Qt4.xs ${CMAKE_CURRENT_BINARY_DIR}/Qt4.c
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Qt4.xs
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -17,13 +16,13 @@ set(perlqt_LIB_SRCS
     handlers.cpp
     marshall_types.cpp
     util.cpp
-    Qt4.c
+    ${CMAKE_CURRENT_BINARY_DIR}/Qt4.c
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/Qt4)
 add_library(perlqt4 SHARED ${perlqt_LIB_SRCS})
 
-target_link_libraries(perlqt4 ${QT_QTCORE_LIBRARY} ${PERL_LIBRARY} ${QT_QTNETWORK_LIBRARY} smokeqt)
+target_link_libraries(perlqt4 ${QT_QTCORE_LIBRARY} ${PERL_LIBRARY} ${QT_QTNETWORK_LIBRARY} smokeqt crypt)
 set_target_properties(perlqt4 PROPERTIES OUTPUT_NAME "Qt4")
 set_target_properties(perlqt4 PROPERTIES PREFIX "")
 

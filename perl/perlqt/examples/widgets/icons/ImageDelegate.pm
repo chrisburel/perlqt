@@ -50,7 +50,6 @@ sub setEditorData {
         return;
     }
 
-    $DB::single=1;
     my $pos = $comboBox->findText($index->model()->data($index)->toString(),
                                  Qt4::MatchExactly());
     $comboBox->setCurrentIndex($pos);

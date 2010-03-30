@@ -183,7 +183,6 @@ sub chooseImage
 sub loadImage
 {
     my ($fileName, $image, $button) = @_;
-    $DB::single=1;
     $$image->load($fileName);
 
     my $fixedImage = Qt4::Image($resultSize, Qt4::Image::Format_ARGB32_Premultiplied());

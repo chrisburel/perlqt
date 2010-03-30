@@ -14,7 +14,6 @@ use Qt4::slots
 # [0]
 sub NEW {
     my ( $class, $parent ) = @_;
-    $DB::single=1;
     $class->SUPER::NEW( $parent );
     this->setSegmentStyle(Qt4::LCDNumber::Filled());
 

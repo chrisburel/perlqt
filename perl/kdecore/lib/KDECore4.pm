@@ -1,5 +1,5 @@
 #***************************************************************************
-#                          QtTest4.pm  -  QtTest perl client lib
+#                          KDECore4.pm  -  KDECore perl client lib
 #                             -------------------
 #    begin                : 07-12-2009
 #    copyright            : (C) 2009 by Chris Burel
@@ -15,7 +15,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-package QtTest4::_internal;
+package KDECore4::_internal;
 
 use strict;
 use warnings;
@@ -24,23 +24,22 @@ use base qw(Qt4::_internal);
 
 sub init {
     foreach my $c ( @{getClassList()} ) {
-        QtTest4::_internal->init_class($c);
-        #my $classname = Qt4::_internal::normalize_classname($c);
-        #my $id = Qt4::_internal::idClass($c);
-        #$Qt4::_internal::package2classId{$classname} = $id;
-        #$Qt4::_internal::classId2package{$id} = $classname;
-        #klass = Qt4::_internal::isQObject(c) ? Qt4::_internal::create_qobject_class(classname, Qt)  : Qt4::_internal::create_qt_class(classname, Qt);
-            #Qt4::_internal::classes[classname] = klass unless klass.nil?
+        KDECore4::_internal->init_class($c);
     }
 }
 
 sub normalize_classname {
-    my $cxxClassName = $_[1];
-    $cxxClassName =~ s/^Q(?=[A-Z])/Qt4::/;
+    my ( $self, $cxxClassName ) = @_;
+    if( $cxxClassName =~ m/^K/ ) {
+        $cxxClassName =~ s/^K(?=[A-Z])/KDE::/;
+    }
+    else {
+        $cxxClassName = $self->SUPER::normalize_classname( $cxxClassName );
+    }
     return $cxxClassName;
 }
 
-package QtTest4;
+package KDECore4;
 
 use strict;
 use warnings;
@@ -50,8 +49,8 @@ require XSLoader;
 
 our $VERSION = '0.01';
 
-XSLoader::load('QtTest4', $VERSION);
+XSLoader::load('KDECore4', $VERSION);
 
-QtTest4::_internal::init();
+KDECore4::_internal::init();
 
 1;

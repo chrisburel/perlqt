@@ -3,6 +3,8 @@
 
 OPTION(ENABLE_PERLQT4 "build PerlQt4" ON)
 OPTION(ENABLE_PERLQTTEST4 "build PerlQtTest4" ON)
+OPTION(ENABLE_PERLKDECORE4 "build PerlKDECore4" ON)
+OPTION(ENABLE_PERLKDEUI4 "build PerlKDEUi4" ON)
 
 FIND_PACKAGE ( Perl )
 FIND_PACKAGE ( PerlLibs )
@@ -12,6 +14,8 @@ SET(CUSTOM_PERL_SITE_ARCH_DIR ${PERL_SITE_ARCH_DIR} CACHE DIR "Custom installati
 
 set(PERLQT4_ENABLED "no")
 set(PERLQTTEST4_ENABLED "no")
+set(PERLKDECORE4_ENABLED "no")
+set(PERLKDEUI4_ENABLED "no")
 
 if(ENABLE_PERLQT4)
     add_subdirectory( perlqt )
@@ -21,6 +25,16 @@ if(ENABLE_PERLQTTEST4)
     add_subdirectory( qttest )
     set(PERLQTTEST4_ENABLED "yes")
 endif(ENABLE_PERLQTTEST4)
+if(ENABLE_PERLKDECORE4)
+    add_subdirectory( kdecore )
+    set(PERLKDECORE4_ENABLED "yes")
+endif(ENABLE_PERLKDECORE4)
+if(ENABLE_PERLKDEUI4)
+    add_subdirectory( kdeui )
+    set(PERLKDEUI4_ENABLED "yes")
+endif(ENABLE_PERLKDEUI4)
 
 message(STATUS "Build PerlQt4... " ${PERLQT4_ENABLED})
 message(STATUS "Build PerlQtTest4... " ${PERLQTTEST4_ENABLED})
+message(STATUS "Build PerlKDECore4... " ${PERLKDECORE4_ENABLED})
+message(STATUS "Build PerlKDEUi4... " ${PERLKDEUI4_ENABLED})

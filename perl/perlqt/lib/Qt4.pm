@@ -663,7 +663,7 @@ sub new {
         return $this;
     }
 
-# This only gets called if the 2 previous ifs weren't
+    # This only gets called if the 2 previous ifs weren't
     $this->{error} = Qt4::DBusError( Qt4::DBusError::InvalidSignature(),
                                      'Unexpected reply signature' );
     $this->{data} = Qt4::Variant();
@@ -688,7 +688,7 @@ sub error() {
 # Create the Qt4::DBusReply() constructor
 Qt4::_internal::installSub('Qt4::DBusReply', sub { Qt4::DBusReply->new(@_) });
 
-1; 
+1;
 
 package Qt4::DBusVariant;
 
@@ -705,7 +705,7 @@ sub NEW {
     }
 }
 
-1; 
+1;
 
 package Qt4::_internal;
 
@@ -765,7 +765,7 @@ sub hashByName {
 sub installSub {
     my ($subname, $subref) = @_;
     no strict 'refs';
-    *{$subname} = $subref;
+    *{$subname} = $subref unless defined &{$subname};
     return;
 }
 
@@ -1275,7 +1275,6 @@ sub reportNoMethodFound {
 # Desc: sets up each class
 sub init {
     my $classes = getClassList();
-    #push @{$classes}, keys %customClasses;
     Qt4::_internal->init_class($_) for(@$classes);
 
     my $enums = getEnumList();
@@ -1405,12 +1404,12 @@ sub normalize_classname {
 
     if ($cxxClassName =~ m/^Q3/) {
         # Prepend Qt3:: if this is a Qt3 support class
-        $perlClassName =~ s/^Q3(?:[A-Z])/Qt3::/;
+        $perlClassName =~ s/^Q3(?=[A-Z])/Qt3::/;
     }
     elsif ($cxxClassName =~ m/^Q/) {
         # Only prepend Qt4:: if the name starts with Q and is followed by
         # an uppercase letter
-        $perlClassName =~ s/^Q(?:[A-Z])/Qt4::/;
+        $perlClassName =~ s/^Q(?=[A-Z])/Qt4::/;
     }
 
     return $perlClassName;

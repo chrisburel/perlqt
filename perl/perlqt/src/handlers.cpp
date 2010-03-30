@@ -78,7 +78,7 @@ HV *type_handlers = 0;
 
 struct mgvtbl vtbl_smoke = { 0, 0, 0, 0, smokeperl_free };
 
-int smokeperl_free(pTHX_ SV* sv, MAGIC* mg) {
+int smokeperl_free(pTHX_ SV* /*sv*/, MAGIC* mg) {
     smokeperl_object* o = (smokeperl_object*)mg->mg_ptr;
     if (o->allocated && o->ptr) {
         invoke_dtor( o );
@@ -2171,7 +2171,7 @@ Q_DECL_EXPORT TypeHandler Qt4_handlers[] = {
     { 0, 0 }
 };
 
-void install_handlers(TypeHandler *handler) {
+DLL_PUBLIC void install_handlers(TypeHandler *handler) {
     if(!type_handlers) type_handlers = newHV();
     while(handler->name) {
         hv_store(type_handlers, handler->name, strlen(handler->name), newSViv((IV)handler), 0);

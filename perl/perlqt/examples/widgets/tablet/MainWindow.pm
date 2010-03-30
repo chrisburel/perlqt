@@ -175,7 +175,6 @@ sub alphaActionTriggered {
 # [3]
 sub lineWidthActionTriggered {
     my ($action) = @_;
-    $DB::single=1;
     if ($action == this->lineWidthPressureAction) {
         this->myCanvas->setLineWidthType(TabletCanvas::LineWidthPressure());
     } elsif ($action == this->lineWidthTiltAction) {

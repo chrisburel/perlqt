@@ -5,10 +5,12 @@
 #include "Qt4.h"
 #include "smokeperl.h"
 
+extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 #include "ppport.h"
+}
 
 extern Q_DECL_EXPORT Smoke *qt_Smoke;
 extern Q_DECL_EXPORT int do_debug;

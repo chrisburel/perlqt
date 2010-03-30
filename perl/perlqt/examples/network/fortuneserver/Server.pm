@@ -82,7 +82,6 @@ sub NEW
 sub sendFortune
 {
 # [5]
-    $DB::single=1;
     my $block = Qt4::ByteArray();
     my $out = Qt4::DataStream($block, Qt4::IODevice::WriteOnly());
     $out->setVersion(Qt4::DataStream::Qt_4_0());

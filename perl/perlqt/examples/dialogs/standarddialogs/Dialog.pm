@@ -243,7 +243,6 @@ sub setText {
 }
 
 sub setColor {
-    $DB::single=1;
     my $color = Qt4::ColorDialog::getColor(Qt4::Color(Qt4::green()), this);
     if ($color->isValid()) {
         my $colorLabel = this->{colorLabel};
@@ -368,7 +367,6 @@ sub informationMessage {
 }
 
 sub questionMessage {
-    $DB::single=1;
     my $reply = Qt4::MessageBox::question(this, this->tr('Qt4::MessageBox::question()'),
                                     $MESSAGE,
                                     Qt4::MessageBox::Yes() | Qt4::MessageBox::No() | Qt4::MessageBox::Cancel());

@@ -177,7 +177,6 @@ sub showFiles {
 
         my $fileNameItem = Qt4::TableWidgetItem($files->[$i]);
         $fileNameItem->setFlags($fileNameItem->flags() ^ Qt4::ItemIsEditable());
-        $DB::single=1;
         my $sizeItem = Qt4::TableWidgetItem(this->tr(sprintf '%d KB',
                                              (($size + 1023) / 1024)));
         $sizeItem->setTextAlignment(Qt4::AlignRight() | Qt4::AlignVCenter());

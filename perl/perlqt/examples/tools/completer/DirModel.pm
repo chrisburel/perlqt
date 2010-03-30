@@ -24,7 +24,6 @@ sub data
     if ($role == Qt4::DisplayRole() && $index->column() == 0) {
         my $path = Qt4::Dir::toNativeSeparators(this->filePath($index));
         if ( substr( $path, -1 ) eq chr( Qt4::Dir::separator()->toAscii() ) ) {
-            $DB::single = 1;
             chop $path;
         }
         return Qt4::Variant(Qt4::String($path));

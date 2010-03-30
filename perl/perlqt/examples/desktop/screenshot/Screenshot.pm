@@ -112,7 +112,6 @@ sub setButtonsLayout($) {
 sub NEW
 {
     my ($class) = @_;
-    $DB::single=1;
     $class->SUPER::NEW();
     this->setScreenshotLabel( Qt4::Label() );
     this->screenshotLabel->setSizePolicy(Qt4::SizePolicy::Expanding(),

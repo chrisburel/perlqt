@@ -76,7 +76,6 @@ sub createIcons {
     $queryButton->setTextAlignment(Qt4::AlignHCenter());
     $queryButton->setFlags(Qt4::ItemIsSelectable() | Qt4::ItemIsEnabled());
 
-    $DB::single=1;
     this->connect($contentsWidget,
             SIGNAL 'currentItemChanged(QListWidgetItem *, QListWidgetItem *)',
             this, SLOT 'changePage(QListWidgetItem *, QListWidgetItem*)');

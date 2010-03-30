@@ -1,0 +1,2 @@
+add_custom_target(kdeui4pm ALL ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/KDEUi4.pm ${CMAKE_BINARY_DIR}/perl/blib/lib/KDEUi4.pm)
+install(FILES KDEUi4.pm DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/)

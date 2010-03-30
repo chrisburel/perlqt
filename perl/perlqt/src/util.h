@@ -33,7 +33,7 @@ extern "C" {
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
 
-smokeperl_object * alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr);
+DLL_PUBLIC smokeperl_object * alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr);
 SV* alloc_perl_moduleindex( int smokeIndex, Smoke::Index classOrMethIndex );
 
 #ifdef DEBUG
@@ -49,7 +49,7 @@ const char* get_SVt(SV* sv);
 
 QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName,
   QList<QByteArray> methodTypes);
-SV* getPointerObject(void* ptr);
+DLL_PUBLIC SV* getPointerObject(void* ptr);
 
 int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke *baseSmoke, Smoke::Index baseId, int count);
 int isDerivedFromByName(const char *className, const char *baseClassName, int count);
@@ -67,7 +67,7 @@ const char* resolve_classname_qt( smokeperl_object* o );
 
 void* sv_to_ptr(SV* sv);
 
-SV* set_obj_info(const char * className, smokeperl_object * o);
+DLL_PUBLIC SV* set_obj_info(const char * className, smokeperl_object * o);
 
 void unmapPointer(smokeperl_object* o, Smoke::Index classId, void* lastptr);
 

@@ -1,7 +1,7 @@
 #***************************************************************************
-#                          QtTest4.pm  -  QtTest perl client lib
+#                          KDEUi4.pm  -  KDEUi perl client lib
 #                             -------------------
-#    begin                : 07-12-2009
+#    begin                : 03-29-2010
 #    copyright            : (C) 2009 by Chris Burel
 #    email                : chrisburel@gmail.com
 # ***************************************************************************
@@ -15,32 +15,21 @@
 # *                                                                         *
 # ***************************************************************************
 
-package QtTest4::_internal;
+package KDEUi4::_internal;
 
 use strict;
 use warnings;
 
-use base qw(Qt4::_internal);
+use KDECore4;
+use base qw(KDECore4::_internal);
 
 sub init {
     foreach my $c ( @{getClassList()} ) {
-        QtTest4::_internal->init_class($c);
-        #my $classname = Qt4::_internal::normalize_classname($c);
-        #my $id = Qt4::_internal::idClass($c);
-        #$Qt4::_internal::package2classId{$classname} = $id;
-        #$Qt4::_internal::classId2package{$id} = $classname;
-        #klass = Qt4::_internal::isQObject(c) ? Qt4::_internal::create_qobject_class(classname, Qt)  : Qt4::_internal::create_qt_class(classname, Qt);
-            #Qt4::_internal::classes[classname] = klass unless klass.nil?
+        KDEUi4::_internal->init_class($c);
     }
 }
 
-sub normalize_classname {
-    my $cxxClassName = $_[1];
-    $cxxClassName =~ s/^Q(?=[A-Z])/Qt4::/;
-    return $cxxClassName;
-}
-
-package QtTest4;
+package KDEUi4;
 
 use strict;
 use warnings;
@@ -50,8 +39,8 @@ require XSLoader;
 
 our $VERSION = '0.01';
 
-XSLoader::load('QtTest4', $VERSION);
+XSLoader::load('KDEUi4', $VERSION);
 
-QtTest4::_internal::init();
+KDEUi4::_internal::init();
 
 1;

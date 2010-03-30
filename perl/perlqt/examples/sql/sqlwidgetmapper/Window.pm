@@ -121,7 +121,6 @@ sub setupModel
 sub updateButtons
 {
     my ($row) = @_;
-    $DB::single=1;
     this->{previousButton}->setEnabled($row > 0);
     this->{nextButton}->setEnabled($row < this->{model}->rowCount() - 1);
 }

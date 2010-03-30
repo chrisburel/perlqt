@@ -54,7 +54,6 @@ sub processPendingDatagrams
 {
 # [2]
     while (this->udpSocket->hasPendingDatagrams()) {
-        $DB::single=1;
         my $datagram = Qt4::ByteArray();
         $datagram->resize(this->udpSocket->pendingDatagramSize());
         this->udpSocket->readDatagram($datagram->data(), $datagram->size());

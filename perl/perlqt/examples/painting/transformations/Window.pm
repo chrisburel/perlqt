@@ -160,7 +160,6 @@ my @operationTable = (
 sub operationChanged
 {
     my @operations;
-    $DB::single=1;
     for (my $i = 0; $i < NumTransformedAreas; ++$i) {
         my $index = this->operationComboBoxes->[$i]->currentIndex();
         push @operations, $operationTable[$index];
