@@ -44,18 +44,35 @@ classIsa( className, base )
 #// Returns: an array containing 1 method id if the method signature is unique,
 #//          or an array of possible ids if the signature is ambiguous
 void
-findMethod( moduleId, classname, methodname )
-        AV* moduleId
+findMethod( classname, methodname )
         char* classname
         char* methodname
     PPCODE:
-        Smoke* smoke = smokeList[SvIV(*(SV**)av_fetch(moduleId, 0, 0))];
-        Smoke::ModuleIndex mi = smoke->findMethod(classname, methodname);
+        Smoke::ModuleIndex mi;
+        if ( strcmp( classname, "QGlobalSpace" ) == 0 ) {
+            // All modules put their global functions in "QGlobalSpace".  So we
+            // have to use each smoke object to look for this method.
+            for (int i = 0; i < smokeList.size(); ++i) {
+                mi = smokeList.at(i)->findMethod(classname, methodname);
+                if( mi.smoke ) {
+                    break;
+                }
+            }
+        }
+        else {
+            // qt_Smoke will be able to find any method not in QGlobalSpace
+            mi = qt_Smoke->findMethod(classname, methodname);
+        }
         if ( !mi.index ) {
             // empty list
         }
         else if ( mi.index  > 0 ) {
             int smokeId = smokeList.indexOf(mi.smoke);
+            if ( smokeId == -1 ) {
+                croak( "Method \"%s::%s\" called, which is defined in the smoke"
+                    "module \"%s\", which has not been loaded\n", classname,
+                    methodname, mi.smoke->moduleName() );
+            }
             Smoke::Index methodId = mi.smoke->methodMaps[mi.index].method;
             if ( !methodId ) {
                 croak( "Corrupt method %s::%s", classname, methodname );

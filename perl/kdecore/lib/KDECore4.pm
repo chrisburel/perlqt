@@ -54,3 +54,11 @@ XSLoader::load('KDECore4', $VERSION);
 KDECore4::_internal::init();
 
 1;
+
+package Qt4::GlobalSpace;
+
+our @EXPORT_OK;
+
+push @EXPORT_OK, qw( i18n ki18n );
+
+1;

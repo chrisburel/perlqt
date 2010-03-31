@@ -707,6 +707,33 @@ sub NEW {
 
 1;
 
+package Qt4::GlobalSpace;
+
+use strict;
+use warnings;
+
+our @EXPORT_OK;
+
+unless(exists $::INC{'Qt4/GlobalSpace.pm'}) {
+    $::INC{'Qt4/GlobalSpace.pm'} = $::INC{'Qt4.pm'};
+}
+
+sub import {
+    my $class = shift;
+    my $caller = (caller)[0];
+    $caller .= '::';
+
+    foreach my $subname ( @_ ) {
+        next unless grep( $subname, @EXPORT_OK );
+        Qt4::_internal::installSub( $caller.$subname, sub {
+            $Qt4::AutoLoad::AUTOLOAD = "Qt4::GlobalSpace::$subname";
+            my $autoload = 'Qt4::GlobalSpace::_UTOLOAD';
+            no strict 'refs';
+            return &$autoload(@_);
+        } );
+    }
+}
+
 package Qt4::_internal;
 
 use strict;
@@ -984,7 +1011,7 @@ sub getSmokeMethodId {
             @mungedMethods = map { $_ . '$' } @mungedMethods;
         }
     }
-    my @methodIds = map { findMethod( $classId, $classname, $_ ) } @mungedMethods;
+    my @methodIds = map { findMethod( $classname, $_ ) } @mungedMethods;
 
     my $cacheLookup = 1;
 
@@ -1070,7 +1097,7 @@ sub getSmokeMethodId {
         if ( debug() & 0x01 ) {
             # The findAnyPossibleMethod is expensive, only do it if debugging is on.
             my $smokeId = $classId->[0];
-            @methodIds = findAnyPossibleMethod( $classId, $classname, $methodname, @_ );
+            @methodIds = findAnyPossibleMethod( $classname, $methodname, @_ );
             if( @methodIds ) {
                 die reportAlternativeMethods( $classname, $methodname, \@methodIds, @_ );
             }
@@ -1142,7 +1169,6 @@ sub getMetaObject {
 
 # Does the method exist, but the user just gave bad args?
 sub findAnyPossibleMethod {
-    my $classId = shift;
     my $classname = shift;
     my $methodname = shift;
 
@@ -1155,7 +1181,7 @@ sub findAnyPossibleMethod {
         push @mungedMethods, map{ $methodname . $_ } @last;
     }
 
-    return map { findMethod( $classId, $classname, $_ ) } @mungedMethods;
+    return map { findMethod( $classname, $_ ) } @mungedMethods;
 }
 
 sub init_class {
@@ -1182,7 +1208,7 @@ sub init_class {
     # We want the isa array to be the names of perl packages, not c++ class
     # names
     foreach my $super ( @isa ) {
-        $super = normalize_classname($class, $super);
+        $super = $class->normalize_classname($super);
     }
 
     # The root of the tree will be Qt4::base, so a call to
