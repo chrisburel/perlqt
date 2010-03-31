@@ -20,6 +20,7 @@ package KDEUi4::_internal;
 use strict;
 use warnings;
 
+use QtGui4;
 use KDECore4;
 use base qw(KDECore4::_internal);
 
@@ -29,18 +30,32 @@ sub init {
     }
 }
 
+sub KDE::Application::NEW {
+    my $class = shift;
+    my $retval = KDE::Application::KApplication( @_ );
+    bless( $retval, " $class" );
+    Qt4::_internal::setThis( $retval );
+    setKApp( $retval );
+}
+
 package KDEUi4;
 
 use strict;
 use warnings;
-use Qt4;
+use QtGui4;
+use KDECore4;
 
+require Exporter;
 require XSLoader;
 
 our $VERSION = '0.01';
 
+our @EXPORT = qw( kapp );
+
 XSLoader::load('KDEUi4', $VERSION);
 
 KDEUi4::_internal::init();
+
+sub import { goto &Exporter::import }
 
 1;

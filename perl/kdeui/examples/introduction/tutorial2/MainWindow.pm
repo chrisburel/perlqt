@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
 use KDEUi4;
 use Qt4::isa qw( KDE::XmlGuiWindow );
 

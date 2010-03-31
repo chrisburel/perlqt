@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 
-use Qt4;
 use KDEUi4;
 use Qt4::GlobalSpace qw( i18n ki18n );
 

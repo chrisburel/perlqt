@@ -32,7 +32,7 @@ target_link_libraries(kdecore4
     ${QT_QTSVG_LIBRARY} 
     ${KDE4_KDECORE_LIBS}
     smokekdecore
-    perlqt4)
+    perlqtcore4)
 
 set_target_properties(kdecore4 PROPERTIES OUTPUT_NAME "KDECore4")
 set_target_properties(kdecore4 PROPERTIES PREFIX "")

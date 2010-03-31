@@ -2171,7 +2171,7 @@ Q_DECL_EXPORT TypeHandler Qt4_handlers[] = {
     { 0, 0 }
 };
 
-DLL_PUBLIC void install_handlers(TypeHandler *handler) {
+Q_DECL_EXPORT void install_handlers(TypeHandler *handler) {
     if(!type_handlers) type_handlers = newHV();
     while(handler->name) {
         hv_store(type_handlers, handler->name, strlen(handler->name), newSViv((IV)handler), 0);

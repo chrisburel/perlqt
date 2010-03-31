@@ -54,7 +54,7 @@ int do_debug = 0;
 // Method caches, to avoid expensive lookups
 QHash<QByteArray, Smoke::ModuleIndex *> methcache;
 
-DLL_PUBLIC smokeperl_object * 
+Q_DECL_EXPORT smokeperl_object * 
 alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr) {
     smokeperl_object * o = new smokeperl_object;
     o->classId = classId;
@@ -305,7 +305,7 @@ QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName, QList<Q
 // and a perl SV.  If you have a virtual function call, you only start with a
 // c++ pointer.  This reference allows you to trace back to a perl package, and
 // find a subroutine in that package to call.
-DLL_PUBLIC SV* getPointerObject(void* ptr) {
+Q_DECL_EXPORT SV* getPointerObject(void* ptr) {
     if (PL_dirty) return 0;
     HV *hv = pointer_map;
     SV *keysv = newSViv((IV)ptr);
@@ -744,7 +744,7 @@ const char* resolve_classname_qt( smokeperl_object* o ) {
     return binding.className( o->classId );
 }
 
-DLL_PUBLIC SV* set_obj_info(const char * className, smokeperl_object * o) {
+Q_DECL_EXPORT SV* set_obj_info(const char * className, smokeperl_object * o) {
     // The hash
     HV* hv = newHV();
     // The hash reference to return

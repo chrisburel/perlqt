@@ -32,7 +32,7 @@ target_link_libraries(kdeui4
     ${QT_QTSVG_LIBRARY} 
     ${KDE4_KDECORE_LIBS}
     smokekdeui
-    perlqt4)
+    perlqtcore4)
 
 set_target_properties(kdeui4 PROPERTIES OUTPUT_NAME "KDEUi4")
 set_target_properties(kdeui4 PROPERTIES PREFIX "")

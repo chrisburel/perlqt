@@ -19,7 +19,7 @@ package KDECore4::_internal;
 
 use strict;
 use warnings;
-
+use QtCore4;
 use base qw(Qt4::_internal);
 
 sub init {
@@ -43,7 +43,7 @@ package KDECore4;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
 
 require XSLoader;
 

@@ -35,6 +35,7 @@ extern "C" {
 #include <handlers.h>
 
 extern QList<Smoke*> smokeList;
+SV* sv_kapp = 0;
 
 const char*
 resolve_classname_kdeui(smokeperl_object * o)
@@ -62,9 +63,26 @@ getClassList()
     OUTPUT:
         RETVAL
 
+void
+setKApp( kapp )
+        SV* kapp
+    CODE:
+        if( SvROK( kapp ) )
+            sv_setsv_mg( sv_kapp, kapp );
+
 MODULE = KDEUi4            PACKAGE = KDEUi4
 
 PROTOTYPES: ENABLE
+
+SV*
+kapp()
+    CODE:
+        if (!sv_kapp)
+            RETVAL = &PL_sv_undef;
+        else
+            RETVAL = newSVsv(sv_kapp);
+    OUTPUT:
+        RETVAL
 
 BOOT:
     init_kdeui_Smoke();
@@ -76,3 +94,5 @@ BOOT:
     perlqt_modules[kdeui_Smoke] = module;
 
     install_handlers(KDEUi4_handlers);
+
+    sv_kapp = newSV(0);

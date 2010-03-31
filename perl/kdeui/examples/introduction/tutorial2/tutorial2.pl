@@ -2,10 +2,7 @@
 
 use strict;
 use warnings;
-use blib;
 
-use Qt4;
-use Qt4::debug qw(ambiguous);
 use KDEUi4;
 use Qt4::GlobalSpace qw( ki18n );
 use MainWindow;

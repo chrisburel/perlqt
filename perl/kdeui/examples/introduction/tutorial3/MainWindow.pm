@@ -2,8 +2,7 @@ package MainWindow;
 
 use strict;
 use warnings;
-use blib;
-use Qt4;
+use QtCore4;
 use KDEUi4;
 use Qt4::isa qw( KDE::XmlGuiWindow );
 use Qt4::GlobalSpace qw( i18n );
@@ -28,8 +27,8 @@ sub setupActions
     this->connect($clearAction, SIGNAL 'triggered(bool)',
             this->{textArea}, SLOT 'clear()');
 
-    #KDE::StandardAction::quit(kapp(), SLOT 'quit()',
-            #this->actionCollection());
+    KDE::StandardAction::quit(kapp(), SLOT 'quit()',
+            this->actionCollection());
 
     this->setupGUI(KDE::XmlGuiWindow::Default(), 'tutorial3ui.rc');
 }
