@@ -5,6 +5,7 @@ use warnings;
 
 use QtCore4;
 use KDEUi4;
+use KIO4;
 use Qt4::GlobalSpace qw( i18n );
 
 use Qt4::isa qw( KDE::XmlGuiWindow );
@@ -70,7 +71,7 @@ sub saveFileAs
     $file->open();
 
     my $outputByteArray = Qt4::ByteArray();
-    $outputByteArray->append(this->{textArea}->toPlainText()->toUtf8());
+    $outputByteArray->append(this->{textArea}->toPlainText());
     $file->write($outputByteArray);
     $file->finalize();
     $file->close();
@@ -86,9 +87,10 @@ sub saveFile
 sub openFile
 {
     my $fileNameFromDialog = KDE::FileDialog::getOpenFileName();
+    $fileNameFromDialog = $fileNameFromDialog ? $fileNameFromDialog : '';
 
     my $tmpFile;
-    if(KDEIO::NetAccess::download($fileNameFromDialog, $tmpFile,
+    if(KDE::IO::NetAccess::download(KDE::Url($fileNameFromDialog), $tmpFile,
                 this))
     {
         my $file = Qt4::File($tmpFile);
@@ -96,12 +98,12 @@ sub openFile
         this->{textArea}->setPlainText(Qt4::TextStream($file)->readAll());
         this->{fileName} = $fileNameFromDialog;
 
-        KDEIO::NetAccess::removeTempFile($tmpFile);
+        KDE::IO::NetAccess::removeTempFile($tmpFile);
     }
     else
     {
         KDE::MessageBox::error(this,
-                KDEIO::NetAccess::lastErrorString());
+                KDE::IO::NetAccess::lastErrorString());
     }
 
 }

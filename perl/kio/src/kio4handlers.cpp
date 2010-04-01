@@ -1,5 +1,5 @@
 /***************************************************************************
-                          kdecore4handlers.cpp  -  KDECore specific marshallers
+                          kio4handlers.cpp  -  KIO specific marshallers
                              -------------------
     begin                : 03-29-2010
     copyright            : (C) 2010 Chris Burel
@@ -30,7 +30,7 @@ extern "C" {
 
 //DEF_VALUELIST_MARSHALLER( QTestAccessibilityEventList, QList<QTestAccessibilityEvent>, QTestAccessibilityEvent )
 
-TypeHandler KDECore4_handlers[] = {
+TypeHandler KIO4_handlers[] = {
     //{ "QList<QTestAccessibilityEvent>", marshall_QTestAccessibilityEventList },
     { 0, 0 }
 };

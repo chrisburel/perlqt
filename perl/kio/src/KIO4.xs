@@ -1,5 +1,5 @@
 /***************************************************************************
-                          KDECore4.xs  -  KDECore perl extension
+                          KIO4.xs  -  KIO perl extension
                              -------------------
     begin                : 03-29-2010
     copyright            : (C) 2009 by Chris Burel
@@ -29,7 +29,7 @@ extern "C" {
 #include "ppport.h"
 }
 
-#include <smoke/kdecore_smoke.h>
+#include <smoke/kio_smoke.h>
 
 #include <smokeperl.h>
 #include <handlers.h>
@@ -37,16 +37,16 @@ extern "C" {
 extern QList<Smoke*> smokeList;
 
 const char*
-resolve_classname_kdecore(smokeperl_object * o)
+resolve_classname_kio(smokeperl_object * o)
 {
     return perlqt_modules[o->smoke].binding->className(o->classId);
 }
 
-extern TypeHandler KDECore4_handlers[];
+extern TypeHandler KIO4_handlers[];
 
-static PerlQt4::Binding bindingkdecore;
+static PerlQt4::Binding bindingkio;
 
-MODULE = KDECore4            PACKAGE = KDECore4::_internal
+MODULE = KIO4            PACKAGE = KIO4::_internal
 
 PROTOTYPES: DISABLE
 
@@ -54,25 +54,25 @@ SV*
 getClassList()
     CODE:
         AV* classList = newAV();
-        for (int i = 1; i < kdecore_Smoke->numClasses; i++) {
-            if (kdecore_Smoke->classes[i].className && !kdecore_Smoke->classes[i].external)
-                av_push(classList, newSVpv(kdecore_Smoke->classes[i].className, 0));
+        for (int i = 1; i < kio_Smoke->numClasses; i++) {
+            if (kio_Smoke->classes[i].className && !kio_Smoke->classes[i].external)
+                av_push(classList, newSVpv(kio_Smoke->classes[i].className, 0));
         }
         RETVAL = newRV_noinc((SV*)classList);
     OUTPUT:
         RETVAL
 
-MODULE = KDECore4            PACKAGE = KDECore4
+MODULE = KIO4            PACKAGE = KIO4
 
 PROTOTYPES: ENABLE
 
 BOOT:
-    init_kdecore_Smoke();
-    smokeList << kdecore_Smoke;
+    init_kio_Smoke();
+    smokeList << kio_Smoke;
 
-    bindingkdecore = PerlQt4::Binding(kdecore_Smoke);
+    bindingkio = PerlQt4::Binding(kio_Smoke);
 
-    PerlQt4Module module = { "PerlKDECore4", resolve_classname_kdecore, 0, &bindingkdecore  };
-    perlqt_modules[kdecore_Smoke] = module;
+    PerlQt4Module module = { "PerlKIO4", resolve_classname_kio, 0, &bindingkio  };
+    perlqt_modules[kio_Smoke] = module;
 
-    install_handlers(KDECore4_handlers);
+    install_handlers(KIO4_handlers);

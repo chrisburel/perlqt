@@ -1,8 +1,8 @@
 #***************************************************************************
-#                          KDECore4.pm  -  KDECore perl client lib
+#                          KIO4.pm  -  KIO perl client lib
 #                             -------------------
-#    begin                : 07-12-2009
-#    copyright            : (C) 2009 by Chris Burel
+#    begin                : 04-01-2010
+#    copyright            : (C) 2010 by Chris Burel
 #    email                : chrisburel@gmail.com
 # ***************************************************************************
 
@@ -15,21 +15,22 @@
 # *                                                                         *
 # ***************************************************************************
 
-package KDECore4::_internal;
+package KIO4::_internal;
 
 use strict;
 use warnings;
-use QtCore4;
-use base qw(Qt4::_internal);
+use KDECore4;
+use base qw(KDECore4::_internal);
 
 sub init {
     foreach my $c ( @{getClassList()} ) {
-        KDECore4::_internal->init_class($c);
+        KIO4::_internal->init_class($c);
     }
 }
 
 sub normalize_classname {
     my ( $self, $cxxClassName ) = @_;
+
     if( $cxxClassName =~ m/^K/ ) {
         $cxxClassName =~ s/^K(?=[A-Z])/KDE::/;
     }
@@ -39,26 +40,19 @@ sub normalize_classname {
     return $cxxClassName;
 }
 
-package KDECore4;
+package KIO4;
 
 use strict;
 use warnings;
-use QtCore4;
+use KDECore4;
 
 require XSLoader;
 
 our $VERSION = '0.01';
 
-XSLoader::load('KDECore4', $VERSION);
+XSLoader::load('KIO4', $VERSION);
 
-KDECore4::_internal::init();
-
-1;
-
-package Qt4::GlobalSpace;
-
-our @EXPORT_OK;
-
-push @EXPORT_OK, qw( i18n ki18n );
+KIO4::_internal::init();
 
 1;
+
