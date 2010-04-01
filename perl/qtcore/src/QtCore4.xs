@@ -210,10 +210,14 @@ findClass( name )
 #// Args: char* name: the c++ name of a Qt4 class
 #// Returns: the smoke classId for that Qt4 class
 const char*
-classFromId( classId )
-        int classId
+classFromId( moduleId )
+        SV* moduleId
     CODE:
-        RETVAL = qtcore_Smoke->classes[classId].className;
+        AV* av = (AV*)SvRV(moduleId);
+        int smokeId = SvIV(*(SV**)av_fetch(av, 0, 0));
+        int classId = SvIV(*(SV**)av_fetch(av, 1, 0));
+        Smoke* smoke = smokeList[smokeId];
+        RETVAL = smoke->classes[classId].className;
     OUTPUT:
         RETVAL
 
@@ -287,12 +291,10 @@ make_metaObject(parentModuleId,parentMeta,stringdata_sv,data_sv)
         else {
             // The parent class is a Smoke class, so call metaObject() on the
             // instance to get it via a smoke library call
-            //const char* classname = qtcore_Smoke->classes[SvIV(parentClassId)].className;
-            //Smoke::Index methodId = getMethod(qtcore_Smoke, classname, "metaObject");
-            Smoke::ModuleIndex nameMId = qtcore_Smoke->idMethodName("staticMetaObject");
             Smoke* parentClassSmoke = smokeList[SvIV(*(SV**)av_fetch((AV*)SvRV(parentModuleId), 0, 0))];
             Smoke::Index parentClassId = SvIV(*(SV**)av_fetch((AV*)SvRV(parentModuleId), 1, 0));
             Smoke::ModuleIndex classMId( parentClassSmoke, parentClassId );
+            Smoke::ModuleIndex nameMId = parentClassSmoke->idMethodName("staticMetaObject");
             Smoke::ModuleIndex meth = parentClassSmoke->findMethod(classMId, nameMId);
             if (meth.index > 0) {
                 Smoke::Method &m = meth.smoke->methods[meth.smoke->methodMaps[meth.index].method];

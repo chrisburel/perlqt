@@ -17,7 +17,7 @@ sub import {
     my $self = shift;
     croak "Odd number of arguments in slot declaration" if @_%2;
     my $caller = $self eq 'Qt4::slots' ? (caller)[0] : $self;
-    my(%slots) = @_;
+    my @slots = @_;
     my $meta = \%{ $caller . '::META' };
 
     # The perl metaObject holds info about signals and slots, inherited
@@ -28,7 +28,9 @@ sub import {
     } unless defined &{ "${caller}::metaObject" };
 
     Qt4::_internal::installqt_metacall( $caller ) unless defined &{$caller."::qt_metacall"};
-    foreach my $fullslotname ( keys %slots ) {
+    for ( my $i = 0; $i < @slots; $i += 2 ) {
+        my $fullslotname = $slots[$i];
+        my $slotargs = $slots[$i+1];
 
         # Determine the slot return type, if there is one
         my @returnParts = split / +/, $fullslotname;
@@ -36,7 +38,7 @@ sub import {
         my $returnType = @returnParts ? join ' ', @returnParts : undef;
 
         # Build the signature for this slot
-        my $signature = join '', ("$slotname(", join(',', @{$slots{$fullslotname}}), ')');
+        my $signature = join '', ("$slotname(", join(',', @{$slotargs}), ')');
 
         # Normalize the signature, might not be necessary
         $signature = Qt4::MetaObject::normalizedSignature(

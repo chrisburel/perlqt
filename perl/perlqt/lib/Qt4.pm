@@ -1136,7 +1136,7 @@ sub getMetaObject {
     # Get the super class's meta object for sig/slot inheritance
     # Look up through ISA to find it
     my $parentMeta = undef;
-    my $parentClassId;
+    my $parentModuleId;
 
     # This seems wrong, it won't work with multiple inheritance
     my $parentClass = arrayByName($class."::ISA")->[0]; 
@@ -1151,14 +1151,13 @@ sub getMetaObject {
         $parentMeta = getMetaObject( $parentClass );
     }
     else {
-        my $moduleId = $package2classId{$parentClass};
-        $parentClassId = $moduleId->[1];
+        $parentModuleId = $package2classId{$parentClass};
     }
 
     # Generate data to create the meta object
     my( $stringdata, $data ) = makeMetaData( $class );
     $meta->{object} = Qt4::_internal::make_metaObject(
-        $parentClassId,
+        $parentModuleId,
         $parentMeta,
         $stringdata,
         $data );
@@ -1505,7 +1504,6 @@ use warnings;
 
 require Exporter;
 require XSLoader;
-use Devel::Peek;
 
 our $VERSION = '0.60';
 

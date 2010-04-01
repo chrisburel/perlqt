@@ -210,10 +210,14 @@ findClass( name )
 #// Args: char* name: the c++ name of a Qt4 class
 #// Returns: the smoke classId for that Qt4 class
 const char*
-classFromId( classId )
-        int classId
+classFromId( moduleId )
+        SV* moduleId
     CODE:
-        RETVAL = qt_Smoke->classes[classId].className;
+        AV* av = (AV*)SvRV(moduleId);
+        int smokeId = SvIV(*(SV**)av_fetch(av, 0, 0));
+        int classId = SvIV(*(SV**)av_fetch(av, 1, 0));
+        Smoke* smoke = smokeList[smokeId];
+        RETVAL = smoke->classes[classId].className;
     OUTPUT:
         RETVAL
 
@@ -270,8 +274,8 @@ installthis( package )
         delete[] attr;
 
 SV*
-make_metaObject(parentClassId,parentMeta,stringdata_sv,data_sv)
-        SV* parentClassId
+make_metaObject(parentModuleId,parentMeta,stringdata_sv,data_sv)
+        SV* parentModuleId
         SV* parentMeta
         SV* stringdata_sv
         SV* data_sv
@@ -287,11 +291,11 @@ make_metaObject(parentClassId,parentMeta,stringdata_sv,data_sv)
         else {
             // The parent class is a Smoke class, so call metaObject() on the
             // instance to get it via a smoke library call
-            //const char* classname = qt_Smoke->classes[SvIV(parentClassId)].className;
-            //Smoke::Index methodId = getMethod(qt_Smoke, classname, "metaObject");
-            Smoke::ModuleIndex nameMId = qt_Smoke->idMethodName("staticMetaObject");
-            Smoke::ModuleIndex classMId( qt_Smoke, SvIV(parentClassId) );
-            Smoke::ModuleIndex meth = qt_Smoke->findMethod(classMId, nameMId);
+            Smoke* parentClassSmoke = smokeList[SvIV(*(SV**)av_fetch((AV*)SvRV(parentModuleId), 0, 0))];
+            Smoke::Index parentClassId = SvIV(*(SV**)av_fetch((AV*)SvRV(parentModuleId), 1, 0));
+            Smoke::ModuleIndex classMId( parentClassSmoke, parentClassId );
+            Smoke::ModuleIndex nameMId = parentClassSmoke->idMethodName("staticMetaObject");
+            Smoke::ModuleIndex meth = parentClassSmoke->findMethod(classMId, nameMId);
             if (meth.index > 0) {
                 Smoke::Method &m = meth.smoke->methods[meth.smoke->methodMaps[meth.index].method];
                 Smoke::ClassFn fn = meth.smoke->classes[m.classId].classFn;
@@ -302,7 +306,7 @@ make_metaObject(parentClassId,parentMeta,stringdata_sv,data_sv)
             else {
                 // Should never happen...
                 croak( "Cannot find %s::metaObject() method\n",
-                       meth.smoke->classes[SvIV(parentClassId)].className );
+                       meth.smoke->classes[parentClassId].className );
             }
         }
 

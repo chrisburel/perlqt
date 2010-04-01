@@ -21,35 +21,35 @@ our %channel = (
 sub dumpMetaMethods {
     my ( $object ) = @_;
 
+    my @return;
+
     # Did we get an object in, or just a class name?
     my $className = ref $object ? ref $object : $object;
     $className =~ s/^ *//;
     my $meta = Qt4::_internal::getMetaObject( $className );
 
     if ( $meta->methodCount() ) {
-        print join '', 'Methods for ', $meta->className(), ":\n"
+        push @return, join '', 'Methods for ', $meta->className();
     }
     else {
-        print join '', 'No methods for ', $meta->className(), ".\n";
+        push @return, join '', 'No methods for ', $meta->className();
     }
     foreach my $index ( 0..$meta->methodCount()-1 ) {
         my $metaMethod = $meta->method($index);
-        print $metaMethod->typeName . ' ' if $metaMethod->typeName;
-        print $metaMethod->signature() . "\n";
+        push @return, join ' ', grep{ /./ } ($metaMethod->typeName(), $metaMethod->signature());
     }
-    print "\n";
 
     if ( $meta->classInfoCount() ) {
-        print join '', 'Class info for ', $meta->className(), ":\n"
+        push @return, join '', 'Class info for ', $meta->className();
     }
     else {
-        print join '', 'No class info for ', $meta->className(), ".\n";
+        push @return, join '', 'No class info for ', $meta->className();
     }
     foreach my $index ( 0..$meta->classInfoCount()-1 ) {
         my $classInfo = $meta->classInfo($index);
-        print join '', '\'', $classInfo->name, '\' => \'', $classInfo->value, "'\n";
+        push @return, join '', '\'', $classInfo->name, '\' => \'', $classInfo->value;
     }
-    print "\n";
+    return @return;
 }
 
 sub import {

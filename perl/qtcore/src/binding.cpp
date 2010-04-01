@@ -49,13 +49,7 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
     // If the Qt4 process forked, we want to make sure we can see the
     // interpreter
     PERL_SET_CONTEXT(PL_curinterp);
-#ifdef DEBUG
-    if( do_debug && (do_debug & qtdb_virtual) && (do_debug & qtdb_verbose)){
-        Smoke::Method methodobj = qtcore_Smoke->methods[method];
-        fprintf( stderr, "Looking for virtual method override for %p->%s::%s()\n",
-            ptr, qtcore_Smoke->classes[methodobj.classId].className, qtcore_Smoke->methodNames[methodobj.name] );
-    }
-#endif
+
     // Look for a perl sv associated with this pointer
     SV *obj = getPointerObject(ptr);
     smokeperl_object *o = sv_obj_info(obj);
@@ -68,6 +62,14 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
 #endif
         return false;
     }
+
+#ifdef DEBUG
+    if( do_debug && (do_debug & qtdb_virtual) && (do_debug & qtdb_verbose)){
+        Smoke::Method methodobj = o->smoke->methods[method];
+        fprintf( stderr, "Looking for virtual method override for %p->%s::%s()\n",
+            ptr, o->smoke->classes[methodobj.classId].className, o->smoke->methodNames[methodobj.name] );
+    }
+#endif
 
     // Now find the stash for this perl object
     HV *stash = SvSTASH(SvRV(obj));
@@ -108,8 +110,8 @@ char* Binding::className(Smoke::Index classId) {
 
     if( !packagename ) {
         // Shouldn't happen
-        croak( "Internal error: Unable to resolve classId %d to perl package",
-               classId );
+        croak( "Internal error: Unable to resolve class %s, classId %d, smoke %d, to perl package",
+               smoke->classes[classId].className, classId, smokeId );
     }
 
     SV* retval = sv_2mortal(newSVpvf(" %s", SvPV_nolen(*packagename)));

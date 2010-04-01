@@ -12,7 +12,7 @@ use Qt4::slots
     newFile => [],
     openFile => [],
     saveFile => [],
-    #saveFileAs => [],
+    saveFileAs => [],
     saveFileAs => ['const QString &'];
 
 sub NEW {
@@ -56,7 +56,7 @@ sub setupActions
 sub newFile
 {
     this->{fileName} = undef;
-    textArea->clear();
+    this->{textArea}->clear();
 }
 
 sub saveFileAs
@@ -85,11 +85,6 @@ sub saveFile
 
 sub openFile
 {
-
-=begin
-
-    We need bindings to KIO before we can continue...
-
     my $fileNameFromDialog = KDE::FileDialog::getOpenFileName();
 
     my $tmpFile;
@@ -108,8 +103,6 @@ sub openFile
         KDE::MessageBox::error(this,
                 KDEIO::NetAccess::lastErrorString());
     }
-
-=cut
 
 }
 

@@ -358,12 +358,22 @@ void marshall_basetype(Marshall* m) {
                         break;
                     }
 
+                    // The return type may be a class that is defined in a
+                    // different smoke object.  So we need to find out which
+                    // smoke object to put into the resulting perl object.
+                    Smoke::Index returnCId = m->type().classId();
+                    const char* returnCxxClassname = m->smoke()->classes[returnCId].className;
+                    Smoke* returnSmoke =
+                        Smoke::classMap[returnCxxClassname].smoke;
+                    // Now translate the classId to that smoke;
+                    returnCId = returnSmoke->idClass(returnCxxClassname).index;
+
                     // We have a pointer to something that we didn't create.
                     // We don't own this memory, so we don't want to delete it.
                     // The smokeperl_object contains all the info we need to
                     // know about this object
                     smokeperl_object* o = alloc_smokeperl_object(
-                        false, m->smoke(), m->type().classId(), cxxptr );
+                        false, returnSmoke, returnCId, cxxptr );
 
                     // Try to create a copy (using the copy constructor) if
                     // it's a const ref
