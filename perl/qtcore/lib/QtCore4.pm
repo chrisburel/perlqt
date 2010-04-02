@@ -715,7 +715,7 @@ use warnings;
 our @EXPORT_OK;
 
 unless(exists $::INC{'Qt4/GlobalSpace.pm'}) {
-    $::INC{'Qt4/GlobalSpace.pm'} = $::INC{'Qt4.pm'};
+    $::INC{'Qt4/GlobalSpace.pm'} = $::INC{'QtCore4.pm'};
 }
 
 sub import {
@@ -1049,7 +1049,7 @@ sub getSmokeMethodId {
                 # else will be 2
                 my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
                 my @caller = caller($stackDepth);
-                while ( $caller[1] =~ m/Qt4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
+                while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
                     ++$stackDepth;
                     @caller = caller($stackDepth);
                 }
@@ -1075,7 +1075,7 @@ sub getSmokeMethodId {
         if (!objmatch( $methodIds[0], \@_)) {
             my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
             my @caller = caller($stackDepth);
-            while ( $caller[1] =~ m/Qt4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
+            while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
                 ++$stackDepth;
                 @caller = caller($stackDepth);
             }
@@ -1282,9 +1282,9 @@ sub reportNoMethodFound {
     my $stackDepth = ( $methodname eq $classname ) ? 5 : 3;
 
     # Look up the stack to find who called us.  We don't care if it was
-    # called from Qt4.pm or isa.pm
+    # called from QtCore4.pm or isa.pm
     my @caller = caller($stackDepth);
-    while ( $caller[1] =~ m/Qt4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
+    while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/Qt4\/isa\.pm/ ) {
         ++$stackDepth;
         @caller = caller($stackDepth);
     }
