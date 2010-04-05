@@ -1,0 +1,18 @@
+[Desktop Entry]
+Name=Perl Hello Plasmoid
+Comment=A basic plasmoid using the Perl Plasma bindings
+Icon=Document
+Type=Service
+X-KDE-ServiceTypes=Plasma/Applet
+
+X-KDE-Library=kperlpluginfactory
+X-KDE-PluginKeyword=plasma_applet_perl_hello_plasmoid/PlasmaAppletPerlHelloPlasmoid.pm
+X-KDE-PluginInfo-Author=Chris Burel
+X-KDE-PluginInfo-Email=chrisburel@gmail.com
+X-KDE-PluginInfo-Name=perl-hello-plasmoid
+X-KDE-PluginInfo-Version=pre0.1
+X-KDE-PluginInfo-Website=http://code.google.com/p/perlqt4/
+X-KDE-PluginInfo-Category=Miscellaneous
+X-KDE-PluginInfo-Depends=
+X-KDE-PluginInfo-License=GPL
+X-KDE-PluginInfo-EnabledByDefault=true

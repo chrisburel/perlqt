@@ -27,25 +27,51 @@
 #include <KStandardDirs>
 #include <klibloader.h>
 #include <kdebug.h>
+#include <plasma/applet.h>
+
+#include <smoke.h>
 
 // Perl headers
 extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
+#include "XSUB.h"
 }
 
-/*
-    Duplicate the definition of this struct, to avoid linking directly
-    against the PerlQt libs
-*/
+// Copy these to avoid linking directly to the bindings
 struct smokeperl_object {
     bool allocated;
-    Smoke* smoke;
+    void* smoke;
     int classId;
     void* ptr;
 };
+inline smokeperl_object* sv_obj_info(SV* sv) { // ptr on success, null on fail
+    SV *obj = SvRV(sv);
+    MAGIC *mg = mg_find(obj, '~');
+    if(!mg ){//|| mg->mg_virtual != &vtbl_smoke) {
+        // FIXME: die or something?
+        fprintf( stderr, "No ~ magic\n" );
+        return 0;
+    }
+    smokeperl_object *o = (smokeperl_object*)mg->mg_ptr;
+    return o;
+}
 
-static PerlInterpreter *my_perl;
+// Add the ability for the embedded interpreter to dynamically load modules
+// Recreate with perl -MExtUtils::Embed -e xsinit -- -o xsinit.c -std
+EXTERN_C void xs_init (pTHX);
+
+EXTERN_C void boot_DynaLoader (pTHX_ CV* cv);
+
+EXTERN_C void
+xs_init(pTHX)
+{
+	char *file = __FILE__;
+	dXSUB_SYS;
+
+	/* DynaLoader is a special case */
+	newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
+}
 
 //
 // This function was borrowed from the kross code. It puts out
@@ -75,7 +101,6 @@ show_exception_message()
         }
     }
 }
-*/
 
 static VALUE plugin_class = Qnil;
 
@@ -84,18 +109,22 @@ create_plugin_instance(VALUE av)
 {
     return rb_funcall(plugin_class, rb_intern("new"), 2, Qnil, av);
 }
+*/
 
 class KPerlPluginFactory : public KPluginFactory
 {
     public:
         KPerlPluginFactory();
-        ~KPerlPluginFactory();
+        //~KPerlPluginFactory();
 
     protected:
         virtual QObject *create(const char *iface, QWidget *parentWidget, QObject *parent, const QVariantList &args, const QString &keyword);
 
     private:
         static QByteArray camelize(QByteArray name);
+
+        PerlInterpreter *my_perl;
+
 };
 K_EXPORT_PLUGIN(KPerlPluginFactory)
 K_EXPORT_PLUGIN_VERSION(PLASMA_VERSION)
@@ -105,12 +134,12 @@ KPerlPluginFactory::KPerlPluginFactory()
 {
 }
 
-KPerlPluginFactory::~KPerlPluginFactory()
-{
-    perl_destruct(my_perl);
-    perl_free(my_perl);
-    PERL_SYS_TERM();
-}
+//KPerlPluginFactory::~KPerlPluginFactory()
+//{
+    //perl_destruct(my_perl);
+    //perl_free(my_perl);
+    //PERL_SYS_TERM();
+//}
 
 QByteArray KPerlPluginFactory::camelize(QByteArray name)
 {
@@ -132,9 +161,6 @@ QByteArray KPerlPluginFactory::camelize(QByteArray name)
 
 QObject *KPerlPluginFactory::create(const char *iface, QWidget *parentWidget, QObject *parent, const QVariantList &args, const QString &keyword)
 {
-    Q_UNUSED(iface);
-    Q_UNUSED(parentWidget);
-
     QString path = KStandardDirs::locate("data", keyword);
 
     if (path.isEmpty()) {
@@ -143,94 +169,77 @@ QObject *KPerlPluginFactory::create(const char *iface, QWidget *parentWidget, QO
     }
 
     QFileInfo program(path);
-
-    PERL_SYS_INIT3(&argc,&argv,&env);
+    // Start up our interpreter
     my_perl = perl_alloc();
     perl_construct(my_perl);
-    /*
-    PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
-    perl_parse(my_perl, NULL, argc, argv, (char **)NULL);
-    perl_run(my_perl);
-    */
+    PERL_SET_CONTEXT(my_perl);
 
-    ruby_script(QFile::encodeName(program.fileName()));
+    // Build argc and argv to pass to perl.  Supply a -I to add the applet's
+    // path to @INC.
+    int argc = 4;
+    QByteArray includepath( "-I" );
+    includepath.append( QFile::encodeName(program.path()).data() );
+    char *argv[] = {
+        "kperlpluginfactory",
+        includepath.data(),
+        "-e", "0" };
 
-    // If ruby_init_loadpath() is called more than once, it keeps
-    // adding the same standard directories to it.
-    if (firstTime) {
-        ruby_init_loadpath();
-    }
+    perl_parse(my_perl, xs_init, argc, argv, (char **)NULL);
 
-    ruby_incpush(QFile::encodeName(program.path()));
+    // Load the specified module
+    const QByteArray moduleName = QByteArray( program.baseName().replace(QRegExp("\\.pm$"), "").toLatin1() );
+    load_module( 0, newSVpv(moduleName.data(), moduleName.size()), 0 );
 
-    int state = 0;
-    const QByteArray encodedFilePath = QFile::encodeName(program.filePath());
-    rb_load_protect(rb_str_new2(encodedFilePath), 0, &state);
-    if (state != 0) {
-        show_exception_message();
-        kWarning() << "Failed to load" << encodedFilePath;
-        return 0;
-    }
+    // Get ready to call perl
+    dSP; ENTER; SAVETMPS; PUSHMARK(SP);
 
-    // A path of my_app/foo_bar.rb is turned into module/class 'MyApp::FooBar'
-    const QByteArray moduleName = KPerlPluginFactory::camelize(QFile::encodeName(program.dir().dirName()));
-    const QByteArray className = KPerlPluginFactory::camelize(program.baseName().toLatin1());
-
-    VALUE plugin_module = rb_const_get(rb_cObject, rb_intern(moduleName));
-    if (plugin_module == Qnil) {
-        kWarning() << "no " << moduleName << " module found";
-        return 0;
-    }
-
-    plugin_class = rb_const_get(plugin_module, rb_intern(className));
-    if (plugin_class == Qnil) {
-        kWarning() << "no " << moduleName << "::" << className << " class found";
-        return 0;
-    }
-
-    // Assume the args list only contains strings, ints and booleans
-    VALUE av = rb_ary_new();
+    AV* argsAV = newAV();
+    SV* argsAVref = newRV_noinc( (SV*)argsAV );
     for (int i = 0; i < args.size(); ++i) {
         if (args.at(i).type() == QVariant::String) {
-            rb_ary_push(av, rb_str_new2(args.at(i).toByteArray()));
+            av_push( argsAV, sv_2mortal(newSVpv(args.at(i).toByteArray().data(), args.at(i).toByteArray().size())));
         } else if (args.at(i).type() == QVariant::Int) {
-            rb_ary_push(av, INT2NUM(args.at(i).toInt()));
+            av_push( argsAV, sv_2mortal(newSViv(args.at(i).toInt())) );
         } else if (args.at(i).type() == QVariant::Bool) {
-            rb_ary_push(av, args.at(i).toBool() ? Qtrue : Qfalse);
+            av_push( argsAV, sv_2mortal(newSVsv(args.at(i).toBool() ? &PL_sv_yes : &PL_sv_no )) );
         }
     }
 
-    VALUE plugin_value = rb_protect(create_plugin_instance, av, &state);
-    if (state != 0 || plugin_value == Qnil) {
-        show_exception_message();
-        kWarning() << "failed to create instance of plugin class";
+    // The first argument is parent.  We're not going to give the consturctor a
+    // parent, because we'd have to create a valid smokeperl_object for our C++
+    // parent.  We can't do that without linking to libsmokeqtcore.  The
+    // constructor will get an array ref of args though.
+    XPUSHs( &PL_sv_undef );
+    XPUSHs( argsAVref );
+    PUTBACK;
+
+    int count = call_pv(moduleName.data(), G_SCALAR);
+
+    SPAGAIN;
+
+    if ( count != 1 ) {
+        kWarning() << "Invalid return count from perl";
         return 0;
     }
 
-    // Set a global variable '$my_app_foo_bar + <numeric id>' to the value of the new 
-    // instance of MyApp::FooBar to prevent it being GC'd. Note that it would be
-    // better to be able to come up with a way to discover all the plugin instances,
-    // and call rb_gc_mark() on them, in the mark phase of GC.
-    QByteArray variableBaseName("$");
-    variableBaseName += QFile::encodeName(program.dir().dirName());
-    variableBaseName += "_";
-    variableBaseName += program.baseName().toLatin1();
+    SV* perlretval = POPs;
 
-    // Handle multiple instances of the same class, and look for an unused global
-    // variable
-    QByteArray variableName;
-    VALUE variable = Qnil;
-    int id = 0;
-    do {
-        id++;
-        variableName = variableBaseName + QByteArray::number(id);
-        variable = rb_gv_get(variableName);
-    } while (variable != Qnil);
-    rb_gv_set(variableName, plugin_value);
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
 
-    smokeperl_object *o = 0;
-    Data_Get_Struct(plugin_value, smokeperl_object, o);
-    QObject * createdInstance = reinterpret_cast<QObject *>(o->ptr);
+    smokeperl_object *o = sv_obj_info(perlretval);
+    if( !o || !o->ptr ) {
+        kDebug() << "KPerlPluginFactory: Did not get a valid object returned "
+            "from" << moduleName << "constructor";
+        return 0;
+    }
+    QObject* createdInstance = reinterpret_cast<QObject *>(o->ptr);
     createdInstance->setParent(parent);
+
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+
     return createdInstance;
 }

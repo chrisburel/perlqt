@@ -21,6 +21,9 @@ set(kdeui4_LIBRARY_SRC
     kdeui4handlers.cpp
 )
 
+set(factory_SRCS
+    kperlpluginfactory.cpp)
+
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/KDEUi4)
 add_library(kdeui4 MODULE ${kdeui4_LIBRARY_SRC})
 
@@ -37,4 +40,15 @@ target_link_libraries(kdeui4
 set_target_properties(kdeui4 PROPERTIES OUTPUT_NAME "KDEUi4")
 set_target_properties(kdeui4 PROPERTIES PREFIX "")
 
+kde4_add_plugin(kperlpluginfactory ${factory_SRCS})
+set_target_properties(kperlpluginfactory PROPERTIES 
+    LINK_FLAGS ${PERL_CCDL_FLAGS}
+    COMPILE_FLAGS ${PERL_CXX_FLAGS} )
+target_link_libraries(kperlpluginfactory
+    ${KDE4_KDECORE_LIBS}
+    ${PERL_LIBRARY}
+    ${PERL_LIBS}
+    )
+
 install(TARGETS kdeui4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/KDEUi4/)
+install(TARGETS kperlpluginfactory DESTINATION ${PLUGIN_INSTALL_DIR})

@@ -32,7 +32,7 @@ target_link_libraries(perlqtcore4
     smokeqtgui
     smokeqtnetwork
     smokeqtdbus
-    crypt)
+    ${PERL_LIBS})
 
 set_target_properties(perlqtcore4 PROPERTIES OUTPUT_NAME "QtCore4")
 set_target_properties(perlqtcore4 PROPERTIES PREFIX "")
