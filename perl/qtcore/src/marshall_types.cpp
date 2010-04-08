@@ -441,8 +441,20 @@ namespace PerlQt4 {
         // This defines how many arguments we're sending to the perl sub
         SP = _sp + items() - 1;
         PUTBACK;
+        I32 callFlags = G_SCALAR;
+        if ( SvTRUE( get_sv("Qt4::_internal::isEmbedded", FALSE) ) ) {
+            callFlags |= G_EVAL;
+        }
         // Call the perl sub
-        call_sv((SV*)GvCV(_gv), G_SCALAR);
+        call_sv((SV*)GvCV(_gv), callFlags);
+        if( SvTRUE(ERRSV) ) {
+            STRLEN n_a;
+            fprintf( stderr, "Error in Perl plugin: $@: %s\n", SvPVx(ERRSV, n_a));
+            PUTBACK;
+            FREETMPS;
+            LEAVE;
+            return;
+        }
         // Get the stack the perl sub returned
         SPAGAIN;
         // Marshall the return value back to c++, using the top of the stack

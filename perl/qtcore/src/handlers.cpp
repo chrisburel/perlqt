@@ -74,6 +74,8 @@
 #include "smokehelp.h"
 #include "util.h"
 
+extern Q_DECL_EXPORT Smoke* qtcore_Smoke;
+
 HV *type_handlers = 0;
 
 struct mgvtbl vtbl_smoke = { 0, 0, 0, 0, smokeperl_free };
@@ -1606,6 +1608,92 @@ void marshall_voidP_array(Marshall *m) {
 }
 */
 
+void marshall_QHashQStringQVariant(Marshall *m) {
+    UNTESTED_HANDLER("marshall_QHashQStringQVariant");
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *hashref = m->var();
+            if( !SvROK(hashref) && (SvTYPE(SvRV(hashref)) != SVt_PVHV) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
+
+            HV *hash = (HV*)SvRV(hashref);
+            QHash<QString,QVariant> * chash = new QHash<QString,QVariant>;
+
+            char* key;
+            SV* value;
+            I32* keylen = new I32;
+            while( ( value = hv_iternextsv( hash, &key, keylen ) ) ) {
+                smokeperl_object *o = sv_obj_info(value);
+                if (!o || !o->ptr || o->classId != o->smoke->findClass("QVariant").index) {
+                    continue;
+                    // If the value isn't a Qt4::Variant, then try and construct
+                    // a Qt4::Variant from it
+                    // TODO: I have no idea how to do this.
+                    /*
+                    value = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, value);
+                    if (value == Qnil) {
+                        continue;
+                    }
+                    o = value_obj_info(value);
+                    */
+                }
+
+                (*chash)[QString(key)] = (QVariant)*(QVariant*)o->ptr;
+            }
+            delete keylen;
+
+            m->item().s_voidp = chash;
+            m->next();
+
+            if(m->cleanup())
+                delete chash;
+        }
+        break;
+        case Marshall::ToSV: {
+            QHash<QString,QVariant> *chash = (QHash<QString,QVariant>*)m->item().s_voidp;
+            if(!chash) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
+
+            HV *hv = newHV();
+            SV *sv = newRV_noinc( (SV*)hv );
+
+            QHash<QString,QVariant>::Iterator it;
+            for (it = chash->begin(); it != chash->end(); ++it) {
+                void *p = new QVariant(it.value());
+                SV *obj = getPointerObject(p);
+
+                if ( !obj || !SvOK(obj) ) {
+                    // We know what module QVariant is defined in.  Hard-code
+                    // that smoke object
+                    smokeperl_object  * o = alloc_smokeperl_object(	true, 
+                                                                    qtcore_Smoke,
+                                                                    qtcore_Smoke->idClass("QVariant").index, 
+                                                                    p );
+                    obj = set_obj_info(" Qt4::Variant", o);
+                }
+
+                SV *key = perlstringFromQString((QString*)&(it.key()));
+                STRLEN keylen = it.key().size();
+                hv_store( hv, SvPV_nolen(key), keylen, obj, 0 );
+            }
+
+            sv_setsv(m->var(), sv);
+            m->next();
+
+            if(m->cleanup())
+                delete chash;
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
+    }
+}
+
 void marshall_QRgb_array(Marshall *m) {
     UNTESTED_HANDLER("marshall_QRgb_array");
     switch(m->action()) {
@@ -2023,6 +2111,7 @@ Q_DECL_EXPORT TypeHandler Qt4_handlers[] = {
     { "quint16&", marshall_it<unsigned short *> },
     { "qint64", marshall_it<long long> },
     { "qint64&", marshall_it<long long> },
+    { "QHash<QString,QVariant>", marshall_QHashQStringQVariant },
     { "QList<const char*>", marshall_QListCharStar },
     { "QList<int>", marshall_QListInt },
     { "QList<int>&", marshall_QListInt },

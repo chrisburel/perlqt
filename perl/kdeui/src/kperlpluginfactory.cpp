@@ -74,34 +74,23 @@ xs_init(pTHX)
 }
 
 //
-// This function was borrowed from the kross code. It puts out
-// an error message and stacktrace on stderr for the current exception.
+// This function was borrowed from the ruby code, which was borrowed from the
+// kross code. It puts out an error message and possibly at some point in the
+// future a stacktrace on stderr for the current exception.
 //
-/*
-static void
+bool
 show_exception_message()
 {
-    VALUE info = rb_gv_get("$!");
-    VALUE bt = rb_funcall(info, rb_intern("backtrace"), 0);
-    VALUE message = RARRAY_PTR(bt)[0];
-
-    QString errormessage = QString("%1: %2 (%3)")
-                            .arg( STR2CSTR(message) )
-                            .arg( STR2CSTR(rb_obj_as_string(info)) )
-                            .arg( rb_class2name(CLASS_OF(info)) );
-    fprintf(stderr, "%s\n", errormessage.toLatin1().constData());
-
-    QString tracemessage;
-    for(int i = 1; i < RARRAY_LEN(bt); ++i) {
-        if( TYPE(RARRAY_PTR(bt)[i]) == T_STRING ) {
-            QString s = QString("%1\n").arg( STR2CSTR(RARRAY_PTR(bt)[i]) );
-            Q_ASSERT( ! s.isNull() );
-            tracemessage += s;
-            fprintf(stderr, "\t%s", s.toLatin1().constData());
-        }
+    PerlInterpreter* my_perl = PL_curinterp;
+    if( SvTRUE(ERRSV) ) {
+        STRLEN n_a;
+        fprintf( stderr, "Error in Perl plugin: $@: %s\n", SvPVx(ERRSV, n_a));
+        return true;
     }
+    return false;
 }
 
+/*
 static VALUE plugin_class = Qnil;
 
 static VALUE
@@ -122,10 +111,10 @@ class KPerlPluginFactory : public KPluginFactory
 
     private:
         static QByteArray camelize(QByteArray name);
-
-        PerlInterpreter *my_perl;
-
 };
+
+static PerlInterpreter *my_perl;
+
 K_EXPORT_PLUGIN(KPerlPluginFactory)
 K_EXPORT_PLUGIN_VERSION(PLASMA_VERSION)
 
@@ -170,25 +159,48 @@ QObject *KPerlPluginFactory::create(const char *iface, QWidget *parentWidget, QO
 
     QFileInfo program(path);
     // Start up our interpreter
-    my_perl = perl_alloc();
-    perl_construct(my_perl);
-    PERL_SET_CONTEXT(my_perl);
+    if( !my_perl ) {
+        // kWarning() << "Launcing new perl";
+        my_perl = perl_alloc();
+        perl_construct(my_perl);
 
-    // Build argc and argv to pass to perl.  Supply a -I to add the applet's
-    // path to @INC.
-    int argc = 4;
-    QByteArray includepath( "-I" );
-    includepath.append( QFile::encodeName(program.path()).data() );
-    char *argv[] = {
-        "kperlpluginfactory",
-        includepath.data(),
-        "-e", "0" };
+        // Build argc and argv to pass to perl.  Supply a -I to add the applet's
+        // path to @INC.
+        int argc = 4;
+        QByteArray includepath( "-I" );
+        includepath.append( QFile::encodeName(program.path()).data() );
+        char *argv[] = {
+            "kperlpluginfactory",
+            includepath.data(),
+            "-e", "0" };
 
-    perl_parse(my_perl, xs_init, argc, argv, (char **)NULL);
+        perl_parse(my_perl, xs_init, argc, argv, (char **)NULL);
 
-    // Load the specified module
-    const QByteArray moduleName = QByteArray( program.baseName().replace(QRegExp("\\.pm$"), "").toLatin1() );
-    load_module( 0, newSVpv(moduleName.data(), moduleName.size()), 0 );
+        // Set a variable that we can check against to see if we're running in
+        // embedded perl.  This will be used during virtual method calls, to
+        // put G_EVAL on the call to perl to prevent perl from dying and
+        // killing the process that is loading the perl plugin.
+        sv_setsv( get_sv("Qt4::_internal::isEmbedded", TRUE), &PL_sv_yes );
+    }
+    PERL_SET_CONTEXT(PL_curinterp);
+
+    // Load the specified in an eval to trap the error
+    QString moduleName = program.baseName().replace(QRegExp("\\.pm$"), "").toLatin1();
+    QString requireModule = QString( "eval{ require %1 } " )
+        .arg( moduleName );
+    eval_pv( requireModule.toLatin1().data(), TRUE );
+    bool badStatus = show_exception_message();
+    if( badStatus ) {
+        return 0;
+    }
+    // Now run ModuleName->import
+    QString importModule = QString( "eval{ %1->import } " )
+        .arg( moduleName );
+    eval_pv( importModule.toLatin1().data(), TRUE );
+    badStatus = show_exception_message();
+    if( badStatus ) {
+        return 0;
+    }
 
     // Get ready to call perl
     dSP; ENTER; SAVETMPS; PUSHMARK(SP);
@@ -213,7 +225,11 @@ QObject *KPerlPluginFactory::create(const char *iface, QWidget *parentWidget, QO
     XPUSHs( argsAVref );
     PUTBACK;
 
-    int count = call_pv(moduleName.data(), G_SCALAR);
+    int count = call_pv(moduleName.toLatin1().data(), G_SCALAR | G_EVAL);
+    badStatus = show_exception_message();
+    if( badStatus ) {
+        return 0;
+    }
 
     SPAGAIN;
 

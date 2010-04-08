@@ -121,20 +121,25 @@ public:
             return;
         _called = true;
 
-        Smoke::Method *method = _smoke->methods + _method;
-        Smoke::ClassFn fn = _smoke->classes[method->classId].classFn;
+        Smoke::ClassFn fn = _smoke->classes[method().classId].classFn;
 
-        void *ptr = _smoke->cast(
-            _this->ptr,
-            _this->classId,
-            _smoke->methods[_method].classId
-        );
+        void *ptr = 0;
+        
+        if (_this->ptr != 0) {
+            const Smoke::Class &cl = _smoke->classes[method().classId];
+
+            ptr = _this->smoke->cast(
+                _this->ptr,
+                _this->classId,
+                _this->smoke->idClass(cl.className, true).index
+            );
+        }
 
         // Call the method
-        (*fn)(method->method, ptr, _stack);
+        (*fn)(method().method, ptr, _stack);
 
         // Tell the method call what binding to use
-        if (method->flags & Smoke::mf_ctor) {
+        if (method().flags & Smoke::mf_ctor) {
             Smoke::StackItem s[2];
             s[1].s_voidp = perlqt_modules[_smoke].binding;
             (*fn)(0, _stack[0].s_voidp, s);
