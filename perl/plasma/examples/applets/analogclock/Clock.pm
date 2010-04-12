@@ -23,9 +23,6 @@ package Clock;
 use strict;
 use warnings;
 
-use lib '/pts/testPipe/share/Qt4/def/dat/perlqt/build/perl/blib/arch';
-use lib '/pts/testPipe/share/Qt4/def/dat/perlqt/build/perl/blib/lib';
-
 use QtCore4;
 use KDEUi4;
 use Plasma4;
@@ -80,6 +77,7 @@ sub NEW {
     this->{m_theme}->resize(size());
 
     this->{m_animationStart} = 0;
+    this->{m_showingTimezone} = 0;
 
     this->connect(this->{m_theme}, SIGNAL 'repaintNeeded()', this, SLOT 'repaintNeeded()');
 }
@@ -415,9 +413,9 @@ sub paintInterface
     if (this->{m_showingTimezone}) {
         my $time = this->prettyTimezone();
 
-        if (!$time->isEmpty()) {
+        if ($time) {
             my $textRect = this->tzRect();
-            this->tzFrame()->paintFrame($p, $textRect, Qt4::Rect(Qt4::Point(0, 0), $textRect->size()));
+            this->tzFrame()->paintFrame($p, Qt4::RectF($textRect), Qt4::RectF(Qt4::Point(0, 0), $textRect->size()));
 
             $p->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor()));
             $p->setFont(Plasma::Theme::defaultTheme()->font(Plasma::Theme::DefaultFont()));
@@ -431,7 +429,7 @@ sub tzRect
     my $rect = this->contentsRect()->toRect();
     my $font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DefaultFont());
     my $fm = Qt4::FontMetrics($font);
-    my ( $left, $top, $right, $bottom );
+    my ( $left, $top, $right, $bottom ) = (0, 0, 0, 0);
     this->tzFrame()->getMargins($left, $top, $right, $bottom);
     my $height = $top + $bottom + $fm->height();
     return Qt4::Rect(0, $rect->bottom() - $height, $rect->width(), $height);
@@ -456,7 +454,7 @@ sub invalidateCache
     if (this->{m_showingTimezone}) {
         my $tzArea = this->tzRect();
         $pixmapSize->setHeight(max(10, $pixmapSize->height() - $tzArea->height()));
-        this->tzFrame()->resizeFrame(this->tzArea->size());
+        this->tzFrame()->resizeFrame(Qt4::SizeF($tzArea->size()));
     }
 
     $pixmapSize->setWidth($pixmapSize->height());

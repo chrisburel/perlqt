@@ -74,7 +74,7 @@ sub addTzToTipText
     if ($$tz eq 'UTC')  {
         $$subText .= '<br><b>UTC</b>&nbsp;';
     } else {
-        my $tzCity = $data->{'Timezone City'}.toString();
+        my $tzCity = $data->{'Timezone City'}->toString();
         $tzCity =~ s/_/&nbsp;/g;
         $$subText .= '<br><b>' .
             $tzCity .
@@ -299,7 +299,7 @@ sub updateTipContent
 
     my $subText;
     if (!this->isLocalTimezone()) {
-        this->{d}->addTzToTipText($subText, this->localTimezone());
+        this->{d}->addTzToTipText($subText, \this->localTimezone());
     }
 
     foreach my $tz ( @{this->getSelectedTimezones()} ) {
@@ -307,7 +307,7 @@ sub updateTipContent
             next;
         }
 
-        this->{d}->addTzToTipText($subText, $tz);
+        this->{d}->addTzToTipText($subText, \$tz);
     }
 
     #my $property = this->{d}->{calendarWidget}->dateProperty($tipDate);
@@ -433,7 +433,7 @@ sub updateClockDefaultsTo
     this->{d}->{ui}->clockDefaultsTo->clear();
     this->{d}->{ui}->clockDefaultsTo->addItem(this->localTimezone(), Qt4::Variant(this->localTimezone()));
     foreach my $tz ( @{this->{d}->{ui}->timeZones->selection()} ) {
-        this->{d}->{ui}->clockDefaultsTo->addItem(KDE::TimeZoneWidget::displayName(KDE::TimeZone($tz)), $tz);
+        this->{d}->{ui}->clockDefaultsTo->addItem(KDE::TimeZoneWidget::displayName(KDE::TimeZone($tz)), Qt4::Variant($tz));
     }
     my $newPosition = this->{d}->{ui}->clockDefaultsTo->findText($oldSelection);
     if ($newPosition >= 0) {
