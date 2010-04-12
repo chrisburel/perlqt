@@ -1295,14 +1295,8 @@ sub reportNoMethodFound {
     return $errStr;
 }
 
-# Args: none
-# Returns: none
-# Desc: sets up each class
-sub init {
-    my $classes = getClassList();
-    Qt4::_internal->init_class($_) for(@$classes);
-
-    my $enums = getEnumList();
+sub init_enum {
+    my ( $enums ) = @_;
     foreach my $enumName (@$enums) {
         $enumName =~ s/^const //;
         if(@{arrayByName("${enumName}::ISA")}) {
@@ -1312,7 +1306,17 @@ sub init {
             @{arrayByName("${enumName}::ISA")} = ('Qt4::enum::_overload');
         }
     }
+}
 
+# Args: none
+# Returns: none
+# Desc: sets up each class
+sub init {
+    my $classes = getClassList();
+    Qt4::_internal->init_class($_) for(@$classes);
+
+    my $enums = getEnumList();
+    Qt4::_internal->init_enum($_) for(@$enums);
 }
 
 sub makeMetaData {

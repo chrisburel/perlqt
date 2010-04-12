@@ -1608,7 +1608,7 @@ void marshall_voidP_array(Marshall *m) {
 }
 */
 
-void marshall_QHashQStringQVariant(Marshall *m) {
+Q_DECL_EXPORT void marshall_QHashQStringQVariant(Marshall *m) {
     UNTESTED_HANDLER("marshall_QHashQStringQVariant");
     switch(m->action()) {
         case Marshall::FromSV: {

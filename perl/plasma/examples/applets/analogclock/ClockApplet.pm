@@ -27,6 +27,8 @@ use warnings;
 
 use KDEUi4;
 use Plasma4;
+use Ui_GeneralConfig;
+use Ui_TimezonesConfig;
 use Qt4::GlobalSpace qw( i18n );
 
 sub new {
@@ -354,14 +356,14 @@ sub createConfigurationInterface
     this->createClockConfigurationInterface($parent);
 
     my $generalWidget = Qt4::Widget();
-    this->{d}->{generalUi}->setupUi($generalWidget);
+    this->{d}->{generalUi} = Ui_GeneralConfig->setupUi($generalWidget);
     $parent->addPage($generalWidget, i18nc('General configuration page', 'General'), Plasma::Applet::icon());
     this->{d}->{generalUi}->interval->setValue(this->{d}->{announceInterval});
 
     #this->{d}->{calendarWidget}->createConfigurationInterface($parent);
 
     my $widget = Qt4::Widget();
-    this->{d}->{ui}->setupUi($widget);
+    this->{d}->{ui} = Ui_TimezonesConfig->setupUi($widget);
     this->{d}->{ui}->searchLine->addTreeWidget(this->{d}->{ui}->timeZones);
 
     $parent->addPage($widget, i18n('Time Zones'), 'preferences-desktop-locale');
@@ -371,14 +373,14 @@ sub createConfigurationInterface
     }
 
     this->updateClockDefaultsTo();
-    my $defaultSelection = this->{d}->{ui}->clockDefaultsTo->findData(this->{d}->{defaultTimezone});
+    my $defaultSelection = this->{d}->{ui}->clockDefaultsTo->findData(Qt4::Variant(this->{d}->{defaultTimezone}));
     if ($defaultSelection < 0) {
         $defaultSelection = 0; #if it's something unexpected default to local
         #kDebug() << this->{d}->defaultTimezone << 'not in list!?';
     }
     this->{d}->{ui}->clockDefaultsTo->setCurrentIndex($defaultSelection);
 
-    $parent->setButtons( KDE::Dialog::Ok() | KDE::Dialog::Cancel() | KDE::Dialog::Apply() );
+    $parent->setButtons( ${KDE::Dialog::Ok()} | ${KDE::Dialog::Cancel()} | ${KDE::Dialog::Apply()} );
     this->connect($parent, SIGNAL 'applyClicked()', this, SLOT 'configAccepted()');
     this->connect($parent, SIGNAL 'okClicked()', this, SLOT 'configAccepted()');
     this->connect(this->{d}->{ui}->timeZones, SIGNAL 'itemChanged(QTreeWidgetItem*,int)', this, SLOT 'updateClockDefaultsTo()');
@@ -389,7 +391,7 @@ sub createClockConfigurationInterface
     my ($parent) = @_;
 }
 
-sub ClockApplet::clockConfigAccepted
+sub clockConfigAccepted
 {
 
 }
@@ -429,7 +431,7 @@ sub updateClockDefaultsTo
 {
     my $oldSelection = this->{d}->{ui}->clockDefaultsTo->currentText();
     this->{d}->{ui}->clockDefaultsTo->clear();
-    this->{d}->{ui}->clockDefaultsTo->addItem(this->localTimezone(), this->localTimezone());
+    this->{d}->{ui}->clockDefaultsTo->addItem(this->localTimezone(), Qt4::Variant(this->localTimezone()));
     foreach my $tz ( @{this->{d}->{ui}->timeZones->selection()} ) {
         this->{d}->{ui}->clockDefaultsTo->addItem(KDE::TimeZoneWidget::displayName(KDE::TimeZone($tz)), $tz);
     }

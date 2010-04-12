@@ -26,7 +26,12 @@ extern "C" {
 #include <smokeperl.h>
 #include <marshall_macros.h>
 
+extern void marshall_QHashQStringQVariant(Marshall *m);
 
 TypeHandler Plasma4_handlers[] = {
-    { 0, 0 }
+    { "QHash<QString,QVariant>", marshall_QHashQStringQVariant },
+    { "QHash<QString,QVariant>&", marshall_QHashQStringQVariant },
+    { "Plasma::DataEngine::Data", marshall_QHashQStringQVariant },
+    { "Plasma::DataEngine::Data&", marshall_QHashQStringQVariant },
+    { 0, 0 },
 };

@@ -228,7 +228,6 @@ QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName, QList<Q
                 // should always be in the smoke module of the slot being
                 // invoked. However, that isn't true for a dataUpdated() slot
                 // in a PlasmaScripting::Applet
-                /*
 				if (typeId == 0) {
 					QHash<Smoke*, PerlQt4Module>::const_iterator it;
 					for (it = perlqt_modules.constBegin(); it != perlqt_modules.constEnd(); ++it) {
@@ -252,7 +251,6 @@ QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName, QList<Q
 						}
 					}
 				}	
-                */		
 			} else if (staticType == "bool") {
 				arg->argType = xmoc_bool;
 				smoke = qtcore_Smoke;
@@ -693,7 +691,7 @@ const char* resolve_classname_qt( smokeperl_object* o ) {
 			if (o->smoke != 0) {
 				o->classId = o->smoke->idClass(meta->className()).index;
 				if (o->classId != 0) {
-					return binding.className(o->classId);
+					return perlqt_modules[o->smoke].binding->className(o->classId);
 				}
 			}
 

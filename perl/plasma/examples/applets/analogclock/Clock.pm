@@ -32,13 +32,12 @@ use Plasma4;
 use Qt4::isa qw( ClockApplet );
 use KDECore4 qw( i18n );
 use List::Util qw( max );
-use Qt4::debug qw(all);
 
 use ClockApplet;
 use Ui_ClockConfig;
 
 use Qt4::slots
-    dataUpdated => ['const Qt4::String &', 'const Plasma::DataEngine::Data &'],
+    dataUpdated => ['const QString &', 'const Plasma::DataEngine::Data &'],
     clockConfigAccepted => [],
     repaintNeeded => [],
     moveSecondHand => [];
@@ -48,32 +47,6 @@ use constant {
     RepaintAll => 2,
     RepaintHands => 3
 };
-
-=begin
-
-    bool m_showSecondHand;
-    bool m_fancyHands;
-    bool m_showTimezoneString;
-    use strict;
-    use warnings;
-    use Qt4;
-    bool m_showingTimezone;
-    Plasma::FrameSvg *m_tzFrame;
-    Plasma::Svg *m_theme;
-    Qt4::Time m_time;
-    Qt4::Time m_lastTimeSeen;
-    RepaintCache m_repaintCache;
-    Qt4::Pixmap m_faceCache;
-    Qt4::Pixmap m_handsCache;
-    Qt4::Pixmap m_glassCache;
-    qreal m_verticalTranslation;
-    Qt4::Timer *m_secondHandUpdateTimer;
-    bool m_animateSeconds;
-    int m_animationStart;
-    #/ Designer Config file
-    Ui::clockConfig ui;
-
-=cut
 
 my $keepme;
 
@@ -106,6 +79,8 @@ sub NEW {
     this->{m_theme}->setContainsMultipleImages(1);
     this->{m_theme}->resize(size());
 
+    this->{m_animationStart} = 0;
+
     this->connect(this->{m_theme}, SIGNAL 'repaintNeeded()', this, SLOT 'repaintNeeded()');
 }
 
@@ -114,11 +89,11 @@ sub init
     this->SUPER::init();
 
     my $cg = this->config();
-    this->{m_showSecondHand} = $cg->readEntry('showSecondHand', 0);
-    this->{m_showTimezoneString} = $cg->readEntry('showTimezoneString', 0);
+    this->{m_showSecondHand} = $cg->readEntry(Qt4::String('showSecondHand'), Qt4::String(''));
+    this->{m_showTimezoneString} = $cg->readEntry(Qt4::String('showTimezoneString'), Qt4::String(''));
     this->{m_showingTimezone} = this->{m_showTimezoneString};
-    this->{m_fancyHands} = $cg->readEntry('fancyHands', 0);
-    this->setCurrentTimezone($cg->readEntry('timezone', this->localTimezone()));
+    this->{m_fancyHands} = $cg->readEntry(Qt4::String('fancyHands'), Qt4::String(''));
+    this->setCurrentTimezone($cg->readEntry(Qt4::String('timezone'), Qt4::String(this->localTimezone())));
 
     if (this->{m_showSecondHand}) {
         #We don't need to cache the applet if it update every seconds
@@ -209,7 +184,7 @@ sub createClockConfigurationInterface
     my ($parent) = @_;
     #TODO: Make the size settable
     my $widget = Qt4::Widget();
-    this->{ui}->setupUi($widget);
+    this->{ui} = Ui_ClockConfig->setupUi($widget);
     $parent->addPage($widget, i18n('Appearance'), 'view-media-visualization');
 
     this->{ui}->showSecondHandCheckBox->setChecked(this->{m_showSecondHand});
@@ -286,7 +261,7 @@ sub drawHand
         $p->save();
 
         $elementRect = this->{m_theme}->elementRect($name);
-        if( $rect->height() < KDE::IconLoader::SizeEnormous() ) {
+        if( $rect->height() < ${KDE::IconLoader::SizeEnormous()} ) {
             $elementRect->setWidth( $elementRect->width() * 2.5 );
         }
         my $offset = Qt4::Point(2, 3);
@@ -303,7 +278,7 @@ sub drawHand
 
     $name = $handName . 'Hand';
     $elementRect = this->{m_theme}->elementRect($name);
-    if ($rect->height() < KDE::IconLoader::SizeEnormous()) {
+    if ($rect->height() < ${KDE::IconLoader::SizeEnormous()}) {
         $elementRect->setWidth($elementRect->width() * 2.5);
     }
 
@@ -318,11 +293,12 @@ sub drawHand
 sub paintInterface
 {
     my ($p, $option, $rect) = @_;
+    $rect = Qt4::RectF( $rect );
 
     # compute hand angles
-    my $minutes = 6.0 * m_time->minute() - 180;
-    my $hours = 30.0 * m_time->hour() - 180 +
-                        ((m_time->minute() / 59.0) * 30.0);
+    my $minutes = 6.0 * this->{m_time}->minute() - 180;
+    my $hours = 30.0 * this->{m_time}->hour() - 180 +
+                        ((this->{m_time}->minute() / 59.0) * 30.0);
     my $seconds = 0;
     if (this->{m_showSecondHand}) {
         my $anglePerSec = 6;
@@ -379,10 +355,10 @@ sub paintInterface
     }
 
     # paint face and glass cache
-    my $faceRect = this->{m_faceCache}->rect();
+    my $faceRect = Qt4::RectF(this->{m_faceCache}->rect());
     if (this->{m_repaintCache} == RepaintAll) {
-        this->{m_faceCache}->fill(Qt4::transparent());
-        this->{m_glassCache}->fill(Qt4::transparent());
+        this->{m_faceCache}->fill(Qt4::Color(Qt4::transparent()));
+        this->{m_glassCache}->fill(Qt4::Color(Qt4::transparent()));
 
         my $facePainter = Qt4::Painter(this->{m_faceCache});
         my $glassPainter = Qt4::Painter(this->{m_glassCache});
@@ -392,7 +368,7 @@ sub paintInterface
         this->{m_theme}->paint($facePainter, $faceRect, 'ClockFace');
 
         $glassPainter->save();
-        my $elementRect = Qt4::RectF(Qt4::PointF(0, 0), this->{m_theme}->elementSize('HandCenterScrew'));
+        my $elementRect = Qt4::RectF(Qt4::PointF(0, 0), Qt4::SizeF(this->{m_theme}->elementSize('HandCenterScrew')));
         $glassPainter->translate($faceRect->width() / 2 - $elementRect->width() / 2, $faceRect->height() / 2 - $elementRect->height() / 2);
         this->{m_theme}->paint($glassPainter, $elementRect, 'HandCenterScrew');
         $glassPainter->restore();
@@ -401,11 +377,13 @@ sub paintInterface
 
         # get vertical translation, see drawHand() for more details
         this->{m_verticalTranslation} = this->{m_theme}->elementRect('ClockFace')->center()->y();
+        $facePainter->end();
+        $glassPainter->end();
     }
 
     # paint hour and minute hands cache
     if (this->{m_repaintCache} == RepaintHands || this->{m_repaintCache} == RepaintAll) {
-        this->{m_handsCache}->fill(Qt4::transparent());
+        this->{m_handsCache}->fill(Qt4::Color(Qt4::transparent()));
 
         my $handsPainter = Qt4::Painter(this->{m_handsCache});
         $handsPainter->drawPixmap($faceRect, this->{m_faceCache}, $faceRect);
@@ -413,6 +391,7 @@ sub paintInterface
 
         this->drawHand($handsPainter, $faceRect, this->{m_verticalTranslation}, $hours, 'Hour');
         this->drawHand($handsPainter, $faceRect, this->{m_verticalTranslation}, $minutes, 'Minute');
+        $handsPainter->end();
     }
 
     # reset repaint cache flag
@@ -472,7 +451,6 @@ sub invalidateCache
 {
     this->{m_repaintCache} = RepaintAll;
 
-    $DB::single=1;
     my $pixmapSize = this->contentsRect()->size()->toSize();
 
     if (this->{m_showingTimezone}) {
