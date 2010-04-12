@@ -1296,15 +1296,13 @@ sub reportNoMethodFound {
 }
 
 sub init_enum {
-    my ( $enums ) = @_;
-    foreach my $enumName (@$enums) {
-        $enumName =~ s/^const //;
-        if(@{arrayByName("${enumName}::ISA")}) {
-            @{arrayByName("${enumName}Enum::ISA")} = ('Qt4::enum::_overload');
-        }
-        else {
-            @{arrayByName("${enumName}::ISA")} = ('Qt4::enum::_overload');
-        }
+    my ( $class, $enumName ) = @_;
+    $enumName =~ s/^const //;
+    if(@{arrayByName("${enumName}::ISA")}) {
+        @{arrayByName("${enumName}Enum::ISA")} = ('Qt4::enum::_overload');
+    }
+    else {
+        @{arrayByName("${enumName}::ISA")} = ('Qt4::enum::_overload');
     }
 }
 
@@ -1701,35 +1699,67 @@ Qt4::_internal::installSub(' Qt4::Variant::value', sub {
 });
 
 sub String {
-    return bless \shift, 'Qt4::String';
+    if ( @_ ) {
+        return bless \shift, 'Qt4::String';
+    } else {
+        return bless '', 'Qt4::String';
+    }
 }
 
 sub CString {
-    return bless \shift, 'Qt4::CString';
+    if ( @_ ) {
+        return bless \shift, 'Qt4::CString';
+    } else {
+        return bless '', 'Qt4::CString';
+    }
 }
 
 sub Int {
-    return bless \shift, 'Qt4::Int';
+    if ( @_ ) {
+        return bless \shift, 'Qt4::Int';
+    } else {
+        return bless '', 'Qt4::Int';
+    }
 }
 
 sub Uint {
-    return bless \shift, 'Qt4::Uint';
+    if ( @_ ) {
+        return bless \shift, 'Qt4::Uint';
+    } else {
+        return bless '', 'Qt4::Uint';
+    }
 }
 
 sub Bool {
-    return bless \shift, 'Qt4::Bool';
+    if ( @_ ) {
+        return bless \shift, 'Qt4::Bool';
+    } else {
+        return bless '', 'Qt4::Bool';
+    }
 }
 
 sub Short {
-    return bless \shift, 'Qt4::Short';
+    if ( @_ ) {
+        return bless \shift, 'Qt4::Short';
+    } else {
+        return bless '', 'Qt4::Short';
+    }
 }
 
 sub Ushort {
-    return bless \shift, 'Qt4::Ushort';
+    if ( @_ ) {
+        return bless \shift, 'Qt4::Ushort';
+    } else {
+        return bless '', 'Qt4::Ushort';
+    }
 }
 
 sub Uchar {
-    return bless \shift, 'Qt4::Uchar';
+    if ( @_ ) {
+        return bless \shift, 'Qt4::Uchar';
+    } else {
+        return bless '', 'Qt4::Uchar';
+    }
 }
 
 1;

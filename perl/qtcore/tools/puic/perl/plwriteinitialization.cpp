@@ -1475,47 +1475,47 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
     const QString fontName = QString("$") + m_driver->unique(QLatin1String("font"));
     m_fontPropertiesNameMap.insert(FontHandle(f), fontName);
 
-    m_output << m_option.indent << fontName << " = Qt4::Font.new\n";
+    m_output << m_option.indent << "my " << fontName << " = Qt4::Font();\n";
     if (f->hasElementFamily() && !f->elementFamily().isEmpty()) {
-        m_output << m_option.indent << fontName << ".family = " << fixString(f->elementFamily(), m_option.indent)
-            << "\n";
+        m_output << m_option.indent << fontName << "->setFamily( " << fixString(f->elementFamily(), m_option.indent)
+            << " );\n";
     }
     if (f->hasElementPointSize() && f->elementPointSize() > 0) {
-         m_output << m_option.indent << fontName << ".pointSize = " << f->elementPointSize()
-             << "\n";
+         m_output << m_option.indent << fontName << "->setPointSize( " << f->elementPointSize()
+             << " );\n";
     }
 
     if (f->hasElementBold()) {
-        m_output << m_option.indent << fontName << ".bold = "
-            << (f->elementBold() ? "true" : "false") << "\n";
+        m_output << m_option.indent << fontName << "->setBold( "
+            << (f->elementBold() ? "1" : "0") << " );\n";
     }
     if (f->hasElementItalic()) {
-        m_output << m_option.indent << fontName << ".italic = "
-            <<  (f->elementItalic() ? "true" : "false") << "\n";
+        m_output << m_option.indent << fontName << "->setItalic( "
+            <<  (f->elementItalic() ? "1" : "0") << " );\n";
     }
     if (f->hasElementUnderline()) {
-        m_output << m_option.indent << fontName << ".underline = "
-            << (f->elementUnderline() ? "true" : "false") << "\n";
+        m_output << m_option.indent << fontName << "->setUnderline( "
+            << (f->elementUnderline() ? "1" : "0") << " );\n";
     }
     if (f->hasElementWeight() && f->elementWeight() > 0) {
-        m_output << m_option.indent << fontName << ".weight = "
-            << f->elementWeight() << "" << endl;
+        m_output << m_option.indent << fontName << "->setWeight( "
+            << f->elementWeight() << " );" << endl;
     }
     if (f->hasElementStrikeOut()) {
-         m_output << m_option.indent << fontName << ".strikeOut = "
-            << (f->elementStrikeOut() ? "true" : "false") << "\n";
+         m_output << m_option.indent << fontName << "->setStrikeOut( "
+            << (f->elementStrikeOut() ? "1" : "0") << " );\n";
     }
     if (f->hasElementKerning()) {
-        m_output << m_option.indent << fontName << ".kerning = "
-            << (f->elementKerning() ? "true" : "false") << "\n";
+        m_output << m_option.indent << fontName << "->setKerning( "
+            << (f->elementKerning() ? "1" : "0") << " );\n";
     }
     if (f->hasElementAntialiasing()) {
-        m_output << m_option.indent << fontName << ".styleStrategy = "
-            << (f->elementAntialiasing() ? "Qt4::Font::PreferDefault" : "Qt4::Font::NoAntialias") << "\n";
+        m_output << m_option.indent << fontName << "->setStyleStrategy( "
+            << (f->elementAntialiasing() ? "Qt4::Font::PreferDefault()" : "Qt4::Font::NoAntialias()") << " );\n";
     }
     if (f->hasElementStyleStrategy()) {
-         m_output << m_option.indent << fontName << ".styleStrategy = Qt4::Font::"
-            << f->elementStyleStrategy() << "\n";
+         m_output << m_option.indent << fontName << "->setStyleStrategy( Qt4::Font::"
+            << f->elementStyleStrategy() << "() );\n";
     }
     return  fontName;
 }
@@ -2118,7 +2118,7 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
 
         if (!toString(text->elementString()).isEmpty()) {
             const QString txt = trCall(text->elementString());
-            m_refreshOut << m_option.indent << varName << "->headerItem()->setText(" << i << ", " << txt << ");\n";
+            m_refreshOut << m_option.indent << "$self->" << varNameNoSigil << "()->headerItem()->setText(" << i << ", " << txt << ");\n";
         }
 
         if (icon) {

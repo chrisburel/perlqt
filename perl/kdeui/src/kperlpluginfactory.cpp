@@ -186,7 +186,7 @@ QObject *KPerlPluginFactory::create(const char *iface, QWidget *parentWidget, QO
 
     // Load the specified in an eval to trap the error
     QString moduleName = program.baseName().replace(QRegExp("\\.pm$"), "").toLatin1();
-    QString requireModule = QString( "eval{ require %1 } " )
+    QString requireModule = QString( "eval{ require %1 }" )
         .arg( moduleName );
     eval_pv( requireModule.toLatin1().data(), TRUE );
     bool badStatus = show_exception_message();
@@ -194,7 +194,7 @@ QObject *KPerlPluginFactory::create(const char *iface, QWidget *parentWidget, QO
         return 0;
     }
     // Now run ModuleName->import
-    QString importModule = QString( "eval{ %1->import } " )
+    QString importModule = QString( "eval{ %1->import }" )
         .arg( moduleName );
     eval_pv( importModule.toLatin1().data(), TRUE );
     badStatus = show_exception_message();

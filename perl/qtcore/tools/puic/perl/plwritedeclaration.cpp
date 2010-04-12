@@ -97,7 +97,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     m_output << "use strict;\n";
     m_output << "use warnings;\n";
     m_output << "use utf8;\n";
-    m_output << "use Qt4;\n";
+    m_output << "use QtCore4;\n";
     m_output << "\n";
 
     const QStringList connections = m_uic->databaseInfo()->connections();
