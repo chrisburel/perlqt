@@ -860,50 +860,40 @@ sub argmatch {
             $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
         }
         elsif ( $argType eq 'Qt4::String' ) {
-            # This type exists only to resolve ambiguous method calls, so we
-            # can return here.
             if( $typeName =~m/^(?:const )?QString[\*&]?$/ ) {
-                return [$smokeId,$methodId];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
             else {
                 $explicitType = 1;
             }
         }
         elsif ( $argType eq 'Qt4::CString' ) {
-            # This type exists only to resolve ambiguous method calls, so we
-            # can return here.
             if( $typeName =~m/^(?:const )?char ?\*[\*&]?$/ ) {
-                return [$smokeId,$methodId];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
             else {
                 $explicitType = 1;
             }
         }
         elsif ( $argType eq 'Qt4::Int' ) {
-            # This type exists only to resolve ambiguous method calls, so we
-            # can return here.
             if( $typeName =~ m/^int[\*&]?$/ ) {
-                return [$smokeId,$methodId];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
             else {
                 $explicitType = 1;
             }
         }
         elsif ( $argType eq 'Qt4::Uint' ) {
-            # This type exists only to resolve ambiguous method calls, so we
-            # can return here.
             if( $typeName =~ m/^unsigned int[\*&]?$/ ) {
-                return [$smokeId,$methodId];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
             else {
                 $explicitType = 1;
             }
         }
         elsif ( $argType eq 'Qt4::Bool' ) {
-            # This type exists only to resolve ambiguous method calls, so we
-            # can return here.
             if( $typeName eq 'bool' ) {
-                return [$smokeId,$methodId];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
             else {
                 $explicitType = 1;
@@ -911,7 +901,7 @@ sub argmatch {
         }
         elsif ( $argType eq 'Qt4::Short' ) {
             if( $typeName =~ m/^short[\*&]?$/ ) {
-                return [$smokeId,$methodId];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
             else {
                 $explicitType = 1;
@@ -919,7 +909,7 @@ sub argmatch {
         }
         elsif ( $argType eq 'Qt4::Ushort' ) {
             if( $typeName =~ m/^unsigned short[\*&]?$/ ) {
-                return [$smokeId,$methodId];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
             else {
                 $explicitType = 1;
@@ -927,7 +917,7 @@ sub argmatch {
         }
         elsif ( $argType eq 'Qt4::Uchar' ) {
             if( $typeName =~ m/^u(?:nsigned )?char[\*&]?$/ ) {
-                return [$smokeId,$methodId];
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
             else {
                 $explicitType = 1;
@@ -1020,6 +1010,8 @@ sub getSmokeMethodId {
         foreach my $argNum (0..$#_) {
             my @matching = argmatch( \@methodIds, \@_, $argNum );
             if (@matching) {
+                # if the methodid of the first one returned is -1, we got no
+                # matches back
                 if ($matching[0]->[1] == -1) {
                     @methodIds = ();
                 }

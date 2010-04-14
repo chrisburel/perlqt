@@ -112,8 +112,9 @@ void marshall_ItemList(Marshall *m) {
 
                 SV* obj = getPointerObject(p);
                 if (!obj || !SvOK(obj) ) {
+                    Smoke::ModuleIndex mi = m->smoke()->findClass(ItemSTR);
                     smokeperl_object *o = alloc_smokeperl_object(
-                        false, m->smoke(), m->smoke()->idClass(ItemSTR).index, p );
+                        false, mi.smoke, mi.index, p );
                     if( !m->cleanup() && m->type().isStack()) {
                         void *ptr = construct_copy( o );
                         if(ptr) {
@@ -233,9 +234,11 @@ void marshall_ValueListItem(Marshall *m) {
 
                 SV *obj = getPointerObject(p);
                 if( !obj || !SvOK(obj) ) {
+                    Smoke::ModuleIndex mi = m->smoke()->findClass(ItemSTR);
                     smokeperl_object *o = alloc_smokeperl_object(
-                        false, m->smoke(), m->smoke()->idClass(ItemSTR).index, p );
+                        false, mi.smoke, mi.index, p );
                     if( !m->cleanup() && m->type().isStack()) {
+
                         void *ptr = construct_copy( o );
                         if(ptr) {
                             o->ptr = ptr;

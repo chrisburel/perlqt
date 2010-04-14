@@ -78,6 +78,7 @@ sub NEW {
 
     this->{m_animationStart} = 0;
     this->{m_showingTimezone} = 0;
+    this->{m_showTimezoneString} = 0;
 
     this->connect(this->{m_theme}, SIGNAL 'repaintNeeded()', this, SLOT 'repaintNeeded()');
 }

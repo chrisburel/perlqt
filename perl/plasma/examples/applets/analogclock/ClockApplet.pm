@@ -74,7 +74,7 @@ sub addTzToTipText
     if ($$tz eq 'UTC')  {
         $$subText .= '<br><b>UTC</b>&nbsp;';
     } else {
-        my $tzCity = $data->{'Timezone City'}->toString();
+        my $tzCity = $data->{'Timezone City'};
         $tzCity =~ s/_/&nbsp;/g;
         $$subText .= '<br><b>' .
             $tzCity .
@@ -173,7 +173,7 @@ use Qt4::GlobalSpace qw( i18n i18nc );
 use Qt4::slots
     toolTipAboutToShow => [],
     toolTipHidden => [],
-    setCurrentTimezone => ['const Qt4::String &'],
+    setCurrentTimezone => ['const QString &'],
     configAccepted => [],
     updateClockDefaultsTo => [],
     dateChanged => ['const Qt4::Date &'],
@@ -407,7 +407,7 @@ sub configAccepted
         #The first position in {ui}->clockDefaultsTo is 'Local'
         this->{d}->{defaultTimezone} = this->localTimezoneUntranslated();
     } else {
-        this->{d}->{defaultTimezone} = this->{d}->{ui}->clockDefaultsTo->itemData(this->{d}->{ui}->clockDefaultsTo->currentIndex());
+        this->{d}->{defaultTimezone} = this->{d}->{ui}->clockDefaultsTo->itemData(this->{d}->{ui}->clockDefaultsTo->currentIndex())->value();
     }
 
     $cg->writeEntry('defaultTimezone', this->{d}->{defaultTimezone});
@@ -570,6 +570,8 @@ sub init
     # Make it call the QStringList copy of readEntry() by making an array ref
     # of an empty QString.
     this->{d}->{selectedTimezones} = $cg->readEntry(Qt4::String('timeZones'), [Qt4::String('')]);
+    this->{d}->{selectedTimezones} = [this->localTimezoneUntranslated()]
+        if this->{d}->{selectedTimezones}->[0] eq '';
     this->{d}->{timezone} = $cg->readEntry(Qt4::String('timezone'), Qt4::String(this->{d}->{timezone}));
     this->{d}->{defaultTimezone} = $cg->readEntry(Qt4::String('defaultTimezone'), Qt4::String(this->{d}->{timezone}));
     this->{d}->{forceTzDisplay} = this->{d}->{timezone} ne this->{d}->{defaultTimezone};
