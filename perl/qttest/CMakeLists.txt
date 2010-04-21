@@ -16,7 +16,13 @@ set(perlqttest4_LIBRARY_SRC ${CMAKE_CURRENT_BINARY_DIR}/QtTest4.c qttest4handler
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtTest4)
 add_library(perlqttest4 MODULE ${perlqttest4_LIBRARY_SRC})
-target_link_libraries(perlqttest4 ${QT_QTCORE_LIBRARY} smokeqt smokeqttest perlqt4)
+target_link_libraries(perlqttest4
+    ${QT_QTCORE_LIBRARY}
+    ${QT_QTTEST_LIBRARY}
+    smokeqtcore
+    smokeqttest
+    perlqtcore4)
+
 set_target_properties(perlqttest4 PROPERTIES OUTPUT_NAME "QtTest4")
 set_target_properties(perlqttest4 PROPERTIES PREFIX "")
 

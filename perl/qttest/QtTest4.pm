@@ -19,18 +19,13 @@ package QtTest4::_internal;
 
 use strict;
 use warnings;
+use QtCore4;
 
 use base qw(Qt4::_internal);
 
 sub init {
     foreach my $c ( @{getClassList()} ) {
         QtTest4::_internal->init_class($c);
-        #my $classname = Qt4::_internal::normalize_classname($c);
-        #my $id = Qt4::_internal::idClass($c);
-        #$Qt4::_internal::package2classId{$classname} = $id;
-        #$Qt4::_internal::classId2package{$id} = $classname;
-        #klass = Qt4::_internal::isQObject(c) ? Qt4::_internal::create_qobject_class(classname, Qt)  : Qt4::_internal::create_qt_class(classname, Qt);
-            #Qt4::_internal::classes[classname] = klass unless klass.nil?
     }
 }
 
@@ -44,7 +39,7 @@ package QtTest4;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
 
 require XSLoader;
 
