@@ -201,7 +201,9 @@ my $app = Qt4::Application( \@ARGV );
 
 {
     # Test QHash marshalling
-    # This will test EITHER QMap<QString,QVariant> or QHash<QString,QVariant>
+    # This will test EITHER QMap<QString,QVariant> or
+    # QHash<QString,QVariant>
+    # On my system with Qt 4.6.1 and perl 5.10.0, it calls the QMap one
     my $hash = {
         string => Qt4::Variant( Qt4::String( 'bar' ) ),
         integer => Qt4::Variant( Qt4::Int( 5 ) )
@@ -209,7 +211,7 @@ my $app = Qt4::Application( \@ARGV );
 
     my $variant = Qt4::Variant( $hash );
     my $rethash = $variant->value();
-    is_deeply( $rethash, $hash );
+    is_deeply( $rethash, $hash, 'QMap<QString,QVariant>' );
 }
 
 {

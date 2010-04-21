@@ -1142,9 +1142,8 @@ sub getMetaObject {
     # If this is a native Qt4 class, call metaObject() on that class directly
     if ( $package2classId{$class} ) {
         my $moduleId = $package2classId{$class};
-        my $classId = $moduleId->[1];
-        my $cxxClass = classFromId( $classId );
-        my ( $smokeId, $methodId ) = getSmokeMethodId( $moduleId, 'metaObject', $cxxClass );
+        my $cxxClass = classFromId( $moduleId );
+        my ( $smokeId, $methodId ) = getSmokeMethodId( $moduleId, 'staticMetaObject', $cxxClass );
         return $meta->{object} = getNativeMetaObject( $smokeId, $methodId );
     }
 

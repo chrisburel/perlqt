@@ -184,7 +184,7 @@ QObject *KPerlPluginFactory::create(const char *iface, QWidget *parentWidget, QO
     }
     PERL_SET_CONTEXT(PL_curinterp);
 
-    // Load the specified in an eval to trap the error
+    // Load the specified module in an eval to trap the error
     QString moduleName = program.baseName().replace(QRegExp("\\.pm$"), "").toLatin1();
     QString requireModule = QString( "eval{ require %1 }" )
         .arg( moduleName );

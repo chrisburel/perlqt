@@ -84,8 +84,10 @@ int smokeperl_free(pTHX_ SV* /*sv*/, MAGIC* mg) {
     smokeperl_object* o = (smokeperl_object*)mg->mg_ptr;
     if (o->allocated && o->ptr) {
         invoke_dtor( o );
+
+        delete o;
+        mg->mg_ptr = 0;
     }
-    // Looks like perl takes care of deleting the magic for us
     return 0;
 }
 
@@ -1338,7 +1340,6 @@ void marshall_QMapQStringQString(Marshall *m) {
 }
 
 void marshall_QMapQStringQVariant(Marshall *m) {
-    UNTESTED_HANDLER("marshall_QMapQStringQVariant");
     switch(m->action()) {
         case Marshall::FromSV: {
             SV *hashref = m->var();

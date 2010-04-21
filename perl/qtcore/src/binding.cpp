@@ -102,7 +102,7 @@ char* Binding::className(Smoke::Index classId) {
 
     int smokeId = smokeList.indexOf(smoke);
     // Look up the package's name in the hash
-    char* key = new char[6];
+    char* key = new char[7];
     int klen = sprintf( key, "%d", (classId<<8) + smokeId );
     //*(key + klen) = 0;
     SV** packagename = hv_fetch( classId2package, key, klen, FALSE );
