@@ -397,7 +397,9 @@ sub paintInterface
     this->{m_repaintCache} = RepaintNone;
 
     # paint caches and second hand
-    my $targetRect = $faceRect;
+    # We're going to modify this copy of the rect, so make a copy of it.  Just
+    # saying $targetRect = $faceRect won't copy it.
+    my $targetRect = Qt4::RectF( $faceRect );
     if ($targetRect->width() < $rect->width()) {
         $targetRect->moveLeft(($rect->width() - $targetRect->width()) / 2);
     }

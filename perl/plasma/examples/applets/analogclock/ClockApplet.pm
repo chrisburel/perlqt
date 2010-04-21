@@ -192,12 +192,6 @@ sub NEW {
     this->setPassivePopup(1);
 }
 
-#ClockApplet::~ClockApplet()
-#{
-    #delete d->clipboardMenu;
-    #delete d;
-#}
-
 sub speakTime
 {
     my ($time) = @_;
@@ -514,7 +508,7 @@ sub wheelEvent
     } else {
         #my $current = this->{d}->{selectedTimezones}->indexOf(currentTimezone());
         my @selectedTimezones = @{this->{d}->{selectedTimezones}};
-        my $current = grep{ $selectedTimezones[$_] eq this->currentTimezone() } ( 0..$#selectedTimezones );
+        my ($current) = grep{ $selectedTimezones[$_] eq this->currentTimezone() } ( 0..$#selectedTimezones );
 
         if ($event->delta() > 0) {
             my $previous = $current - 1;
@@ -525,7 +519,7 @@ sub wheelEvent
             }
         } else {
             my $next = $current + 1;
-            if ($next > @{this->{d}->{selectedTimezones}} - 1) {
+            if ($next > @selectedTimezones - 1) {
                 $newTimezone = this->localTimezoneUntranslated();
             } else {
                 $newTimezone = this->{d}->{selectedTimezones}->[$next];
