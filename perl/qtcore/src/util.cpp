@@ -160,6 +160,9 @@ const char* get_SVt(SV* sv) {
                 case SVt_PVAV:
                     r = "a";
                     break;
+                case SVt_PVHV:
+                    r = "h";
+                    break;
                 case SVt_PVMG: {
                     const char * classname = HvNAME(SvSTASH(SvRV(sv)));
                     if ( !strcmp( classname, "Qt4::String" ) ||

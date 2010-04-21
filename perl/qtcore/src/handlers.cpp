@@ -425,18 +425,22 @@ void marshall_ucharP(Marshall *m) {
 }
 
 static void marshall_doubleR(Marshall *m) {
-    UNTESTED_HANDLER("marshall_doubleR");
     switch(m->action()) {
         case Marshall::FromSV: {
             SV *rv = m->var();
             double * d = new double;
-            *d = SvNV(rv);
+            if ( SvOK( rv ) ) {
+                *d = SvNV(rv);
+            }
+            else {
+                *d = 0;
+            }
             m->item().s_voidp = d;
             m->next();
             if (m->cleanup() && m->type().isConst()) {
                 delete d;
             } else {
-                m->item().s_voidp = new double((double)SvNV(rv));
+                sv_setnv(m->var(), *d);
             }
         }
         break;
@@ -1315,7 +1319,7 @@ void marshall_QMapQStringQString(Marshall *m) {
             QMap<QString,QString>::Iterator it;
             for (it = map->begin(); it != map->end(); ++it) {
                 SV *key = perlstringFromQString((QString*)&(it.key()));
-                STRLEN keylen = SvLEN( key );
+                STRLEN keylen = it.key().size();
                 SV *val = perlstringFromQString((QString*) &(it.value()));
                 hv_store( hv, SvPV_nolen(key), keylen, val, 0 );
             }
@@ -1400,7 +1404,7 @@ void marshall_QMapQStringQVariant(Marshall *m) {
                 }
 
                 SV *key = perlstringFromQString((QString*)&(it.key()));
-                STRLEN keylen = SvLEN( key );
+                STRLEN keylen = it.key().size();
                 hv_store( hv, SvPV_nolen(key), keylen, obj, 0 );
             }
 

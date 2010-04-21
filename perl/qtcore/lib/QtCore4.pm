@@ -767,13 +767,13 @@ my %arrayTypes = (
 );
 
 my %hashTypes = (
-    'const QHash<QString, QVariant>&' => {
-        value1 => [ 's', 'Qt4::String' ],
-        value2 => [ 'QVariant' ]
+    'const QHash<QString,QVariant>&' => {
+        keys => [ 's', 'Qt4::String' ],
+        values => [ 'QVariant' ]
     },
-    'const QMap<QString, QVariant>&' => {
-        value1 => [ 's', 'Qt4::String' ],
-        value2 => [ 'QVariant' ]
+    'const QMap<QString,QVariant>&' => {
+        keys => [ 's', 'Qt4::String' ],
+        values => [ 'QVariant' ]
     },
 );
 
@@ -848,6 +848,29 @@ sub argmatch {
             my $good = 1;
             foreach my $subArgType ( @subArgTypes ) {
                 if ( !grep{ $_ eq $subArgType } @validTypes ) {
+                    $good = 0;
+                    last;
+                }
+            }
+            if( $good ) {
+                $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
+            }
+        }
+        elsif ( $argType eq 'h' ) {
+            next unless defined $hashTypes{$typeName};
+            my @keyArgTypes = unique( map{ getSVt( $_ ) } keys %{$args->[$argNum]} );
+            my @valueArgTypes = unique( map{ getSVt( $_ ) } values %{$args->[$argNum]} );
+            my @validKeyTypes = @{$hashTypes{$typeName}->{keys}};
+            my @validValueTypes = @{$hashTypes{$typeName}->{values}};
+            my $good = 1;
+            foreach my $keyArgType ( @keyArgTypes ) {
+                if ( !grep{ $_ eq $keyArgType } @validKeyTypes ) {
+                    $good = 0;
+                    last;
+                }
+            }
+            foreach my $valueArgType ( @valueArgTypes ) {
+                if ( !grep{ $_ eq $valueArgType } @validValueTypes ) {
                     $good = 0;
                     last;
                 }
@@ -1524,6 +1547,10 @@ sub CAST ($$) {
 }
 
 sub import { goto &Exporter::import }
+
+sub qApp {
+    &Qt4::qApp
+}
 
 package Qt4;
 

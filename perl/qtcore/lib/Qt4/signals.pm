@@ -17,7 +17,7 @@ sub import {
     my $self = shift;
     croak "Odd number of arguments in signal declaration" if @_%2;
     my $caller = $self eq 'Qt4::signals' ? (caller)[0] : $self;
-    my(%signals) = @_;
+    my(@signals) = @_;
     my $meta = \%{ $caller . '::META' };
 
     # The perl metaObject holds info about signals and slots, inherited
