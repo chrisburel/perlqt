@@ -2,7 +2,8 @@ package MyApp;
 
 use Test::More;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use Qt4::isa('Qt4::Application');
 use Qt4::slots
         foo => ['int'],
@@ -36,7 +37,8 @@ package MySubApp;
 
 use Test::More;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use Qt4::isa('MyApp');
 
 sub NEW 
@@ -63,7 +65,8 @@ package main;
 
 use Test::More tests => 7;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use MySubApp;
 
 $a = 0;

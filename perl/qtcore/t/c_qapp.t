@@ -1,6 +1,7 @@
 use Test::More tests => 3;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 $a=0;
 

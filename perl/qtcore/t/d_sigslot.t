@@ -2,7 +2,8 @@ package MyApp;
 
 use Test::More tests => 4;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use Qt4::isa qw(Qt4::Application);
 use Qt4::slots
         foo => [],
@@ -46,7 +47,8 @@ sub slot {
 
 package main;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use MyApp;
 
 $a = MyApp(\@ARGV);

@@ -1,8 +1,10 @@
-use Test::More tests => 23;
+use Test::More tests => 25;
 
 use strict;
 use warnings;
-use Qt4;
+use Devel::Peek;
+use QtCore4;
+use QtGui4;
 
 my $app = Qt4::Application( \@ARGV );
 
@@ -116,6 +118,15 @@ my $app = Qt4::Application( \@ARGV );
 }
 
 {
+    # Test double& marshalling
+    my @dimensions = ( 97.84, 105.934, 43.9025, 408.32 );
+    my $rect = Qt4::RectF( @dimensions );
+    my ( $left, $top, $right, $bottom );
+    $rect->getRect( $left, $top, $right, $bottom );
+    is_deeply( [ $left, $top, $right, $bottom ], \@dimensions, 'double&' );
+}
+
+{
     # Test some QLists
     my $action1 = Qt4::Action( 'foo', undef );
     my $action2 = Qt4::Action( 'bar', undef );
@@ -186,6 +197,19 @@ my $app = Qt4::Application( \@ARGV );
     is_deeply( [ map{ eval "\$indexes->[$_] == \$child$_" } (0..$#{$indexes}) ],
                [ map{ 1 } (0..$#{$indexes}) ],
                'marshall_ValueListItem<> ToSV' );
+}
+
+{
+    # Test QHash marshalling
+    # This will test EITHER QMap<QString,QVariant> or QHash<QString,QVariant>
+    my $hash = {
+        string => Qt4::Variant( Qt4::String( 'bar' ) ),
+        integer => Qt4::Variant( Qt4::Int( 5 ) )
+    };
+
+    my $variant = Qt4::Variant( $hash );
+    my $rethash = $variant->value();
+    is_deeply( $rethash, $hash );
 }
 
 {
