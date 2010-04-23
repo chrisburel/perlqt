@@ -200,106 +200,110 @@ const char* get_SVt(SV* sv) {
 // don't populate a return type for custom signals.
 QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName, QList<QByteArray> methodTypes) {
     static QRegExp * rx = 0;
-	if (rx == 0) {
-		rx = new QRegExp("^(bool|int|uint|long|ulong|double|char\\*|QString)&?$");
-	}
-	methodTypes.prepend(QByteArray(typeName));
-	QList<MocArgument*> result;
+    if (rx == 0) {
+        rx = new QRegExp("^(bool|int|uint|long|ulong|double|char\\*|QString)&?$");
+    }
+    methodTypes.prepend(QByteArray(typeName));
+    QList<MocArgument*> result;
 
-	foreach (QByteArray name, methodTypes) {
-		MocArgument *arg = new MocArgument;
-		Smoke::Index typeId = 0;
+    foreach (QByteArray name, methodTypes) {
+        MocArgument *arg = new MocArgument;
+        Smoke::Index typeId = 0;
 
-		if (name.isEmpty()) {
-			arg->argType = xmoc_void;
-			result.append(arg);
-		} else {
-			name.replace("const ", "");
-			QString staticType = (rx->indexIn(name) != -1 ? rx->cap(1) : "ptr");
-			if (staticType == "ptr") {
-				arg->argType = xmoc_ptr;
-				QByteArray targetType = name;
-				typeId = smoke->idType(targetType.constData());
-				if (typeId == 0 && !name.contains('*')) {
-					if (!name.contains("&")) {
-						targetType += "&";
-					}
-					typeId = smoke->idType(targetType.constData());
-				}
+        if (name.isEmpty()) {
+            arg->argType = xmoc_void;
+            result.append(arg);
+        } else {
+            name.replace("const ", "");
+            QString staticType = (rx->indexIn(name) != -1 ? rx->cap(1) : "ptr");
+            if (staticType == "ptr") {
+                arg->argType = xmoc_ptr;
+                QByteArray targetType = name;
+                typeId = smoke->idType(targetType.constData());
+                if (typeId == 0 && !name.contains('*')) {
+                    if (!name.contains("&")) {
+                        targetType += "&";
+                    }
+                    typeId = smoke->idType(targetType.constData());
+                }
 
                 // This shouldn't be necessary because the type of the slot arg
                 // should always be in the smoke module of the slot being
                 // invoked. However, that isn't true for a dataUpdated() slot
                 // in a PlasmaScripting::Applet
-				if (typeId == 0) {
-					QHash<Smoke*, PerlQt4Module>::const_iterator it;
-					for (it = perlqt_modules.constBegin(); it != perlqt_modules.constEnd(); ++it) {
-						smoke = it.key();
-						targetType = name;
-						typeId = smoke->idType(targetType.constData());
-						if (typeId != 0) {
-							break;
-						}
-	
-						if (typeId == 0 && !name.contains('*')) {
-							if (!name.contains("&")) {
-								targetType += "&";
-							}
+                if (typeId == 0) {
+                    QHash<Smoke*, PerlQt4Module>::const_iterator it;
+                    for (it = perlqt_modules.constBegin(); it != perlqt_modules.constEnd(); ++it) {
+                        smoke = it.key();
+                        targetType = name;
+                        typeId = smoke->idType(targetType.constData());
+                        if (typeId != 0) {
+                            break;
+                        }
 
-							typeId = smoke->idType(targetType.constData());
-	
-							if (typeId != 0) {
-								break;
-							}
-						}
-					}
-				}	
-			} else if (staticType == "bool") {
-				arg->argType = xmoc_bool;
-				smoke = qtcore_Smoke;
-				typeId = smoke->idType(name.constData());
-			} else if (staticType == "int") {
-				arg->argType = xmoc_int;
-				smoke = qtcore_Smoke;
-				typeId = smoke->idType(name.constData());
-			} else if (staticType == "uint") {
-				arg->argType = xmoc_uint;
-				smoke = qtcore_Smoke;
-				typeId = smoke->idType(name.constData());
-			} else if (staticType == "long") {
-				arg->argType = xmoc_long;
-				smoke = qtcore_Smoke;
-				typeId = smoke->idType(name.constData());
-			} else if (staticType == "ulong") {
-				arg->argType = xmoc_ulong;
-				smoke = qtcore_Smoke;
-				typeId = smoke->idType(name.constData());
-			} else if (staticType == "double") {
-				arg->argType = xmoc_double;
-				smoke = qtcore_Smoke;
-				typeId = smoke->idType(name.constData());
-			} else if (staticType == "char*") {
-				arg->argType = xmoc_charstar;
-				smoke = qtcore_Smoke;
-				typeId = smoke->idType(name.constData());
-			} else if (staticType == "QString") {
-				arg->argType = xmoc_QString;
-				name += "*";
-				smoke = qtcore_Smoke;
-				typeId = smoke->idType(name.constData());
-			}
+                        if (typeId == 0 && !name.contains('*')) {
+                            if (!name.contains("&")) {
+                                targetType += "&";
+                            }
+                            typeId = smoke->idType(targetType.constData());	
+                            if (typeId != 0) {
+                                break;
+                            }
 
-			if (typeId == 0) {
-				croak("Cannot handle '%s' as slot argument\n", name.constData());
-				return result;
-			}
+                            targetType.prepend( "const " );
+                            typeId = smoke->idType(targetType.constData());
+                            if (typeId != 0) {
+                                break;
+                            }
+                        }
+                    }
+                }	
+            } else if (staticType == "bool") {
+                arg->argType = xmoc_bool;
+                smoke = qtcore_Smoke;
+                typeId = smoke->idType(name.constData());
+            } else if (staticType == "int") {
+                arg->argType = xmoc_int;
+                smoke = qtcore_Smoke;
+                typeId = smoke->idType(name.constData());
+            } else if (staticType == "uint") {
+                arg->argType = xmoc_uint;
+                smoke = qtcore_Smoke;
+                typeId = smoke->idType(name.constData());
+            } else if (staticType == "long") {
+                arg->argType = xmoc_long;
+                smoke = qtcore_Smoke;
+                typeId = smoke->idType(name.constData());
+            } else if (staticType == "ulong") {
+                arg->argType = xmoc_ulong;
+                smoke = qtcore_Smoke;
+                typeId = smoke->idType(name.constData());
+            } else if (staticType == "double") {
+                arg->argType = xmoc_double;
+                smoke = qtcore_Smoke;
+                typeId = smoke->idType(name.constData());
+            } else if (staticType == "char*") {
+                arg->argType = xmoc_charstar;
+                smoke = qtcore_Smoke;
+                typeId = smoke->idType(name.constData());
+            } else if (staticType == "QString") {
+                arg->argType = xmoc_QString;
+                name += "*";
+                smoke = qtcore_Smoke;
+                typeId = smoke->idType(name.constData());
+            }
 
-			arg->st.set(smoke, typeId);
-			result.append(arg);
-		}
-	}
+            if (typeId == 0) {
+                croak("Cannot handle '%s' as slot argument\n", name.constData());
+                return result;
+            }
 
-	return result;
+            arg->st.set(smoke, typeId);
+            result.append(arg);
+        }
+    }
+
+    return result;
 }
 
 // The pointer map gives us the relationship between an arbitrary c++ pointer

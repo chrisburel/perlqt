@@ -755,8 +755,6 @@ my %customClasses = (
     'Qt4::DBusVariant' => 'Qt4::Variant',
 );
 
-our $ambiguousSignature = undef;
-
 my %arrayTypes = (
     'const QList<QVariant>&' => {
         value => [ 'QVariant' ]
@@ -1040,18 +1038,6 @@ sub getSmokeMethodId {
                 }
                 else {
                     @methodIds = @matching;
-                }
-            }
-        }
-
-        # Look for the user-defined signature
-        if ( @methodIds > 1 && defined $ambiguousSignature ) {
-            foreach my $methodId ( @methodIds ) {
-                my ($signature) = dumpCandidates( $classname, $methodname, [$methodId] );
-                if ( $signature eq $ambiguousSignature ) {
-                    @methodIds = ($methodId);
-                    $ambiguousSignature = undef;
-                    last;
                 }
             }
         }
@@ -1555,10 +1541,6 @@ package Qt4;
 
 use strict;
 use warnings;
-
-sub setSignature {
-    $Qt4::_internal::ambiguousSignature = shift;
-}
 
 # Called in the DESTROY method for all QObjects to see if they still have a
 # parent, and avoid deleting them if they do.

@@ -85,7 +85,6 @@ int smokeperl_free(pTHX_ SV* /*sv*/, MAGIC* mg) {
     if (o->allocated && o->ptr) {
         invoke_dtor( o );
 
-        delete o;
         mg->mg_ptr = 0;
     }
     return 0;

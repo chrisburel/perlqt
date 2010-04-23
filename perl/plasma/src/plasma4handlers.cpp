@@ -31,7 +31,7 @@ extern void marshall_QHashQStringQVariant(Marshall *m);
 TypeHandler Plasma4_handlers[] = {
     { "QHash<QString,QVariant>", marshall_QHashQStringQVariant },
     { "QHash<QString,QVariant>&", marshall_QHashQStringQVariant },
-    { "Plasma::DataEngine::Data", marshall_QHashQStringQVariant },
-    { "Plasma::DataEngine::Data&", marshall_QHashQStringQVariant },
+    { "const Plasma::DataEngine::Data", marshall_QHashQStringQVariant },
+    { "const Plasma::DataEngine::Data&", marshall_QHashQStringQVariant },
     { 0, 0 },
 };
