@@ -50,7 +50,7 @@ SV* sv_qapp = 0;
 HV* pointer_map = 0;
 int do_debug = 0;
 
-// There's a comment in Qt4Ruby about possible memory leaks with these.
+// There's a comment in QtRuby about possible memory leaks with these.
 // Method caches, to avoid expensive lookups
 QHash<QByteArray, Smoke::ModuleIndex *> methcache;
 
@@ -165,14 +165,14 @@ const char* get_SVt(SV* sv) {
                     break;
                 case SVt_PVMG: {
                     const char * classname = HvNAME(SvSTASH(SvRV(sv)));
-                    if ( !strcmp( classname, "Qt4::String" ) ||
-                         !strcmp( classname, "Qt4::CString" ) ||
-                         !strcmp( classname, "Qt4::Int" ) ||
-                         !strcmp( classname, "Qt4::Uint" ) ||
-                         !strcmp( classname, "Qt4::Short" ) ||
-                         !strcmp( classname, "Qt4::Ushort" ) ||
-                         !strcmp( classname, "Qt4::Uchar" ) ||
-                         !strcmp( classname, "Qt4::Bool" ) ) {
+                    if ( !strcmp( classname, "Qt::String" ) ||
+                         !strcmp( classname, "Qt::CString" ) ||
+                         !strcmp( classname, "Qt::Int" ) ||
+                         !strcmp( classname, "Qt::Uint" ) ||
+                         !strcmp( classname, "Qt::Short" ) ||
+                         !strcmp( classname, "Qt::Ushort" ) ||
+                         !strcmp( classname, "Qt::Uchar" ) ||
+                         !strcmp( classname, "Qt::Bool" ) ) {
                         r = classname;
                     }
                     else {
@@ -411,10 +411,10 @@ void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void
 
 // Given the perl package, look up the smoke classid
 // Depends on the classcache_ext hash being defined, which gets set in the
-// init_class function in Qt4::_internal
+// init_class function in Qt::_internal
 SV* package_classId( const char *package ) {
     // Get the cache hash
-    HV* classcache_ext = get_hv( "Qt4::_internal::package2classId", false );
+    HV* classcache_ext = get_hv( "Qt::_internal::package2classId", false );
     U32 klen = strlen( package );
     SV** classcache = hv_fetch( classcache_ext, package, klen, 0 );
     SV* item = 0;
@@ -901,14 +901,14 @@ XS(XS_qobject_qt_metacast) {
 XS(XS_find_qobject_children) {
     dXSARGS;
     if (items > 2 && items < 1) {
-        croak("Qt4::Object::findChildren takes 1 or 2 arguments, got %d", items);
+        croak("Qt::Object::findChildren takes 1 or 2 arguments, got %d", items);
         XSRETURN_UNDEF;
     }
 
     QString objectName;
     SV* re = &PL_sv_undef;
     if (items > 1) {
-        // If the second arg isn't a String, assume it's a Qt4::RegExp
+        // If the second arg isn't a String, assume it's a Qt::RegExp
         if (SvTYPE(ST(1)) == SVt_PV) {
             objectName = QString::fromLatin1(SvPV_nolen(ST(1)));
         } else {
@@ -922,14 +922,14 @@ XS(XS_find_qobject_children) {
         PUSHMARK(SP);
         XPUSHs(ST(0));
         PUTBACK;
-        int count = call_pv( "Qt4::_internal::getMetaObject", G_SCALAR );
+        int count = call_pv( "Qt::_internal::getMetaObject", G_SCALAR );
         SPAGAIN;
         metaobjectSV = POPs;
         PUTBACK;
         // metaobjectSV is now mortal.  Don't FREETMPS.
     }
     else {
-        croak("First argument to Qt4::Object::findChildren should be a string specifying a type");
+        croak("First argument to Qt::Object::findChildren should be a string specifying a type");
     }
 
     smokeperl_object* metao = sv_obj_info(metaobjectSV);
@@ -947,10 +947,10 @@ XS(XS_qabstract_item_model_rowcount) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
     if(!o)
-        croak( "%s", "Qt4::AbstractItemModel::rowCount called on a non-Qt4"
+        croak( "%s", "Qt::AbstractItemModel::rowCount called on a non-Qt4"
             " object");
     if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt4::AbstractItemModel::rowCount called on a"
+        croak( "%s", "Qt::AbstractItemModel::rowCount called on a"
             " non-AbstractItemModel object");
 
     QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
@@ -961,18 +961,18 @@ XS(XS_qabstract_item_model_rowcount) {
 	else if (items == 2) {
 		smokeperl_object * mi = sv_obj_info(ST(1));
         if(!mi)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::rowCount is"
-                " not a Qt4 object");
+            croak( "%s", "1st argument to Qt::AbstractItemModel::rowCount is"
+                " not a Qt object");
         if(isDerivedFrom(mi, "QModelIndex") == -1)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::rowCount is"
-                " not a Qt4::ModelIndex" );
+            croak( "%s", "1st argument to Qt::AbstractItemModel::rowCount is"
+                " not a Qt::ModelIndex" );
 
 		QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
 
 		XSRETURN_IV(model->rowCount(*modelIndex));
 	}
     else {
-        croak("%s", "Invalid argument list to Qt4::AbstractItemModel::rowCount");
+        croak("%s", "Invalid argument list to Qt::AbstractItemModel::rowCount");
     }
 }
 
@@ -981,10 +981,10 @@ XS(XS_qabstract_item_model_columncount) {
     smokeperl_object *o = sv_obj_info(ST(0));
 
     if(!o)
-        croak( "%s", "Qt4::AbstractItemModel::columnCount called on a non-Qt4"
+        croak( "%s", "Qt::AbstractItemModel::columnCount called on a non-Qt4"
             " object");
     if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt4::AbstractItemModel::columnCount called on a"
+        croak( "%s", "Qt::AbstractItemModel::columnCount called on a"
             " non-AbstractItemModel object");
 
     QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
@@ -996,17 +996,17 @@ XS(XS_qabstract_item_model_columncount) {
 		smokeperl_object * mi = sv_obj_info(ST(1));
 
         if(!mi)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::columnCount is"
+            croak( "%s", "1st argument to Qt::AbstractItemModel::columnCount is"
                 " not a Qt4 object");
         if(isDerivedFrom(mi, "QModelIndex") == -1)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::columnCount is"
-                " not a Qt4::ModelIndex" );
+            croak( "%s", "1st argument to Qt::AbstractItemModel::columnCount is"
+                " not a Qt::ModelIndex" );
 
 		QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
 		XSRETURN_IV(model->columnCount(*modelIndex));
 	}
     else {
-        croak("%s", "Invalid argument list to Qt4::AbstractItemModel::columnCount");
+        croak("%s", "Invalid argument list to Qt::AbstractItemModel::columnCount");
     }
 }
 
@@ -1014,20 +1014,20 @@ XS(XS_qabstract_item_model_data) {
     dXSARGS;
     smokeperl_object * o = sv_obj_info(ST(0));
     if(!o)
-        croak( "%s", "Qt4::AbstractItemModel::data called on a non-Qt4"
+        croak( "%s", "Qt::AbstractItemModel::data called on a non-Qt4"
             " object");
     if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt4::AbstractItemModel::data called on a"
+        croak( "%s", "Qt::AbstractItemModel::data called on a"
             " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
     smokeperl_object * mi = sv_obj_info(ST(1));
     if(!mi)
-        croak( "%s", "1st argument to Qt4::AbstractItemModel::data is"
+        croak( "%s", "1st argument to Qt::AbstractItemModel::data is"
             " not a Qt4 object");
     if(isDerivedFrom(mi, "QModelIndex") == -1)
-        croak( "%s", "1st argument to Qt4::AbstractItemModel::data is"
-            " not a Qt4::ModelIndex" );
+        croak( "%s", "1st argument to Qt::AbstractItemModel::data is"
+            " not a Qt::ModelIndex" );
 	QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
 
 	QVariant value;
@@ -1039,7 +1039,7 @@ XS(XS_qabstract_item_model_data) {
             dataRole = SvRV(dataRole);
 		value = model->data(*modelIndex, SvIV(dataRole));
 	} else {
-		croak("%s", "Invalid argument list to Qt4::AbstractItemModel::data");
+		croak("%s", "Invalid argument list to Qt::AbstractItemModel::data");
 	}
 
     smokeperl_object* obj = alloc_smokeperl_object(
@@ -1048,7 +1048,7 @@ XS(XS_qabstract_item_model_data) {
         o->smoke->idClass("QVariant").index,
         new QVariant(value) );
 
-    SV* retval = set_obj_info( " Qt4::Variant", obj );
+    SV* retval = set_obj_info( " Qt::Variant", obj );
 
     ST(0) = sv_2mortal( retval );
     XSRETURN(1);
@@ -1057,33 +1057,33 @@ XS(XS_qabstract_item_model_data) {
 XS(XS_qabstract_item_model_setdata) {
     dXSARGS;
     if ( items < 1 || items > 4 ) {
-        croak("%s\n", "Invalid argument list to Qt4::AbstractItemModel::setData");
+        croak("%s\n", "Invalid argument list to Qt::AbstractItemModel::setData");
     }
     smokeperl_object * o = sv_obj_info(ST(0));
     if(!o)
-        croak( "%s", "Qt4::AbstractItemModel::setData called on a non-Qt4"
+        croak( "%s", "Qt::AbstractItemModel::setData called on a non-Qt4"
             " object");
     if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt4::AbstractItemModel::setData called on a"
+        croak( "%s", "Qt::AbstractItemModel::setData called on a"
             " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
     smokeperl_object * mi = sv_obj_info(ST(1));
     if(!mi)
-        croak( "%s", "1st argument to Qt4::AbstractItemModel::setData is"
+        croak( "%s", "1st argument to Qt::AbstractItemModel::setData is"
             " not a Qt4 object");
     if(isDerivedFrom(mi, "QModelIndex") == -1)
-        croak( "%s", "1st argument to Qt4::AbstractItemModel::setData is"
+        croak( "%s", "1st argument to Qt::AbstractItemModel::setData is"
             " not a Qt4::ModelIndex" );
 	QModelIndex * modelIndex = (QModelIndex *) mi->ptr;
 
     smokeperl_object * v = sv_obj_info(ST(2));
     if(!v)
-        croak( "%s", "2nd argument to Qt4::AbstractItemModel::setData is"
+        croak( "%s", "2nd argument to Qt::AbstractItemModel::setData is"
             " not a Qt4 object");
     if(isDerivedFrom(v, "QVariant") == -1)
-        croak( "%s", "2nd argument to Qt4::AbstractItemModel::setData is"
-            " not a Qt4::Variant" );
+        croak( "%s", "2nd argument to Qt::AbstractItemModel::setData is"
+            " not a Qt::Variant" );
 	QVariant * variant = (QVariant *) v->ptr;
 
 	if ( items == 3 ) {
@@ -1111,20 +1111,20 @@ XS(XS_qabstract_item_model_flags) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
     if(!o)
-        croak( "%s", "Qt4::AbstractItemModel::flags called on a non-Qt4"
+        croak( "%s", "Qt::AbstractItemModel::flags called on a non-Qt4"
             " object");
     if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt4::AbstractItemModel::flags called on a"
+        croak( "%s", "Qt::AbstractItemModel::flags called on a"
             " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
     smokeperl_object * mi = sv_obj_info(ST(1));
     if(!mi)
-        croak( "%s", "1st argument to Qt4::AbstractItemModel::flags is"
+        croak( "%s", "1st argument to Qt::AbstractItemModel::flags is"
             " not a Qt4 object");
     if(isDerivedFrom(mi, "QModelIndex") == -1)
-        croak( "%s", "1st argument to Qt4::AbstractItemModel::flags is"
-            " not a Qt4::ModelIndex" );
+        croak( "%s", "1st argument to Qt::AbstractItemModel::flags is"
+            " not a Qt::ModelIndex" );
 	const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
 
 	XSRETURN_IV((IV)model->flags(*modelIndex));
@@ -1134,10 +1134,10 @@ XS(XS_qabstract_item_model_insertrows) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
     if(!o)
-        croak( "%s", "Qt4::AbstractItemModel::insertRows called on a non-Qt4"
+        croak( "%s", "Qt::AbstractItemModel::insertRows called on a non-Qt4"
             " object");
     if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt4::AbstractItemModel::insertRows called on a"
+        croak( "%s", "Qt::AbstractItemModel::insertRows called on a"
             " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
@@ -1154,11 +1154,11 @@ XS(XS_qabstract_item_model_insertrows) {
         //bool insertRows( int row, int count, const QModelIndex & parent = QModelIndex() )
     	smokeperl_object * mi = sv_obj_info(ST(3));
         if(!mi)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::insertRows is"
+            croak( "%s", "1st argument to Qt::AbstractItemModel::insertRows is"
                 " not a Qt4 object");
         if(isDerivedFrom(mi, "QModelIndex") == -1)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::insertRows is"
-                " not a Qt4::ModelIndex" );
+            croak( "%s", "1st argument to Qt::AbstractItemModel::insertRows is"
+                " not a Qt::ModelIndex" );
 		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
 
 		if (model->insertRows(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
@@ -1169,17 +1169,17 @@ XS(XS_qabstract_item_model_insertrows) {
         }
 	}
 
-	croak("%s", "Invalid argument list to Qt4::AbstractItemModel::insertRows");
+	croak("%s", "Invalid argument list to Qt::AbstractItemModel::insertRows");
 }
 
 XS(XS_qabstract_item_model_insertcolumns) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
     if(!o)
-        croak( "%s", "Qt4::AbstractItemModel::insertColumns called on a non-Qt4"
+        croak( "%s", "Qt::AbstractItemModel::insertColumns called on a non-Qt4"
             " object");
     if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt4::AbstractItemModel::insertColumns called on a"
+        croak( "%s", "Qt::AbstractItemModel::insertColumns called on a"
             " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
@@ -1196,11 +1196,11 @@ XS(XS_qabstract_item_model_insertcolumns) {
         //bool insertColumns( int column, int count, const QModelIndex & parent = QModelIndex() )
     	smokeperl_object * mi = sv_obj_info(ST(3));
         if(!mi)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::insertColumns is"
+            croak( "%s", "1st argument to Qt::AbstractItemModel::insertColumns is"
                 " not a Qt4 object");
         if(isDerivedFrom(mi, "QModelIndex") == -1)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::insertColumns is"
-                " not a Qt4::ModelIndex" );
+            croak( "%s", "1st argument to Qt::AbstractItemModel::insertColumns is"
+                " not a Qt::ModelIndex" );
 		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
 		if (model->insertColumns(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
             XSRETURN_YES;
@@ -1210,17 +1210,17 @@ XS(XS_qabstract_item_model_insertcolumns) {
         }
 	}
 
-	croak("%s", "Invalid argument list to Qt4::AbstractItemModel::insertColumns");
+	croak("%s", "Invalid argument list to Qt::AbstractItemModel::insertColumns");
 }
 
 XS(XS_qabstract_item_model_removerows) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
     if(!o)
-        croak( "%s", "Qt4::AbstractItemModel::removeRows called on a non-Qt4"
+        croak( "%s", "Qt::AbstractItemModel::removeRows called on a non-Qt4"
             " object");
     if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt4::AbstractItemModel::removeRows called on a"
+        croak( "%s", "Qt::AbstractItemModel::removeRows called on a"
             " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
@@ -1237,11 +1237,11 @@ XS(XS_qabstract_item_model_removerows) {
         //bool removeRows( int row, int count, const QModelIndex & parent = QModelIndex() )
     	smokeperl_object * mi = sv_obj_info(ST(3));
         if(!mi)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::removeRows is"
+            croak( "%s", "1st argument to Qt::AbstractItemModel::removeRows is"
                 " not a Qt4 object");
         if(isDerivedFrom(mi, "QModelIndex") == -1)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::removeRows is"
-                " not a Qt4::ModelIndex" );
+            croak( "%s", "1st argument to Qt::AbstractItemModel::removeRows is"
+                " not a Qt::ModelIndex" );
 		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
 		if (model->removeRows(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
             XSRETURN_YES;
@@ -1251,17 +1251,17 @@ XS(XS_qabstract_item_model_removerows) {
         }
 	}
 
-	croak("%s", "Invalid argument list to Qt4::AbstractItemModel::removeRows");
+	croak("%s", "Invalid argument list to Qt::AbstractItemModel::removeRows");
 }
 
 XS(XS_qabstract_item_model_removecolumns) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
     if(!o)
-        croak( "%s", "Qt4::AbstractItemModel::removeColumns called on a non-Qt4"
+        croak( "%s", "Qt::AbstractItemModel::removeColumns called on a non-Qt4"
             " object");
     if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt4::AbstractItemModel::removeColumns called on a"
+        croak( "%s", "Qt::AbstractItemModel::removeColumns called on a"
             " non-AbstractItemModel object");
 	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
 
@@ -1278,11 +1278,11 @@ XS(XS_qabstract_item_model_removecolumns) {
         //bool removeColumns( int column, int count, const QModelIndex & parent = QModelIndex() )
     	smokeperl_object * mi = sv_obj_info(ST(3));
         if(!mi)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::removeColumns is"
+            croak( "%s", "1st argument to Qt::AbstractItemModel::removeColumns is"
                 " not a Qt4 object");
         if(isDerivedFrom(mi, "QModelIndex") == -1)
-            croak( "%s", "1st argument to Qt4::AbstractItemModel::removeColumns is"
-                " not a Qt4::ModelIndex" );
+            croak( "%s", "1st argument to Qt::AbstractItemModel::removeColumns is"
+                " not a Qt::ModelIndex" );
 		const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
 		if (model->removeColumns(SvIV(ST(1)), SvIV(ST(2)), *modelIndex)) {
             XSRETURN_YES;
@@ -1292,7 +1292,7 @@ XS(XS_qabstract_item_model_removecolumns) {
         }
 	}
 
-	croak("%s", "Invalid argument list to Qt4::AbstractItemModel::removeColumns");
+	croak("%s", "Invalid argument list to Qt::AbstractItemModel::removeColumns");
 }
 
 //qabstractitemmodel_createindex(int argc, VALUE * argv, VALUE self)
@@ -1301,7 +1301,7 @@ XS(XS_qabstractitemmodel_createindex) {
     if (items == 2 || items == 3) {
         smokeperl_object* o = sv_obj_info(sv_this);
         if (!o)
-            croak( "%s", "Qt4::AbstractItemModel::createIndex must be called as a method on a Qt4::AbstractItemModel object, eg. $model->createIndex" );
+            croak( "%s", "Qt::AbstractItemModel::createIndex must be called as a method on a Qt::AbstractItemModel object, eg. $model->createIndex" );
         Smoke::ModuleIndex nameId = o->smoke->idMethodName("createIndex$$$");
         Smoke::ModuleIndex meth = o->smoke->findMethod(qtcore_Smoke->findClass("QAbstractItemModel"), nameId);
         Smoke::Index i = meth.smoke->methodMaps[meth.index].method;
@@ -1335,7 +1335,7 @@ XS(XS_qabstractitemmodel_createindex) {
                     stack[0].s_voidp
                 );
 
-                ST(0) = set_obj_info(" Qt4::ModelIndex", result);
+                ST(0) = set_obj_info(" Qt::ModelIndex", result);
                 XSRETURN(1);
             }
 
@@ -1370,7 +1370,7 @@ XS(XS_qvariant_value) {
 	SV *retval = &PL_sv_undef;
 
     if ( items < 1 ) {
-        croak( "%s", "Usage: Qt4::qVariantValue( Qt4::Variant, $typeName )" );
+        croak( "%s", "Usage: Qt::qVariantValue( Qt::Variant, $typeName )" );
     }
 
     smokeperl_object *o = sv_obj_info(ST(0));
@@ -1434,7 +1434,7 @@ XS(XS_qvariant_value) {
     }
 
     if ( items != 2 ) {
-        croak( "%s", "Usage: Qt4::qVariantValue( Qt4::Variant, $typeName )" );
+        croak( "%s", "Usage: Qt::qVariantValue( Qt::Variant, $typeName )" );
     }
 	const char * classname = SvPV_nolen(ST(1));
     Smoke::ModuleIndex * sv_class_id = new Smoke::ModuleIndex;
@@ -1447,63 +1447,63 @@ XS(XS_qvariant_value) {
         XSRETURN(1);
 	}
 
-	if (qstrcmp(classname, "Qt4::Pixmap") == 0) {
+	if (qstrcmp(classname, "Qt::Pixmap") == 0) {
 		QPixmap v = qVariantValue<QPixmap>(*variant);
 		sv_ptr = (void *) new QPixmap(v);
-	} else if (qstrcmp(classname, "Qt4::Font") == 0) {
+	} else if (qstrcmp(classname, "Qt::Font") == 0) {
 		QFont v = qVariantValue<QFont>(*variant);
 		sv_ptr = (void *) new QFont(v);
-	} else if (qstrcmp(classname, "Qt4::Brush") == 0) {
+	} else if (qstrcmp(classname, "Qt::Brush") == 0) {
 		QBrush v = qVariantValue<QBrush>(*variant);
 		sv_ptr = (void *) new QBrush(v);
-	} else if (qstrcmp(classname, "Qt4::Color") == 0) {
+	} else if (qstrcmp(classname, "Qt::Color") == 0) {
 		QColor v = qVariantValue<QColor>(*variant);
 		sv_ptr = (void *) new QColor(v);
-	} else if (qstrcmp(classname, "Qt4::Palette") == 0) {
+	} else if (qstrcmp(classname, "Qt::Palette") == 0) {
 		QPalette v = qVariantValue<QPalette>(*variant);
 		sv_ptr = (void *) new QPalette(v);
-	} else if (qstrcmp(classname, "Qt4::Icon") == 0) {
+	} else if (qstrcmp(classname, "Qt::Icon") == 0) {
 		QIcon v = qVariantValue<QIcon>(*variant);
 		sv_ptr = (void *) new QIcon(v);
-	} else if (qstrcmp(classname, "Qt4::Image") == 0) {
+	} else if (qstrcmp(classname, "Qt::Image") == 0) {
 		QImage v = qVariantValue<QImage>(*variant);
 		sv_ptr = (void *) new QImage(v);
-	} else if (qstrcmp(classname, "Qt4::Polygon") == 0) {
+	} else if (qstrcmp(classname, "Qt::Polygon") == 0) {
 		QPolygon v = qVariantValue<QPolygon>(*variant);
 		sv_ptr = (void *) new QPolygon(v);
-	} else if (qstrcmp(classname, "Qt4::Region") == 0) {
+	} else if (qstrcmp(classname, "Qt::Region") == 0) {
 		QRegion v = qVariantValue<QRegion>(*variant);
 		sv_ptr = (void *) new QRegion(v);
-	} else if (qstrcmp(classname, "Qt4::Bitmap") == 0) {
+	} else if (qstrcmp(classname, "Qt::Bitmap") == 0) {
 		QBitmap v = qVariantValue<QBitmap>(*variant);
 		sv_ptr = (void *) new QBitmap(v);
-	} else if (qstrcmp(classname, "Qt4::Cursor") == 0) {
+	} else if (qstrcmp(classname, "Qt::Cursor") == 0) {
 		QCursor v = qVariantValue<QCursor>(*variant);
 		sv_ptr = (void *) new QCursor(v);
-	} else if (qstrcmp(classname, "Qt4::SizePolicy") == 0) {
+	} else if (qstrcmp(classname, "Qt::SizePolicy") == 0) {
 		QSizePolicy v = qVariantValue<QSizePolicy>(*variant);
 		sv_ptr = (void *) new QSizePolicy(v);
-	} else if (qstrcmp(classname, "Qt4::KeySequence") == 0) {
+	} else if (qstrcmp(classname, "Qt::KeySequence") == 0) {
 		QKeySequence v = qVariantValue<QKeySequence>(*variant);
 		sv_ptr = (void *) new QKeySequence(v);
-	} else if (qstrcmp(classname, "Qt4::Pen") == 0) {
+	} else if (qstrcmp(classname, "Qt::Pen") == 0) {
 		QPen v = qVariantValue<QPen>(*variant);
 		sv_ptr = (void *) new QPen(v);
-	} else if (qstrcmp(classname, "Qt4::TextLength") == 0) {
+	} else if (qstrcmp(classname, "Qt::TextLength") == 0) {
 		QTextLength v = qVariantValue<QTextLength>(*variant);
 		sv_ptr = (void *) new QTextLength(v);
-	} else if (qstrcmp(classname, "Qt4::TextFormat") == 0) {
+	} else if (qstrcmp(classname, "Qt::TextFormat") == 0) {
 		QTextFormat v = qVariantValue<QTextFormat>(*variant);
 		sv_ptr = (void *) new QTextFormat(v);
-	} else if (qstrcmp(classname, "Qt4::Variant") == 0) {
+	} else if (qstrcmp(classname, "Qt::Variant") == 0) {
 		sv_ptr = (void *) new QVariant(*((QVariant *) variant->constData()));
 	} else {
-		// Assume the value of the Qt4::Variant can be obtained
-		// with a call such as Qt4::Variant.toPoint()
+		// Assume the value of the Qt::Variant can be obtained
+		// with a call such as Qt::Variant.toPoint()
         /*
 		QByteArray toValueMethodName(classname);
-		if (toValueMethodName.startsWith("Qt4::")) {
-			toValueMethodName.remove(0, strlen("Qt4::"));
+		if (toValueMethodName.startsWith("Qt::")) {
+			toValueMethodName.remove(0, strlen("Qt::"));
 		}
 		toValueMethodName.prepend("to");
 		return rb_funcall(variant_value, rb_intern(toValueMethodName), 1, variant_value);
@@ -1568,43 +1568,43 @@ XS(XS_qvariant_from_value) {
     }
 
     if(o) {
-        if (qstrcmp(classname, " Qt4::Pixmap") == 0) {
+        if (qstrcmp(classname, " Qt::Pixmap") == 0) {
             v = new QVariant(qVariantFromValue(*(QPixmap*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Font") == 0) {
+        } else if (qstrcmp(classname, " Qt::Font") == 0) {
             v = new QVariant(qVariantFromValue(*(QFont*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Brush") == 0) {
+        } else if (qstrcmp(classname, " Qt::Brush") == 0) {
             v = new QVariant(qVariantFromValue(*(QBrush*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Color") == 0) {
+        } else if (qstrcmp(classname, " Qt::Color") == 0) {
             v = new QVariant(qVariantFromValue(*(QColor*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Palette") == 0) {
+        } else if (qstrcmp(classname, " Qt::Palette") == 0) {
             v = new QVariant(qVariantFromValue(*(QPalette*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Icon") == 0) {
+        } else if (qstrcmp(classname, " Qt::Icon") == 0) {
             v = new QVariant(qVariantFromValue(*(QIcon*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Image") == 0) {
+        } else if (qstrcmp(classname, " Qt::Image") == 0) {
             v = new QVariant(qVariantFromValue(*(QImage*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Polygon") == 0) {
+        } else if (qstrcmp(classname, " Qt::Polygon") == 0) {
             v = new QVariant(qVariantFromValue(*(QPolygon*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Region") == 0) {
+        } else if (qstrcmp(classname, " Qt::Region") == 0) {
             v = new QVariant(qVariantFromValue(*(QRegion*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Bitmap") == 0) {
+        } else if (qstrcmp(classname, " Qt::Bitmap") == 0) {
             v = new QVariant(qVariantFromValue(*(QBitmap*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Cursor") == 0) {
+        } else if (qstrcmp(classname, " Qt::Cursor") == 0) {
             v = new QVariant(qVariantFromValue(*(QCursor*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::SizePolicy") == 0) {
+        } else if (qstrcmp(classname, " Qt::SizePolicy") == 0) {
             v = new QVariant(qVariantFromValue(*(QSizePolicy*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::KeySequence") == 0) {
+        } else if (qstrcmp(classname, " Qt::KeySequence") == 0) {
             v = new QVariant(qVariantFromValue(*(QKeySequence*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::Pen") == 0) {
+        } else if (qstrcmp(classname, " Qt::Pen") == 0) {
             v = new QVariant(qVariantFromValue(*(QPen*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::TextLength") == 0) {
+        } else if (qstrcmp(classname, " Qt::TextLength") == 0) {
             v = new QVariant(qVariantFromValue(*(QTextLength*) o->ptr));
-        } else if (qstrcmp(classname, " Qt4::TextFormat") == 0) {
+        } else if (qstrcmp(classname, " Qt::TextFormat") == 0) {
             v = new QVariant(qVariantFromValue(*(QTextFormat*) o->ptr));
         } else if (QVariant::nameToType(o->smoke->classes[o->classId].className) >= QVariant::UserType) {
             v = new QVariant(QMetaType::type(o->smoke->classes[o->classId].className), o->ptr);
         } else {
-            // Assume the Qt4::Variant can be created with a
-            // Qt4::Variant.new(obj) call
+            // Assume the Qt::Variant can be created with a
+            // Qt::Variant.new(obj) call
             fprintf( stderr, "Cannot handle type %s in qVariantToValue", classname );
             XSRETURN_UNDEF;
             //return rb_funcall(qvariant_class, rb_intern("new"), 1, ST(0));
@@ -1626,12 +1626,12 @@ XS(XS_qvariant_from_value) {
                 break;
                 default:
                     croak( "%s", "Can only handle hash and array references in"
-                        " call to Qt4::Variant constructor" );
+                        " call to Qt::Variant constructor" );
             };
         }
         else
             croak( "%s", "Can only handle hash and array references in call to"
-                " Qt4::Variant constructor" );
+                " Qt::Variant constructor" );
     }
 
 
@@ -1649,7 +1649,7 @@ XS(XS_AUTOLOAD) {
     PERL_SET_CONTEXT(PL_curinterp);
     // Figure out which package and method is being called, based on the
     // autoload variable
-    SV* autoload = get_sv( "Qt4::AutoLoad::AUTOLOAD", TRUE );
+    SV* autoload = get_sv( "Qt::AutoLoad::AUTOLOAD", TRUE );
     char* package = SvPV_nolen( autoload );
     char* methodname = 0;
     // Splits off the method name from the package
@@ -1898,7 +1898,7 @@ XS(XS_AUTOLOAD) {
             PUSHs(sv_2mortal(newSVpv(methodname, 0)));
             PUSHs(sv_2mortal(newSVpv(classname, 0)));
             PUTBACK;
-            int count = call_pv( "Qt4::_internal::getSmokeMethodId", G_ARRAY|G_EVAL );
+            int count = call_pv( "Qt::_internal::getSmokeMethodId", G_ARRAY|G_EVAL );
             SPAGAIN;
             // See if getSmokeMethodId die'd
             if (SvTRUE(ERRSV)) {

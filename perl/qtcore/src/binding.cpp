@@ -46,7 +46,7 @@ void Binding::deleted(Smoke::Index /*classId*/, void *ptr) {
 }
 
 bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool isAbstract) {
-    // If the Qt4 process forked, we want to make sure we can see the
+    // If the Qt process forked, we want to make sure we can see the
     // interpreter
     PERL_SET_CONTEXT(PL_curinterp);
 
@@ -97,7 +97,7 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
 // Returns: char* containing the perl package name
 char* Binding::className(Smoke::Index classId) {
     // Find the classId->package hash
-    HV* classId2package = get_hv( "Qt4::_internal::classId2package", FALSE );
+    HV* classId2package = get_hv( "Qt::_internal::classId2package", FALSE );
     if( !classId2package ) croak( "Internal error: Unable to find classId2package hash" );
 
     int smokeId = smokeList.indexOf(smoke);

@@ -199,7 +199,7 @@ static void marshall_it(Marshall* m) {
 
 QString* qstringFromPerlString( SV* perlstring ) {
     // Finally found how 'in_constructor' is being used
-    // PerlQt43 has this bizness:
+    // PerlQt3 has this bizness:
     // COP *cop = in_constructor ? cxstack[cxstack_ix-3].blk_oldcop : cxstack[cxstack_ix].blk_oldcop;
     // It looks like the 'cxstack' array can be used to look at the current
     // call stack.  If 'in_constructor' is set, we need to look farther up the
@@ -596,11 +596,11 @@ void marshall_QDBusVariant(Marshall *m) {
             }
             smokeperl_object* o = alloc_smokeperl_object(false, m->smoke(), m->smoke()->findClass("QVariant").index, p);
 		
-            obj = set_obj_info(" Qt4::DBusVariant", o);
+            obj = set_obj_info(" Qt::DBusVariant", o);
 
             if (do_debug & qtdb_calls) {
                 smokeperl_object *o = sv_obj_info( obj );
-                printf("Allocating %s %p -> %p\n", "Qt4::DBusVariant", o->ptr, (void*)obj);
+                printf("Allocating %s %p -> %p\n", "Qt::DBusVariant", o->ptr, (void*)obj);
             }
 
             if (m->type().isStack()) {
@@ -1357,8 +1357,8 @@ void marshall_QMapQStringQVariant(Marshall *m) {
                 smokeperl_object *o = sv_obj_info(value);
                 if (!o || !o->ptr || o->classId != o->smoke->findClass("QVariant").index) {
                     continue;
-                    // If the value isn't a Qt4::Variant, then try and construct
-                    // a Qt4::Variant from it
+                    // If the value isn't a Qt::Variant, then try and construct
+                    // a Qt::Variant from it
                     // TODO: I have no idea how to do this.
                     /*
                     value = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, value);
@@ -1400,7 +1400,7 @@ void marshall_QMapQStringQVariant(Marshall *m) {
                                                                     m->smoke(), 
                                                                     m->smoke()->idClass("QVariant").index, 
                                                                     p );
-                    obj = set_obj_info(" Qt4::Variant", o);
+                    obj = set_obj_info(" Qt::Variant", o);
                 }
 
                 SV *key = perlstringFromQString((QString*)&(it.key()));
@@ -1442,8 +1442,8 @@ void marshall_QMapIntQVariant(Marshall *m) {
                 if (!o || !o->ptr || o->classId != o->smoke->findClass("QVariant").index) {
                     continue;
                     /*
-                    // If the value isn't a Qt4::Variant, then try and construct
-                    // a Qt4::Variant from it
+                    // If the value isn't a Qt::Variant, then try and construct
+                    // a Qt::Variant from it
                     value = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, value);
                     if ( !value && !SvOK(value) ) {
                         continue;
@@ -1489,7 +1489,7 @@ void marshall_QMapIntQVariant(Marshall *m) {
                         m->smoke(), 
                         m->smoke()->idClass("QVariant").index, 
                         p );
-                    obj = set_obj_info("Qt4::Variant", o);
+                    obj = set_obj_info("Qt::Variant", o);
                 }
 
                 SV *key = newSViv(it.key());
@@ -1567,7 +1567,7 @@ void marshall_QMapintQVariant(Marshall *m) {
 																m->smoke(), 
 																m->smoke()->idClass("QVariant").index, 
 																p );
-				obj = set_obj_info("Qt4::Variant", o);
+				obj = set_obj_info("Qt::Variant", o);
 			}
 			
 			rb_hash_aset(hv, INT2NUM((int)(it.key())), obj);
@@ -1632,8 +1632,8 @@ Q_DECL_EXPORT void marshall_QHashQStringQVariant(Marshall *m) {
                 smokeperl_object *o = sv_obj_info(value);
                 if (!o || !o->ptr || o->classId != o->smoke->findClass("QVariant").index) {
                     continue;
-                    // If the value isn't a Qt4::Variant, then try and construct
-                    // a Qt4::Variant from it
+                    // If the value isn't a Qt::Variant, then try and construct
+                    // a Qt::Variant from it
                     // TODO: I have no idea how to do this.
                     /*
                     value = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, value);
@@ -1677,7 +1677,7 @@ Q_DECL_EXPORT void marshall_QHashQStringQVariant(Marshall *m) {
                                                                     qtcore_Smoke,
                                                                     qtcore_Smoke->idClass("QVariant").index, 
                                                                     p );
-                    obj = set_obj_info(" Qt4::Variant", o);
+                    obj = set_obj_info(" Qt::Variant", o);
                 }
 
                 SV *key = perlstringFromQString((QString*)&(it.key()));
@@ -1876,7 +1876,7 @@ void marshall_QPairqrealQColor(Marshall *m) {
                     m->smoke(), 
                     m->smoke()->idClass("QColor").index, 
                     p );
-                rv2 = set_obj_info("Qt4::Color", o);
+                rv2 = set_obj_info("Qt::Color", o);
             }
 
             AV *av = newAV();
@@ -1885,7 +1885,7 @@ void marshall_QPairqrealQColor(Marshall *m) {
             sv_setsv(m->var(), newRV_noinc((SV*)av));
 
             if (m->cleanup()) {
-                // This is commented out in Qt4Ruby.
+                // This is commented out in QtRuby.
                 //delete qpair;
             }
         }
@@ -1985,7 +1985,7 @@ void marshall_QDBusReplyQStringList(Marshall *m) {
             QDBusReply<QStringList>* reply = (QDBusReply<QStringList>*)m->item().s_voidp;
             HV* hv = newHV();
             SV* sv = newRV_noinc((SV*)hv);
-            sv_bless(sv, gv_stashpv("Qt4::DBusReply", TRUE));
+            sv_bless(sv, gv_stashpv("Qt::DBusReply", TRUE));
             SvSetMagicSV(m->var(), sv);
 
             // Make the DBusError object

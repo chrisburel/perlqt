@@ -21,11 +21,14 @@ use strict;
 use warnings;
 
 use QtCore4;
-use base qw(Qt4::_internal);
+use base qw(Qt::_internal);
 
 sub init {
     foreach my $c ( @{getClassList()} ) {
         QtGui4::_internal->init_class($c);
+    }
+    foreach my $e ( @{getEnumList()} ) {
+        QtGui4::_internal->init_enum($e);
     }
 }
 

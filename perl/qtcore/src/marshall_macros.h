@@ -170,8 +170,8 @@ void marshall_ValueListItem(Marshall *m) {
                         (!o || !o->ptr || o->classId != o->smoke->idClass("QVariant").index) ) 
                 {
                     UNTESTED_HANDLER( "marshall_ValueListItem for QVariant" );
-                    // If the value isn't a Qt4::Variant, then try and construct
-                    // a Qt4::Variant from it
+                    // If the value isn't a Qt::Variant, then try and construct
+                    // a Qt::Variant from it
                     // XXX How to do this?
                     /*
                     item = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, item);
@@ -277,7 +277,7 @@ void marshall_ValueListItem(Marshall *m) {
     to work with all three types.
 ---*
 
-// These guys don't seem to be used at all in Qt4Ruby.  wtf.
+// These guys don't seem to be used at all in QtRuby.  wtf.
 
 template <class Item, class ItemList, const char *ItemSTR >
 void marshall_LinkedItemList(Marshall *m) {
@@ -399,8 +399,8 @@ void marshall_LinkedValueListItem(Marshall *m) {
                 if (    qstrcmp(ItemSTR, "QVariant") == 0 
                         && (o == 0 || o->ptr == 0 || o->classId != o->smoke->idClass("QVariant").index) ) 
                 {
-                    // If the value isn't a Qt4::Variant, then try and construct
-                    // a Qt4::Variant from it
+                    // If the value isn't a Qt::Variant, then try and construct
+                    // a Qt::Variant from it
                     item = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, item);
                     if (item == Qnil) {
                         continue;

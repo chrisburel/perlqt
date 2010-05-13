@@ -442,7 +442,7 @@ namespace PerlQt4 {
         SP = _sp + items() - 1;
         PUTBACK;
         I32 callFlags = G_SCALAR;
-        if ( SvTRUE( get_sv("Qt4::_internal::isEmbedded", FALSE) ) ) {
+        if ( SvTRUE( get_sv("Qt::_internal::isEmbedded", FALSE) ) ) {
             callFlags |= G_EVAL;
         }
         // Call the perl sub
