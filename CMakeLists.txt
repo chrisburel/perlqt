@@ -9,6 +9,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules )
 find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
 include(MacroLibrary)
+include(MacroOptionalAddBindings)
 
 FIND_PACKAGE(Perl REQUIRED)
 FIND_PACKAGE (Qt4 REQUIRED)
