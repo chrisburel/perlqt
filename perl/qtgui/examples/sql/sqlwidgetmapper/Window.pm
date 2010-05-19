@@ -2,11 +2,12 @@ package Window;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 # [Window definition]
-use Qt4::isa qw( Qt4::Widget );
-use Qt4::slots
+use QtCore4::isa qw( Qt::Widget );
+use QtCore4::slots
     updateButtons => ['int'];
 # [Window definition]
 
@@ -17,14 +18,14 @@ sub NEW
     $class->SUPER::NEW($parent);
     this->setupModel();
 
-    this->{nameLabel} = Qt4::Label(this->tr('Na&me:'));
-    this->{nameEdit} = Qt4::LineEdit();
-    this->{addressLabel} = Qt4::Label(this->tr('&Address:'));
-    this->{addressEdit} = Qt4::TextEdit();
-    this->{typeLabel} = Qt4::Label(this->tr('&Type:'));
-    this->{typeComboBox} = Qt4::ComboBox();
-    this->{nextButton} = Qt4::PushButton(this->tr('&Next'));
-    this->{previousButton} = Qt4::PushButton(this->tr('&Previous'));
+    this->{nameLabel} = Qt::Label(this->tr('Na&me:'));
+    this->{nameEdit} = Qt::LineEdit();
+    this->{addressLabel} = Qt::Label(this->tr('&Address:'));
+    this->{addressEdit} = Qt::TextEdit();
+    this->{typeLabel} = Qt::Label(this->tr('&Type:'));
+    this->{typeComboBox} = Qt::ComboBox();
+    this->{nextButton} = Qt::PushButton(this->tr('&Next'));
+    this->{previousButton} = Qt::PushButton(this->tr('&Previous'));
 
     this->{nameLabel}->setBuddy(this->{nameEdit});
     this->{addressLabel}->setBuddy(this->{addressEdit});
@@ -36,9 +37,9 @@ sub NEW
     this->{typeComboBox}->setModel($relModel);
     this->{typeComboBox}->setModelColumn($relModel->fieldIndex('description'));
 
-    this->{mapper} = Qt4::DataWidgetMapper(this);
+    this->{mapper} = Qt::DataWidgetMapper(this);
     this->{mapper}->setModel(this->{model});
-    this->{mapper}->setItemDelegate(Qt4::SqlRelationalDelegate(this));
+    this->{mapper}->setItemDelegate(Qt::SqlRelationalDelegate(this));
     this->{mapper}->addMapping(this->{nameEdit}, this->{model}->fieldIndex('name'));
     this->{mapper}->addMapping(this->{addressEdit}, this->{model}->fieldIndex('address'));
     this->{mapper}->addMapping(this->{typeComboBox}, this->{typeIndex});
@@ -52,7 +53,7 @@ sub NEW
     this->connect(this->{mapper}, SIGNAL 'currentIndexChanged(int)',
             this, SLOT 'updateButtons(int)');
 
-    my $layout = Qt4::GridLayout();
+    my $layout = Qt::GridLayout();
     $layout->addWidget(this->{nameLabel}, 0, 0, 1, 1);
     $layout->addWidget(this->{nameEdit}, 0, 1, 1, 1);
     $layout->addWidget(this->{previousButton}, 0, 2, 1, 1);
@@ -71,18 +72,18 @@ sub NEW
 # [Set up the main table]
 sub setupModel
 {
-    my $db = Qt4::SqlDatabase::addDatabase('QSQLITE');
+    my $db = Qt::SqlDatabase::addDatabase('QSQLITE');
     $db->setDatabaseName(':memory:');
     if (!$db->open()) {
-        Qt4::MessageBox::critical(undef, this->tr('Cannot open database'),
+        Qt::MessageBox::critical(undef, this->tr('Cannot open database'),
             this->tr("Unable to establish a database connection.\n" .
                'This example needs SQLite support. Please read ' .
                'the Qt SQL driver documentation for information how ' .
-               'to build it.'), Qt4::MessageBox::Cancel());
+               'to build it.'), Qt::MessageBox::Cancel());
         return;
     }
 
-    my $query = Qt4::SqlQuery();
+    my $query = Qt::SqlQuery();
     $query->exec('create table person (id int primary key, ' .
                'name varchar(20), address varchar(200), typeid int)');
     $query->exec('insert into person values(1, \'Alice\', ' .
@@ -105,14 +106,14 @@ sub setupModel
     $query->exec('insert into addresstype values(102, \'Work\')');
     $query->exec('insert into addresstype values(103, \'Other\')');
 
-    this->{model} = Qt4::SqlRelationalTableModel(this);
+    this->{model} = Qt::SqlRelationalTableModel(this);
     this->{model}->setTable('person');
-    this->{model}->setEditStrategy(Qt4::SqlTableModel::OnManualSubmit());
+    this->{model}->setEditStrategy(Qt::SqlTableModel::OnManualSubmit());
 
     this->{typeIndex} = this->{model}->fieldIndex('typeid');
 
     this->{model}->setRelation(this->{typeIndex},
-           Qt4::SqlRelation('addresstype', 'id', 'description'));
+           Qt::SqlRelation('addresstype', 'id', 'description'));
     this->{model}->select();
 }
 # [Set up the address type table]

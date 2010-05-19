@@ -2,8 +2,9 @@ package EditableSqlModel;
 
 use strict;
 use warnings;
-use Qt4;
-use Qt4::isa qw( Qt4::SqlQueryModel );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::SqlQueryModel );
 
 sub NEW
 {
@@ -17,7 +18,7 @@ sub flags
     my ($index) = @_;
     my $flags = this->SUPER::flags($index);
     if ($index->column() == 1 || $index->column() == 2) {
-        $flags |= Qt4::ItemIsEditable();
+        $flags |= Qt::ItemIsEditable();
     }
     return $flags;
 }
@@ -50,19 +51,19 @@ sub setData
 sub refresh
 {
     this->setQuery('select * from person');
-    this->setHeaderData(0, Qt4::Horizontal(), Qt4::Variant(Qt4::String(Qt4::Object::tr('ID'))));
-    this->setHeaderData(1, Qt4::Horizontal(), Qt4::Variant(Qt4::String(Qt4::Object::tr('First name'))));
-    this->setHeaderData(2, Qt4::Horizontal(), Qt4::Variant(Qt4::String(Qt4::Object::tr('Last name'))));
+    this->setHeaderData(0, Qt::Horizontal(), Qt::Variant(Qt::String(Qt::Object::tr('ID'))));
+    this->setHeaderData(1, Qt::Horizontal(), Qt::Variant(Qt::String(Qt::Object::tr('First name'))));
+    this->setHeaderData(2, Qt::Horizontal(), Qt::Variant(Qt::String(Qt::Object::tr('Last name'))));
 }
 
 # [2]
 sub setFirstName
 {
     my ($personId, $firstName) = @_;
-    my $query = Qt4::SqlQuery();
+    my $query = Qt::SqlQuery();
     $query->prepare('update person set firstname = ? where id = ?');
-    $query->addBindValue(Qt4::Variant(Qt4::String($firstName)));
-    $query->addBindValue(Qt4::Variant(Qt4::String($personId)));
+    $query->addBindValue(Qt::Variant(Qt::String($firstName)));
+    $query->addBindValue(Qt::Variant(Qt::String($personId)));
     return $query->exec();
 }
 # [2]
@@ -70,7 +71,7 @@ sub setFirstName
 sub setLastName
 {
     my ($personId, $lastName) = @_;
-    my $query = Qt4::SqlQuery();
+    my $query = Qt::SqlQuery();
     $query->prepare('update person set lastname = ? where id = ?');
     $query->addBindValue($lastName);
     $query->addBindValue($personId);

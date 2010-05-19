@@ -2,13 +2,14 @@ package RemoteControl;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 use Ui_RemoteControlClass;
 
-use Qt4::isa qw( Qt4::MainWindow );
+use QtCore4::isa qw( Qt::MainWindow );
 
-use Qt4::slots
+use QtCore4::slots
     on_launchButton_clicked => [],
     on_actionQuit_triggered => [],
     on_indexButton_clicked => [],
@@ -42,14 +43,14 @@ sub NEW
 
     this->{ui}->startUrlLineEdit->setText($rc);
 
-    this->{process} = Qt4::Process(this);
+    this->{process} = Qt::Process(this);
     this->connect(this->{process}, SIGNAL 'finished(int, QProcess::ExitStatus)',
         this, SLOT 'helpViewerClosed()');
 }
 
 sub ON_DESTROY
 {
-    if (this->{process}->state() == Qt4::Process::Running()) {
+    if (this->{process}->state() == Qt::Process::Running()) {
         this->{process}->terminate();
         this->{process}->waitForFinished(3000);
     }
@@ -62,13 +63,13 @@ sub on_actionQuit_triggered()
 
 sub on_launchButton_clicked
 {
-    if (this->{process}->state() == Qt4::Process::Running()) {
+    if (this->{process}->state() == Qt::Process::Running()) {
         return;
     }
 
-    #my $app = Qt4::LibraryInfo::location(Qt4::LibraryInfo::BinariesPath())
+    #my $app = Qt::LibraryInfo::location(Qt::LibraryInfo::BinariesPath())
     #my $app = '/opt/qt-4.6.0/bin'
-            #. chr Qt4::Dir::separator()->toLatin1();
+            #. chr Qt::Dir::separator()->toLatin1();
     #$app .= 'assistant';
     my $app = '/usr/bin/perl';
 
@@ -80,7 +81,7 @@ sub on_launchButton_clicked
     push @args, '-d', './echoer';
     this->{process}->start($app, \@args);
     if (!this->{process}->waitForStarted()) {
-        Qt4::MessageBox::critical(this, this->tr('Remote Control'),
+        Qt::MessageBox::critical(this, this->tr('Remote Control'),
             sprintf this->tr('Could not start Qt Assistant from %s.'), $app);
         return;
     }
@@ -98,7 +99,7 @@ sub on_launchButton_clicked
 sub sendCommand
 {
     my ($cmd) = @_;
-    if (this->{process}->state() != Qt4::Process::Running()) {
+    if (this->{process}->state() != Qt::Process::Running()) {
         return;
     }
     this->{process}->write($cmd . "\0");

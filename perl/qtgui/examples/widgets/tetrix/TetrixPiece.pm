@@ -5,9 +5,10 @@ use warnings;
 use blib;
 
 use List::Util qw(min max);
-use Qt4;
-# Make it a Qt4::Object, so we can use 'this'.  I'm lazy :-)
-use Qt4::isa qw( Qt4::Object );
+use QtCore4;
+use QtGui4;
+# Make it a Qt::Object, so we can use 'this'.  I'm lazy :-)
+use QtCore4::isa qw( Qt::Object );
 use TetrixPiece;
 use constant { 
     NoShape => 0,

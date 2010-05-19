@@ -3,12 +3,13 @@
 use strict;
 use warnings;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use SortingBox;
 
 sub main {
-    my $app = Qt4::Application( \@ARGV );
-    srand(Qt4::Time(0,0,0)->secsTo(Qt4::Time::currentTime()));
+    my $app = Qt::Application( \@ARGV );
+    srand(Qt::Time(0,0,0)->secsTo(Qt::Time::currentTime()));
     my $sortingBox = SortingBox();
     $sortingBox->show();
     return $app->exec();

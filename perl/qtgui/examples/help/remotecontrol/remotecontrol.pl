@@ -2,13 +2,14 @@
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 use RemoteControl;
 
 sub main
 {
-    my $a = Qt4::Application(\@ARGV);
+    my $a = Qt::Application(\@ARGV);
     my $w = RemoteControl();
     $w->show();
     $a->connect($a, SIGNAL 'lastWindowClosed()', $a, SLOT 'quit()');

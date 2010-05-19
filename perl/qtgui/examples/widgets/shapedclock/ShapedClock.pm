@@ -5,8 +5,9 @@ use warnings;
 use blib;
 
 use List::Util qw( min );
-use Qt4;
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Widget );
 
 # [0]
 sub dragPosition() {
@@ -14,31 +15,31 @@ sub dragPosition() {
 }
 # [0]
 
-my $hourHand = Qt4::Polygon( [
-    Qt4::Point(7, 8),
-    Qt4::Point(-7, 8),
-    Qt4::Point(0, -40)
+my $hourHand = Qt::Polygon( [
+    Qt::Point(7, 8),
+    Qt::Point(-7, 8),
+    Qt::Point(0, -40)
 ] );
-my $minuteHand = Qt4::Polygon( [
-    Qt4::Point(7, 8),
-    Qt4::Point(-7, 8),
-    Qt4::Point(0, -70)
+my $minuteHand = Qt::Polygon( [
+    Qt::Point(7, 8),
+    Qt::Point(-7, 8),
+    Qt::Point(0, -70)
 ] );
 
 # [0]
 sub NEW {
     my ( $class, $parent ) = @_;
-    $class->SUPER::NEW( $parent, Qt4::FramelessWindowHint() | Qt4::WindowSystemMenuHint());
-    my $timer = Qt4::Timer(this);
+    $class->SUPER::NEW( $parent, Qt::FramelessWindowHint() | Qt::WindowSystemMenuHint());
+    my $timer = Qt::Timer(this);
     this->connect($timer, SIGNAL 'timeout()', this, SLOT 'update()');
     $timer->start(1000);
 
-    my $quitAction = Qt4::Action(this->tr("E&xit"), this);
-    $quitAction->setShortcut(Qt4::KeySequence(this->tr("Ctrl+Q")));
+    my $quitAction = Qt::Action(this->tr("E&xit"), this);
+    $quitAction->setShortcut(Qt::KeySequence(this->tr("Ctrl+Q")));
     this->connect($quitAction, SIGNAL 'triggered()', qApp, SLOT 'quit()');
     this->addAction($quitAction);
 
-    this->setContextMenuPolicy(Qt4::ActionsContextMenu());
+    this->setContextMenuPolicy(Qt::ActionsContextMenu());
     this->setToolTip(this->tr("Drag the clock with the left mouse button.\n" .
                   "Use the right mouse button to open a context menu."));
     this->setWindowTitle(this->tr("Shaped Analog Clock"));
@@ -48,8 +49,8 @@ sub NEW {
 # [1]
 sub mousePressEvent {
     my ($event) = @_;
-    if ($event->button() == Qt4::LeftButton()) {
-        this->{dragPosition} = Qt4::Point($event->globalPos() - this->frameGeometry()->topLeft());
+    if ($event->button() == Qt::LeftButton()) {
+        this->{dragPosition} = Qt::Point($event->globalPos() - this->frameGeometry()->topLeft());
         $event->accept();
     }
 }
@@ -58,7 +59,7 @@ sub mousePressEvent {
 # [2]
 sub mouseMoveEvent {
     my ($event) = @_;
-    if ($event->buttons() & ${Qt4::LeftButton()}) {
+    if ($event->buttons() & ${Qt::LeftButton()}) {
         this->move($event->globalPos() - this->dragPosition);
         $event->accept();
     }
@@ -67,19 +68,19 @@ sub mouseMoveEvent {
 
 # [3]
 sub paintEvent {
-    my $hourColor = Qt4::Color(127, 0, 127);
-    my $minuteColor = Qt4::Color(0, 127, 127, 191);
+    my $hourColor = Qt::Color(127, 0, 127);
+    my $minuteColor = Qt::Color(0, 127, 127, 191);
 
     my $side = min(this->width(), this->height());
-    my $time = Qt4::Time::currentTime();
+    my $time = Qt::Time::currentTime();
 
-    my $painter = Qt4::Painter(this);
-    $painter->setRenderHint(Qt4::Painter::Antialiasing());
+    my $painter = Qt::Painter(this);
+    $painter->setRenderHint(Qt::Painter::Antialiasing());
     $painter->translate(this->width() / 2, this->height() / 2);
     $painter->scale($side / 200.0, $side / 200.0);
 
-    $painter->setPen(Qt4::NoPen());
-    $painter->setBrush(Qt4::Brush($hourColor));
+    $painter->setPen(Qt::NoPen());
+    $painter->setBrush(Qt::Brush($hourColor));
 
     $painter->save();
     $painter->rotate(30.0 * (($time->hour() + $time->minute() / 60.0)));
@@ -93,8 +94,8 @@ sub paintEvent {
         $painter->rotate(30.0);
     }
 
-    $painter->setPen(Qt4::NoPen());
-    $painter->setBrush(Qt4::Brush($minuteColor));
+    $painter->setPen(Qt::NoPen());
+    $painter->setBrush(Qt::Brush($minuteColor));
 
     $painter->save();
     $painter->rotate(6.0 * ($time->minute() + $time->second() / 60.0));
@@ -116,15 +117,15 @@ sub paintEvent {
 # [4]
 sub resizeEvent {
     my $side = min(this->width(), this->height());
-    my $maskedRegion = Qt4::Region(this->width() / 2 - $side / 2, this->height() / 2 - $side / 2, $side,
-                         $side, Qt4::Region::Ellipse());
+    my $maskedRegion = Qt::Region(this->width() / 2 - $side / 2, this->height() / 2 - $side / 2, $side,
+                         $side, Qt::Region::Ellipse());
     this->setMask($maskedRegion);
 }
 # [4]
 
 # [5]
 sub sizeHint {
-    return Qt4::Size(100, 100);
+    return Qt::Size(100, 100);
 }
 # [5]
 

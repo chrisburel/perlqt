@@ -4,10 +4,11 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::MainWindow );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::MainWindow );
 # [0]
-use Qt4::slots
+use QtCore4::slots
     brushColorAct => [],
     alphaActionTriggered => ['QAction*'],
     lineWidthActionTriggered => ['QAction*'],
@@ -139,7 +140,7 @@ sub NEW {
     this->createActions();
     this->createMenus();
 
-    this->myCanvas->setColor(Qt4::red());
+    this->myCanvas->setColor(Qt::red());
     this->myCanvas->setLineWidthType(TabletCanvas::LineWidthPressure());
     this->myCanvas->setAlphaChannelType(TabletCanvas::NoAlpha());
     this->myCanvas->setColorSaturationType(TabletCanvas::NoSaturation());
@@ -151,7 +152,7 @@ sub NEW {
 
 # [1]
 sub brushColorAct {
-    my $color = Qt4::ColorDialog::getColor(this->myCanvas->color());
+    my $color = Qt::ColorDialog::getColor(this->myCanvas->color());
 
     if ($color->isValid()) {
         this->myCanvas->setColor($color);
@@ -202,12 +203,12 @@ sub saturationActionTriggered {
 
 # [5]
 sub saveAct {
-    my $path = Qt4::Dir::currentPath() . '/untitled.png';
-    my $fileName = Qt4::FileDialog::getSaveFileName(this, this->tr('Save Picture'),
+    my $path = Qt::Dir::currentPath() . '/untitled.png';
+    my $fileName = Qt::FileDialog::getSaveFileName(this, this->tr('Save Picture'),
                              $path);
 
     if (!this->myCanvas->saveImage($fileName)) {
-        Qt4::MessageBox::information(this, 'Error Saving Picture',
+        Qt::MessageBox::information(this, 'Error Saving Picture',
                                  'Could not save the image');
     }
 }
@@ -215,11 +216,11 @@ sub saveAct {
 
 # [6]
 sub loadAct {
-    my $fileName = Qt4::FileDialog::getOpenFileName(this, this->tr('Open Picture'),
-                                                    Qt4::Dir::currentPath());
+    my $fileName = Qt::FileDialog::getOpenFileName(this, this->tr('Open Picture'),
+                                                    Qt::Dir::currentPath());
 
     if (!this->myCanvas->loadImage($fileName)) {
-        Qt4::MessageBox::information(this, 'Error Opening Picture',
+        Qt::MessageBox::information(this, 'Error Opening Picture',
                                  'Could not open picture');
     }
 }
@@ -227,7 +228,7 @@ sub loadAct {
 
 # [7]
 sub aboutAct {
-    Qt4::MessageBox::about(this, this->tr('About Tablet Example'),
+    Qt::MessageBox::about(this, this->tr('About Tablet Example'),
                        this->tr('This example shows use of a Wacom tablet in Qt4'));
 }
 # [7]
@@ -235,23 +236,23 @@ sub aboutAct {
 # [8]
 sub createActions {
 # [8]
-    this->{brushColorAction} = Qt4::Action(this->tr('&Brush Color...'), this);
-    this->brushColorAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+C')));
+    this->{brushColorAction} = Qt::Action(this->tr('&Brush Color...'), this);
+    this->brushColorAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+C')));
     this->connect(this->brushColorAction, SIGNAL 'triggered()',
             this, SLOT 'brushColorAct()');
 
 # [9]
-    this->{alphaChannelPressureAction} = Qt4::Action(this->tr('&Pressure'), this);
+    this->{alphaChannelPressureAction} = Qt::Action(this->tr('&Pressure'), this);
     this->alphaChannelPressureAction->setCheckable(1);
 
-    this->{alphaChannelTiltAction} = Qt4::Action(this->tr('&Tilt'), this);
+    this->{alphaChannelTiltAction} = Qt::Action(this->tr('&Tilt'), this);
     this->alphaChannelTiltAction->setCheckable(1);
 
-    this->{noAlphaChannelAction} = Qt4::Action(this->tr('No Alpha Channel'), this);
+    this->{noAlphaChannelAction} = Qt::Action(this->tr('No Alpha Channel'), this);
     this->noAlphaChannelAction->setCheckable(1);
     this->noAlphaChannelAction->setChecked(1);
 
-    this->{alphaChannelGroup} = Qt4::ActionGroup(this);
+    this->{alphaChannelGroup} = Qt::ActionGroup(this);
     this->alphaChannelGroup->addAction(this->alphaChannelPressureAction);
     this->alphaChannelGroup->addAction(this->alphaChannelTiltAction);
     this->alphaChannelGroup->addAction(this->noAlphaChannelAction);
@@ -259,20 +260,20 @@ sub createActions {
             this, SLOT 'alphaActionTriggered(QAction *)');
 
 # [9]
-    this->{colorSaturationVTiltAction} = Qt4::Action(this->tr('&Vertical Tilt'), this);
+    this->{colorSaturationVTiltAction} = Qt::Action(this->tr('&Vertical Tilt'), this);
     this->colorSaturationVTiltAction->setCheckable(1);
 
-    this->{colorSaturationHTiltAction} = Qt4::Action(this->tr('&Horizontal Tilt'), this);
+    this->{colorSaturationHTiltAction} = Qt::Action(this->tr('&Horizontal Tilt'), this);
     this->colorSaturationHTiltAction->setCheckable(1);
 
-    this->{colorSaturationPressureAction} = Qt4::Action(this->tr('&Pressure'), this);
+    this->{colorSaturationPressureAction} = Qt::Action(this->tr('&Pressure'), this);
     this->colorSaturationPressureAction->setCheckable(1);
 
-    this->{noColorSaturationAction} = Qt4::Action(this->tr('&No Color Saturation'), this);
+    this->{noColorSaturationAction} = Qt::Action(this->tr('&No Color Saturation'), this);
     this->noColorSaturationAction->setCheckable(1);
     this->noColorSaturationAction->setChecked(1);
 
-    this->{colorSaturationGroup} = Qt4::ActionGroup(this);
+    this->{colorSaturationGroup} = Qt::ActionGroup(this);
     this->colorSaturationGroup->addAction(this->colorSaturationVTiltAction);
     this->colorSaturationGroup->addAction(this->colorSaturationHTiltAction);
     this->colorSaturationGroup->addAction(this->colorSaturationPressureAction);
@@ -280,45 +281,45 @@ sub createActions {
     this->connect(this->colorSaturationGroup, SIGNAL 'triggered(QAction *)',
             this, SLOT 'saturationActionTriggered(QAction *)');
 
-    this->{lineWidthPressureAction} = Qt4::Action(this->tr('&Pressure'), this);
+    this->{lineWidthPressureAction} = Qt::Action(this->tr('&Pressure'), this);
     this->lineWidthPressureAction->setCheckable(1);
     this->lineWidthPressureAction->setChecked(1);
 
-    this->{lineWidthTiltAction} = Qt4::Action(this->tr('&Tilt'), this);
+    this->{lineWidthTiltAction} = Qt::Action(this->tr('&Tilt'), this);
     this->lineWidthTiltAction->setCheckable(1);
 
-    this->{lineWidthFixedAction} = Qt4::Action(this->tr('&Fixed'), this);
+    this->{lineWidthFixedAction} = Qt::Action(this->tr('&Fixed'), this);
     this->lineWidthFixedAction->setCheckable(1);
 
-    this->{lineWidthGroup} = Qt4::ActionGroup(this);
+    this->{lineWidthGroup} = Qt::ActionGroup(this);
     this->lineWidthGroup->addAction(this->lineWidthPressureAction);
     this->lineWidthGroup->addAction(this->lineWidthTiltAction);
     this->lineWidthGroup->addAction(this->lineWidthFixedAction);
     this->connect(this->lineWidthGroup, SIGNAL 'triggered(QAction *)',
             this, SLOT 'lineWidthActionTriggered(QAction *)');
 
-    this->{exitAction} = Qt4::Action(this->tr('E&xit'), this);
-    this->exitAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+X')));
+    this->{exitAction} = Qt::Action(this->tr('E&xit'), this);
+    this->exitAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+X')));
     this->connect(this->exitAction, SIGNAL 'triggered()',
             this, SLOT 'close()');
 
-    this->{loadAction} = Qt4::Action(this->tr('&Open...'), this);
-    this->loadAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+O')));
+    this->{loadAction} = Qt::Action(this->tr('&Open...'), this);
+    this->loadAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+O')));
     this->connect(this->loadAction, SIGNAL 'triggered()',
             this, SLOT 'loadAct()');
 
-    this->{saveAction} = Qt4::Action(this->tr('&Save As...'), this);
-    this->saveAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+S')));
+    this->{saveAction} = Qt::Action(this->tr('&Save As...'), this);
+    this->saveAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+S')));
     this->connect(this->saveAction, SIGNAL 'triggered()',
             this, SLOT 'saveAct()');
 
-    this->{aboutAction} = Qt4::Action(this->tr('A&bout'), this);
-    this->aboutAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+B')));
+    this->{aboutAction} = Qt::Action(this->tr('A&bout'), this);
+    this->aboutAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+B')));
     this->connect(this->aboutAction, SIGNAL 'triggered()',
             this, SLOT 'aboutAct()');
 
-    this->{aboutQtAction} = Qt4::Action(this->tr('About &Qt'), this);
-    this->aboutQtAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+Q')));
+    this->{aboutQtAction} = Qt::Action(this->tr('About &Qt'), this);
+    this->aboutQtAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+Q')));
     this->connect(this->aboutQtAction, SIGNAL 'triggered()',
             qApp, SLOT 'aboutQt()');
 # [10]

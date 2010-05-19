@@ -2,16 +2,17 @@ package InformationWindow;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 # [0]
-use Qt4::isa qw( Qt4::Dialog );
-use Qt4::signals
+use QtCore4::isa qw( Qt::Dialog );
+use QtCore4::signals
     imageChanged => ['int', 'const QString &'];
 # [0]
 
 # [1]
-use Qt4::slots
+use QtCore4::slots
     revert => [],
     submit => [],
     enableButtons2 => [],
@@ -23,32 +24,32 @@ sub NEW {
     my ($class, $id, $offices, $parent) = @_;
     $class->SUPER::NEW($parent);
 # [0] //! [1]
-    my $locationLabel = Qt4::Label(this->tr('Location: '));
-    my $countryLabel = Qt4::Label(this->tr('Country: '));
-    my $descriptionLabel = Qt4::Label(this->tr('Description: '));
-    my $imageFileLabel = Qt4::Label(this->tr('Image file: '));
+    my $locationLabel = Qt::Label(this->tr('Location: '));
+    my $countryLabel = Qt::Label(this->tr('Country: '));
+    my $descriptionLabel = Qt::Label(this->tr('Description: '));
+    my $imageFileLabel = Qt::Label(this->tr('Image file: '));
 
     this->createButtons();
 
-    this->{locationText} = Qt4::Label();
-    this->{countryText} = Qt4::Label();
-    this->{descriptionEditor} = Qt4::TextEdit();
+    this->{locationText} = Qt::Label();
+    this->{countryText} = Qt::Label();
+    this->{descriptionEditor} = Qt::TextEdit();
 # [1]
 
 # [2]
-    this->{imageFileEditor} = Qt4::ComboBox();
+    this->{imageFileEditor} = Qt::ComboBox();
     this->{imageFileEditor}->setModel($offices->relationModel(1));
     this->{imageFileEditor}->setModelColumn($offices->relationModel(1)->fieldIndex('file'));
 # [2]
 
 # [3]
-    this->{mapper} = Qt4::DataWidgetMapper(this);
+    this->{mapper} = Qt::DataWidgetMapper(this);
     this->{mapper}->setModel($offices);
-    this->{mapper}->setSubmitPolicy(Qt4::DataWidgetMapper::ManualSubmit());
-    this->{mapper}->setItemDelegate(Qt4::SqlRelationalDelegate(this->{mapper}));
+    this->{mapper}->setSubmitPolicy(Qt::DataWidgetMapper::ManualSubmit());
+    this->{mapper}->setItemDelegate(Qt::SqlRelationalDelegate(this->{mapper}));
     this->{mapper}->addMapping(this->{imageFileEditor}, 1);
-    this->{mapper}->addMapping(this->{locationText}, 2, Qt4::ByteArray('text'));
-    this->{mapper}->addMapping(this->{countryText}, 3, Qt4::ByteArray('text'));
+    this->{mapper}->addMapping(this->{locationText}, 2, Qt::ByteArray('text'));
+    this->{mapper}->addMapping(this->{countryText}, 3, Qt::ByteArray('text'));
     this->{mapper}->addMapping(this->{descriptionEditor}, 4);
     this->{mapper}->setCurrentIndex($id);
 # [3]
@@ -59,11 +60,11 @@ sub NEW {
     this->connect(this->{imageFileEditor}, SIGNAL 'currentIndexChanged(int)',
             this, SLOT 'enableButtons2()');
 
-    my $layout = Qt4::GridLayout();
-    $layout->addWidget($locationLabel, 0, 0, Qt4::AlignLeft() | Qt4::AlignTop());
-    $layout->addWidget($countryLabel, 1, 0, Qt4::AlignLeft() | Qt4::AlignTop());
-    $layout->addWidget($imageFileLabel, 2, 0, Qt4::AlignLeft() | Qt4::AlignTop());
-    $layout->addWidget($descriptionLabel, 3, 0, Qt4::AlignLeft() | Qt4::AlignTop());
+    my $layout = Qt::GridLayout();
+    $layout->addWidget($locationLabel, 0, 0, Qt::AlignLeft() | Qt::AlignTop());
+    $layout->addWidget($countryLabel, 1, 0, Qt::AlignLeft() | Qt::AlignTop());
+    $layout->addWidget($imageFileLabel, 2, 0, Qt::AlignLeft() | Qt::AlignTop());
+    $layout->addWidget($descriptionLabel, 3, 0, Qt::AlignLeft() | Qt::AlignTop());
     $layout->addWidget(this->{locationText}, 0, 1);
     $layout->addWidget(this->{countryText}, 1, 1);
     $layout->addWidget(this->{imageFileEditor}, 2, 1);
@@ -74,7 +75,7 @@ sub NEW {
     this->{locationId} = $id;
     this->{displayedImage} = this->{imageFileEditor}->currentText();
 
-    this->setWindowFlags(Qt4::Window());
+    this->setWindowFlags(Qt::Window());
     this->enableButtons($0);
     this->setWindowTitle(sprintf this->tr('Office: %s'), this->{locationText}->text());
     this->resize(320, this->sizeHint()->height());
@@ -116,9 +117,9 @@ sub submit
 # [8]
 sub createButtons
 {
-    this->{closeButton} = Qt4::PushButton(this->tr('&Close'));
-    this->{revertButton} = Qt4::PushButton(this->tr('&Revert'));
-    this->{submitButton} = Qt4::PushButton(this->tr('&Submit'));
+    this->{closeButton} = Qt::PushButton(this->tr('&Close'));
+    this->{revertButton} = Qt::PushButton(this->tr('&Revert'));
+    this->{submitButton} = Qt::PushButton(this->tr('&Submit'));
 
     this->{closeButton}->setDefault(1);
 
@@ -128,10 +129,10 @@ sub createButtons
 # [8]
 
 # [9]
-    this->{buttonBox} = Qt4::DialogButtonBox();
-    this->{buttonBox}->addButton(this->{submitButton}, Qt4::DialogButtonBox::ResetRole());
-    this->{buttonBox}->addButton(this->{revertButton}, Qt4::DialogButtonBox::ResetRole());
-    this->{buttonBox}->addButton(this->{closeButton}, Qt4::DialogButtonBox::RejectRole());
+    this->{buttonBox} = Qt::DialogButtonBox();
+    this->{buttonBox}->addButton(this->{submitButton}, Qt::DialogButtonBox::ResetRole());
+    this->{buttonBox}->addButton(this->{revertButton}, Qt::DialogButtonBox::ResetRole());
+    this->{buttonBox}->addButton(this->{closeButton}, Qt::DialogButtonBox::RejectRole());
 }
 # [9]
 

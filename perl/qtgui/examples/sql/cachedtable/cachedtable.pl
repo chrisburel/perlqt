@@ -2,7 +2,8 @@
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 use lib '../';
 use Connection;
@@ -11,7 +12,7 @@ use TableEditor;
 # [0]
 sub main
 {
-    my $app = Qt4::Application(\@ARGV);
+    my $app = Qt::Application(\@ARGV);
     if (!Connection::createConnection()) {
         return 1;
     }

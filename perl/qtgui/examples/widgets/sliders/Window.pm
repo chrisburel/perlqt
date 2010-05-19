@@ -4,8 +4,9 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Widget );
 use SlidersGroup;
 
 # [0]
@@ -67,10 +68,10 @@ sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
 
-    this->{horizontalSliders} = SlidersGroup(Qt4::Horizontal(), this->tr('Horizontal'));
-    this->{verticalSliders} = SlidersGroup(Qt4::Vertical(), this->tr('Vertical'));
+    this->{horizontalSliders} = SlidersGroup(Qt::Horizontal(), this->tr('Horizontal'));
+    this->{verticalSliders} = SlidersGroup(Qt::Vertical(), this->tr('Vertical'));
 
-    this->{stackedWidget} = Qt4::StackedWidget();
+    this->{stackedWidget} = Qt::StackedWidget();
     this->stackedWidget->addWidget(this->horizontalSliders);
     this->stackedWidget->addWidget(this->verticalSliders);
 
@@ -86,7 +87,7 @@ sub NEW {
     this->connect(this->valueSpinBox, SIGNAL 'valueChanged(int)',
             this->horizontalSliders, SLOT 'setValue(int)');
 
-    my $layout = Qt4::HBoxLayout();
+    my $layout = Qt::HBoxLayout();
     $layout->addWidget(this->controlsGroup);
     $layout->addWidget(this->stackedWidget);
     this->setLayout($layout);
@@ -103,30 +104,30 @@ sub NEW {
 sub createControls {
 # [3] //! [4]
     my ($title) = @_;
-    this->{controlsGroup} = Qt4::GroupBox($title);
+    this->{controlsGroup} = Qt::GroupBox($title);
 
-    this->{minimumLabel} = Qt4::Label(this->tr('Minimum value:'));
-    this->{maximumLabel} = Qt4::Label(this->tr('Maximum value:'));
-    this->{valueLabel} = Qt4::Label(this->tr('Current value:'));
+    this->{minimumLabel} = Qt::Label(this->tr('Minimum value:'));
+    this->{maximumLabel} = Qt::Label(this->tr('Maximum value:'));
+    this->{valueLabel} = Qt::Label(this->tr('Current value:'));
 
-    this->{invertedAppearance} = Qt4::CheckBox(this->tr('Inverted appearance'));
-    this->{invertedKeyBindings} = Qt4::CheckBox(this->tr('Inverted key bindings'));
+    this->{invertedAppearance} = Qt::CheckBox(this->tr('Inverted appearance'));
+    this->{invertedKeyBindings} = Qt::CheckBox(this->tr('Inverted key bindings'));
 
 # [4] //! [5]
-    this->{minimumSpinBox} = Qt4::SpinBox();
+    this->{minimumSpinBox} = Qt::SpinBox();
 # [5] //! [6]
     this->minimumSpinBox->setRange(-100, 100);
     this->minimumSpinBox->setSingleStep(1);
 
-    this->{maximumSpinBox} = Qt4::SpinBox();
+    this->{maximumSpinBox} = Qt::SpinBox();
     this->maximumSpinBox->setRange(-100, 100);
     this->maximumSpinBox->setSingleStep(1);
 
-    this->{valueSpinBox} = Qt4::SpinBox();
+    this->{valueSpinBox} = Qt::SpinBox();
     this->valueSpinBox->setRange(-100, 100);
     this->valueSpinBox->setSingleStep(1);
 
-    this->{orientationCombo} = Qt4::ComboBox();
+    this->{orientationCombo} = Qt::ComboBox();
     this->orientationCombo->addItem(this->tr('Horizontal slider-like widgets'));
     this->orientationCombo->addItem(this->tr('Vertical slider-like widgets'));
 
@@ -151,7 +152,7 @@ sub createControls {
     this->connect(this->invertedKeyBindings, SIGNAL 'toggled(bool)',
             this->verticalSliders, SLOT 'invertKeyBindings(bool)');
 
-    my $controlsLayout = Qt4::GridLayout();
+    my $controlsLayout = Qt::GridLayout();
     $controlsLayout->addWidget(this->minimumLabel, 0, 0);
     $controlsLayout->addWidget(this->maximumLabel, 1, 0);
     $controlsLayout->addWidget(this->valueLabel, 2, 0);

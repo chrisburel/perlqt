@@ -2,10 +2,11 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 # [0]
-use Qt4::isa qw( Qt4::MainWindow );
-use Qt4::slots
+use QtCore4::isa qw( Qt::MainWindow );
+use QtCore4::slots
     openDialog => [],
     printFile => [];
 use DetailsDialog;
@@ -23,17 +24,17 @@ sub NEW
 {
     my ($class) = @_;
     $class->SUPER::NEW();
-    my $fileMenu = Qt4::Menu(this->tr('&File'), this);
+    my $fileMenu = Qt::Menu(this->tr('&File'), this);
     my $newAction = $fileMenu->addAction(this->tr('&New...'));
-    $newAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+N')));
+    $newAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+N')));
     this->{printAction} = $fileMenu->addAction(this->tr('&Print...'), this, SLOT 'printFile()');
-    this->printAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+P')));
+    this->printAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+P')));
     this->printAction->setEnabled(0);
     my $quitAction = $fileMenu->addAction(this->tr('E&xit'));
     $quitAction->setShortcut(this->tr('Ctrl+Q'));
     this->menuBar()->addMenu($fileMenu);
 
-    this->{letters} = Qt4::TabWidget();
+    this->{letters} = Qt::TabWidget();
 
     this->connect($newAction, SIGNAL 'triggered()', this, SLOT 'openDialog()');
     this->connect($quitAction, SIGNAL 'triggered()', this, SLOT 'close()');
@@ -47,29 +48,29 @@ sub NEW
 sub createLetter
 {
     my ($name, $address, $orderItems, $sendOffers) = @_;
-    my $editor = Qt4::TextEdit();
+    my $editor = Qt::TextEdit();
     my $tabIndex = this->letters->addTab($editor, $name);
     this->letters->setCurrentIndex($tabIndex);
 # [1]
 
 # [2]
-    my $cursor = Qt4::TextCursor($editor->textCursor());
-    $cursor->movePosition(Qt4::TextCursor::Start());
+    my $cursor = Qt::TextCursor($editor->textCursor());
+    $cursor->movePosition(Qt::TextCursor::Start());
 # [2] //! [3]
     my $topFrame = $cursor->currentFrame();
     my $topFrameFormat = $topFrame->frameFormat();
     $topFrameFormat->setPadding(16);
     $topFrame->setFrameFormat($topFrameFormat);
 
-    my $textFormat = Qt4::TextCharFormat();
-    my $boldFormat = Qt4::TextCharFormat();
-    $boldFormat->setFontWeight(Qt4::Font::Bold());
+    my $textFormat = Qt::TextCharFormat();
+    my $boldFormat = Qt::TextCharFormat();
+    $boldFormat->setFontWeight(Qt::Font::Bold());
 
-    my $referenceFrameFormat = Qt4::TextFrameFormat();
+    my $referenceFrameFormat = Qt::TextFrameFormat();
     $referenceFrameFormat->setBorder(1);
     $referenceFrameFormat->setPadding(8);
-    $referenceFrameFormat->setPosition(Qt4::TextFrameFormat::FloatRight());
-    $referenceFrameFormat->setWidth(Qt4::TextLength(Qt4::TextLength::PercentageLength(), 40));
+    $referenceFrameFormat->setPosition(Qt::TextFrameFormat::FloatRight());
+    $referenceFrameFormat->setWidth(Qt::TextLength(Qt::TextLength::PercentageLength(), 40));
     $cursor->insertFrame($referenceFrameFormat);
 
     $cursor->insertText('A company', $boldFormat);
@@ -94,13 +95,13 @@ sub createLetter
     $cursor->insertBlock();
     $cursor->insertBlock();
 
-    my $date = Qt4::Date::currentDate();
+    my $date = Qt::Date::currentDate();
     $cursor->insertText(sprintf this->tr('Date: %s'), $date->toString('d MMMM yyyy'),
                       $textFormat);
     $cursor->insertBlock();
 
-    my $bodyFrameFormat = Qt4::TextFrameFormat();
-    $bodyFrameFormat->setWidth(Qt4::TextLength(Qt4::TextLength::PercentageLength(), 100));
+    my $bodyFrameFormat = Qt::TextFrameFormat();
+    $bodyFrameFormat->setWidth(Qt::TextLength(Qt::TextLength::PercentageLength(), 100));
     $cursor->insertFrame($bodyFrameFormat);
 # [5]
 
@@ -113,8 +114,8 @@ sub createLetter
 # [7]
 
 # [8]
-    my $orderTableFormat = Qt4::TextTableFormat();
-    $orderTableFormat->setAlignment(Qt4::AlignHCenter());
+    my $orderTableFormat = Qt::TextTableFormat();
+    $orderTableFormat->setAlignment(Qt::AlignHCenter());
     my $orderTable = $cursor->insertTable(1, 2, $orderTableFormat);
 
     my $orderFrameFormat = $cursor->currentFrame()->frameFormat();
@@ -199,7 +200,7 @@ sub openDialog
 {
     my $dialog = DetailsDialog(this->tr('Enter Customer Details'), this);
 
-    if ($dialog->exec() == Qt4::Dialog::Accepted()) {
+    if ($dialog->exec() == Qt::Dialog::Accepted()) {
         this->createLetter($dialog->senderName(), $dialog->senderAddress(),
                      $dialog->orderItems(), $dialog->sendOffers());
     }
@@ -211,14 +212,14 @@ sub printFile
 {
     my $editor = this->letters->currentWidget();
 # [18]
-    my $printer = Qt4::Printer();
+    my $printer = Qt::Printer();
 
-    my $dialog = Qt4::PrintDialog($printer, this);
+    my $dialog = Qt::PrintDialog($printer, this);
     $dialog->setWindowTitle(this->tr('Print Document'));
     if ($editor->textCursor()->hasSelection()) {
-        $dialog->addEnabledOption(Qt4::AbstractPrintDialog::PrintSelection());
+        $dialog->addEnabledOption(Qt::AbstractPrintDialog::PrintSelection());
     }
-    if ($dialog->exec() != Qt4::Dialog::Accepted()) {
+    if ($dialog->exec() != Qt::Dialog::Accepted()) {
         return;
     }
 # [18]

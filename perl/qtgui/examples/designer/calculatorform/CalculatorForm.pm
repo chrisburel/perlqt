@@ -2,15 +2,16 @@ package CalculatorForm;
 
 use strict;
 use warnings;
-use Qt4;
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Widget );
 
 # [0]
 use Ui_CalculatorForm;
 # [0]
 
 # [1]
-use Qt4::slots
+use QtCore4::slots
     on_inputSpinBox1_valueChanged => ['int'],
     on_inputSpinBox2_valueChanged => ['int'];
 

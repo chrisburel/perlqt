@@ -2,7 +2,8 @@ package RenderArea;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 # [0]
 use constant {
     NoTransformation => 0,
@@ -13,7 +14,7 @@ use constant {
 # [0]
 
 # [1]
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4::isa qw( Qt::Widget );
 # [1]
 
 # [2]
@@ -43,7 +44,7 @@ sub NEW
     $newFont->setPixelSize(12);
     this->setFont($newFont);
 
-    my $fontMetrics = Qt4::FontMetrics($newFont);
+    my $fontMetrics = Qt::FontMetrics($newFont);
     this->{xBoundingRect} = $fontMetrics->boundingRect(this->tr('x'));
     this->{yBoundingRect} = $fontMetrics->boundingRect(this->tr('y'));
     this->{operations} = [];
@@ -72,14 +73,14 @@ sub setShape
 # [3]
 sub minimumSizeHint
 {
-    return Qt4::Size(182, 182);
+    return Qt::Size(182, 182);
 }
 # [3]
 
 # [4]
 sub sizeHint
 {
-    return Qt4::Size(232, 232);
+    return Qt::Size(232, 232);
 }
 # [4]
 
@@ -87,9 +88,9 @@ sub sizeHint
 sub paintEvent
 {
     my ($event) = @_;
-    my $painter = Qt4::Painter(this);
-    $painter->setRenderHint(Qt4::Painter::Antialiasing());
-    $painter->fillRect($event->rect(), Qt4::Brush(Qt4::white()));
+    my $painter = Qt::Painter(this);
+    $painter->setRenderHint(Qt::Painter::Antialiasing());
+    $painter->fillRect($event->rect(), Qt::Brush(Qt::white()));
 
     $painter->translate(66, 66);
 # [5]
@@ -116,7 +117,7 @@ sub paintEvent
 sub drawCoordinates
 {
     my ($painter) = @_;
-    $painter->setPen(Qt4::Color(Qt4::red()));
+    $painter->setPen(Qt::Color(Qt::red()));
 
     $painter->drawLine(0, 0, 50, 0);
     $painter->drawLine(48, -2, 50, 0);
@@ -136,9 +137,9 @@ sub drawCoordinates
 sub drawOutline
 {
     my ($painter) = @_;
-    $painter->setPen(Qt4::darkGreen());
-    $painter->setPen(Qt4::DashLine());
-    $painter->setBrush(Qt4::NoBrush());
+    $painter->setPen(Qt::darkGreen());
+    $painter->setPen(Qt::DashLine());
+    $painter->setBrush(Qt::NoBrush());
     $painter->drawRect(0, 0, 100, 100);
 }
 # [10]
@@ -147,7 +148,7 @@ sub drawOutline
 sub drawShape
 {
     my ($painter) = @_;
-    $painter->fillPath(this->shape, Qt4::Brush(Qt4::blue()));
+    $painter->fillPath(this->shape, Qt::Brush(Qt::blue()));
 }
 # [11]
 

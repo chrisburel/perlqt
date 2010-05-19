@@ -2,18 +2,19 @@ package GLWidget;
 
 use strict;
 use warnings;
-use Qt4;
-use Qt4::isa qw( Qt4::GLWidget );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::GLWidget );
 use List::Util qw(min);
 use OpenGL;
 
 # [1]
-use Qt4::slots
+use QtCore4::slots
     setXRotation => ['int'],
     setYRotation => ['int'],
     setZRotation => ['int'];
 
-use Qt4::signals
+use QtCore4::signals
     xRotationChanged => ['int'],
     yRotationChanged => ['int'],
     zRotationChanged => ['int'];
@@ -57,8 +58,8 @@ sub NEW
     this->{yRot} = 0;
     this->{zRot} = 0;
 
-    this->{trolltechGreen} = Qt4::Color::fromCmykF(0.40, 0.0, 1.0, 0.0);
-    this->{trolltechPurple} = Qt4::Color::fromCmykF(0.39, 0.39, 0.0, 0.0);
+    this->{trolltechGreen} = Qt::Color::fromCmykF(0.40, 0.0, 1.0, 0.0);
+    this->{trolltechPurple} = Qt::Color::fromCmykF(0.39, 0.39, 0.0, 0.0);
 }
 # [0]
 
@@ -73,7 +74,7 @@ sub DESTROY
 # [2]
 sub minimumSizeHint
 {
-    return Qt4::Size(50, 50);
+    return Qt::Size(50, 50);
 }
 # [2]
 
@@ -81,7 +82,7 @@ sub minimumSizeHint
 sub sizeHint
 # [3] //! [4]
 {
-    return Qt4::Size(400, 400);
+    return Qt::Size(400, 400);
 }
 # [4]
 
@@ -173,10 +174,10 @@ sub mouseMoveEvent
     my $dx = $event->x() - this->lastPos->x();
     my $dy = $event->y() - this->lastPos->y();
 
-    if ($event->buttons() & Qt4::LeftButton()) {
+    if ($event->buttons() & Qt::LeftButton()) {
         this->setXRotation(this->xRot + 8 * $dy);
         this->setYRotation(this->yRot + 8 * $dx);
-    } elsif ($event->buttons() & Qt4::RightButton()) {
+    } elsif ($event->buttons() & Qt::RightButton()) {
         this->setXRotation(this->xRot + 8 * $dy);
         this->setZRotation(this->zRot + 8 * $dx);
     }

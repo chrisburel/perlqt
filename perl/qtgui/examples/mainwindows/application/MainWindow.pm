@@ -5,9 +5,10 @@ use blib;
 
 use File::Basename;
 
-use Qt4;
-use Qt4::isa qw( Qt4::MainWindow );
-use Qt4::slots
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::MainWindow );
+use QtCore4::slots
                 newFile => [],
                 openFile => [],
                 save => [],
@@ -18,7 +19,7 @@ use Qt4::slots
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    my $textEdit = Qt4::TextEdit();
+    my $textEdit = Qt::TextEdit();
     this->setCentralWidget($textEdit);
     this->{textEdit} = $textEdit;
 
@@ -54,7 +55,7 @@ sub newFile {
 
 sub openFile {
     if (maybeSave()) {
-        my $fileName = Qt4::FileDialog::getOpenFileName(this);
+        my $fileName = Qt::FileDialog::getOpenFileName(this);
         if ($fileName) {
             loadFile($fileName);
         }
@@ -70,7 +71,7 @@ sub save {
 }
 
 sub saveAs {
-    my $fileName = Qt4::FileDialog::getSaveFileName(this);
+    my $fileName = Qt::FileDialog::getSaveFileName(this);
     if (!defined $fileName){
         return 0;
     }
@@ -79,7 +80,7 @@ sub saveAs {
 }
 
 sub about {
-    Qt4::MessageBox::about(this, "About Application",
+    Qt::MessageBox::about(this, "About Application",
             "The <b>Application</b> example demonstrates how to " .
                "write modern GUI applications using Qt, with a menu bar, " .
                "toolbars, and a status bar.");
@@ -91,64 +92,64 @@ sub documentWasModified {
 
 sub createActions {
     my $textEdit = this->{textEdit};
-    my $newAct =  Qt4::Action(Qt4::Icon("images/new.png"), "&New", this);
-    $newAct->setShortcut(Qt4::KeySequence("Ctrl+N"));
+    my $newAct =  Qt::Action(Qt::Icon("images/new.png"), "&New", this);
+    $newAct->setShortcut(Qt::KeySequence("Ctrl+N"));
     $newAct->setStatusTip("Create a new file");
     this->connect($newAct, SIGNAL 'triggered()', this, SLOT 'newFile()');
     this->{newAct} = $newAct;
 
-    my $openAct = Qt4::Action(Qt4::Icon("images/open.png"), "&Open...", this);
-    $openAct->setShortcut(Qt4::KeySequence("Ctrl+O"));
+    my $openAct = Qt::Action(Qt::Icon("images/open.png"), "&Open...", this);
+    $openAct->setShortcut(Qt::KeySequence("Ctrl+O"));
     $openAct->setStatusTip("Open an existing file");
     this->connect($openAct, SIGNAL 'triggered()', this, SLOT 'openFile()');
     this->{openAct} = $openAct;
 
-    my $saveAct = Qt4::Action(Qt4::Icon("images/save.png"), "&Save", this);
-    $saveAct->setShortcut(Qt4::KeySequence("Ctrl+S"));
+    my $saveAct = Qt::Action(Qt::Icon("images/save.png"), "&Save", this);
+    $saveAct->setShortcut(Qt::KeySequence("Ctrl+S"));
     $saveAct->setStatusTip("Save the document to disk");
     this->connect($saveAct, SIGNAL 'triggered()', this, SLOT 'save()');
     this->{saveAct} = $saveAct;
 
-    my $saveAsAct = Qt4::Action("Save &As...", this);
+    my $saveAsAct = Qt::Action("Save &As...", this);
     $saveAsAct->setStatusTip("Save the document under a new name");
     this->connect($saveAsAct, SIGNAL 'triggered()', this, SLOT 'saveAs()');
     this->{saveAsAct} = $saveAsAct;
 
-    my $exitAct = Qt4::Action("E&xit", this);
-    $exitAct->setShortcut(Qt4::KeySequence("Ctrl+Q"));
+    my $exitAct = Qt::Action("E&xit", this);
+    $exitAct->setShortcut(Qt::KeySequence("Ctrl+Q"));
     $exitAct->setStatusTip("Exit the application");
     this->connect($exitAct, SIGNAL 'triggered()', this, SLOT 'close()');
     this->{exitAct} = $exitAct;
 
-    my $cutAct = Qt4::Action(Qt4::Icon("images/cut.png"), "Cu&t", this);
-    $cutAct->setShortcut(Qt4::KeySequence("Ctrl+X"));
+    my $cutAct = Qt::Action(Qt::Icon("images/cut.png"), "Cu&t", this);
+    $cutAct->setShortcut(Qt::KeySequence("Ctrl+X"));
     $cutAct->setStatusTip("Cut the current selection's contents to the " .
                             "clipboard");
     this->connect($cutAct, SIGNAL 'triggered()', $textEdit, SLOT 'cut()');
     this->{cutAct} = $cutAct;
 
-    my $copyAct = Qt4::Action(Qt4::Icon("images/copy.png"), "&Copy", this);
-    $copyAct->setShortcut(Qt4::KeySequence("Ctrl+C"));
+    my $copyAct = Qt::Action(Qt::Icon("images/copy.png"), "&Copy", this);
+    $copyAct->setShortcut(Qt::KeySequence("Ctrl+C"));
     $copyAct->setStatusTip("Copy the current selection's contents to the " .
                              "clipboard");
     this->connect($copyAct, SIGNAL 'triggered()', $textEdit, SLOT 'copy()');
     this->{copyAct} = $copyAct;
 
-    my $pasteAct = Qt4::Action(Qt4::Icon("images/paste.png"), "&Paste", this);
-    $pasteAct->setShortcut(Qt4::KeySequence("Ctrl+V"));
+    my $pasteAct = Qt::Action(Qt::Icon("images/paste.png"), "&Paste", this);
+    $pasteAct->setShortcut(Qt::KeySequence("Ctrl+V"));
     $pasteAct->setStatusTip("Paste the clipboard's contents into the current " .
                               "selection");
     this->connect($pasteAct, SIGNAL 'triggered()', $textEdit, SLOT 'paste()');
     this->{pasteAct} = $pasteAct;
 
-    my $aboutAct = Qt4::Action("&About", this);
+    my $aboutAct = Qt::Action("&About", this);
     $aboutAct->setStatusTip("Show the application's About box");
     this->connect($aboutAct, SIGNAL 'triggered()', this, SLOT 'about()');
     this->{aboutAct} = $aboutAct;
 
-    my $aboutQtAct = Qt4::Action("About &Qt", this);
+    my $aboutQtAct = Qt::Action("About &Qt", this);
     $aboutQtAct->setStatusTip("Show the Qt4 library's About box");
-    this->connect($aboutQtAct, SIGNAL 'triggered()', Qt4::qApp(), SLOT 'aboutQt()');
+    this->connect($aboutQtAct, SIGNAL 'triggered()', Qt::qApp(), SLOT 'aboutQt()');
     this->{aboutQtAct} = $aboutQtAct;
 
     $cutAct->setEnabled(0);
@@ -197,29 +198,29 @@ sub createStatusBar {
 }
 
 sub readSettings {
-    my $settings = Qt4::Settings("Trolltech", "Application Example");
-    my $pos = $settings->value("pos", Qt4::Variant(Qt4::Point(200, 200)))->toPoint();
-    my $size = $settings->value("size", Qt4::Variant(Qt4::Size(400, 400)))->toSize();
+    my $settings = Qt::Settings("Trolltech", "Application Example");
+    my $pos = $settings->value("pos", Qt::Variant(Qt::Point(200, 200)))->toPoint();
+    my $size = $settings->value("size", Qt::Variant(Qt::Size(400, 400)))->toSize();
     this->resize($size);
     this->move($pos);
 }
 
 sub writeSettings {
-    my $settings = Qt4::Settings("Trolltech", "Application Example");
-    $settings->setValue("pos", Qt4::Variant(this->pos()));
-    $settings->setValue("size", Qt4::Variant(this->size()));
+    my $settings = Qt::Settings("Trolltech", "Application Example");
+    $settings->setValue("pos", Qt::Variant(this->pos()));
+    $settings->setValue("size", Qt::Variant(this->size()));
 }
 
 sub maybeSave {
     if (this->{textEdit}->document()->isModified()) {
-        my $ret = Qt4::MessageBox::warning(this, "Application",
+        my $ret = Qt::MessageBox::warning(this, "Application",
                         "The document has been modified.\n" .
                         "Do you want to save your changes?",
-                        CAST Qt4::MessageBox::Save() | Qt4::MessageBox::Discard() | Qt4::MessageBox::Cancel(), 'QMessageBox::StandardButtons'); 
-        if ($ret == Qt4::MessageBox::Save()) {
+                        CAST Qt::MessageBox::Save() | Qt::MessageBox::Discard() | Qt::MessageBox::Cancel(), 'QMessageBox::StandardButtons'); 
+        if ($ret == Qt::MessageBox::Save()) {
             return save();
         }
-        elsif ($ret == Qt4::MessageBox::Cancel()) {
+        elsif ($ret == Qt::MessageBox::Cancel()) {
             return 0;
         }
     }
@@ -229,16 +230,16 @@ sub maybeSave {
 sub loadFile {
     my ( $fileName ) = @_;
     if(!(open( FH, "< $fileName"))) {
-        Qt4::MessageBox::warning(this, "Application",
+        Qt::MessageBox::warning(this, "Application",
                                  sprintf("Cannot read file %s:\n%s.",
                                  $fileName,
                                  $!));
         return 0;
     }
 
-    Qt4::Application::setOverrideCursor(Qt4::Cursor(Qt4::WaitCursor()));
+    Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
     this->{textEdit}->setPlainText(join "\n", <FH> );
-    Qt4::Application::restoreOverrideCursor();
+    Qt::Application::restoreOverrideCursor();
     close FH;
 
     setCurrentFile($fileName);
@@ -248,16 +249,16 @@ sub loadFile {
 sub saveFile {
     my ($fileName) = @_;
     if(!(open( FH, "> $fileName"))) {
-        Qt4::MessageBox::warning(this, "Application",
+        Qt::MessageBox::warning(this, "Application",
                                  sprintf("Cannot write file %s:\n%s.",
                                  $fileName,
                                  $!));
         return 0;
     }
 
-    Qt4::Application::setOverrideCursor(Qt4::Cursor(Qt4::WaitCursor()));
+    Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
     print FH this->{textEdit}->toPlainText();
-    Qt4::Application::restoreOverrideCursor();
+    Qt::Application::restoreOverrideCursor();
     close FH;
 
     setCurrentFile($fileName);

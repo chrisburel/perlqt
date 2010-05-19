@@ -3,11 +3,12 @@
 use strict;
 use warnings;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use ShapedClock;
 
 sub main {
-    my $app = Qt4::Application( \@ARGV );
+    my $app = Qt::Application( \@ARGV );
     my $clock = ShapedClock();
     $clock->show();
     return $app->exec();

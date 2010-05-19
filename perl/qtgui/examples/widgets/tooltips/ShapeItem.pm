@@ -4,8 +4,9 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Object );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Object );
 # [0]
 sub myPath() {
     return this->{myPath};

@@ -2,14 +2,15 @@ package Window;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 #[0]
-use Qt4::isa qw( Qt4::Widget );
-use constant SvgTextFormat => Qt4::TextFormat::UserObject() + 1;
+use QtCore4::isa qw( Qt::Widget );
+use constant SvgTextFormat => Qt::TextFormat::UserObject() + 1;
 use constant SvgData => 1;
 
-use Qt4::slots
+use QtCore4::slots
     insertTextObject => [];
 #[0]
 
@@ -29,9 +30,9 @@ sub NEW
 sub insertTextObject
 {
     my $fileName = this->{fileNameLineEdit}->text();
-    my $file = Qt4::File($fileName);
-    if (!$file->open(Qt4::IODevice::ReadOnly())) {
-        Qt4::MessageBox::warning(this, this->tr('Error Opening File'),
+    my $file = Qt::File($fileName);
+    if (!$file->open(Qt::IODevice::ReadOnly())) {
+        Qt::MessageBox::warning(this, this->tr('Error Opening File'),
                              sprintf this->tr('Could not open \'%s\''), $fileName);
     }
 
@@ -39,18 +40,18 @@ sub insertTextObject
 #[1]
 
 #[2]
-    my $svgCharFormat = Qt4::TextCharFormat();
+    my $svgCharFormat = Qt::TextCharFormat();
     $svgCharFormat->setObjectType(SvgTextFormat);
-    my $renderer = Qt4::SvgRenderer($svgData);
+    my $renderer = Qt::SvgRenderer($svgData);
 
-    my $svgBufferImage = Qt4::Image($renderer->defaultSize(), Qt4::Image::Format_ARGB32());
-    my $painter = Qt4::Painter($svgBufferImage);
-    $renderer->render($painter, Qt4::RectF($svgBufferImage->rect()));
+    my $svgBufferImage = Qt::Image($renderer->defaultSize(), Qt::Image::Format_ARGB32());
+    my $painter = Qt::Painter($svgBufferImage);
+    $renderer->render($painter, Qt::RectF($svgBufferImage->rect()));
 
-    $svgCharFormat->setProperty(SvgData, Qt4::qVariantFromValue($svgBufferImage));
+    $svgCharFormat->setProperty(SvgData, Qt::qVariantFromValue($svgBufferImage));
 
     my $cursor = this->{textEdit}->textCursor();
-    $cursor->insertText(Qt4::Char::ObjectReplacementCharacter(), $svgCharFormat);
+    $cursor->insertText(Qt::Char::ObjectReplacementCharacter(), $svgCharFormat);
     this->{textEdit}->setTextCursor($cursor);
 }
 #[2]
@@ -65,22 +66,22 @@ sub setupTextObject
 
 sub setupGui
 {
-    this->{fileNameLabel} = Qt4::Label(this->tr('Svg File Name:'));
-    this->{fileNameLineEdit} = Qt4::LineEdit();
-    this->{insertTextObjectButton} = Qt4::PushButton(this->tr('Insert Image'));
+    this->{fileNameLabel} = Qt::Label(this->tr('Svg File Name:'));
+    this->{fileNameLineEdit} = Qt::LineEdit();
+    this->{insertTextObjectButton} = Qt::PushButton(this->tr('Insert Image'));
 
     this->{fileNameLineEdit}->setText('./files/heart.svg');
     this->connect(this->{insertTextObjectButton}, SIGNAL 'clicked()',
             this, SLOT 'insertTextObject()');
 
-    my $bottomLayout = Qt4::HBoxLayout();
+    my $bottomLayout = Qt::HBoxLayout();
     $bottomLayout->addWidget(this->{fileNameLabel});
     $bottomLayout->addWidget(this->{fileNameLineEdit});
     $bottomLayout->addWidget(this->{insertTextObjectButton});
 
-    this->{textEdit} = Qt4::TextEdit();
+    this->{textEdit} = Qt::TextEdit();
 
-    my $mainLayout = Qt4::VBoxLayout();
+    my $mainLayout = Qt::VBoxLayout();
     $mainLayout->addWidget(this->{textEdit});
     $mainLayout->addLayout($bottomLayout);
 

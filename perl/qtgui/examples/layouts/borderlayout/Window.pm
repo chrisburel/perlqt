@@ -2,15 +2,16 @@ package Window;
 
 use strict;
 use warnings;
-use Qt4;
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Widget );
 use BorderLayout;
 
 sub NEW
 {
     my ($class) = @_;
     $class->SUPER::NEW();
-    my $centralWidget = Qt4::TextBrowser();
+    my $centralWidget = Qt::TextBrowser();
     $centralWidget->setPlainText(this->tr('Central widget'));
 
     my $layout = BorderLayout();
@@ -28,8 +29,8 @@ sub NEW
 sub createLabel
 {
     my ($text) = @_;
-    my $label = Qt4::Label($text);
-    $label->setFrameStyle(Qt4::Frame::Box() | Qt4::Frame::Raised());
+    my $label = Qt::Label($text);
+    $label->setFrameStyle(Qt::Frame::Box() | Qt::Frame::Raised());
     return $label;
 }
 

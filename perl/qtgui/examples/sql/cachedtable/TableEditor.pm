@@ -2,11 +2,12 @@ package TableEditor;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 # [0]
-use Qt4::isa qw( Qt4::Dialog );
-use Qt4::slots
+use QtCore4::isa qw( Qt::Dialog );
+use QtCore4::slots
     submit => [];
 # [0]
 
@@ -16,30 +17,30 @@ sub NEW
     my ($class, $tableName, $parent) = @_;
     $class->SUPER::NEW($parent);
 
-    this->{model} = Qt4::SqlTableModel(this);
+    this->{model} = Qt::SqlTableModel(this);
     this->{model}->setTable($tableName);
-    this->{model}->setEditStrategy(Qt4::SqlTableModel::OnManualSubmit());
+    this->{model}->setEditStrategy(Qt::SqlTableModel::OnManualSubmit());
     this->{model}->select();
 
-    this->{model}->setHeaderData(0, Qt4::Horizontal(), Qt4::Variant(Qt4::String(this->tr('ID'))));
-    this->{model}->setHeaderData(1, Qt4::Horizontal(), Qt4::Variant(Qt4::String(this->tr('First name'))));
-    this->{model}->setHeaderData(2, Qt4::Horizontal(), Qt4::Variant(Qt4::String(this->tr('Last name'))));
+    this->{model}->setHeaderData(0, Qt::Horizontal(), Qt::Variant(Qt::String(this->tr('ID'))));
+    this->{model}->setHeaderData(1, Qt::Horizontal(), Qt::Variant(Qt::String(this->tr('First name'))));
+    this->{model}->setHeaderData(2, Qt::Horizontal(), Qt::Variant(Qt::String(this->tr('Last name'))));
 
 # [0] //! [1]
-    my $view = Qt4::TableView();
+    my $view = Qt::TableView();
     $view->setModel(this->{model});
 # [1]
 
 # [2]
-    this->{submitButton} = Qt4::PushButton(this->tr('Submit'));
+    this->{submitButton} = Qt::PushButton(this->tr('Submit'));
     this->{submitButton}->setDefault(1);
-    this->{revertButton} = Qt4::PushButton(this->tr('&Revert'));
-    this->{quitButton} = Qt4::PushButton(this->tr('Quit'));
+    this->{revertButton} = Qt::PushButton(this->tr('&Revert'));
+    this->{quitButton} = Qt::PushButton(this->tr('Quit'));
 
-    this->{buttonBox} = Qt4::DialogButtonBox(Qt4::Vertical());
-    this->{buttonBox}->addButton(this->{submitButton}, Qt4::DialogButtonBox::ActionRole());
-    this->{buttonBox}->addButton(this->{revertButton}, Qt4::DialogButtonBox::ActionRole());
-    this->{buttonBox}->addButton(this->{quitButton}, Qt4::DialogButtonBox::RejectRole());
+    this->{buttonBox} = Qt::DialogButtonBox(Qt::Vertical());
+    this->{buttonBox}->addButton(this->{submitButton}, Qt::DialogButtonBox::ActionRole());
+    this->{buttonBox}->addButton(this->{revertButton}, Qt::DialogButtonBox::ActionRole());
+    this->{buttonBox}->addButton(this->{quitButton}, Qt::DialogButtonBox::RejectRole());
 # [2]
 
 # [3]
@@ -49,7 +50,7 @@ sub NEW
 # [3]
 
 # [4]
-    my $mainLayout = Qt4::HBoxLayout();
+    my $mainLayout = Qt::HBoxLayout();
     $mainLayout->addWidget($view);
     $mainLayout->addWidget(this->{buttonBox});
     this->setLayout($mainLayout);
@@ -66,7 +67,7 @@ sub submit
         this->{model}->database()->commit();
     } else {
         this->{model}->database()->rollback();
-        Qt4::MessageBox::warning(this, this->tr('Cached Table'),
+        Qt::MessageBox::warning(this, this->tr('Cached Table'),
                      sprintf this->tr('The database reported an error: %s'),
                              this->{model}->lastError()->text());
     }

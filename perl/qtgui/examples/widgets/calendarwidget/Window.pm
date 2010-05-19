@@ -4,11 +4,12 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Widget );
 
 # [0]
-use Qt4::slots
+use QtCore4::slots
     localeChanged => ['int'],
     firstDayChanged => ['int'],
     selectionModeChanged => ['int'],
@@ -163,12 +164,12 @@ sub NEW {
     this->createDatesGroupBox();
     this->createTextFormatsGroupBox();
 
-    my $layout = Qt4::GridLayout();
+    my $layout = Qt::GridLayout();
     $layout->addWidget(this->previewGroupBox, 0, 0);
     $layout->addWidget(this->generalOptionsGroupBox, 0, 1);
     $layout->addWidget(this->datesGroupBox, 1, 0);
     $layout->addWidget(this->textFormatsGroupBox, 1, 1);
-    $layout->setSizeConstraint(Qt4::Layout::SetFixedSize());
+    $layout->setSizeConstraint(Qt::Layout::SetFixedSize());
     this->setLayout($layout);
 
     this->previewLayout->setRowMinimumHeight(0, this->calendar->sizeHint()->height());
@@ -233,48 +234,48 @@ sub maximumDateChanged {
 
 # [5]
 sub weekdayFormatChanged {
-    my $format = Qt4::TextCharFormat();
+    my $format = Qt::TextCharFormat();
 
-    $format->setForeground( Qt4::Brush(
-        Qt4::qVariantValue(
+    $format->setForeground( Qt::Brush(
+        Qt::qVariantValue(
             this->weekdayColorCombo->itemData(this->weekdayColorCombo->currentIndex()),
-            'Qt4::Color')
+            'Qt::Color')
         )
     );
-    this->calendar->setWeekdayTextFormat(Qt4::Monday(), $format);
-    this->calendar->setWeekdayTextFormat(Qt4::Tuesday(), $format);
-    this->calendar->setWeekdayTextFormat(Qt4::Wednesday(), $format);
-    this->calendar->setWeekdayTextFormat(Qt4::Thursday(), $format);
-    this->calendar->setWeekdayTextFormat(Qt4::Friday(), $format);
+    this->calendar->setWeekdayTextFormat(Qt::Monday(), $format);
+    this->calendar->setWeekdayTextFormat(Qt::Tuesday(), $format);
+    this->calendar->setWeekdayTextFormat(Qt::Wednesday(), $format);
+    this->calendar->setWeekdayTextFormat(Qt::Thursday(), $format);
+    this->calendar->setWeekdayTextFormat(Qt::Friday(), $format);
 }
 # [5]
 
 # [6]
 sub weekendFormatChanged {
-    my $format = Qt4::TextCharFormat();
+    my $format = Qt::TextCharFormat();
 
-    $format->setForeground( Qt4::Brush(
-        Qt4::qVariantValue(
+    $format->setForeground( Qt::Brush(
+        Qt::qVariantValue(
             this->weekendColorCombo->itemData(this->weekendColorCombo->currentIndex()),
-            'Qt4::Color')
+            'Qt::Color')
         )
     );
-    this->calendar->setWeekdayTextFormat(Qt4::Saturday(), $format);
-    this->calendar->setWeekdayTextFormat(Qt4::Sunday(), $format);
+    this->calendar->setWeekdayTextFormat(Qt::Saturday(), $format);
+    this->calendar->setWeekdayTextFormat(Qt::Sunday(), $format);
 }
 # [6]
 
 # [7]
 sub reformatHeaders {
     my $text = this->headerTextFormatCombo->currentText();
-    my $format = Qt4::TextCharFormat();
+    my $format = Qt::TextCharFormat();
 
     if ($text eq this->tr('Bold')) {
-        $format->setFontWeight(Qt4::Font::Bold());
+        $format->setFontWeight(Qt::Font::Bold());
     } elsif ($text eq this->tr('Italic')) {
         $format->setFontItalic(1);
     } elsif ($text eq this->tr('Green')) {
-        $format->setForeground(Qt4::Color(Qt4::green()));
+        $format->setForeground(Qt::Color(Qt::green()));
     }
     this->calendar->setHeaderTextFormat($format);
 }
@@ -282,24 +283,24 @@ sub reformatHeaders {
 
 # [8]
 sub reformatCalendarPage {
-    my $mayFirstFormat = Qt4::TextCharFormat();
+    my $mayFirstFormat = Qt::TextCharFormat();
     this->{mayFirstFormat} = $mayFirstFormat;
     if (this->mayFirstCheckBox->isChecked()) {
-        $mayFirstFormat->setForeground(Qt4::Brush(Qt4::red()));
+        $mayFirstFormat->setForeground(Qt::Brush(Qt::red()));
     }
 
-    my $firstFridayFormat = Qt4::TextCharFormat();
+    my $firstFridayFormat = Qt::TextCharFormat();
     this->{firstFridayFormat} = $firstFridayFormat;
     if (this->firstFridayCheckBox->isChecked()) {
-        $firstFridayFormat->setForeground(Qt4::Brush(Qt4::blue()));
+        $firstFridayFormat->setForeground(Qt::Brush(Qt::blue()));
     }
 
-    my $date = Qt4::Date(this->calendar->yearShown(), this->calendar->monthShown(), 1); 
+    my $date = Qt::Date(this->calendar->yearShown(), this->calendar->monthShown(), 1); 
 
-    this->calendar->setDateTextFormat(Qt4::Date($date->year(), 5, 1), $mayFirstFormat);
+    this->calendar->setDateTextFormat(Qt::Date($date->year(), 5, 1), $mayFirstFormat);
 
     $date->setDate($date->year(), $date->month(), 1);
-    while ($date->dayOfWeek() != Qt4::Friday()) {
+    while ($date->dayOfWeek() != Qt::Friday()) {
         $date = $date->addDays(1);
     }
     this->calendar->setDateTextFormat($date, $firstFridayFormat);
@@ -308,113 +309,113 @@ sub reformatCalendarPage {
 
 # [9]
 sub createPreviewGroupBox {
-    my $previewGroupBox = Qt4::GroupBox(this->tr('Preview'));
+    my $previewGroupBox = Qt::GroupBox(this->tr('Preview'));
     this->{previewGroupBox} = $previewGroupBox;
 
-    my $calendar = Qt4::CalendarWidget();
+    my $calendar = Qt::CalendarWidget();
     this->{calendar} = $calendar;
-    $calendar->setMinimumDate(Qt4::Date(1900, 1, 1));
-    $calendar->setMaximumDate(Qt4::Date(3000, 1, 1));
+    $calendar->setMinimumDate(Qt::Date(1900, 1, 1));
+    $calendar->setMaximumDate(Qt::Date(3000, 1, 1));
     $calendar->setGridVisible(1);
 
     this->connect($calendar, SIGNAL 'currentPageChanged(int, int)',
             this, SLOT 'reformatCalendarPage()');
 
-    my $previewLayout = Qt4::GridLayout();
+    my $previewLayout = Qt::GridLayout();
     this->{previewLayout} = $previewLayout;
-    $previewLayout->addWidget($calendar, 0, 0, Qt4::AlignCenter());
+    $previewLayout->addWidget($calendar, 0, 0, Qt::AlignCenter());
     $previewGroupBox->setLayout($previewLayout);
 }
 # [9]
 
 # [10]
 sub createGeneralOptionsGroupBox {
-    my $generalOptionsGroupBox = Qt4::GroupBox(this->tr('General Options'));
+    my $generalOptionsGroupBox = Qt::GroupBox(this->tr('General Options'));
     this->{generalOptionsGroupBox} = $generalOptionsGroupBox;
 
-    my $localeCombo = Qt4::ComboBox();
+    my $localeCombo = Qt::ComboBox();
     this->{localeCombo} = $localeCombo;
     my $curLocaleIndex = -1;
     my $index = 0;
-    for (my $_lang = Qt4::Locale::C(); $_lang <= Qt4::Locale::LastLanguage(); ++$_lang) {
-        #Qt4::Locale::Language lang = static_cast<Qt4::Locale::Language>(_lang);
+    for (my $_lang = Qt::Locale::C(); $_lang <= Qt::Locale::LastLanguage(); ++$_lang) {
+        #Qt::Locale::Language lang = static_cast<Qt::Locale::Language>(_lang);
         my $lang = $_lang;
-        my $countries = Qt4::Locale::countriesForLanguage($lang);
+        my $countries = Qt::Locale::countriesForLanguage($lang);
         next unless $countries && ref $countries eq 'ARRAY';
         for (my $i = 0; $i < scalar @{$countries}; ++$i) {
             my $country = $countries->[$i];
-            my $label = Qt4::Locale::languageToString($lang);
+            my $label = Qt::Locale::languageToString($lang);
             $label .= '/';
-            $label .= Qt4::Locale::countryToString($country);
-            my $locale = Qt4::Locale($lang, $country);
+            $label .= Qt::Locale::countryToString($country);
+            my $locale = Qt::Locale($lang, $country);
             if (this->locale()->language() == $lang && this->locale()->country() == $country) {
                 $curLocaleIndex = $index;
             }
-            $localeCombo->addItem($label, Qt4::Variant($locale));
+            $localeCombo->addItem($label, Qt::Variant($locale));
             ++$index;
         }
     }
     if ($curLocaleIndex != -1) {
         $localeCombo->setCurrentIndex($curLocaleIndex);
     }
-    my $localeLabel = Qt4::Label(this->tr('&Locale'));
+    my $localeLabel = Qt::Label(this->tr('&Locale'));
     this->{localeLabel} = $localeLabel;
     $localeLabel->setBuddy($localeCombo);
 
-    my $firstDayCombo = Qt4::ComboBox();
+    my $firstDayCombo = Qt::ComboBox();
     this->{firstDayCombo} = $firstDayCombo;
-    $firstDayCombo->addItem(this->tr('Sunday'), Qt4::Variant(Qt4::Int(${Qt4::Sunday()})));
-    $firstDayCombo->addItem(this->tr('Monday'), Qt4::Variant(Qt4::Int(${Qt4::Monday()})));
-    $firstDayCombo->addItem(this->tr('Tuesday'), Qt4::Variant(Qt4::Int(${Qt4::Tuesday()})));
-    $firstDayCombo->addItem(this->tr('Wednesday'), Qt4::Variant(Qt4::Int(${Qt4::Wednesday()})));
-    $firstDayCombo->addItem(this->tr('Thursday'), Qt4::Variant(Qt4::Int(${Qt4::Thursday()})));
-    $firstDayCombo->addItem(this->tr('Friday'), Qt4::Variant(Qt4::Int(${Qt4::Friday()})));
-    $firstDayCombo->addItem(this->tr('Saturday'), Qt4::Variant(Qt4::Int(${Qt4::Saturday()})));
+    $firstDayCombo->addItem(this->tr('Sunday'), Qt::Variant(Qt::Int(${Qt::Sunday()})));
+    $firstDayCombo->addItem(this->tr('Monday'), Qt::Variant(Qt::Int(${Qt::Monday()})));
+    $firstDayCombo->addItem(this->tr('Tuesday'), Qt::Variant(Qt::Int(${Qt::Tuesday()})));
+    $firstDayCombo->addItem(this->tr('Wednesday'), Qt::Variant(Qt::Int(${Qt::Wednesday()})));
+    $firstDayCombo->addItem(this->tr('Thursday'), Qt::Variant(Qt::Int(${Qt::Thursday()})));
+    $firstDayCombo->addItem(this->tr('Friday'), Qt::Variant(Qt::Int(${Qt::Friday()})));
+    $firstDayCombo->addItem(this->tr('Saturday'), Qt::Variant(Qt::Int(${Qt::Saturday()})));
 
-    my $firstDayLabel = Qt4::Label(this->tr('Wee&k starts on:'));
+    my $firstDayLabel = Qt::Label(this->tr('Wee&k starts on:'));
     this->{firstDayLabel} = $firstDayLabel;
     $firstDayLabel->setBuddy($firstDayCombo);
 # [10]
 
-    my $selectionModeCombo = Qt4::ComboBox();
+    my $selectionModeCombo = Qt::ComboBox();
     this->{selectionModeCombo} = $selectionModeCombo;
     $selectionModeCombo->addItem(this->tr('Single selection'),
-                                Qt4::Variant(Qt4::Int(${Qt4::CalendarWidget::SingleSelection()})));
-    $selectionModeCombo->addItem(this->tr('None'), Qt4::Variant(Qt4::Int(${Qt4::CalendarWidget::NoSelection()})));
+                                Qt::Variant(Qt::Int(${Qt::CalendarWidget::SingleSelection()})));
+    $selectionModeCombo->addItem(this->tr('None'), Qt::Variant(Qt::Int(${Qt::CalendarWidget::NoSelection()})));
 
-    my $selectionModeLabel = Qt4::Label(this->tr('&Selection mode:'));
+    my $selectionModeLabel = Qt::Label(this->tr('&Selection mode:'));
     this->{selectionModeLabel} = $selectionModeLabel;
     $selectionModeLabel->setBuddy($selectionModeCombo);
 
-    my $gridCheckBox = Qt4::CheckBox(this->tr('&Grid'));
+    my $gridCheckBox = Qt::CheckBox(this->tr('&Grid'));
     this->{gridCheckBox} = $gridCheckBox;
     $gridCheckBox->setChecked(this->calendar->isGridVisible());
 
-    my $navigationCheckBox = Qt4::CheckBox(this->tr('&Navigation bar'));
+    my $navigationCheckBox = Qt::CheckBox(this->tr('&Navigation bar'));
     this->{navigationCheckBox} = $navigationCheckBox;
     $navigationCheckBox->setChecked(1);
 
-    my $horizontalHeaderCombo = Qt4::ComboBox();
+    my $horizontalHeaderCombo = Qt::ComboBox();
     this->{horizontalHeaderCombo} = $horizontalHeaderCombo;
     $horizontalHeaderCombo->addItem(this->tr('Single letter day names'),
-                                   Qt4::Variant(Qt4::Int(${Qt4::CalendarWidget::SingleLetterDayNames()})));
+                                   Qt::Variant(Qt::Int(${Qt::CalendarWidget::SingleLetterDayNames()})));
     $horizontalHeaderCombo->addItem(this->tr('Short day names'),
-                                   Qt4::Variant(Qt4::Int(${Qt4::CalendarWidget::ShortDayNames()})));
+                                   Qt::Variant(Qt::Int(${Qt::CalendarWidget::ShortDayNames()})));
     $horizontalHeaderCombo->addItem(this->tr('None'),
-                                   Qt4::Variant(Qt4::Int(${Qt4::CalendarWidget::NoHorizontalHeader()})));
+                                   Qt::Variant(Qt::Int(${Qt::CalendarWidget::NoHorizontalHeader()})));
     $horizontalHeaderCombo->setCurrentIndex(1);
 
-    my $horizontalHeaderLabel = Qt4::Label(this->tr('&Horizontal header:'));
+    my $horizontalHeaderLabel = Qt::Label(this->tr('&Horizontal header:'));
     this->{horizontalHeaderLabel} = $horizontalHeaderLabel;
     $horizontalHeaderLabel->setBuddy($horizontalHeaderCombo);
 
-    my $verticalHeaderCombo = Qt4::ComboBox();
+    my $verticalHeaderCombo = Qt::ComboBox();
     this->{verticalHeaderCombo} = $verticalHeaderCombo;
     $verticalHeaderCombo->addItem(this->tr('ISO week numbers'),
-                                 Qt4::Variant(Qt4::Int(${Qt4::CalendarWidget::ISOWeekNumbers()})));
-    $verticalHeaderCombo->addItem(this->tr('None'), Qt4::Variant(Qt4::Int(${Qt4::CalendarWidget::NoVerticalHeader()})));
+                                 Qt::Variant(Qt::Int(${Qt::CalendarWidget::ISOWeekNumbers()})));
+    $verticalHeaderCombo->addItem(this->tr('None'), Qt::Variant(Qt::Int(${Qt::CalendarWidget::NoVerticalHeader()})));
 
-    my $verticalHeaderLabel = Qt4::Label(this->tr('&Vertical header:'));
+    my $verticalHeaderLabel = Qt::Label(this->tr('&Vertical header:'));
     this->{verticalHeaderLabel} = $verticalHeaderLabel;
     $verticalHeaderLabel->setBuddy($verticalHeaderCombo);
 
@@ -435,12 +436,12 @@ sub createGeneralOptionsGroupBox {
             this, SLOT 'verticalHeaderChanged(int)');
 # [11]
 
-    my $checkBoxLayout = Qt4::HBoxLayout();
+    my $checkBoxLayout = Qt::HBoxLayout();
     $checkBoxLayout->addWidget($gridCheckBox);
     $checkBoxLayout->addStretch();
     $checkBoxLayout->addWidget($navigationCheckBox);
 
-    my $outerLayout = Qt4::GridLayout();
+    my $outerLayout = Qt::GridLayout();
     $outerLayout->addWidget($localeLabel, 0, 0);
     $outerLayout->addWidget($localeCombo, 0, 1);
     $outerLayout->addWidget($firstDayLabel, 1, 0);
@@ -464,39 +465,39 @@ sub createGeneralOptionsGroupBox {
 
 # [13]
 sub createDatesGroupBox {
-    my $datesGroupBox = Qt4::GroupBox(this->tr('Dates'));
+    my $datesGroupBox = Qt::GroupBox(this->tr('Dates'));
     this->{datesGroupBox} = $datesGroupBox;
 
-    my $minimumDateEdit = Qt4::DateEdit();
+    my $minimumDateEdit = Qt::DateEdit();
     this->{minimumDateEdit} = $minimumDateEdit;
     $minimumDateEdit->setDisplayFormat('MMM d yyyy');
     $minimumDateEdit->setDateRange(this->calendar->minimumDate(),
                                   this->calendar->maximumDate());
     $minimumDateEdit->setDate(this->calendar->minimumDate());
 
-    my $minimumDateLabel = Qt4::Label(this->tr('&Minimum Date:'));
+    my $minimumDateLabel = Qt::Label(this->tr('&Minimum Date:'));
     this->{minimumDateLabel} = $minimumDateLabel;
     $minimumDateLabel->setBuddy($minimumDateEdit);
 
-    my $currentDateEdit = Qt4::DateEdit();
+    my $currentDateEdit = Qt::DateEdit();
     this->{currentDateEdit} = $currentDateEdit;
     $currentDateEdit->setDisplayFormat('MMM d yyyy');
     $currentDateEdit->setDate(this->calendar->selectedDate());
     $currentDateEdit->setDateRange(this->calendar->minimumDate(),
                                   this->calendar->maximumDate());
 
-    my $currentDateLabel = Qt4::Label(this->tr('&Current Date:'));
+    my $currentDateLabel = Qt::Label(this->tr('&Current Date:'));
     this->{currentDateLabel} = $currentDateLabel;
     $currentDateLabel->setBuddy($currentDateEdit);
 
-    my $maximumDateEdit = Qt4::DateEdit();
+    my $maximumDateEdit = Qt::DateEdit();
     this->{maximumDateEdit} = $maximumDateEdit;
     $maximumDateEdit->setDisplayFormat('MMM d yyyy');
     $maximumDateEdit->setDateRange(this->calendar->minimumDate(),
                                   this->calendar->maximumDate());
     $maximumDateEdit->setDate(this->calendar->maximumDate());
 
-    my $maximumDateLabel = Qt4::Label(this->tr('Ma&ximum Date:'));
+    my $maximumDateLabel = Qt::Label(this->tr('Ma&ximum Date:'));
     this->{maximumDateLabel} = $maximumDateLabel;
     $maximumDateLabel->setBuddy($maximumDateEdit);
 
@@ -511,7 +512,7 @@ sub createDatesGroupBox {
             this, SLOT 'maximumDateChanged(const QDate &)');
 
 # [14]
-    my $dateBoxLayout = Qt4::GridLayout();
+    my $dateBoxLayout = Qt::GridLayout();
     $dateBoxLayout->addWidget($currentDateLabel, 1, 0);
     $dateBoxLayout->addWidget($currentDateEdit, 1, 1);
     $dateBoxLayout->addWidget($minimumDateLabel, 0, 0);
@@ -527,7 +528,7 @@ sub createDatesGroupBox {
 
 # [16]
 sub createTextFormatsGroupBox {
-    my $textFormatsGroupBox = Qt4::GroupBox(this->tr('Text Formats'));
+    my $textFormatsGroupBox = Qt::GroupBox(this->tr('Text Formats'));
     this->{textFormatsGroupBox} = $textFormatsGroupBox;
 
     my $weekdayColorCombo = this->createColorComboBox();
@@ -535,7 +536,7 @@ sub createTextFormatsGroupBox {
     $weekdayColorCombo->setCurrentIndex(
             $weekdayColorCombo->findText(this->tr('Black')));
 
-    my $weekdayColorLabel = Qt4::Label(this->tr('&Weekday color:'));
+    my $weekdayColorLabel = Qt::Label(this->tr('&Weekday color:'));
     this->{weekdayColorLabel} = $weekdayColorLabel;
     $weekdayColorLabel->setBuddy($weekdayColorCombo);
 
@@ -544,25 +545,25 @@ sub createTextFormatsGroupBox {
     $weekendColorCombo->setCurrentIndex(
             $weekendColorCombo->findText(this->tr('Red')));
 
-    my $weekendColorLabel = Qt4::Label(this->tr('Week&end color:'));
+    my $weekendColorLabel = Qt::Label(this->tr('Week&end color:'));
     this->{weekendColorLabel} = $weekendColorLabel;
     $weekendColorLabel->setBuddy($weekendColorCombo);
 
 # [16] //! [17]
-    my $headerTextFormatCombo = Qt4::ComboBox();
+    my $headerTextFormatCombo = Qt::ComboBox();
     this->{headerTextFormatCombo} = $headerTextFormatCombo;
     $headerTextFormatCombo->addItem(this->tr('Bold'));
     $headerTextFormatCombo->addItem(this->tr('Italic'));
     $headerTextFormatCombo->addItem(this->tr('Plain'));
 
-    my $headerTextFormatLabel = Qt4::Label(this->tr('&Header text:'));
+    my $headerTextFormatLabel = Qt::Label(this->tr('&Header text:'));
     this->{headerTextFormatLabel} = $headerTextFormatLabel;
     $headerTextFormatLabel->setBuddy($headerTextFormatCombo);
 
-    my $firstFridayCheckBox = Qt4::CheckBox(this->tr('&First Friday in blue'));
+    my $firstFridayCheckBox = Qt::CheckBox(this->tr('&First Friday in blue'));
     this->{firstFridayCheckBox} = $firstFridayCheckBox;
 
-    my $mayFirstCheckBox = Qt4::CheckBox(this->tr('May &1 in red'));
+    my $mayFirstCheckBox = Qt::CheckBox(this->tr('May &1 in red'));
     this->{mayFirstCheckBox} = $mayFirstCheckBox;
 
 # [17] //! [18]
@@ -578,12 +579,12 @@ sub createTextFormatsGroupBox {
             this, SLOT 'reformatCalendarPage()');
 
 # [18]
-    my $checkBoxLayout = Qt4::HBoxLayout();
+    my $checkBoxLayout = Qt::HBoxLayout();
     $checkBoxLayout->addWidget($firstFridayCheckBox);
     $checkBoxLayout->addStretch();
     $checkBoxLayout->addWidget($mayFirstCheckBox);
 
-    my $outerLayout = Qt4::GridLayout();
+    my $outerLayout = Qt::GridLayout();
     $outerLayout->addWidget($weekdayColorLabel, 0, 0);
     $outerLayout->addWidget($weekdayColorCombo, 0, 1);
     $outerLayout->addWidget($weekendColorLabel, 1, 0);
@@ -603,11 +604,11 @@ sub createTextFormatsGroupBox {
 
 # [20]
 sub createColorComboBox {
-    my $comboBox = Qt4::ComboBox();
-    $comboBox->addItem(this->tr('Red'), Qt4::qVariantFromValue(Qt4::Color(Qt4::red())));
-    $comboBox->addItem(this->tr('Blue'), Qt4::qVariantFromValue(Qt4::Color(Qt4::blue())));
-    $comboBox->addItem(this->tr('Black'), Qt4::qVariantFromValue(Qt4::Color(Qt4::black())));
-    $comboBox->addItem(this->tr('Magenta'), Qt4::qVariantFromValue(Qt4::Color(Qt4::magenta())));
+    my $comboBox = Qt::ComboBox();
+    $comboBox->addItem(this->tr('Red'), Qt::qVariantFromValue(Qt::Color(Qt::red())));
+    $comboBox->addItem(this->tr('Blue'), Qt::qVariantFromValue(Qt::Color(Qt::blue())));
+    $comboBox->addItem(this->tr('Black'), Qt::qVariantFromValue(Qt::Color(Qt::black())));
+    $comboBox->addItem(this->tr('Magenta'), Qt::qVariantFromValue(Qt::Color(Qt::magenta())));
     return $comboBox;
 }
 # [20]

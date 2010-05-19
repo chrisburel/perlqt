@@ -4,10 +4,11 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 # [0]
-use Qt4::isa qw( Qt4::SpinBox );
+use QtCore4::isa qw( Qt::SpinBox );
 # [0]
 
 # [0]
@@ -21,7 +22,7 @@ sub NEW {
 sub valueFromText {
     my ($text) = @_;
 
-    my $regExp = Qt4::RegExp(this->tr('(\\d+)(\\s*[xx]\\s*\\d+)?'));
+    my $regExp = Qt::RegExp(this->tr('(\\d+)(\\s*[xx]\\s*\\d+)?'));
 
     if ($regExp->exactMatch($text)) {
         return $regExp->cap(1).toInt();

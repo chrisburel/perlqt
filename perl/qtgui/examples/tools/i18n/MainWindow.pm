@@ -4,8 +4,9 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::MainWindow );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::MainWindow );
 
 sub centralWidget() {
     return this->{centralWidget};
@@ -53,52 +54,52 @@ my $listEntries = [
 sub NEW {
     my ( $class ) = @_;
     $class->SUPER::NEW();
-    my $centralWidget = Qt4::Widget();
+    my $centralWidget = Qt::Widget();
     this->{centralWidget} = $centralWidget;
     this->setCentralWidget($centralWidget);
 
     this->createGroupBox();
 
-    my $listWidget = Qt4::ListWidget();
+    my $listWidget = Qt::ListWidget();
     this->{listWidget} = $listWidget;
     for (my $i = 0; $listEntries->[$i]; ++$i) {
         $listWidget->addItem(qApp->translate($listEntries->[$i]->[0], $listEntries->[$i]->[1]));
     }
 
-    my $mainLayout = Qt4::VBoxLayout();
+    my $mainLayout = Qt::VBoxLayout();
     $mainLayout->addWidget(this->groupBox);
     $mainLayout->addWidget($listWidget);
     $centralWidget->setLayout($mainLayout);
 
-    my $exitAction = Qt4::Action(this->tr('E&xit'), this);
+    my $exitAction = Qt::Action(this->tr('E&xit'), this);
     this->{exitAction} = $exitAction;
     this->connect($exitAction, SIGNAL 'triggered()', qApp, SLOT 'quit()');
 
     my $fileMenu = this->menuBar()->addMenu(this->tr('&File'));
     this->{fileMenu} = $fileMenu;
-    $fileMenu->setPalette(Qt4::Palette(Qt4::red()));
+    $fileMenu->setPalette(Qt::Palette(Qt::red()));
     $fileMenu->addAction($exitAction);
 
     this->setWindowTitle(this->tr('Language:').this->tr('English'));
     this->statusBar()->showMessage(this->tr('Internationalization Example'));
 
     if (this->tr('LTR') eq 'RTL') {
-        this->setLayoutDirection(Qt4::RightToLeft());
+        this->setLayoutDirection(Qt::RightToLeft());
     }
 }
 
 sub createGroupBox {
-    my $groupBox = Qt4::GroupBox(this->tr('View'));
+    my $groupBox = Qt::GroupBox(this->tr('View'));
     this->{groupBox} = $groupBox;
-    my $perspectiveRadioButton = Qt4::RadioButton(this->tr('Perspective'));
+    my $perspectiveRadioButton = Qt::RadioButton(this->tr('Perspective'));
     this->{perspectiveRadioButton} = $perspectiveRadioButton;
-    my $isometricRadioButton = Qt4::RadioButton(this->tr('Isometric'));
+    my $isometricRadioButton = Qt::RadioButton(this->tr('Isometric'));
     this->{isometricRadioButton} = $isometricRadioButton;
-    my $obliqueRadioButton = Qt4::RadioButton(this->tr('Oblique'));
+    my $obliqueRadioButton = Qt::RadioButton(this->tr('Oblique'));
     this->{obliqueRadioButton} = $obliqueRadioButton;
     $perspectiveRadioButton->setChecked(1);
 
-    my $groupBoxLayout = Qt4::VBoxLayout();
+    my $groupBoxLayout = Qt::VBoxLayout();
     $groupBoxLayout->addWidget($perspectiveRadioButton);
     $groupBoxLayout->addWidget($isometricRadioButton);
     $groupBoxLayout->addWidget($obliqueRadioButton);

@@ -4,12 +4,13 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 # [0]
-use Qt4::isa qw( Qt4::GroupBox );
-use Qt4::signals
+use QtCore4::isa qw( Qt::GroupBox );
+use QtCore4::signals
     valueChanged => ['int'];
-use Qt4::slots
+use QtCore4::slots
     setValue => ['int'],
     setMinimum => ['int'],
     setMaximum => ['int'],
@@ -33,17 +34,17 @@ sub dial() {
 sub NEW {
     my ( $class, $orientation, $title, $parent) = @_;
     $class->SUPER::NEW( $title, $parent );
-    my $slider = this->{slider} = Qt4::Slider($orientation);
-    $slider->setFocusPolicy(Qt4::StrongFocus());
-    $slider->setTickPosition(Qt4::Slider::TicksBothSides());
+    my $slider = this->{slider} = Qt::Slider($orientation);
+    $slider->setFocusPolicy(Qt::StrongFocus());
+    $slider->setTickPosition(Qt::Slider::TicksBothSides());
     $slider->setTickInterval(10);
     $slider->setSingleStep(1);
 
-    my $scrollBar = this->{scrollBar} =  Qt4::ScrollBar($orientation);
-    $scrollBar->setFocusPolicy(Qt4::StrongFocus());
+    my $scrollBar = this->{scrollBar} =  Qt::ScrollBar($orientation);
+    $scrollBar->setFocusPolicy(Qt::StrongFocus());
 
-    my $dial = this->{dial} = Qt4::Dial();
-    $dial->setFocusPolicy(Qt4::StrongFocus());
+    my $dial = this->{dial} = Qt::Dial();
+    $dial->setFocusPolicy(Qt::StrongFocus());
 
     this->connect($slider, SIGNAL 'valueChanged(int)', $scrollBar, SLOT 'setValue(int)');
     this->connect($scrollBar, SIGNAL 'valueChanged(int)', $dial, SLOT 'setValue(int)');
@@ -56,14 +57,14 @@ sub NEW {
     my $direction;
 # [3] //! [4]
 
-    if ($orientation == Qt4::Horizontal()) {
-        $direction = Qt4::BoxLayout::TopToBottom();
+    if ($orientation == Qt::Horizontal()) {
+        $direction = Qt::BoxLayout::TopToBottom();
     }
     else {
-        $direction = Qt4::BoxLayout::LeftToRight();
+        $direction = Qt::BoxLayout::LeftToRight();
     }
 
-    my $slidersLayout = Qt4::BoxLayout($direction);
+    my $slidersLayout = Qt::BoxLayout($direction);
     $slidersLayout->addWidget($slider);
     $slidersLayout->addWidget($scrollBar);
     $slidersLayout->addWidget($dial);

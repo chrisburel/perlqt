@@ -3,11 +3,12 @@
 use strict;
 use warnings;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use TetrixWindow;
 
 sub main {
-    my $app = Qt4::Application( \@ARGV );
+    my $app = Qt::Application( \@ARGV );
     my $window = TetrixWindow();
     $window->show();
     srand (time ^ $$ ^ unpack "%L*", `ps axww | gzip -f`);

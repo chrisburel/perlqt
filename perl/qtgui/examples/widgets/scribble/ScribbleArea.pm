@@ -5,10 +5,11 @@ use warnings;
 use blib;
 
 use List::Util qw(max);
-use Qt4;
+use QtCore4;
+use QtGui4;
 # [0]
-use Qt4::isa qw( Qt4::Widget );
-use Qt4::slots
+use QtCore4::isa qw( Qt::Widget );
+use QtCore4::slots
     clearImage => [],
     print => [];
 
@@ -53,12 +54,12 @@ sub lastPoint() {
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
-    this->setAttribute(Qt4::WA_StaticContents());
+    this->setAttribute(Qt::WA_StaticContents());
     this->{modified} = 0;
     this->{scribbling} = 0;
     this->{myPenWidth} = 1;
-    this->{myPenColor} = Qt4::Color(Qt4::blue());
-    this->{image} = Qt4::Image();
+    this->{myPenColor} = Qt::Color(Qt::blue());
+    this->{image} = Qt::Image();
 }
 # [0]
 
@@ -66,7 +67,7 @@ sub NEW {
 sub openImage {
     my ($fileName) = @_;
 # [1] //! [2]
-    my $loadedImage = Qt4::Image();
+    my $loadedImage = Qt::Image();
     if (!$loadedImage->load($fileName)) {
         return 0;
     }
@@ -126,22 +127,22 @@ sub clearImage {
 sub mousePressEvent {
 # [11] //! [12]
     my ($event) = @_;
-    if ($event->button() == Qt4::LeftButton()) {
-        this->{lastPoint} = Qt4::Point($event->pos());
+    if ($event->button() == Qt::LeftButton()) {
+        this->{lastPoint} = Qt::Point($event->pos());
         this->{scribbling} = 1;
     }
 }
 
 sub mouseMoveEvent {
     my ($event) = @_;
-    if (($event->buttons() & ${Qt4::LeftButton()}) && this->scribbling) {
+    if (($event->buttons() & ${Qt::LeftButton()}) && this->scribbling) {
         this->drawLineTo($event->pos());
     }
 }
 
 sub mouseReleaseEvent {
     my ($event) = @_;
-    if ($event->button() == Qt4::LeftButton() && this->scribbling) {
+    if ($event->button() == Qt::LeftButton() && this->scribbling) {
         this->drawLineTo($event->pos());
         this->{scribbling} = 0;
     }
@@ -150,8 +151,8 @@ sub mouseReleaseEvent {
 # [12] //! [13]
 sub paintEvent {
 # [13] //! [14]
-    my $painter = Qt4::Painter(this);
-    $painter->drawImage(Qt4::Point(0, 0), this->image);
+    my $painter = Qt::Painter(this);
+    $painter->drawImage(Qt::Point(0, 0), this->image);
     $painter->end();
 }
 # [14]
@@ -163,7 +164,7 @@ sub resizeEvent {
     if (this->width() > this->image->width() || this->height() > this->image->height()) {
         my $newWidth = max(this->width() + 128, this->image->width());
         my $newHeight = max(this->height() + 128, this->image->height());
-        this->resizeImage(this->image, Qt4::Size($newWidth, $newHeight));
+        this->resizeImage(this->image, Qt::Size($newWidth, $newHeight));
         this->update();
     }
     this->SUPER::resizeEvent($event);
@@ -174,16 +175,16 @@ sub resizeEvent {
 sub drawLineTo {
 # [17] //! [18]
     my ($endPoint) = @_;
-    my $painter = Qt4::Painter(this->image);
-    $painter->setPen(Qt4::Pen(Qt4::Brush(this->myPenColor), this->myPenWidth, 
-        Qt4::SolidLine(), Qt4::RoundCap(), Qt4::RoundJoin()));
+    my $painter = Qt::Painter(this->image);
+    $painter->setPen(Qt::Pen(Qt::Brush(this->myPenColor), this->myPenWidth, 
+        Qt::SolidLine(), Qt::RoundCap(), Qt::RoundJoin()));
     $painter->drawLine(this->lastPoint, $endPoint);
     this->{modified} = 1;
 
     my $rad = (this->myPenWidth / 2) + 2;
-    this->update(Qt4::Rect(this->lastPoint, $endPoint)->normalized()->adjusted(
+    this->update(Qt::Rect(this->lastPoint, $endPoint)->normalized()->adjusted(
                                      -$rad, -$rad, +$rad, +$rad));
-    this->{lastPoint} = Qt4::Point($endPoint);
+    this->{lastPoint} = Qt::Point($endPoint);
     $painter->end();
 }
 # [18]
@@ -196,11 +197,11 @@ sub resizeImage {
         return;
     }
 
-    my $newImage = Qt4::Image($newSize, Qt4::Image::Format_RGB32());
+    my $newImage = Qt::Image($newSize, Qt::Image::Format_RGB32());
     # This is equivalent of qRgb(255, 255, 255)
     $newImage->fill((255 << 16) + (255 << 8) + 255);
-    my $painter = Qt4::Painter($newImage);
-    $painter->drawImage(Qt4::Point(0, 0), $image);
+    my $painter = Qt::Painter($newImage);
+    $painter->drawImage(Qt::Point(0, 0), $image);
     this->{image} = $newImage;
     $painter->end();
 }
@@ -209,20 +210,20 @@ sub resizeImage {
 # [21]
 sub print {
 #ifndef QT_NO_PRINTER
-    my $printer = Qt4::Printer(Qt4::Printer::HighResolution());
+    my $printer = Qt::Printer(Qt::Printer::HighResolution());
  
-    my $printDialog = Qt4::PrintDialog($printer, this);
+    my $printDialog = Qt::PrintDialog($printer, this);
 # [21] //! [22]
-    if ($printDialog->exec() == Qt4::Dialog::Accepted()) {
-        my $painter = Qt4::Painter($printer);
+    if ($printDialog->exec() == Qt::Dialog::Accepted()) {
+        my $painter = Qt::Painter($printer);
         my $rect = $painter->viewport();
         my $size = this->image->size();
-        $size->scale($rect->size(), Qt4::KeepAspectRatio());
+        $size->scale($rect->size(), Qt::KeepAspectRatio());
         $painter->setViewport($rect->x(), $rect->y(), $size->width(), $size->height());
         $painter->setWindow(this->image->rect());
         $painter->drawImage(0, 0, this->image);
     }
-#endif // Qt4::T_NO_PRINTER
+#endif // Qt::T_NO_PRINTER
 }
 # [22]
 

@@ -2,11 +2,12 @@ package ImageItemObject;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 use Scalar::Util qw(weaken);
 
-use Qt4::isa qw( Qt4::Object );
-use Qt4::slots
+use QtCore4::isa qw( Qt::Object );
+use QtCore4::slots
     setFrame => ['int'],
     updateItemPosition => [];
 
@@ -44,8 +45,9 @@ package ImageItem;
 
 use strict;
 use warnings;
-use Qt4;
-use Qt4::isa qw( Qt4::GraphicsPixmapItem );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::GraphicsPixmapItem );
 use ImageItemObject;
 
 # [0]
@@ -62,7 +64,7 @@ sub NEW {
     this->{recordId} = $id;
     this->setAcceptsHoverEvents(1);
 
-    this->{timeLine} = Qt4::TimeLine();
+    this->{timeLine} = Qt::TimeLine();
     this->{timeLine}->setDuration(150);
     this->{timeLine}->setFrameRange(0, 150);
 
@@ -76,14 +78,14 @@ sub NEW {
 # [1]
 sub hoverEnterEvent
 {
-    this->{timeLine}->setDirection(Qt4::TimeLine::Forward());
+    this->{timeLine}->setDirection(Qt::TimeLine::Forward());
 
     if (this->{z} != 1.0) {
         this->{z} = 1.0;
         this->{object}->updateItemPosition();
     }
 
-    if (this->{timeLine}->state() == Qt4::TimeLine::NotRunning()) {
+    if (this->{timeLine}->state() == Qt::TimeLine::NotRunning()) {
         this->{timeLine}->start();
     }
 }
@@ -92,12 +94,12 @@ sub hoverEnterEvent
 # [2]
 sub hoverLeaveEvent
 {
-    this->{timeLine}->setDirection(Qt4::TimeLine::Backward());
+    this->{timeLine}->setDirection(Qt::TimeLine::Backward());
     if (this->{z} != 0.0) {
         this->{z} = 0.0;
     }
 
-    if (this->{timeLine}->state() == Qt4::TimeLine::NotRunning()) {
+    if (this->{timeLine}->state() == Qt::TimeLine::NotRunning()) {
         this->{timeLine}->start();
     }
 }
@@ -106,7 +108,7 @@ sub hoverLeaveEvent
 # [4]
 sub adjust
 {
-    my $matrix = Qt4::Matrix();
+    my $matrix = Qt::Matrix();
     $matrix->scale(150/ this->boundingRect()->width(), 120/ this->boundingRect()->height());
     this->setMatrix($matrix);
 }

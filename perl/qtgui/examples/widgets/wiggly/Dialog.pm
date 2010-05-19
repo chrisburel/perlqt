@@ -4,8 +4,9 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Dialog );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Dialog );
 
 use WigglyWidget;
 
@@ -15,9 +16,9 @@ sub NEW {
     $class->SUPER::NEW( $parent );
 
     my $wigglyWidget = WigglyWidget();
-    my $lineEdit = Qt4::LineEdit();
+    my $lineEdit = Qt::LineEdit();
 
-    my $layout = Qt4::VBoxLayout();
+    my $layout = Qt::VBoxLayout();
     $layout->addWidget($wigglyWidget);
     $layout->addWidget($lineEdit);
     this->setLayout($layout);

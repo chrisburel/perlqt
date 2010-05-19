@@ -5,16 +5,17 @@ use warnings;
 use blib;
 
 use List::Util qw( max );
-use Qt4;
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Widget );
 
-use Qt4::slots
+use QtCore4::slots
     updateFont => ['QFont'],
     updateSize => ['QString'],
     updateStyle => ['QString'],
     updateFontMerging => ['bool'];
 
-use Qt4::signals
+use QtCore4::signals
     characterSelected => ['QString'];
 
 sub displayFont() {
@@ -56,7 +57,7 @@ sub NEW {
     this->setSquareSize( 24 );
     this->setColumns( 16 );
     this->setLastKey( -1 );
-    this->setDisplayFont( Qt4::Font() );
+    this->setDisplayFont( Qt::Font() );
     this->setMouseTracking(1);
 }
 # [0]
@@ -65,7 +66,7 @@ sub NEW {
 sub updateFont {
     my ($font) = @_;
     this->displayFont->setFamily($font->family());
-    this->setSquareSize( max(24, Qt4::FontMetrics(this->displayFont)->xHeight() * 3) );
+    this->setSquareSize( max(24, Qt::FontMetrics(this->displayFont)->xHeight() * 3) );
     this->adjustSize();
     this->update();
 }
@@ -75,7 +76,7 @@ sub updateFont {
 sub updateSize {
     my ($fontSize) = @_;
     this->displayFont->setPointSize($fontSize);
-    this->setSquareSize( max(24, Qt4::FontMetrics(displayFont)->xHeight() * 3) );
+    this->setSquareSize( max(24, Qt::FontMetrics(displayFont)->xHeight() * 3) );
     this->adjustSize();
     this->update();
 }
@@ -83,11 +84,11 @@ sub updateSize {
 
 sub updateStyle {
     my ($fontStyle) = @_;
-    my $fontDatabase = Qt4::FontDatabase();
+    my $fontDatabase = Qt::FontDatabase();
     my $oldStrategy = this->displayFont->styleStrategy();
     this->setDisplayFont( $fontDatabase->font(this->displayFont->family(), $fontStyle, this->displayFont->pointSize()) );
     this->displayFont->setStyleStrategy($oldStrategy);
-    this->setSquareSize( max(24, Qt4::FontMetrics(displayFont)->xHeight() * 3) );
+    this->setSquareSize( max(24, Qt::FontMetrics(displayFont)->xHeight() * 3) );
     this->adjustSize();
     this->update();
 }
@@ -95,10 +96,10 @@ sub updateStyle {
 sub updateFontMerging {
     my ($enable) = @_;
     if ($enable) {
-        this->displayFont->setStyleStrategy(Qt4::Font::PreferDefault());
+        this->displayFont->setStyleStrategy(Qt::Font::PreferDefault());
     }
     else {
-        this->displayFont->setStyleStrategy(Qt4::Font::NoFontMerging());
+        this->displayFont->setStyleStrategy(Qt::Font::NoFontMerging());
     }
     this->adjustSize();
     this->update();
@@ -106,7 +107,7 @@ sub updateFontMerging {
 
 # [3]
 sub sizeHint {
-    return Qt4::Size(this->columns*this->squareSize, (65536/this->columns)*this->squareSize);
+    return Qt::Size(this->columns*this->squareSize, (65536/this->columns)*this->squareSize);
 }
 # [3]
 
@@ -122,16 +123,16 @@ sub mouseMoveEvent {
                   . $char
                   . "</span><p>Value: 0x"
                   . sprintf( '%x', $key );
-    Qt4::ToolTip::showText($event->globalPos(), $text, this);
+    Qt::ToolTip::showText($event->globalPos(), $text, this);
 }
 # [4]
 
 # [5]
 sub mousePressEvent {
     my ($event) = @_;
-    if ($event->button() == Qt4::LeftButton()) {
+    if ($event->button() == Qt::LeftButton()) {
         this->setLastKey( sprintf '%d', (sprintf '%d', $event->y()/this->squareSize)*this->columns + $event->x()/this->squareSize );
-        if (Qt4::Char(this->lastKey)->category() != Qt4::Char::NoCategory()) {
+        if (Qt::Char(this->lastKey)->category() != Qt::Char::NoCategory()) {
             my $char = chr(this->lastKey);
             utf8::upgrade($char);
             emit this->characterSelected($char);
@@ -148,8 +149,8 @@ sub mousePressEvent {
 sub paintEvent {
     my ($event) = @_;
     my $squareSize = this->squareSize;
-    my $painter = Qt4::Painter(this);
-    $painter->fillRect($event->rect(), Qt4::Brush(Qt4::white()));
+    my $painter = Qt::Painter(this);
+    $painter->fillRect($event->rect(), Qt::Brush(Qt::white()));
     $painter->setFont(this->displayFont);
 # [6]
 
@@ -162,7 +163,7 @@ sub paintEvent {
 # [7]
 
 # [8]
-    $painter->setPen(Qt4::Color(Qt4::gray()));
+    $painter->setPen(Qt::Color(Qt::gray()));
     for (my $row = $beginRow; $row <= $endRow; ++$row) {
         for (my $column = $beginColumn; $column <= $endColumn; ++$column) {
             $painter->drawRect($column*$squareSize, $row*$squareSize, $squareSize, $squareSize);
@@ -172,8 +173,8 @@ sub paintEvent {
 # [9]
 
 # [10]
-    my $fontMetrics = Qt4::FontMetrics(this->displayFont);
-    $painter->setPen(Qt4::Color(Qt4::black()));
+    my $fontMetrics = Qt::FontMetrics(this->displayFont);
+    $painter->setPen(Qt::Color(Qt::black()));
     for (my $row = $beginRow; $row <= $endRow; ++$row) {
 
         for (my $column = $beginColumn; $column <= $endColumn; ++$column) {
@@ -182,12 +183,12 @@ sub paintEvent {
             $painter->setClipRect($column*$squareSize, $row*$squareSize, $squareSize, $squareSize);
 
             if ($key == this->lastKey) {
-                $painter->fillRect($column*$squareSize + 1, $row*$squareSize + 1, $squareSize, $squareSize, Qt4::Brush(Qt4::red()));
+                $painter->fillRect($column*$squareSize + 1, $row*$squareSize + 1, $squareSize, $squareSize, Qt::Brush(Qt::red()));
             }
 
             my $char = chr($key);
             utf8::upgrade($char);
-            $painter->drawText($column*$squareSize + ($squareSize / 2) - $fontMetrics->width(Qt4::Char(Qt4::Int($key)))/2,
+            $painter->drawText($column*$squareSize + ($squareSize / 2) - $fontMetrics->width(Qt::Char(Qt::Int($key)))/2,
                              $row*$squareSize + 4 + $fontMetrics->ascent(),
                              $char);
         }

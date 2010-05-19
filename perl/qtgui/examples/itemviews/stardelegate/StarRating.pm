@@ -2,7 +2,8 @@ package StarRating;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 use constant {
     Editable => 0,
@@ -22,18 +23,18 @@ sub new
     $self->{myStarCount} = $starCount;
     $self->{myMaxStarCount} = $maxStarCount;
 
-    push @{$self->{starPolygon}}, Qt4::PointF(1.0, 0.5);
+    push @{$self->{starPolygon}}, Qt::PointF(1.0, 0.5);
     foreach my $i ( 1..4 ) {
-        push @{$self->{starPolygon}}, Qt4::PointF(0.5 + 0.5 * cos(0.8 * $i * 3.14),
+        push @{$self->{starPolygon}}, Qt::PointF(0.5 + 0.5 * cos(0.8 * $i * 3.14),
                                0.5 + 0.5 * sin(0.8 * $i * 3.14));
     }
 
     push @{$self->{diamondPolygon}},
-        Qt4::PointF(0.4, 0.5),
-        Qt4::PointF(0.5, 0.4),
-        Qt4::PointF(0.6, 0.5),
-        Qt4::PointF(0.5, 0.6),
-        Qt4::PointF(0.4, 0.5);
+        Qt::PointF(0.4, 0.5),
+        Qt::PointF(0.5, 0.4),
+        Qt::PointF(0.6, 0.5),
+        Qt::PointF(0.5, 0.6),
+        Qt::PointF(0.4, 0.5);
 
     return $self;
 }
@@ -67,7 +68,7 @@ sub setMaxStarCount
 sub sizeHint
 {
     my $self = shift;
-    return Qt4::Size(
+    return Qt::Size(
         $self->{myMaxStarCount} * PaintingScaleFactor,
         1 * PaintingScaleFactor
     );
@@ -80,8 +81,8 @@ sub paint
     my ($self, $painter, $rect, $palette, $mode) = @_;
     $painter->save();
 
-    $painter->setRenderHint(Qt4::Painter::Antialiasing(), 1);
-    $painter->setPen(Qt4::NoPen());
+    $painter->setRenderHint(Qt::Painter::Antialiasing(), 1);
+    $painter->setPen(Qt::NoPen());
 
     if ($mode == Editable) {
         $painter->setBrush($palette->highlight());
@@ -95,9 +96,9 @@ sub paint
 
     foreach my $i ( 0..$self->{myMaxStarCount}-1 ) {
         if ($i < $self->{myStarCount}) {
-            $painter->drawPolygon(Qt4::PolygonF($self->{starPolygon}), Qt4::WindingFill());
+            $painter->drawPolygon(Qt::PolygonF($self->{starPolygon}), Qt::WindingFill());
         } elsif ($mode == Editable) {
-            $painter->drawPolygon(Qt4::PolygonF($self->{diamondPolygon}), Qt4::WindingFill());
+            $painter->drawPolygon(Qt::PolygonF($self->{diamondPolygon}), Qt::WindingFill());
         }
         $painter->translate(1.0, 0.0);
     }

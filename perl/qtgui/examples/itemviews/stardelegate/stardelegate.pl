@@ -2,8 +2,9 @@
 
 use strict;
 use warnings;
-use Qt4;
-#use Qt4::debug qw(all);
+use QtCore4;
+use QtGui4;
+#use Qt::debug qw(all);
 
 use StarDelegate;
 use StarEditor;
@@ -43,12 +44,12 @@ sub populateTableWidget
 
     foreach my $rowIndex ( 0..$#staticData ) {
         my $row = $staticData[$rowIndex];
-        my $item0 = Qt4::TableWidgetItem($row->{title});
-        my $item1 = Qt4::TableWidgetItem($row->{genre});
-        my $item2 = Qt4::TableWidgetItem($row->{artist});
-        my $item3 = Qt4::TableWidgetItem();
+        my $item0 = Qt::TableWidgetItem($row->{title});
+        my $item1 = Qt::TableWidgetItem($row->{genre});
+        my $item2 = Qt::TableWidgetItem($row->{artist});
+        my $item3 = Qt::TableWidgetItem();
         $item3->setData(0,
-                       Qt4::qVariantFromValue(StarRating->new($row->{rating})));
+                       Qt::qVariantFromValue(StarRating->new($row->{rating})));
 
         $tableWidget->setItem($rowIndex, 0, $item0);
         $tableWidget->setItem($rowIndex, 1, $item1);
@@ -61,13 +62,13 @@ sub populateTableWidget
 # [5]
 sub main
 {
-    my $app = Qt4::Application(\@ARGV);
+    my $app = Qt::Application(\@ARGV);
 
-    my $tableWidget = Qt4::TableWidget(4, 4);
+    my $tableWidget = Qt::TableWidget(4, 4);
     $tableWidget->setItemDelegate(StarDelegate($tableWidget));
-    $tableWidget->setEditTriggers(Qt4::AbstractItemView::DoubleClicked()
-                                | Qt4::AbstractItemView::SelectedClicked());
-    $tableWidget->setSelectionBehavior(Qt4::AbstractItemView::SelectRows());
+    $tableWidget->setEditTriggers(Qt::AbstractItemView::DoubleClicked()
+                                | Qt::AbstractItemView::SelectedClicked());
+    $tableWidget->setSelectionBehavior(Qt::AbstractItemView::SelectRows());
 
     my @headerLabels = qw( Title Genre Artist Rating );
     $tableWidget->setHorizontalHeaderLabels(\@headerLabels);

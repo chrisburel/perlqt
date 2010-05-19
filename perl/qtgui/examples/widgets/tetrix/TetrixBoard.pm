@@ -4,16 +4,17 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Frame );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Frame );
 use TetrixPiece;
 
 # [0]
-use Qt4::slots
+use QtCore4::slots
     start => [],
     pause => [];
 
-use Qt4::signals
+use QtCore4::signals
     scoreChanged => ['int'],
     levelChanged => ['int'],
     linesRemovedChanged => ['int'];
@@ -111,8 +112,8 @@ sub board() {
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
-    this->setFrameStyle(Qt4::Frame::Panel() | Qt4::Frame::Sunken());
-    this->setFocusPolicy(Qt4::StrongFocus());
+    this->setFrameStyle(Qt::Frame::Panel() | Qt::Frame::Sunken());
+    this->setFocusPolicy(Qt::StrongFocus());
     this->{isStarted} = 0;
     this->{isPaused} = 0;
     this->clearBoard();
@@ -120,7 +121,7 @@ sub NEW {
     this->{curPiece} = TetrixPiece();
     this->{nextPiece} = TetrixPiece();
     this->{nextPiece}->setRandomShape();
-    this->{timer} = Qt4::BasicTimer();
+    this->{timer} = Qt::BasicTimer();
 }
 # [0]
 
@@ -133,13 +134,13 @@ sub setNextPieceLabel {
 
 # [2]
 sub sizeHint {
-    return Qt4::Size(BoardWidth * 15 + this->frameWidth() * 2,
+    return Qt::Size(BoardWidth * 15 + this->frameWidth() * 2,
                  BoardHeight * 15 + this->frameWidth() * 2);
 }
 
 sub minimumSizeHint {
 # [2] //! [3]
-    return Qt4::Size(BoardWidth * 5 + this->frameWidth() * 2,
+    return Qt::Size(BoardWidth * 5 + this->frameWidth() * 2,
                  BoardHeight * 5 + this->frameWidth() * 2);
 }
 # [3]
@@ -191,12 +192,12 @@ sub paintEvent {
     my ($event) = @_;
     this->SUPER::paintEvent($event);
 
-    my $painter = Qt4::Painter(this);
+    my $painter = Qt::Painter(this);
     my $rect = this->contentsRect();
 # [7]
 
     if (this->{isPaused}) {
-        $painter->drawText($rect, Qt4::AlignCenter(), this->tr('Pause'));
+        $painter->drawText($rect, Qt::AlignCenter(), this->tr('Pause'));
         $painter->end();
         return;
     }
@@ -250,22 +251,22 @@ sub keyPressEvent {
 # [14]
     my $curX = this->{curX};
     my $curY = this->{curY};
-    if( $event->key() == Qt4::Key_Left() ) {
+    if( $event->key() == Qt::Key_Left() ) {
         this->tryMove($curPiece, $curX - 1, $curY);
     }
-    elsif( $event->key() == Qt4::Key_Right() ) {
+    elsif( $event->key() == Qt::Key_Right() ) {
         this->tryMove($curPiece, $curX + 1, $curY);
     }
-    elsif( $event->key() == Qt4::Key_Down() ) {
+    elsif( $event->key() == Qt::Key_Down() ) {
         this->tryMove($curPiece->rotatedRight(), $curX, $curY);
     }
-    elsif( $event->key() == Qt4::Key_Up() ) {
+    elsif( $event->key() == Qt::Key_Up() ) {
         this->tryMove($curPiece->rotatedLeft(), $curX, $curY);
     }
-    elsif( $event->key() == Qt4::Key_Space() ) {
+    elsif( $event->key() == Qt::Key_Space() ) {
         this->dropDown();
     }
-    elsif( $event->key() == Qt4::Key_D() ) {
+    elsif( $event->key() == Qt::Key_D() ) {
         this->oneLineDown();
     }
     else {
@@ -435,8 +436,8 @@ sub showNextPiece {
     my $dx = this->nextPiece->maxX() - this->nextPiece->minX() + 1;
     my $dy = this->nextPiece->maxY() - this->nextPiece->minY() + 1;
 
-    my $pixmap = Qt4::Pixmap($dx * this->squareWidth(), $dy * this->squareHeight());
-    my $painter = Qt4::Painter($pixmap);
+    my $pixmap = Qt::Pixmap($dx * this->squareWidth(), $dy * this->squareHeight());
+    my $painter = Qt::Painter($pixmap);
     $painter->fillRect($pixmap->rect(), this->nextPieceLabel->palette()->background());
 
     for (my $i = 0; $i < 4; ++$i) {
@@ -479,9 +480,9 @@ sub tryMove {
 sub drawSquare {
     my ($painter, $x, $y, $shape) = @_;
 
-    my $color = Qt4::Color($colorTable[int $shape]);
+    my $color = Qt::Color($colorTable[int $shape]);
     $painter->fillRect($x + 1, $y + 1, this->squareWidth() - 2, this->squareHeight() - 2,
-                     Qt4::Brush($color));
+                     Qt::Brush($color));
 
     $painter->setPen($color->light());
     $painter->drawLine($x, $y + this->squareHeight() - 1, $x, $y);

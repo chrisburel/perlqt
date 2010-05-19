@@ -2,10 +2,11 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 # [0]
-use Qt4::isa qw( Qt4::MainWindow );
-use Qt4::slots
+use QtCore4::isa qw( Qt::MainWindow );
+use QtCore4::slots
     setFontSize => ['int'],
     setMonth => ['int'],
     setYear => ['QDate'];
@@ -27,35 +28,35 @@ sub NEW
 {
     my ($class) = @_;
     $class->SUPER::NEW();
-    this->{selectedDate} = Qt4::Date::currentDate();
+    this->{selectedDate} = Qt::Date::currentDate();
     this->{fontSize} = 10;
 
-    my $centralWidget = Qt4::Widget();
+    my $centralWidget = Qt::Widget();
 # [0]
 
 # [1]
-    my $dateLabel = Qt4::Label(this->tr('Date:'));
-    my $monthCombo = Qt4::ComboBox();
+    my $dateLabel = Qt::Label(this->tr('Date:'));
+    my $monthCombo = Qt::ComboBox();
 
     for (my $month = 1; $month <= 12; ++$month) {
-        $monthCombo->addItem(Qt4::Date::longMonthName($month));
+        $monthCombo->addItem(Qt::Date::longMonthName($month));
     }
 
-    my $yearEdit = Qt4::DateTimeEdit();
+    my $yearEdit = Qt::DateTimeEdit();
     $yearEdit->setDisplayFormat('yyyy');
-    $yearEdit->setDateRange(Qt4::Date(1753, 1, 1), Qt4::Date(8000, 1, 1));
+    $yearEdit->setDateRange(Qt::Date(1753, 1, 1), Qt::Date(8000, 1, 1));
 # [1]
 
     $monthCombo->setCurrentIndex(this->selectedDate->month() - 1);
     $yearEdit->setDate(this->selectedDate);
 
 # [2]
-    my $fontSizeLabel = Qt4::Label(this->tr('Font size:'));
-    my $fontSizeSpinBox = Qt4::SpinBox();
+    my $fontSizeLabel = Qt::Label(this->tr('Font size:'));
+    my $fontSizeSpinBox = Qt::SpinBox();
     $fontSizeSpinBox->setRange(1, 64);
     $fontSizeSpinBox->setValue(10);
 
-    this->{editor} = Qt4::TextBrowser();
+    this->{editor} = Qt::TextBrowser();
     this->insertCalendar();
 # [2]
 
@@ -67,7 +68,7 @@ sub NEW
 # [3]
 
 # [4]
-    my $controlsLayout = Qt4::HBoxLayout();
+    my $controlsLayout = Qt::HBoxLayout();
     $controlsLayout->addWidget($dateLabel);
     $controlsLayout->addWidget($monthCombo);
     $controlsLayout->addWidget($yearEdit);
@@ -76,7 +77,7 @@ sub NEW
     $controlsLayout->addWidget($fontSizeSpinBox);
     $controlsLayout->addStretch(1);
 
-    my $centralLayout = Qt4::VBoxLayout();
+    my $centralLayout = Qt::VBoxLayout();
     $centralLayout->addLayout($controlsLayout);
     $centralLayout->addWidget(this->editor, 1);
     $centralWidget->setLayout($centralLayout);
@@ -92,24 +93,24 @@ sub insertCalendar
     my $cursor = this->editor->textCursor();
     $cursor->beginEditBlock();
 
-    my $date = Qt4::Date(this->selectedDate->year(), this->selectedDate->month(), 1);
+    my $date = Qt::Date(this->selectedDate->year(), this->selectedDate->month(), 1);
 # [5]
 
 # [6]
-    my $tableFormat = Qt4::TextTableFormat();
-    $tableFormat->setAlignment(Qt4::AlignHCenter());
-    $tableFormat->setBackground(Qt4::Brush(Qt4::Color(Qt4::String('#e0e0e0'))));
+    my $tableFormat = Qt::TextTableFormat();
+    $tableFormat->setAlignment(Qt::AlignHCenter());
+    $tableFormat->setBackground(Qt::Brush(Qt::Color(Qt::String('#e0e0e0'))));
     $tableFormat->setCellPadding(2);
     $tableFormat->setCellSpacing(4);
 # [6] //! [7]
     my @constraints = (
-        Qt4::TextLength(Qt4::TextLength::PercentageLength(), 14),
-        Qt4::TextLength(Qt4::TextLength::PercentageLength(), 14),
-        Qt4::TextLength(Qt4::TextLength::PercentageLength(), 14),
-        Qt4::TextLength(Qt4::TextLength::PercentageLength(), 14),
-        Qt4::TextLength(Qt4::TextLength::PercentageLength(), 14),
-        Qt4::TextLength(Qt4::TextLength::PercentageLength(), 14),
-        Qt4::TextLength(Qt4::TextLength::PercentageLength(), 14),
+        Qt::TextLength(Qt::TextLength::PercentageLength(), 14),
+        Qt::TextLength(Qt::TextLength::PercentageLength(), 14),
+        Qt::TextLength(Qt::TextLength::PercentageLength(), 14),
+        Qt::TextLength(Qt::TextLength::PercentageLength(), 14),
+        Qt::TextLength(Qt::TextLength::PercentageLength(), 14),
+        Qt::TextLength(Qt::TextLength::PercentageLength(), 14),
+        Qt::TextLength(Qt::TextLength::PercentageLength(), 14),
     );
     $tableFormat->setColumnWidthConstraints(\@constraints);
 # [7]
@@ -129,11 +130,11 @@ sub insertCalendar
     my $format = $cursor->charFormat();
     $format->setFontPointSize(this->fontSize);
 
-    my $boldFormat = Qt4::TextCharFormat($format);
-    $boldFormat->setFontWeight(Qt4::Font::Bold());
+    my $boldFormat = Qt::TextCharFormat($format);
+    $boldFormat->setFontWeight(Qt::Font::Bold());
 
-    my $highlightedFormat = Qt4::TextCharFormat($boldFormat);
-    $highlightedFormat->setBackground(Qt4::yellow());
+    my $highlightedFormat = Qt::TextCharFormat($boldFormat);
+    $highlightedFormat->setBackground(Qt::yellow());
 # [10]
 
 # [11]
@@ -141,7 +142,7 @@ sub insertCalendar
         my $cell = $table->cellAt(0, $weekDay-1);
 # [11] //! [12]
         my $cellCursor = $cell->firstCursorPosition();
-        $cellCursor->insertText( '\'' . Qt4::Date::longDayName($weekDay) . '\'',
+        $cellCursor->insertText( '\'' . Qt::Date::longDayName($weekDay) . '\'',
                               $boldFormat);
     }
 # [12]
@@ -155,7 +156,7 @@ sub insertCalendar
         my $cell = $table->cellAt($table->rows()-1, $weekDay-1);
         my $cellCursor = $cell->firstCursorPosition();
 
-        if ($date == Qt4::Date::currentDate()) {
+        if ($date == Qt::Date::currentDate()) {
             $cellCursor->insertText( '\''.$date->day().'\'', $highlightedFormat);
         }
         else {
@@ -171,7 +172,7 @@ sub insertCalendar
     $cursor->endEditBlock();
 # [14]
     this->setWindowTitle(sprintf this->tr('Calendar for %s %s'),
-        Qt4::Date::longMonthName(this->selectedDate->month()),
+        Qt::Date::longMonthName(this->selectedDate->month()),
         this->selectedDate->year());
 }
 # [14]
@@ -189,7 +190,7 @@ sub setFontSize
 sub setMonth
 {
     my ($month) = @_;
-    this->{selectedDate} = Qt4::Date(this->selectedDate->year(), $month + 1, this->selectedDate->day());
+    this->{selectedDate} = Qt::Date(this->selectedDate->year(), $month + 1, this->selectedDate->day());
     this->insertCalendar();
 }
 # [16]
@@ -198,7 +199,7 @@ sub setMonth
 sub setYear
 {
     my ($date) = @_;
-    this->{selectedDate} = Qt4::Date($date->year(), this->selectedDate->month(), this->selectedDate->day());
+    this->{selectedDate} = Qt::Date($date->year(), this->selectedDate->month(), this->selectedDate->day());
     this->insertCalendar();
 }
 # [17]

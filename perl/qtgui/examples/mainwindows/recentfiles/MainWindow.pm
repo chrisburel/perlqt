@@ -2,11 +2,12 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 use List::Util qw(min);
 
-use Qt4::isa qw( Qt4::MainWindow );
-use Qt4::slots
+use QtCore4::isa qw( Qt::MainWindow );
+use QtCore4::slots
     newFile => [],
     open => [],
     save => [],
@@ -77,10 +78,10 @@ sub recentFileActs {
 sub NEW {
     my ( $class ) = @_;
     $class->SUPER::NEW();
-    this->setAttribute(Qt4::WA_DeleteOnClose());
+    this->setAttribute(Qt::WA_DeleteOnClose());
 
     this->{recentFileActs} = [];
-    this->{textEdit} = Qt4::TextEdit();
+    this->{textEdit} = Qt::TextEdit();
     this->setCentralWidget(this->textEdit);
 
     this->createActions();
@@ -99,7 +100,7 @@ sub newFile()
 
 sub open()
 {
-    my $fileName = Qt4::FileDialog::getOpenFileName(this);
+    my $fileName = Qt::FileDialog::getOpenFileName(this);
     if ($fileName) {
         this->loadFile($fileName);
     }
@@ -117,7 +118,7 @@ sub save()
 
 sub saveAs()
 {
-    my $fileName = Qt4::FileDialog::getSaveFileName(this);
+    my $fileName = Qt::FileDialog::getSaveFileName(this);
     if (!$fileName) {
         return;
     }
@@ -135,50 +136,50 @@ sub openRecentFile()
 
 sub about()
 {
-   Qt4::MessageBox::about(this, this->tr('About Recent Files'),
+   Qt::MessageBox::about(this, this->tr('About Recent Files'),
             this->tr('The <b>Recent Files</b> example demonstrates how to provide a ' .
                'recently used file menu in a Qt application.'));
 }
 
 sub createActions()
 {
-    my $newAct = this->{newAct} = Qt4::Action(this->tr('&New'), this);
-    $newAct->setShortcuts(Qt4::KeySequence::New());
+    my $newAct = this->{newAct} = Qt::Action(this->tr('&New'), this);
+    $newAct->setShortcuts(Qt::KeySequence::New());
     $newAct->setStatusTip(this->tr('Create a file'));
     this->connect($newAct, SIGNAL 'triggered()', this, SLOT 'newFile()');
 
-    my $openAct = this->{openAct} = Qt4::Action(this->tr('&Open...'), this);
-    $openAct->setShortcuts(Qt4::KeySequence::Open());
+    my $openAct = this->{openAct} = Qt::Action(this->tr('&Open...'), this);
+    $openAct->setShortcuts(Qt::KeySequence::Open());
     $openAct->setStatusTip(this->tr('Open an existing file'));
     this->connect($openAct, SIGNAL 'triggered()', this, SLOT 'open()');
 
-    my $saveAct = this->{saveAct} = Qt4::Action(this->tr('&Save'), this);
-    $saveAct->setShortcuts(Qt4::KeySequence::Save());
+    my $saveAct = this->{saveAct} = Qt::Action(this->tr('&Save'), this);
+    $saveAct->setShortcuts(Qt::KeySequence::Save());
     $saveAct->setStatusTip(this->tr('Save the document to disk'));
     this->connect($saveAct, SIGNAL 'triggered()', this, SLOT 'save()');
 
-    my $saveAsAct = this->{saveAsAct} = Qt4::Action(this->tr('Save &As...'), this);
-    $saveAsAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+A')));
+    my $saveAsAct = this->{saveAsAct} = Qt::Action(this->tr('Save &As...'), this);
+    $saveAsAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+A')));
     $saveAsAct->setStatusTip(this->tr('Save the document under a name'));
     this->connect($saveAsAct, SIGNAL 'triggered()', this, SLOT 'saveAs()');
 
     foreach my $i (0..MaxRecentFiles-1) {
-        this->recentFileActs->[$i] = Qt4::Action(this);
+        this->recentFileActs->[$i] = Qt::Action(this);
         this->recentFileActs->[$i]->setVisible(0);
         this->connect(this->recentFileActs->[$i], SIGNAL 'triggered()',
                 this, SLOT 'openRecentFile()');
     }
 
-    my $exitAct = this->{exitAct} = Qt4::Action(this->tr('E&xit'), this);
-    $exitAct->setShortcut(Qt4::KeySequence(this->tr('Ctrl+Q')));
+    my $exitAct = this->{exitAct} = Qt::Action(this->tr('E&xit'), this);
+    $exitAct->setShortcut(Qt::KeySequence(this->tr('Ctrl+Q')));
     $exitAct->setStatusTip(this->tr('Exit the application'));
     this->connect($exitAct, SIGNAL 'triggered()', qApp, SLOT 'closeAllWindows()');
 
-    my $aboutAct = this->{aboutAct} = Qt4::Action(this->tr('&About'), this);
+    my $aboutAct = this->{aboutAct} = Qt::Action(this->tr('&About'), this);
     $aboutAct->setStatusTip(this->tr('Show the application\'s About box'));
     this->connect($aboutAct, SIGNAL 'triggered()', this, SLOT 'about()');
 
-    my $aboutQtAct = this->{aboutQtAct} = Qt4::Action(this->tr('About &Qt'), this);
+    my $aboutQtAct = this->{aboutQtAct} = Qt::Action(this->tr('About &Qt'), this);
     $aboutQtAct->setStatusTip(this->tr('Show the Qt4 library\'s About box'));
     this->connect($aboutQtAct, SIGNAL 'triggered()', qApp, SLOT 'aboutQt()');
 }
@@ -208,19 +209,19 @@ sub createMenus()
 sub loadFile
 {
     my ($fileName) = @_;
-    my $file = Qt4::File($fileName);
-    if (!$file->open(Qt4::File::ReadOnly() | Qt4::File::Text())) {
-        Qt4::MessageBox::warning(this, this->tr('Recent Files'),
+    my $file = Qt::File($fileName);
+    if (!$file->open(Qt::File::ReadOnly() | Qt::File::Text())) {
+        Qt::MessageBox::warning(this, this->tr('Recent Files'),
                      sprintf this->tr("Cannot read file %s:\n%s."),
                              $fileName,
                              $file->errorString());
         return;
     }
 
-    my $in = Qt4::TextStream($file);
-    Qt4::Application::setOverrideCursor(Qt4::Cursor(Qt4::WaitCursor()));
+    my $in = Qt::TextStream($file);
+    Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
     this->textEdit->setPlainText($in->readAll());
-    Qt4::Application::restoreOverrideCursor();
+    Qt::Application::restoreOverrideCursor();
 
     this->setCurrentFile($fileName);
     this->statusBar()->showMessage(this->tr('File loaded'), 2000);
@@ -229,21 +230,21 @@ sub loadFile
 sub saveFile
 {
     my ($fileName) = @_;
-    my $file = Qt4::File($fileName);
-    if (!$file->open(Qt4::File::WriteOnly() | Qt4::File::Text())) {
-        Qt4::MessageBox::warning(this, this->tr('Recent Files'),
+    my $file = Qt::File($fileName);
+    if (!$file->open(Qt::File::WriteOnly() | Qt::File::Text())) {
+        Qt::MessageBox::warning(this, this->tr('Recent Files'),
                      sprintf this->tr("Cannot write file %s:\n%s."),
                              $fileName,
                              $file->errorString());
         return;
     }
 
-    my $out = Qt4::TextStream($file);
-    Qt4::Application::setOverrideCursor(Qt4::Cursor(Qt4::WaitCursor()));
+    my $out = Qt::TextStream($file);
+    Qt::Application::setOverrideCursor(Qt::Cursor(Qt::WaitCursor()));
     no warnings qw(void); # For bitshift warning
     $out << this->textEdit->toPlainText();
     use warnings;
-    Qt4::Application::restoreOverrideCursor();
+    Qt::Application::restoreOverrideCursor();
 
     this->setCurrentFile($fileName);
     this->statusBar()->showMessage(this->tr('File saved'), 2000);
@@ -261,7 +262,7 @@ sub setCurrentFile
                                      this->tr('Recent Files'));
     }
 
-    my $settings = Qt4::Settings('Trolltech', 'Recent Files Example');
+    my $settings = Qt::Settings('Trolltech', 'Recent Files Example');
     my $files = $settings->value('recentFileList')->toStringList();
     $files = [grep{ $_ ne $fileName} @{$files}];
     unshift @{$files}, $fileName;
@@ -269,10 +270,10 @@ sub setCurrentFile
         pop @{$files};
     }
 
-    $settings->setValue('recentFileList', Qt4::Variant($files));
+    $settings->setValue('recentFileList', Qt::Variant($files));
 
-    foreach my $widget (@{Qt4::Application::topLevelWidgets()}) {
-        my $mainWin = $widget->qobject_cast('Qt4::MainWindow');
+    foreach my $widget (@{Qt::Application::topLevelWidgets()}) {
+        my $mainWin = $widget->qobject_cast('Qt::MainWindow');
         if ($mainWin) {
             $mainWin->updateRecentFileActions();
         }
@@ -281,7 +282,7 @@ sub setCurrentFile
 
 sub updateRecentFileActions()
 {
-    my $settings = Qt4::Settings('Trolltech', 'Recent Files Example');
+    my $settings = Qt::Settings('Trolltech', 'Recent Files Example');
     my $files = $settings->value('recentFileList')->toStringList();
 
     my $numRecentFiles = min(scalar @{$files}, MaxRecentFiles);
@@ -289,7 +290,7 @@ sub updateRecentFileActions()
     foreach my $i (0..$numRecentFiles-1) {
         my $text = $i + 1 . ' ' . this->strippedName($files->[$i]);
         this->recentFileActs->[$i]->setText($text);
-        this->recentFileActs->[$i]->setData(Qt4::Variant(Qt4::String($files->[$i])));
+        this->recentFileActs->[$i]->setData(Qt::Variant(Qt::String($files->[$i])));
         this->recentFileActs->[$i]->setVisible(1);
     }
     foreach my $j ($numRecentFiles..MaxRecentFiles-1) {
@@ -302,7 +303,7 @@ sub updateRecentFileActions()
 sub strippedName
 {
     my ($fullFileName) = @_;
-    return Qt4::FileInfo($fullFileName)->fileName();
+    return Qt::FileInfo($fullFileName)->fileName();
 }
 
 1;

@@ -5,10 +5,11 @@ package ValidatorWidget;
 use strict;
 use warnings;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use Ui_ValidatorsForm;
-use Qt4::isa qw( Qt4::Widget Ui_ValidatorsForm );
-use Qt4::slots
+use QtCore4::isa qw( Qt::Widget Ui_ValidatorsForm );
+use QtCore4::slots
     updateValidator => [],
     updateDoubleValidator => [],
     _setLocale => ['const QLocale &'];
@@ -67,7 +68,7 @@ sub updateValidator {
     my $minVal = $ui->{minVal};
     my $maxVal = $ui->{maxVal};
     my $editor = $ui->{editor};
-    my $v = Qt4::IntValidator($minVal->value(), $maxVal->value(), this);
+    my $v = Qt::IntValidator($minVal->value(), $maxVal->value(), this);
     $v->setLocale(this->locale());
     $editor->setValidator($v);
     this->{validator} = $v;
@@ -75,7 +76,7 @@ sub updateValidator {
 
     my $s = $editor->text();
     my $i = 0;
-    if ($validator->validate($s, $i) == Qt4::Validator::Invalid()) {
+    if ($validator->validate($s, $i) == Qt::Validator::Invalid()) {
         $editor->clear();
     } else {
         $editor->setText($s);
@@ -88,7 +89,7 @@ sub updateDoubleValidator {
     my $doubleMaxVal = $ui->{doubleMaxVal};
     my $doubleDecimals = $ui->{doubleDecimals};
     my $doubleFormat = $ui->{doubleFormat};
-    my $v = Qt4::DoubleValidator($doubleMinVal->value(), $doubleMaxVal->value(),
+    my $v = Qt::DoubleValidator($doubleMinVal->value(), $doubleMaxVal->value(),
                                 $doubleDecimals->value(), this);
     $v->setNotation($doubleFormat->currentIndex());
     $v->setLocale(this->locale());
@@ -99,7 +100,7 @@ sub updateDoubleValidator {
 
     my $s = $doubleEditor->text();
     my $i = 0;
-    if ($doubleValidator->validate($s, $i) == Qt4::Validator::Invalid()) {
+    if ($doubleValidator->validate($s, $i) == Qt::Validator::Invalid()) {
         $doubleEditor->clear();
     } else {
         $doubleEditor->setText($s);
@@ -113,11 +114,12 @@ package main;
 use strict;
 use warnings;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use ValidatorWidget;
 
 sub main {
-    my $app = Qt4::Application( \@ARGV );
+    my $app = Qt::Application( \@ARGV );
 
     my $w = ValidatorWidget();
     $w->show();

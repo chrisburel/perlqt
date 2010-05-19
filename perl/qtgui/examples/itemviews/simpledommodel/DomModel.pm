@@ -2,9 +2,10 @@ package DomModel;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 # [0]
-use Qt4::isa qw( Qt4::AbstractItemModel );
+use QtCore4::isa qw( Qt::AbstractItemModel );
 use DomItem;
 
 sub domDocument() {
@@ -46,11 +47,11 @@ sub data
 {
     my ($index, $role) = @_;
     if (!$index->isValid()) {
-        return Qt4::Variant();
+        return Qt::Variant();
     }
 
-    if ($role != Qt4::DisplayRole()) {
-        return Qt4::Variant();
+    if ($role != Qt::DisplayRole()) {
+        return Qt::Variant();
     }
 
     my $item = $index->internalPointer();
@@ -61,10 +62,10 @@ sub data
     my $attributeMap = $node->attributes();
 
     if ($index->column() == 0) {
-        return Qt4::Variant(Qt4::String($node->nodeName()));
+        return Qt::Variant(Qt::String($node->nodeName()));
     }
     elsif ($index->column() == 1) {
-        return Qt4::Variant() unless $attributeMap->count();
+        return Qt::Variant() unless $attributeMap->count();
         foreach my $i (0..$attributeMap->count()) {
             my $attribute = $attributeMap->item($i);
             my $nodeName = $attribute->nodeName();
@@ -74,14 +75,14 @@ sub data
             push @{$attributes}, $nodeName . '="'
                           .$nodeValue . '"';
         }
-        return Qt4::Variant(Qt4::String(join ' ', @{$attributes}));
+        return Qt::Variant(Qt::String(join ' ', @{$attributes}));
     }
     elsif ($index->column() == 2) {
-        return Qt4::Variant() unless $node->nodeValue();
-        return Qt4::Variant(Qt4::String(join ' ', split "\n", $node->nodeValue() ));
+        return Qt::Variant() unless $node->nodeValue();
+        return Qt::Variant(Qt::String(join ' ', split "\n", $node->nodeValue() ));
     }
     else {
-        return Qt4::Variant();
+        return Qt::Variant();
     }
 }
 # [4]
@@ -94,7 +95,7 @@ sub flags
         return 0;
     }
 
-    return Qt4::ItemIsEnabled() | Qt4::ItemIsSelectable();
+    return Qt::ItemIsEnabled() | Qt::ItemIsSelectable();
 }
 # [5]
 
@@ -102,22 +103,22 @@ sub flags
 sub headerData
 {
     my ($section, $orientation, $role) = @_;
-    if ($orientation == Qt4::Horizontal() && $role == Qt4::DisplayRole()) {
+    if ($orientation == Qt::Horizontal() && $role == Qt::DisplayRole()) {
         if ($section == 0) {
-            return Qt4::Variant(Qt4::String(this->tr('Name')));
+            return Qt::Variant(Qt::String(this->tr('Name')));
         }
         elsif ($section == 1) {
-            return Qt4::Variant(Qt4::String(this->tr('Attributes')));
+            return Qt::Variant(Qt::String(this->tr('Attributes')));
         }
         elsif ($section == 2) {
-            return Qt4::Variant(Qt4::String(this->tr('Value')));
+            return Qt::Variant(Qt::String(this->tr('Value')));
         }
         else {
-            return Qt4::Variant();
+            return Qt::Variant();
         }
     }
 
-    return Qt4::Variant();
+    return Qt::Variant();
 }
 # [6]
 
@@ -126,7 +127,7 @@ sub index
 {
     my ($row, $column, $parent) = @_;
     if (!this->hasIndex($row, $column, $parent)) {
-        return Qt4::ModelIndex();
+        return Qt::ModelIndex();
     }
 
     my $parentItem = DomItem->new();
@@ -146,7 +147,7 @@ sub index
         return $ret;
     }
     else {
-        return Qt4::ModelIndex();
+        return Qt::ModelIndex();
     }
 }
 # [8]
@@ -157,14 +158,14 @@ sub parent
     my ($child) = @_;
     return unless $child;
     if (!$child->isValid()) {
-        return Qt4::ModelIndex();
+        return Qt::ModelIndex();
     }
 
     my $childItem = $child->internalPointer();
     my $parentItem = $childItem->parent();
 
     if (!$parentItem || $parentItem == this->rootItem) {
-        return Qt4::ModelIndex();
+        return Qt::ModelIndex();
     }
 
     return this->createIndex($parentItem->row(), 0, $parentItem);

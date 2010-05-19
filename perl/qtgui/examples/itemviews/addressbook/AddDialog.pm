@@ -4,20 +4,21 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Dialog );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Dialog );
 
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
 
-    my $nameLabel = Qt4::Label("Name");
-    my $addressLabel = Qt4::Label("Address");
-    my $okButton = Qt4::PushButton("OK");
-    my $cancelButton = Qt4::PushButton("Cancel");
+    my $nameLabel = Qt::Label("Name");
+    my $addressLabel = Qt::Label("Address");
+    my $okButton = Qt::PushButton("OK");
+    my $cancelButton = Qt::PushButton("Cancel");
     
-    my $nameText = Qt4::LineEdit();
-    my $addressText = Qt4::TextEdit();
+    my $nameText = Qt::LineEdit();
+    my $addressText = Qt::TextEdit();
 
     this->{nameLabel}    = $nameLabel;
     this->{addressLabel} = $addressLabel;
@@ -26,21 +27,21 @@ sub NEW {
     this->{nameText}     = $nameText;
     this->{addressText}  = $addressText;
     
-    my $gLayout = Qt4::GridLayout();
+    my $gLayout = Qt::GridLayout();
     $gLayout->setColumnStretch(1, 2);
     $gLayout->addWidget($nameLabel, 0, 0);
     $gLayout->addWidget($nameText, 0, 1);
     
-    $gLayout->addWidget($addressLabel, 1, 0, Qt4::AlignLeft()|Qt4::AlignTop());
-    $gLayout->addWidget($addressText, 1, 1, Qt4::AlignLeft());
+    $gLayout->addWidget($addressLabel, 1, 0, Qt::AlignLeft()|Qt::AlignTop());
+    $gLayout->addWidget($addressText, 1, 1, Qt::AlignLeft());
     
-    my $buttonLayout = Qt4::HBoxLayout();
+    my $buttonLayout = Qt::HBoxLayout();
     $buttonLayout->addWidget($okButton);
     $buttonLayout->addWidget($cancelButton);
     
-    $gLayout->addLayout($buttonLayout, 2, 1, Qt4::AlignRight());
+    $gLayout->addLayout($buttonLayout, 2, 1, Qt::AlignRight());
     
-    my $mainLayout = Qt4::VBoxLayout();
+    my $mainLayout = Qt::VBoxLayout();
     $mainLayout->addLayout($gLayout);
     this->setLayout($mainLayout);
     

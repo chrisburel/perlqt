@@ -2,14 +2,15 @@ package StarEditor;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 use StarRating;
 
 # [0]
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4::isa qw( Qt::Widget );
 
-use Qt4::signals
+use QtCore4::signals
     editingFinished => [];
 
 sub setStarRating
@@ -40,7 +41,7 @@ sub sizeHint
 # [1]
 sub paintEvent
 {
-    my $painter = Qt4::Painter(this);
+    my $painter = Qt::Painter(this);
     this->{myStarRating}->paint($painter, this->rect(), this->palette(),
                        StarRating::Editable);
     $painter->end();

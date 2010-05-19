@@ -2,12 +2,13 @@ package WateringConfigDialog;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 use Ui_WateringConfigDialog;
 
-use Qt4::isa qw( Qt4::Dialog );
-use Qt4::slots
+use QtCore4::isa qw( Qt::Dialog );
+use QtCore4::slots
     focusChanged => ['QWidget*', 'QWidget*'];
     
 sub NEW

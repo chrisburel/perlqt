@@ -2,7 +2,8 @@
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 use lib '../';
 use Connection;
@@ -14,18 +15,18 @@ sub initializeModel
     $model->setTable('employee');
 # [0]
 
-    $model->setEditStrategy(Qt4::SqlTableModel::OnManualSubmit());
+    $model->setEditStrategy(Qt::SqlTableModel::OnManualSubmit());
 # [1]
-    $model->setRelation(2, Qt4::SqlRelation('city', 'id', 'name'));
+    $model->setRelation(2, Qt::SqlRelation('city', 'id', 'name'));
 # [1] //! [2]
-    $model->setRelation(3, Qt4::SqlRelation('country', 'id', 'name'));
+    $model->setRelation(3, Qt::SqlRelation('country', 'id', 'name'));
 # [2]
 
 # [3]
-    $model->setHeaderData(0, Qt4::Horizontal(), Qt4::Variant(Qt4::String(Qt4::Object::tr('ID'))));
-    $model->setHeaderData(1, Qt4::Horizontal(), Qt4::Variant(Qt4::String(Qt4::Object::tr('Name'))));
-    $model->setHeaderData(2, Qt4::Horizontal(), Qt4::Variant(Qt4::String(Qt4::Object::tr('City'))));
-    $model->setHeaderData(3, Qt4::Horizontal(), Qt4::Variant(Qt4::String(Qt4::Object::tr('Country'))));
+    $model->setHeaderData(0, Qt::Horizontal(), Qt::Variant(Qt::String(Qt::Object::tr('ID'))));
+    $model->setHeaderData(1, Qt::Horizontal(), Qt::Variant(Qt::String(Qt::Object::tr('Name'))));
+    $model->setHeaderData(2, Qt::Horizontal(), Qt::Variant(Qt::String(Qt::Object::tr('City'))));
+    $model->setHeaderData(3, Qt::Horizontal(), Qt::Variant(Qt::String(Qt::Object::tr('Country'))));
 # [3]
 
     $model->select();
@@ -35,9 +36,9 @@ sub createView
 {
 # [4]
     my ($title, $model) = @_;
-    my $view = Qt4::TableView();
+    my $view = Qt::TableView();
     $view->setModel($model);
-    $view->setItemDelegate(Qt4::SqlRelationalDelegate($view));
+    $view->setItemDelegate(Qt::SqlRelationalDelegate($view));
 # [4]
     $view->setWindowTitle($title);
     return $view;
@@ -45,7 +46,7 @@ sub createView
 
 sub createRelationalTables
 {
-    my $query = Qt4::SqlQuery();
+    my $query = Qt::SqlQuery();
     $query->exec('create table employee(id int primary key, name varchar(20), city int, country int)');
     $query->exec('insert into employee values(1, \'Espen\', 5000, 47)');
     $query->exec('insert into employee values(2, \'Harald\', 80000, 49)');
@@ -64,17 +65,17 @@ sub createRelationalTables
 
 sub main
 {
-    my $app = Qt4::Application(\@ARGV);
+    my $app = Qt::Application(\@ARGV);
     if (!Connection::createConnection()) {
         return 1;
     }
     createRelationalTables();
 
-    my $model = Qt4::SqlRelationalTableModel();
+    my $model = Qt::SqlRelationalTableModel();
 
     initializeModel($model);
 
-    my $view = createView(Qt4::Object::tr('Relational Table Model'), $model);
+    my $view = createView(Qt::Object::tr('Relational Table Model'), $model);
     $view->show();
 
     return $app->exec();

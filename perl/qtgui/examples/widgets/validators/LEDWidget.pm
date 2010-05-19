@@ -3,9 +3,10 @@ package LEDWidget;
 use strict;
 use warnings;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Label );
-use Qt4::slots
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Label );
+use QtCore4::slots
     flash => [],
     extinguish => [];
 
@@ -24,10 +25,10 @@ sub flashTimer() {
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
-    this->{onPixmap} = Qt4::Pixmap('ledon.png');
-    this->{offPixmap} = Qt4::Pixmap('ledoff.png');
+    this->{onPixmap} = Qt::Pixmap('ledon.png');
+    this->{offPixmap} = Qt::Pixmap('ledoff.png');
     this->setPixmap(this->offPixmap());
-    this->{flashTimer} = Qt4::Timer();
+    this->{flashTimer} = Qt::Timer();
     this->flashTimer->setInterval(200);
     this->flashTimer->setSingleShot(1);
     this->connect(this->flashTimer, SIGNAL 'timeout()', this, SLOT 'extinguish()');

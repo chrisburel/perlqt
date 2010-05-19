@@ -4,20 +4,21 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Widget );
 use List::Util qw( min );
 
 my $hourHand = [
-    Qt4::Point(7, 8),
-    Qt4::Point(-7, 8),
-    Qt4::Point(0, -40)
+    Qt::Point(7, 8),
+    Qt::Point(-7, 8),
+    Qt::Point(0, -40)
 ];
 
 my $minuteHand = [
-    Qt4::Point(7, 8),
-    Qt4::Point(-7, 8),
-    Qt4::Point(0, -70)
+    Qt::Point(7, 8),
+    Qt::Point(-7, 8),
+    Qt::Point(0, -70)
 ];
 
 # [0] //! [1]
@@ -27,7 +28,7 @@ sub NEW {
     $class->SUPER::NEW( $parent );
 # [2] //! [3]
 # [3] //! [4]
-    my $timer = Qt4::Timer(this);
+    my $timer = Qt::Timer(this);
 # [4] //! [5]
     this->connect($timer, SIGNAL 'timeout()', this, SLOT 'update()');
 # [5] //! [6]
@@ -44,17 +45,17 @@ sub NEW {
 sub paintEvent {
 # [8] //! [10]
 
-    my $hourColor = Qt4::Color(127, 0, 127);
-    my $minuteColor = Qt4::Color(0, 127, 127, 191);
+    my $hourColor = Qt::Color(127, 0, 127);
+    my $minuteColor = Qt::Color(0, 127, 127, 191);
 
     my $side = min(this->width(), this->height());
-    my $time = Qt4::Time::currentTime();
+    my $time = Qt::Time::currentTime();
 # [10]
 
 # [11]
-    my $painter = Qt4::Painter(this);
+    my $painter = Qt::Painter(this);
 # [11] //! [12]
-    $painter->setRenderHint(Qt4::Painter::Antialiasing());
+    $painter->setRenderHint(Qt::Painter::Antialiasing());
 # [12] //! [13]
     $painter->translate(this->width() / 2, this->height() / 2);
 # [13] //! [14]
@@ -62,9 +63,9 @@ sub paintEvent {
 # [9] //! [14]
 
 # [15]
-    $painter->setPen(Qt4::NoPen());
+    $painter->setPen(Qt::NoPen());
 # [15] //! [16]
-    $painter->setBrush(Qt4::Brush($hourColor));
+    $painter->setBrush(Qt::Brush($hourColor));
 # [16]
 
 # [17] //! [18]
@@ -73,7 +74,7 @@ sub paintEvent {
     $painter->rotate(30.0 * (($time->hour() + $time->minute() / 60.0)));
     # XXX This should work by doing drawConvexPolygon( $hourHand, 3 ), but that
     # method seems to be incorrect in smoke.
-    $painter->drawConvexPolygon(Qt4::Polygon($hourHand));
+    $painter->drawConvexPolygon(Qt::Polygon($hourHand));
     $painter->restore();
 # [18] //! [19]
 
@@ -88,14 +89,14 @@ sub paintEvent {
 # [21]
 
 # [22]
-    $painter->setPen(Qt4::NoPen());
+    $painter->setPen(Qt::NoPen());
 # [22] //! [23]
-    $painter->setBrush(Qt4::Brush($minuteColor));
+    $painter->setBrush(Qt::Brush($minuteColor));
 
 # [24]
     $painter->save();
     $painter->rotate(6.0 * ($time->minute() + $time->second() / 60.0));
-    $painter->drawConvexPolygon(Qt4::Polygon($minuteHand));
+    $painter->drawConvexPolygon(Qt::Polygon($minuteHand));
     $painter->restore();
 # [23] //! [24]
 

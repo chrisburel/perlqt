@@ -2,9 +2,10 @@ package Window;
 
 use strict;
 use warnings;
-use Qt4;
-use Qt4::isa qw( Qt4::Widget );
-use Qt4::slots
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Widget );
+use QtCore4::slots
     updateButtons => ['int'];
 
 sub nameLabel() {
@@ -93,20 +94,20 @@ sub NEW
     $class->SUPER::NEW( $package );
     this->setupModel();
 
-    this->setNameLabel( Qt4::Label(this->tr('Na&me:')) );
-    this->setNameEdit( Qt4::LineEdit() );
-    this->setAddressLabel( Qt4::Label(this->tr('&Address:')) );
-    this->setAddressEdit( Qt4::TextEdit() );
-    this->setAgeLabel( Qt4::Label(this->tr('A&ge (in years):')) );
-    this->setAgeSpinBox( Qt4::SpinBox() );
-    this->setNextButton( Qt4::PushButton(this->tr('&Next')) );
-    this->setPreviousButton( Qt4::PushButton(this->tr('&Previous')) );
+    this->setNameLabel( Qt::Label(this->tr('Na&me:')) );
+    this->setNameEdit( Qt::LineEdit() );
+    this->setAddressLabel( Qt::Label(this->tr('&Address:')) );
+    this->setAddressEdit( Qt::TextEdit() );
+    this->setAgeLabel( Qt::Label(this->tr('A&ge (in years):')) );
+    this->setAgeSpinBox( Qt::SpinBox() );
+    this->setNextButton( Qt::PushButton(this->tr('&Next')) );
+    this->setPreviousButton( Qt::PushButton(this->tr('&Previous')) );
 
     this->nameLabel->setBuddy(this->nameEdit);
     this->addressLabel->setBuddy(this->addressEdit);
     this->ageLabel->setBuddy(this->ageSpinBox);
 
-    this->setMapper( Qt4::DataWidgetMapper(this) );
+    this->setMapper( Qt::DataWidgetMapper(this) );
     this->mapper->setModel(this->model);
     this->mapper->addMapping(this->nameEdit, 0);
     this->mapper->addMapping(this->addressEdit, 1);
@@ -119,7 +120,7 @@ sub NEW
     this->connect(this->mapper, SIGNAL 'currentIndexChanged(int)',
             this, SLOT 'updateButtons(int)');
 
-    my $layout = Qt4::GridLayout();
+    my $layout = Qt::GridLayout();
     $layout->addWidget(this->nameLabel, 0, 0, 1, 1);
     $layout->addWidget(this->nameEdit, 0, 1, 1, 1);
     $layout->addWidget(this->previousButton, 0, 2, 1, 1);
@@ -136,7 +137,7 @@ sub NEW
 
 sub setupModel
 {
-    this->setModel( Qt4::StandardItemModel(5, 3, this) );
+    this->setModel( Qt::StandardItemModel(5, 3, this) );
 
     my @names = qw( Alice Bob Carol Donald Emma );
 
@@ -151,11 +152,11 @@ sub setupModel
     my @ages = qw( 20 31 32 19 26 );
     
     foreach my $row (0..4) {
-      my $item = Qt4::StandardItem(Qt4::String($names[$row]));
+      my $item = Qt::StandardItem(Qt::String($names[$row]));
       this->model->setItem($row, 0, $item);
-      $item = Qt4::StandardItem(Qt4::String($addresses[$row]));
+      $item = Qt::StandardItem(Qt::String($addresses[$row]));
       this->model->setItem($row, 1, $item);
-      $item = Qt4::StandardItem(Qt4::String($ages[$row]));
+      $item = Qt::StandardItem(Qt::String($ages[$row]));
       this->model->setItem($row, 2, $item);
     }
 }

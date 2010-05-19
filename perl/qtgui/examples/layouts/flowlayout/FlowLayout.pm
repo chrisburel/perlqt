@@ -2,9 +2,10 @@ package FlowLayout;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 # [0]
-use Qt4::isa qw( Qt4::Layout );
+use QtCore4::isa qw( Qt::Layout );
 use List::Util qw(max);
 
 sub itemList() {
@@ -55,7 +56,7 @@ sub horizontalSpacing
     if (this->m_hSpace >= 0) {
         return this->m_hSpace;
     } else {
-        return this->smartSpacing(Qt4::Style::PM_LayoutHorizontalSpacing());
+        return this->smartSpacing(Qt::Style::PM_LayoutHorizontalSpacing());
     }
 }
 
@@ -64,7 +65,7 @@ sub verticalSpacing
     if (this->m_vSpace >= 0) {
         return this->m_vSpace;
     } else {
-        return this->smartSpacing(Qt4::Style::PM_LayoutVerticalSpacing());
+        return this->smartSpacing(Qt::Style::PM_LayoutVerticalSpacing());
     }
 }
 # [4]
@@ -109,7 +110,7 @@ sub hasHeightForWidth
 sub heightForWidth
 {
     my ($width) = @_;
-    my $height = this->doLayout(Qt4::Rect(0, 0, $width, 0), 1);
+    my $height = this->doLayout(Qt::Rect(0, 0, $width, 0), 1);
     return $height;
 }
 # [7]
@@ -129,13 +130,13 @@ sub sizeHint
 
 sub minimumSize
 {
-    my $size = Qt4::Size();
-    my $item = Qt4::LayoutItem();
+    my $size = Qt::Size();
+    my $item = Qt::LayoutItem();
     foreach my $item ( @{this->itemList} ) {
         $size = $size->expandedTo($item->minimumSize());
     }
 
-    $size += Qt4::Size(2*this->margin(), 2*this->margin());
+    $size += Qt::Size(2*this->margin(), 2*this->margin());
     return $size;
 }
 # [8]
@@ -153,18 +154,18 @@ sub doLayout
 # [9]
 
 # [10]
-    my $item = Qt4::LayoutItem();
+    my $item = Qt::LayoutItem();
     foreach my $item ( @{this->itemList} ) {
         my $wid = $item->widget();
         my $spaceX = this->horizontalSpacing();
         if ($spaceX == -1) {
             $spaceX = $wid->style()->layoutSpacing(
-                Qt4::SizePolicy::PushButton(), Qt4::SizePolicy::PushButton(), Qt4::Horizontal());
+                Qt::SizePolicy::PushButton(), Qt::SizePolicy::PushButton(), Qt::Horizontal());
         }
         my $spaceY = this->verticalSpacing();
         if ($spaceY == -1) {
             $spaceY = $wid->style()->layoutSpacing(
-                Qt4::SizePolicy::PushButton(), Qt4::SizePolicy::PushButton(), Qt4::Vertical());
+                Qt::SizePolicy::PushButton(), Qt::SizePolicy::PushButton(), Qt::Vertical());
         }
 # [10]
 # [11]
@@ -177,7 +178,7 @@ sub doLayout
         }
 
         if (!$testOnly) {
-            $item->setGeometry(Qt4::Rect(Qt4::Point($x, $y), $item->sizeHint()));
+            $item->setGeometry(Qt::Rect(Qt::Point($x, $y), $item->sizeHint()));
         }
 
         $x = $nextX;

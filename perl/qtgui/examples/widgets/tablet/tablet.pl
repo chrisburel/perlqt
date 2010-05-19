@@ -3,7 +3,8 @@
 use strict;
 use warnings;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 use MainWindow;
 use TabletApplication;

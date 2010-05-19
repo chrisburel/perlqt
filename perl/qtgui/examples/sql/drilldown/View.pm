@@ -2,10 +2,11 @@ package View;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
-use Qt4::isa qw( Qt4::GraphicsView );
-use Qt4::slots
+use QtCore4::isa qw( Qt::GraphicsView );
+use QtCore4::slots
     updateImage => ['int', 'const QString &'];
 
 use InformationWindow;
@@ -16,20 +17,20 @@ sub NEW
 {
     my ($class, $offices, $images, $parent) = @_;
     $class->SUPER::NEW( $parent );
-    this->{officeTable} = Qt4::SqlRelationalTableModel(this);
+    this->{officeTable} = Qt::SqlRelationalTableModel(this);
     this->{officeTable}->setTable($offices);
-    this->{officeTable}->setRelation(1, Qt4::SqlRelation($images, 'locationid', 'file'));
+    this->{officeTable}->setRelation(1, Qt::SqlRelation($images, 'locationid', 'file'));
     this->{officeTable}->select();
 # [0]
 
 # [1]
-    this->{scene} = Qt4::GraphicsScene(this);
+    this->{scene} = Qt::GraphicsScene(this);
     this->{scene}->setSceneRect(0, 0, 465, 615);
     this->setScene(this->{scene});
 
     this->addItems();
 
-    my $logo = this->{scene}->addPixmap(Qt4::Pixmap('logo.png'));
+    my $logo = this->{scene}->addPixmap(Qt::Pixmap('logo.png'));
     $logo->setPos(30, 515);
 
     this->setMinimumSize(470, 620);
@@ -61,16 +62,16 @@ sub addItems
         my $x = (sprintf( '%d', ($i / 3)) * $imageOffset) + $leftMargin + $columnOffset;
         my $y = (sprintf( '%d', ($i % 3)) * $imageOffset) + $topMargin;
 
-        $image = ImageItem($id, Qt4::Pixmap($file));
-        $image->setData(0, Qt4::Variant(Qt4::Int($i)));
+        $image = ImageItem($id, Qt::Pixmap($file));
+        $image->setData(0, Qt::Variant(Qt::Int($i)));
         $image->setPos($x, $y);
         this->{scene}->addItem($image);
         # XXX Remove this once Issue 22 is resolved.
         push @{this->{images}}, $image;
 
         $label = this->{scene}->addText($location);
-        my $labelOffset = Qt4::PointF((150 - $label->boundingRect()->width()) / 2, 120.0);
-        $label->setPos(Qt4::PointF($x, $y) + $labelOffset);
+        my $labelOffset = Qt::PointF((150 - $label->boundingRect()->width()) / 2, 120.0);
+        $label->setPos(Qt::PointF($x, $y) + $labelOffset);
     }
 }
 # [3]
@@ -109,7 +110,7 @@ sub showInformation
         this->connect($window, SIGNAL 'imageChanged(int, QString)',
                 this, SLOT 'updateImage(int, QString)');
 
-        $window->move(this->pos() + Qt4::Point(20, 40));
+        $window->move(this->pos() + Qt::Point(20, 40));
         $window->show();
         push @{this->{informationWindows}}, $window;
     }
@@ -126,7 +127,7 @@ sub updateImage
         if ($item->isa('ImageItem')) {
             my $image = $item;
             if ($image->id() == $id){
-                $image->setPixmap(Qt4::Pixmap($fileName));
+                $image->setPixmap(Qt::Pixmap($fileName));
                 $image->adjust();
                 last;
             }

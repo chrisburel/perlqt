@@ -4,14 +4,15 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 # [0]
-use Qt4::isa qw( Qt4::ItemDelegate );
+use QtCore4::isa qw( Qt::ItemDelegate );
 # [0]
 
 # [2]
-use Qt4::slots
+use QtCore4::slots
     emitCommitData => [];
 # [2]
 
@@ -25,7 +26,7 @@ sub NEW {
 # [1]
 sub createEditor {
     my ( $parent, $option, $index ) = @_;
-    my $comboBox = Qt4::ComboBox($parent);
+    my $comboBox = Qt::ComboBox($parent);
     if ($index->column() == 1) {
         $comboBox->addItem(this->tr('Normal'));
         $comboBox->addItem(this->tr('Active'));
@@ -51,7 +52,7 @@ sub setEditorData {
     }
 
     my $pos = $comboBox->findText($index->model()->data($index)->toString(),
-                                 Qt4::MatchExactly());
+                                 Qt::MatchExactly());
     $comboBox->setCurrentIndex($pos);
 }
 # [2]
@@ -65,7 +66,7 @@ sub setModelData {
     }
 
     $model->setData($index,
-        Qt4::Variant(Qt4::String($comboBox->currentText())));
+        Qt::Variant(Qt::String($comboBox->currentText())));
 }
 # [3]
 

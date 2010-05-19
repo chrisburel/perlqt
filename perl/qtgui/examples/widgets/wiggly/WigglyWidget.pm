@@ -4,15 +4,16 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 # [0]
-use Qt4::isa qw( Qt4::Widget );
-use Qt4::slots
+use QtCore4::isa qw( Qt::Widget );
+use QtCore4::slots
     setText => ['QString'];
 
-    #Qt4::BasicTimer timer;
-    #Qt4::String text;
+    #Qt::BasicTimer timer;
+    #Qt::String text;
     #int step;
 # [0]
 
@@ -25,7 +26,7 @@ sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
 
-    this->setBackgroundRole(Qt4::Palette::Midlight());
+    this->setBackgroundRole(Qt::Palette::Midlight());
     this->setAutoFillBackground(1);
 
     my $newFont = this->font();
@@ -33,7 +34,7 @@ sub NEW {
     this->setFont($newFont);
 
     this->{step} = 0;
-    this->{timer} = Qt4::BasicTimer();
+    this->{timer} = Qt::BasicTimer();
     this->{timer}->start(60, this);
 }
 # [0]
@@ -41,14 +42,14 @@ sub NEW {
 # [1]
 sub paintEvent {
 # [1] //! [2]
-    my $metrics = Qt4::FontMetrics(this->font());
+    my $metrics = Qt::FontMetrics(this->font());
     my $x = (this->width() - $metrics->width(this->{text})) / 2;
     my $y = (this->height() + $metrics->ascent() - $metrics->descent()) / 2;
-    my $color = Qt4::Color();
+    my $color = Qt::Color();
 # [2]
 
 # [3]
-    my $painter = Qt4::Painter(this);
+    my $painter = Qt::Painter(this);
 # [3] //! [4]
     my $text = this->{text};
     for (my $i = 0; $i < length $text; ++$i) {

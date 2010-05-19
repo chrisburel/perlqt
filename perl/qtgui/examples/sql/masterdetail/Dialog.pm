@@ -2,10 +2,11 @@ package Dialog;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
-use Qt4::isa qw( Qt4::Dialog );
-use Qt4::slots
+use QtCore4::isa qw( Qt::Dialog );
+use QtCore4::slots
     revert => [],
     submit => [];
 
@@ -23,7 +24,7 @@ sub NEW
     my $inputWidgetBox = this->createInputWidgets();
     my $buttonBox = this->createButtons();
 
-    my $layout = Qt4::VBoxLayout();
+    my $layout = Qt::VBoxLayout();
     $layout->addWidget($inputWidgetBox);
     $layout->addWidget($buttonBox);
     this->setLayout($layout);
@@ -39,7 +40,7 @@ sub submit
     if (!$artist && !$title) {
         my $message = (this->tr('Please provide both the name of the artist ' .
                            'and the title of the album.'));
-        Qt4::MessageBox::information(this, this->tr('Add Album'), $message);
+        Qt::MessageBox::information(this, this->tr('Add Album'), $message);
     } else {
         my $artistId = this->findArtistId($artist);
         my $albumId = this->addNewAlbum($title, $artistId);
@@ -75,17 +76,17 @@ sub addNewArtist
 {
     my ($name) = @_;
     my $artistModel = this->{model}->relationModel(2);
-    my $record = Qt4::SqlRecord();
+    my $record = Qt::SqlRecord();
 
     my $id = this->generateArtistId();
 
-    my $f1 = Qt4::SqlField('id', Qt4::Variant::Int());
-    my $f2 = Qt4::SqlField('artist', Qt4::Variant::String());
-    my $f3 = Qt4::SqlField('albumcount', Qt4::Variant::Int());
+    my $f1 = Qt::SqlField('id', Qt::Variant::Int());
+    my $f2 = Qt::SqlField('artist', Qt::Variant::String());
+    my $f3 = Qt::SqlField('albumcount', Qt::Variant::Int());
 
-    $f1->setValue(Qt4::Variant(Qt4::Int($id)));
-    $f2->setValue(Qt4::Variant(Qt4::String($name)));
-    $f3->setValue(Qt4::Variant(Qt4::Int(0)));
+    $f1->setValue(Qt::Variant(Qt::Int($id)));
+    $f2->setValue(Qt::Variant(Qt::String($name)));
+    $f3->setValue(Qt::Variant(Qt::Int(0)));
     $record->append($f1);
     $record->append($f2);
     $record->append($f3);
@@ -98,17 +99,17 @@ sub addNewAlbum
 {
     my ($title, $artistId) = @_;
     my $id = this->generateAlbumId();
-    my $record = Qt4::SqlRecord();
+    my $record = Qt::SqlRecord();
 
-    my $f1 = Qt4::SqlField('albumid', Qt4::Variant::Int());
-    my $f2 = Qt4::SqlField('title', Qt4::Variant::String());
-    my $f3 = Qt4::SqlField('artistid', Qt4::Variant::Int());
-    my $f4 = Qt4::SqlField('year', Qt4::Variant::Int());
+    my $f1 = Qt::SqlField('albumid', Qt::Variant::Int());
+    my $f2 = Qt::SqlField('title', Qt::Variant::String());
+    my $f3 = Qt::SqlField('artistid', Qt::Variant::Int());
+    my $f4 = Qt::SqlField('year', Qt::Variant::Int());
 
-    $f1->setValue(Qt4::Variant(Qt4::Int($id)));
-    $f2->setValue(Qt4::Variant(Qt4::String($title)));
-    $f3->setValue(Qt4::Variant(Qt4::Int($artistId)));
-    $f4->setValue(Qt4::Variant(Qt4::Int(this->{yearEditor}->value())));
+    $f1->setValue(Qt::Variant(Qt::Int($id)));
+    $f2->setValue(Qt::Variant(Qt::String($title)));
+    $f3->setValue(Qt::Variant(Qt::Int($artistId)));
+    $f4->setValue(Qt::Variant(Qt::Int(this->{yearEditor}->value())));
     $record->append($f1);
     $record->append($f2);
     $record->append($f3);
@@ -122,7 +123,7 @@ sub addTracks
 {
     my ($albumId, $tracks) = @_;
     my $albumNode = this->{albumDetails}->createElement('album');
-    $albumNode->setAttribute('id', Qt4::Int($albumId));
+    $albumNode->setAttribute('id', Qt::Int($albumId));
 
     foreach my $i (0..$#{$tracks}) {
         my $trackNumber = $i;
@@ -146,10 +147,10 @@ sub addTracks
     #memory database, i.e., altering the XML file will bring the data
     #out of sync.
 
-    #if (!this->{outputFile}->open(Qt4::IODevice::WriteOnly)) {
+    #if (!this->{outputFile}->open(Qt::IODevice::WriteOnly)) {
         #return;
     #} else {
-        #Qt4::TextStream stream(this->{outputFile});
+        #Qt::TextStream stream(this->{outputFile});
         #archive.item(0).save(stream, 4);
         #this->{outputFile}->close();
     #}
@@ -163,7 +164,7 @@ sub increaseAlbumCount
     my $albumCountIndex = $artistIndex->sibling($artistIndex->row(), 2);
 
     my $albumCount = $albumCountIndex->data()->toInt();
-    $artistModel->setData($albumCountIndex, Qt4::Variant(Qt4::Int($albumCount + 1)));
+    $artistModel->setData($albumCountIndex, Qt::Variant(Qt::Int($albumCount + 1)));
 }
 
 
@@ -171,31 +172,31 @@ sub revert
 {
     this->{artistEditor}->clear();
     this->{titleEditor}->clear();
-    this->{yearEditor}->setValue(Qt4::Date::currentDate()->year());
+    this->{yearEditor}->setValue(Qt::Date::currentDate()->year());
     this->{tracksEditor}->clear();
 }
 
 sub createInputWidgets
 {
-    my $box = Qt4::GroupBox(this->tr('Add Album'));
+    my $box = Qt::GroupBox(this->tr('Add Album'));
 
-    my $artistLabel = Qt4::Label(this->tr('Artist:'));
-    my $titleLabel = Qt4::Label(this->tr('Title:'));
-    my $yearLabel = Qt4::Label(this->tr('Year:'));
-    my $tracksLabel = Qt4::Label(this->tr('Tracks (separated by comma):'));
+    my $artistLabel = Qt::Label(this->tr('Artist:'));
+    my $titleLabel = Qt::Label(this->tr('Title:'));
+    my $yearLabel = Qt::Label(this->tr('Year:'));
+    my $tracksLabel = Qt::Label(this->tr('Tracks (separated by comma):'));
 
-    this->{artistEditor} = Qt4::LineEdit();
-    this->{titleEditor} = Qt4::LineEdit();
+    this->{artistEditor} = Qt::LineEdit();
+    this->{titleEditor} = Qt::LineEdit();
 
-    this->{yearEditor} = Qt4::SpinBox();
+    this->{yearEditor} = Qt::SpinBox();
     this->{yearEditor}->setMinimum(1900);
-    this->{yearEditor}->setMaximum(Qt4::Date::currentDate()->year());
+    this->{yearEditor}->setMaximum(Qt::Date::currentDate()->year());
     this->{yearEditor}->setValue(this->{yearEditor}->maximum());
     this->{yearEditor}->setReadOnly(0);
 
-    this->{tracksEditor} = Qt4::LineEdit();
+    this->{tracksEditor} = Qt::LineEdit();
 
-    my $layout = Qt4::GridLayout();
+    my $layout = Qt::GridLayout();
     $layout->addWidget($artistLabel, 0, 0);
     $layout->addWidget(this->{artistEditor}, 0, 1);
     $layout->addWidget($titleLabel, 1, 0);
@@ -211,9 +212,9 @@ sub createInputWidgets
 
 sub createButtons
 {
-    my $closeButton = Qt4::PushButton(this->tr('&Close'));
-    my $revertButton = Qt4::PushButton(this->tr('&Revert'));
-    my $submitButton = Qt4::PushButton(this->tr('&Submit'));
+    my $closeButton = Qt::PushButton(this->tr('&Close'));
+    my $revertButton = Qt::PushButton(this->tr('&Revert'));
+    my $submitButton = Qt::PushButton(this->tr('&Submit'));
 
     $closeButton->setDefault(1);
 
@@ -221,10 +222,10 @@ sub createButtons
     this->connect($revertButton, SIGNAL 'clicked()', this, SLOT 'revert()');
     this->connect($submitButton, SIGNAL 'clicked()', this, SLOT 'submit()');
 
-    my $buttonBox = Qt4::DialogButtonBox();
-    $buttonBox->addButton($submitButton, Qt4::DialogButtonBox::ResetRole());
-    $buttonBox->addButton($revertButton, Qt4::DialogButtonBox::ResetRole());
-    $buttonBox->addButton($closeButton, Qt4::DialogButtonBox::RejectRole());
+    my $buttonBox = Qt::DialogButtonBox();
+    $buttonBox->addButton($submitButton, Qt::DialogButtonBox::ResetRole());
+    $buttonBox->addButton($revertButton, Qt::DialogButtonBox::ResetRole());
+    $buttonBox->addButton($closeButton, Qt::DialogButtonBox::RejectRole());
 
     return $buttonBox;
 }
@@ -241,7 +242,7 @@ sub indexOfArtist
         }
     }
 
-    return Qt4::ModelIndex();
+    return Qt::ModelIndex();
 }
 
 sub generateArtistId

@@ -4,12 +4,13 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Widget );
-use Qt4::slots
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Widget );
+use QtCore4::slots
     addEntry => [];
 
-use Qt4::signals
+use QtCore4::signals
     sendDetails => ['QString', 'QString'];
 
 use AddDialog;
@@ -18,16 +19,16 @@ sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
 
-    my $descriptionLabel = Qt4::Label(this->tr('There are currently no contacts in your address book. ' .
+    my $descriptionLabel = Qt::Label(this->tr('There are currently no contacts in your address book. ' .
                                       "\nClick Add to add new contacts."));
     
-    my $addButton = Qt4::PushButton(this->tr('Add'));
+    my $addButton = Qt::PushButton(this->tr('Add'));
     
     this->connect($addButton, SIGNAL 'clicked()', this, SLOT 'addEntry()');
     
-    my $mainLayout = Qt4::VBoxLayout();
+    my $mainLayout = Qt::VBoxLayout();
     $mainLayout->addWidget($descriptionLabel);
-    $mainLayout->addWidget($addButton, 0, Qt4::AlignCenter());
+    $mainLayout->addWidget($addButton, 0, Qt::AlignCenter());
     
     this->setLayout($mainLayout);
 }

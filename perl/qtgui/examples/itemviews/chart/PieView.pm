@@ -6,11 +6,12 @@ use blib;
 
 use List::Util qw(min max);
 use Math::Trig;
-use Qt4;
-use Qt4::isa qw(Qt4::AbstractItemView);
-use Qt4::slots
-    dataChanged => ['const Qt4::ModelIndex&', 'const Qt4::ModelIndex&'],
-    rowsInserted => ['const Qt4::ModelIndex&', 'int', 'int'],
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw(Qt::AbstractItemView);
+use QtCore4::slots
+    dataChanged => ['const Qt::ModelIndex&', 'const Qt::ModelIndex&'],
+    rowsInserted => ['const Qt::ModelIndex&', 'int', 'int'],
     rowsAboutToBeRemoved => ['const Qt::ModelIndex&', 'int', 'int'];
 
 use constant { M_PI => 3.1415927 };
@@ -74,7 +75,7 @@ sub indexAt {
     my ($point) = @_;
     my $totalSize = this->{totalSize};
     if (this->{validItems} == 0) {
-        return Qt4::ModelIndex();
+        return Qt::ModelIndex();
     }
 
     # Transform the view coordinates into contents widget coordinates.
@@ -89,7 +90,7 @@ sub indexAt {
         my $d = (($cx**2) + ($cy**2))**0.5;
 
         if ($d == 0 || $d > this->{pieSize}/2) {
-            return Qt4::ModelIndex();
+            return Qt::ModelIndex();
         }
 
         # Determine the angle of the point.
@@ -117,7 +118,7 @@ sub indexAt {
             }
         }
     } else {
-        my $itemHeight = Qt4::FontMetrics(this->viewOptions()->font)->height();
+        my $itemHeight = Qt::FontMetrics(this->viewOptions()->font)->height();
         my $listItem = int(($wy - this->{margin}) / $itemHeight);
         my $validRow = 0;
 
@@ -136,7 +137,7 @@ sub indexAt {
         }
     }
 
-    return Qt4::ModelIndex();
+    return Qt::ModelIndex();
 }
 
 sub isIndexHidden {
@@ -153,7 +154,7 @@ sub isIndexHidden {
 sub itemRect {
     my ($index) = @_;
     if (!$index->isValid()) {
-        return Qt4::Rect();
+        return Qt::Rect();
     }
 
     # Check whether the index's row is in the list of rows represented
@@ -179,9 +180,9 @@ sub itemRect {
         my $itemHeight;
 
         if ($index->column() == 0) {
-            $itemHeight = Qt4::FontMetrics(this->viewOptions()->font)->height();
+            $itemHeight = Qt::FontMetrics(this->viewOptions()->font)->height();
 
-            return Qt4::Rect(this->{totalSize},
+            return Qt::Rect(this->{totalSize},
                          int(this->{margin} + $listItem*$itemHeight),
                          this->{totalSize} - this->{margin}, int($itemHeight));
         }
@@ -190,13 +191,13 @@ sub itemRect {
         }
 
     }
-    return Qt4::Rect();
+    return Qt::Rect();
 }
 
 sub itemRegion {
     my ($index) = @_;
     if (!$index->isValid()) {
-        return Qt4::Region();
+        return Qt::Region();
     }
 
     if ($index->column() != 1) {
@@ -204,7 +205,7 @@ sub itemRegion {
     }
 
     if (this->model()->data($index)->toDouble() <= 0.0) {
-        return Qt4::Region();
+        return Qt::Region();
     }
 
     my $startAngle = 0.0;
@@ -217,7 +218,7 @@ sub itemRegion {
             my $angle = 360*$value/this->{totalValue};
 
             if ($sliceIndex == $index) {
-                my $slicePath = Qt4::PainterPath();
+                my $slicePath = Qt::PainterPath();
                 my $totalSize = this->{totalSize};
                 my $margin = this->{margin};
                 my $pieSize = this->{pieSize};
@@ -226,14 +227,14 @@ sub itemRegion {
                                 $startAngle, $angle);
                 $slicePath->closeSubpath();
 
-                return Qt4::Region($slicePath->toFillPolygon()->toPolygon());
+                return Qt::Region($slicePath->toFillPolygon()->toPolygon());
             }
 
             $startAngle += $angle;
         }
     }
 
-    return Qt4::Region();
+    return Qt::Region();
 }
 
 sub horizontalOffset {
@@ -245,14 +246,14 @@ sub mousePressEvent {
 
     this->SUPER::mousePressEvent($event);
 
-    my $origin = Qt4::Point($event->pos());
+    my $origin = Qt::Point($event->pos());
     this->{origin} = $origin;
     my $rubberBand = this->{rubberBand};
     if (!$rubberBand) {
-        $rubberBand = Qt4::RubberBand(Qt4::RubberBand::Rectangle(), this);
+        $rubberBand = Qt::RubberBand(Qt::RubberBand::Rectangle(), this);
         this->{rubberBand} = $rubberBand;
     }
-    $rubberBand->setGeometry(Qt4::Rect($origin, Qt4::Size()));
+    $rubberBand->setGeometry(Qt::Rect($origin, Qt::Size()));
     $rubberBand->show();
 }
 
@@ -260,7 +261,7 @@ sub mouseMoveEvent {
     my ($event) = @_;
     my $rubberBand = this->{rubberBand};
     if ($rubberBand) {
-        $rubberBand->setGeometry(Qt4::Rect(this->{origin}, $event->pos())->normalized());
+        $rubberBand->setGeometry(Qt::Rect(this->{origin}, $event->pos())->normalized());
     }
     this->SUPER::mouseMoveEvent($event);
 }
@@ -279,8 +280,8 @@ sub moveCursor {
     my ($cursorAction) = @_;
     my $current = this->currentIndex();
 
-    if ($cursorAction == Qt4::AbstractItemView::MoveLeft() ||
-        $cursorAction == Qt4::AbstractItemView::MoveUp() ) {
+    if ($cursorAction == Qt::AbstractItemView::MoveLeft() ||
+        $cursorAction == Qt::AbstractItemView::MoveUp() ) {
         if ($current->row() > 0) {
             $current = this->model()->index($current->row() - 1, $current->column(),
                                      this->rootIndex());
@@ -289,8 +290,8 @@ sub moveCursor {
             $current = this->model()->index(0, $current->column(), this->rootIndex());
         }
     }
-    elsif ($cursorAction == Qt4::AbstractItemView::MoveRight() ||
-           $cursorAction == Qt4::AbstractItemView::MoveDown() ) {
+    elsif ($cursorAction == Qt::AbstractItemView::MoveRight() ||
+           $cursorAction == Qt::AbstractItemView::MoveDown() ) {
         if ($current->row() < this->rows($current) - 1) {
             $current = this->model()->index($current->row() + 1, $current->column(),
                                      this->rootIndex());
@@ -313,12 +314,12 @@ sub paintEvent {
     my $state = $option->state;
 
     my $background = $option->palette()->base();
-    my $foreground = Qt4::Pen($option->palette->color(Qt4::Palette::WindowText()));
-    my $textPen = Qt4::Pen($option->palette->color(Qt4::Palette::Text()));
-    my $highlightedPen = Qt4::Pen($option->palette->color(Qt4::Palette::HighlightedText()));
+    my $foreground = Qt::Pen($option->palette->color(Qt::Palette::WindowText()));
+    my $textPen = Qt::Pen($option->palette->color(Qt::Palette::Text()));
+    my $highlightedPen = Qt::Pen($option->palette->color(Qt::Palette::HighlightedText()));
 
-    my $painter = Qt4::Painter(this->viewport());
-    $painter->setRenderHint(Qt4::Painter::Antialiasing());
+    my $painter = Qt::Painter(this->viewport());
+    $painter->setRenderHint(Qt::Painter::Antialiasing());
 
     $painter->fillRect($event->rect(), $background);
     $painter->setPen($foreground);
@@ -327,8 +328,8 @@ sub paintEvent {
     my $margin = this->{margin};
     my $totalSize = this->{totalSize};
     my $pieSize = this->{pieSize};
-    my $pieRect = Qt4::Rect($margin, $margin, $pieSize, $pieSize);
-    my $keyPoint = Qt4::Point($totalSize - this->horizontalScrollBar()->value(),
+    my $pieRect = Qt::Rect($margin, $margin, $pieSize, $pieSize);
+    my $keyPoint = Qt::Point($totalSize - this->horizontalScrollBar()->value(),
                              $margin - this->verticalScrollBar()->value());
 
     if (this->{validItems} > 0) {
@@ -349,17 +350,17 @@ sub paintEvent {
                 my $angle = 360*$value/this->{totalValue};
 
                 my $colorIndex = this->model()->index($row, 0, this->rootIndex());
-                my $color = Qt4::Color(Qt4::String(this->model()->data($colorIndex,
-                                Qt4::DecorationRole())->toString()));
+                my $color = Qt::Color(Qt::String(this->model()->data($colorIndex,
+                                Qt::DecorationRole())->toString()));
 
                 if (this->currentIndex() == $index) {
-                    $painter->setBrush(Qt4::Brush($color, Qt4::Dense4Pattern()));
+                    $painter->setBrush(Qt::Brush($color, Qt::Dense4Pattern()));
                 }
                 elsif ($selections->isSelected($index)) {
-                    $painter->setBrush(Qt4::Brush($color, Qt4::Dense3Pattern()));
+                    $painter->setBrush(Qt::Brush($color, Qt::Dense3Pattern()));
                 }
                 else {
-                    $painter->setBrush(Qt4::Brush($color));
+                    $painter->setBrush(Qt::Brush($color));
                 }
 
                 $painter->drawPie(0, 0, $pieSize, $pieSize, int($startAngle*16),
@@ -385,10 +386,10 @@ sub paintEvent {
                 my $option = this->viewOptions();
                 $option->setRect( this->visualRect($labelIndex) );
                 if ($selections->isSelected($labelIndex)) {
-                    $option->setState( $option->state | Qt4::Style::State_Selected() );
+                    $option->setState( $option->state | Qt::Style::State_Selected() );
                 }
                 if (this->currentIndex() == $labelIndex) {
-                    $option->setState( $option->state | Qt4::Style::State_HasFocus() );
+                    $option->setState( $option->state | Qt::Style::State_HasFocus() );
                 }
                 this->itemDelegate()->paint($painter, $option, $labelIndex);
 
@@ -514,13 +515,13 @@ sub setSelection {
             $lastColumn = max($lastColumn, $indexes->[$i]->column());
         }
 
-        my $selection = Qt4::ItemSelection(
+        my $selection = Qt::ItemSelection(
             this->model()->index($firstRow, $firstColumn, this->rootIndex()),
             this->model()->index($lastRow, $lastColumn, this->rootIndex()));
         this->selectionModel()->select($selection, $command);
     } else {
-        my $noIndex = Qt4::ModelIndex();
-        my $selection = Qt4::ItemSelection($noIndex, $noIndex);
+        my $noIndex = Qt::ModelIndex();
+        my $selection = Qt::ItemSelection($noIndex, $noIndex);
         this->selectionModel()->select($selection, $command);
     }
 
@@ -548,7 +549,7 @@ sub visualRect {
     my ($index) = @_;
     my $rect = this->itemRect($index);
     if ($rect->isValid()) {
-        return Qt4::Rect($rect->left() - this->horizontalScrollBar()->value(),
+        return Qt::Rect($rect->left() - this->horizontalScrollBar()->value(),
                      $rect->top() - this->verticalScrollBar()->value(),
                      $rect->width(), $rect->height());
     }
@@ -568,7 +569,7 @@ sub visualRegionForSelection {
     my $ranges = ref $selection eq 'ARRAY' ? scalar @{$selection} : 0;
 
     if ($ranges == 0) {
-        return Qt4::Region( Qt4::Rect() );
+        return Qt::Region( Qt::Rect() );
     }
 
     my $region;

@@ -2,10 +2,11 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 use Ui_MainWindowBase;
-use Qt4::isa qw( Qt4::MainWindow );
-use Qt4::slots
+use QtCore4::isa qw( Qt::MainWindow );
+use QtCore4::slots
     on_clearAction_triggered => [],
     on_markAction_triggered => [],
     on_printAction_triggered => [],
@@ -51,7 +52,7 @@ sub NEW
 
 sub setupFontTree
 {
-    my $database = Qt4::FontDatabase();
+    my $database = Qt::FontDatabase();
     this->{ui}->fontTree->setColumnCount(1);
     this->{ui}->fontTree->setHeaderLabels([this->tr('Font')]);
 
@@ -61,18 +62,18 @@ sub setupFontTree
             next;
         }
 
-        my $familyItem = Qt4::TreeWidgetItem(this->{ui}->fontTree);
+        my $familyItem = Qt::TreeWidgetItem(this->{ui}->fontTree);
         $familyItem->setText(0, $family);
-        $familyItem->setCheckState(0, Qt4::Unchecked());
+        $familyItem->setCheckState(0, Qt::Unchecked());
 
         foreach my $style (@{$styles}) {
-            my $styleItem = Qt4::TreeWidgetItem($familyItem);
+            my $styleItem = Qt::TreeWidgetItem($familyItem);
             $styleItem->setText(0, $style);
-            $styleItem->setCheckState(0, Qt4::Unchecked());
-            $styleItem->setData(0, Qt4::UserRole(),
-                Qt4::Variant(Qt4::Int($database->weight($family, $style))));
-            $styleItem->setData(0, Qt4::UserRole() + 1,
-                Qt4::Variant(Qt4::Bool($database->italic($family, $style)?1:0)));
+            $styleItem->setCheckState(0, Qt::Unchecked());
+            $styleItem->setData(0, Qt::UserRole(),
+                Qt::Variant(Qt::Int($database->weight($family, $style))));
+            $styleItem->setData(0, Qt::UserRole() + 1,
+                Qt::Variant(Qt::Bool($database->italic($family, $style)?1:0)));
         }
     }
 }
@@ -88,12 +89,12 @@ sub on_clearAction_triggered
 
 sub on_markAction_triggered
 {
-    this->markUnmarkFonts(Qt4::Checked());
+    this->markUnmarkFonts(Qt::Checked());
 }
 
 sub on_unmarkAction_triggered
 {
-    this->markUnmarkFonts(Qt4::Unchecked());
+    this->markUnmarkFonts(Qt::Unchecked());
 }
 
 sub markUnmarkFonts
@@ -122,24 +123,24 @@ sub showFont
     if ($item->parent()) {
         $family = $item->parent()->text(0);
         $style = $item->text(0);
-        $weight = $item->data(0, Qt4::UserRole())->toInt();
-        $italic = $item->data(0, Qt4::UserRole() + 1)->toBool();
+        $weight = $item->data(0, Qt::UserRole())->toInt();
+        $italic = $item->data(0, Qt::UserRole() + 1)->toBool();
     } else {
         $family = $item->text(0);
         $style = $item->child(0)->text(0);
-        $weight = $item->child(0)->data(0, Qt4::UserRole())->toInt();
-        $italic = $item->child(0)->data(0, Qt4::UserRole() + 1)->toBool();
+        $weight = $item->child(0)->data(0, Qt::UserRole())->toInt();
+        $italic = $item->child(0)->data(0, Qt::UserRole() + 1)->toBool();
     }
 
     my $oldText = this->{ui}->textEdit->toPlainText();
     $oldText =~ s/[\s]+$//g;
     my $modified = this->{ui}->textEdit->document()->isModified();
     this->{ui}->textEdit->clear();
-    this->{ui}->textEdit->document()->setDefaultFont(Qt4::Font($family, 32, $weight, $italic));
+    this->{ui}->textEdit->document()->setDefaultFont(Qt::Font($family, 32, $weight, $italic));
 
     my $cursor = this->{ui}->textEdit->textCursor();
-    my $blockFormat = Qt4::TextBlockFormat();
-    $blockFormat->setAlignment(Qt4::AlignCenter());
+    my $blockFormat = Qt::TextBlockFormat();
+    $blockFormat->setAlignment(Qt::AlignCenter());
     $cursor->insertBlock($blockFormat);
 
     if ($modified) {
@@ -165,54 +166,54 @@ sub updateStyles
     if ($parent) {
 
         # Only count style items.
-        if ($state == Qt4::Checked()) {
+        if ($state == Qt::Checked()) {
             ++(this->{markedCount});
         }
         else {
             --(this->{markedCount});
         }
 
-        if ($state == Qt4::Checked() &&
-            $parent->checkState(0) == Qt4::Unchecked()) {
+        if ($state == Qt::Checked() &&
+            $parent->checkState(0) == Qt::Unchecked()) {
             # Mark parent items when child items are checked.
-            $parent->setCheckState(0, Qt4::Checked());
+            $parent->setCheckState(0, Qt::Checked());
 
-        } elsif ($state == Qt4::Unchecked() &&
-                 $parent->checkState(0) == Qt4::Checked()) {
+        } elsif ($state == Qt::Unchecked() &&
+                 $parent->checkState(0) == Qt::Checked()) {
 
             my $marked = 0;
             for (my $row = 0; $row < $parent->childCount(); ++$row) {
-                if ($parent->child($row)->checkState(0) == Qt4::Checked()) {
+                if ($parent->child($row)->checkState(0) == Qt::Checked()) {
                     $marked = 1;
                     last;
                 }
             }
             # Unmark parent items when all child items are unchecked.
             if (!$marked) {
-                $parent->setCheckState(0, Qt4::Unchecked());
+                $parent->setCheckState(0, Qt::Unchecked());
             }
         }
     } else {
         my $row;
         my $number = 0;
         for ($row = 0; $row < $item->childCount(); ++$row) {
-            if ($item->child($row)->checkState(0) == Qt4::Checked()) {
+            if ($item->child($row)->checkState(0) == Qt::Checked()) {
                 ++$number;
             }
         }
 
         # Mark/unmark all child items when marking/unmarking top-level
         # items.
-        if ($state == Qt4::Checked() && $number == 0) {
+        if ($state == Qt::Checked() && $number == 0) {
             for ($row = 0; $row < $item->childCount(); ++$row) {
-                if ($item->child($row)->checkState(0) == Qt4::Unchecked()) {
-                    $item->child($row)->setCheckState(0, Qt4::Checked());
+                if ($item->child($row)->checkState(0) == Qt::Unchecked()) {
+                    $item->child($row)->setCheckState(0, Qt::Checked());
                 }
             }
-        } elsif ($state == Qt4::Unchecked() && $number > 0) {
+        } elsif ($state == Qt::Unchecked() && $number > 0) {
             for ($row = 0; $row < $item->childCount(); ++$row) {
-                if ($item->child($row)->checkState(0) == Qt4::Checked()) {
-                    $item->child($row)->setCheckState(0, Qt4::Unchecked());
+                if ($item->child($row)->checkState(0) == Qt::Checked()) {
+                    $item->child($row)->setCheckState(0, Qt::Unchecked());
                 }
             }
         }
@@ -230,9 +231,9 @@ sub on_printAction_triggered
         return;
     }
 
-    my $printer = Qt4::Printer(Qt4::Printer::HighResolution());
-    my $dialog = Qt4::PrintDialog($printer, this);
-    if ($dialog->exec() != Qt4::Dialog::Accepted()) {
+    my $printer = Qt::Printer(Qt::Printer::HighResolution());
+    my $dialog = Qt::PrintDialog($printer, this);
+    if ($dialog->exec() != Qt::Dialog::Accepted()) {
         return;
     }
 
@@ -250,14 +251,14 @@ sub printDocument
     my ($printer) = @_;
     $printer->setFromTo(1, scalar keys %{this->pageMap});
 
-    my $progress = Qt4::ProgressDialog(this->tr('Preparing font samples...'), this->tr('&Cancel'),
+    my $progress = Qt::ProgressDialog(this->tr('Preparing font samples...'), this->tr('&Cancel'),
                              0, scalar keys %{this->pageMap}, this);
-    $progress->setWindowModality(Qt4::ApplicationModal());
+    $progress->setWindowModality(Qt::ApplicationModal());
     $progress->setWindowTitle(this->tr('Font Sampler'));
     $progress->setMinimum($printer->fromPage() - 1);
     $progress->setMaximum($printer->toPage());
 
-    my $painter = Qt4::Painter();
+    my $painter = Qt::Painter();
     $painter->begin($printer);
     my $firstPage = 1;
 
@@ -288,8 +289,8 @@ sub on_printPreviewAction_triggered
         return;
     }
 
-    my $printer = Qt4::Printer(Qt4::Printer::HighResolution());
-    my $preview = Qt4::PrintPreviewDialog($printer, this);
+    my $printer = Qt::Printer(Qt::Printer::HighResolution());
+    my $preview = Qt::PrintPreviewDialog($printer, this);
     this->connect($preview, SIGNAL 'paintRequested(QPrinter *)',
             this, SLOT 'printDocument(QPrinter *)');
     $preview->exec();
@@ -303,14 +304,14 @@ sub currentPageMap
         my $familyItem = this->{ui}->fontTree->topLevelItem($row);
         my $family;
 
-        if ($familyItem->checkState(0) == Qt4::Checked()) {
+        if ($familyItem->checkState(0) == Qt::Checked()) {
             $family = $familyItem->text(0);
             $pageMap{$family} = [];
         }
 
         for (my $childRow = 0; $childRow < $familyItem->childCount(); ++$childRow) {
             my $styleItem = $familyItem->child($childRow);
-            if ($styleItem->checkState(0) == Qt4::Checked()) {
+            if ($styleItem->checkState(0) == Qt::Checked()) {
                 push @{$pageMap{$family}}, $styleItem;
             }
         }
@@ -330,14 +331,14 @@ sub printPage
     my $height = 0.0;
     foreach my $item (@items) {
         my $style = $item->text(0);
-        my $weight = $item->data(0, Qt4::UserRole())->toInt();
-        my $italic = $item->data(0, Qt4::UserRole() + 1)->toBool();
+        my $weight = $item->data(0, Qt::UserRole())->toInt();
+        my $italic = $item->data(0, Qt::UserRole() + 1)->toBool();
 
         # Calculate the maximum width and total height of the text.
         foreach my $size ( @{this->sampleSizes} ) {
-            my $font = Qt4::Font($family, $size, $weight, $italic);
-            $font = Qt4::Font($font, $painter->device());
-            my $fontMetrics = Qt4::FontMetricsF($font);
+            my $font = Qt::Font($family, $size, $weight, $italic);
+            $font = Qt::Font($font, $painter->device());
+            my $fontMetrics = Qt::FontMetricsF($font);
             my $rect = $fontMetrics->boundingRect( "$family $style" );
             $width = max($rect->width(), $width);
             $height += $rect->height();
@@ -355,25 +356,25 @@ sub printPage
     $painter->save();
     $painter->translate($printer->pageRect()->width()/2.0, $printer->pageRect()->height()/2.0);
     $painter->scale($scale, $scale);
-    $painter->setBrush(Qt4::Brush(Qt4::black()));
+    $painter->setBrush(Qt::Brush(Qt::black()));
 
     my $x = -$width/2.0;
     my $y = -$height/2.0 - $remainingHeight/4.0 + $spaceHeight;
 
     foreach my $item (@items) {
         my $style = $item->text(0);
-        my $weight = $item->data(0, Qt4::UserRole())->toInt();
-        my $italic = $item->data(0, Qt4::UserRole() + 1)->toBool();
+        my $weight = $item->data(0, Qt::UserRole())->toInt();
+        my $italic = $item->data(0, Qt::UserRole() + 1)->toBool();
 
         # Draw each line of text.
         foreach my $size (@{this->sampleSizes}) {
-            my $font = Qt4::Font($family, $size, $weight, $italic);
-            $font = Qt4::Font($font, $painter->device());
-            my $fontMetrics = Qt4::FontMetricsF($font);
+            my $font = Qt::Font($family, $size, $weight, $italic);
+            $font = Qt::Font($font, $painter->device());
+            my $fontMetrics = Qt::FontMetricsF($font);
             my $rect = $fontMetrics->boundingRect( "$family $style" );
             $y += $rect->height();
             $painter->setFont($font);
-            $painter->drawText(Qt4::PointF($x, $y),
+            $painter->drawText(Qt::PointF($x, $y),
                              "$family $style");
             $y += $interLineHeight;
         }

@@ -2,9 +2,10 @@ package Window;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 # [0]
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4::isa qw( Qt::Widget );
 # [0]
 use FlowLayout;
 
@@ -15,11 +16,11 @@ sub NEW
     $class->SUPER::NEW();
     my $flowLayout = FlowLayout();
 
-    $flowLayout->addWidget(Qt4::PushButton(this->tr('Short')));
-    $flowLayout->addWidget(Qt4::PushButton(this->tr('Longer')));
-    $flowLayout->addWidget(Qt4::PushButton(this->tr('Different text')));
-    $flowLayout->addWidget(Qt4::PushButton(this->tr('More text')));
-    $flowLayout->addWidget(Qt4::PushButton(this->tr('Even longer button text')));
+    $flowLayout->addWidget(Qt::PushButton(this->tr('Short')));
+    $flowLayout->addWidget(Qt::PushButton(this->tr('Longer')));
+    $flowLayout->addWidget(Qt::PushButton(this->tr('Different text')));
+    $flowLayout->addWidget(Qt::PushButton(this->tr('More text')));
+    $flowLayout->addWidget(Qt::PushButton(this->tr('Even longer button text')));
     this->setLayout($flowLayout);
 
     this->setWindowTitle(this->tr('Flow Layout'));

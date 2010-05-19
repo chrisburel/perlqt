@@ -2,11 +2,12 @@
 
 use strict;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 =begin
 
-use Qt4::debug qw(
+use Qt::debug qw(
         ambiguous
         autoload
         calls
@@ -36,9 +37,9 @@ sub dumpMetaMethods {
 =cut
 
 sub main {
-    my $app = Qt4::Application();
+    my $app = Qt::Application();
     my $mainWin = MainWindow();
-    #dumpMetaMethods(Qt4::_internal::getMetaObject('QMdiArea'));
+    #dumpMetaMethods(Qt::_internal::getMetaObject('QMdiArea'));
     $mainWin->show();
     exit $app->exec();
 }

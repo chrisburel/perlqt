@@ -2,9 +2,10 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt4;
-use Qt4::isa qw( Qt4::MainWindow );
-use Qt4::slots
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::MainWindow );
+use QtCore4::slots
     about => [],
     addAlbum => [],
     changeArtist => ['int'],
@@ -20,12 +21,12 @@ sub NEW
     my ($class, $artistTable, $albumTable, $albumDetails, $parent) = @_;
     $class->SUPER::NEW($parent);
     this->{file} = $albumDetails;
-    this->{albumData} = Qt4::DomDocument();
+    this->{albumData} = Qt::DomDocument();
     this->readAlbumData();
 
-    this->{model} = Qt4::SqlRelationalTableModel(this);
+    this->{model} = Qt::SqlRelationalTableModel(this);
     this->{model}->setTable($albumTable);
-    this->{model}->setRelation(2, Qt4::SqlRelation($artistTable, 'id', 'artist'));
+    this->{model}->setRelation(2, Qt::SqlRelation($artistTable, 'id', 'artist'));
     this->{model}->select();
 
     my $artists = this->createArtistGroupBox();
@@ -41,14 +42,14 @@ sub NEW
     this->connect(this->{model}, SIGNAL 'rowsRemoved(QModelIndex, int, int)',
             this, SLOT 'updateHeader(QModelIndex, int, int)');
 
-    my $layout = Qt4::GridLayout();
+    my $layout = Qt::GridLayout();
     $layout->addWidget($artists, 0, 0);
     $layout->addWidget($albums, 1, 0);
     $layout->addWidget($details, 0, 1, 2, 1);
     $layout->setColumnStretch(1, 1);
     $layout->setColumnMinimumWidth(0, 500);
 
-    my $widget = Qt4::Widget();
+    my $widget = Qt::Widget();
     $widget->setLayout($layout);
     this->setCentralWidget($widget);
     this->createMenuBar();
@@ -132,7 +133,7 @@ sub getTrackList
         $track = $tracks->item($j);
         $trackNumber = $track->toElement()->attribute('number');
 
-        my $item = Qt4::ListWidgetItem(this->{trackList});
+        my $item = Qt::ListWidgetItem(this->{trackList});
         $item->setText($trackNumber . ': ' . $track->toElement()->text());
     }
 }
@@ -160,13 +161,13 @@ sub deleteAlbum
         my $title = $idIndex->sibling($idIndex->row(), 1)->data()->toString();
         my $artist = $idIndex->sibling($idIndex->row(), 2)->data()->toString();
 
-        my $button = Qt4::MessageBox::question(this, this->tr('Delete Album'),
+        my $button = Qt::MessageBox::question(this, this->tr('Delete Album'),
                                        sprintf(this->tr('Are you sure you want to ' .
                                                   'delete \'%s\' by \'%s\'?'),
                                               $title, $artist),
-                                       Qt4::MessageBox::Yes() | Qt4::MessageBox::No());
+                                       Qt::MessageBox::Yes() | Qt::MessageBox::No());
 
-        if ($button == Qt4::MessageBox::Yes()) {
+        if ($button == Qt::MessageBox::Yes()) {
             this->removeAlbumFromFile($id);
             this->removeAlbumFromDatabase($idIndex);
             this->decreaseAlbumCount(this->indexOfArtist($artist));
@@ -174,7 +175,7 @@ sub deleteAlbum
             this->showImageLabel();
         }
     } else {
-        Qt4::MessageBox::information(this, this->tr('Delete Album'),
+        Qt::MessageBox::information(this, this->tr('Delete Album'),
                                  this->tr('Select the album you want to delete.'));
     }
 }
@@ -197,10 +198,10 @@ sub removeAlbumFromFile
     #memory database, i.e., altering the XML this->{file} will bring the data
     #out of sync.
 
-    #if (!this->{file}->open(Qt4::IODevice::WriteOnly)) {
+    #if (!this->{file}->open(Qt::IODevice::WriteOnly)) {
         #return;
     #} else {
-        #Qt4::TextStream stream(this->{file});
+        #Qt::TextStream stream(this->{file});
         #this->{albumData}.elementsByTagName('archive').item(0).save(stream, 4);
         #this->{file}->close();
     #}
@@ -225,13 +226,13 @@ sub decreaseAlbumCount
         splice @{$artists}, $row, 1;
         this->showImageLabel();
     } else {
-        artists->setData($albumCountIndex, Qt4::Variant($albumCount - 1));
+        artists->setData($albumCountIndex, Qt::Variant($albumCount - 1));
     }
 }
 
 sub readAlbumData
 {
-    if (!this->{file}->open(Qt4::IODevice::ReadOnly())) {
+    if (!this->{file}->open(Qt::IODevice::ReadOnly())) {
         return;
     }
 
@@ -244,16 +245,16 @@ sub readAlbumData
 
 sub createArtistGroupBox
 {
-    this->{artistView} = Qt4::ComboBox();
+    this->{artistView} = Qt::ComboBox();
     this->{artistView}->setModel(this->{model}->relationModel(2));
     this->{artistView}->setModelColumn(1);
 
     this->connect(this->{artistView}, SIGNAL 'currentIndexChanged(int)',
             this, SLOT 'changeArtist(int)');
 
-    my $box = Qt4::GroupBox(this->tr('Artist'));
+    my $box = Qt::GroupBox(this->tr('Artist'));
 
-    my $layout = Qt4::GridLayout();
+    my $layout = Qt::GridLayout();
     $layout->addWidget(this->{artistView}, 0, 0);
     $box->setLayout($layout);
 
@@ -262,13 +263,13 @@ sub createArtistGroupBox
 
 sub createAlbumGroupBox
 {
-    my $box = Qt4::GroupBox(this->tr('Album'));
+    my $box = Qt::GroupBox(this->tr('Album'));
 
-    this->{albumView} = Qt4::TableView();
-    this->{albumView}->setEditTriggers(Qt4::AbstractItemView::NoEditTriggers());
+    this->{albumView} = Qt::TableView();
+    this->{albumView}->setEditTriggers(Qt::AbstractItemView::NoEditTriggers());
     this->{albumView}->setSortingEnabled(1);
-    this->{albumView}->setSelectionBehavior(Qt4::AbstractItemView::SelectRows());
-    this->{albumView}->setSelectionMode(Qt4::AbstractItemView::SingleSelection());
+    this->{albumView}->setSelectionBehavior(Qt::AbstractItemView::SelectRows());
+    this->{albumView}->setSelectionMode(Qt::AbstractItemView::SingleSelection());
     this->{albumView}->setShowGrid(0);
     this->{albumView}->verticalHeader()->hide();
     this->{albumView}->setAlternatingRowColors(1);
@@ -276,7 +277,7 @@ sub createAlbumGroupBox
     this->adjustHeader();
 
     my $locale = this->{albumView}->locale();
-    $locale->setNumberOptions(Qt4::Locale::OmitGroupSeparator());
+    $locale->setNumberOptions(Qt::Locale::OmitGroupSeparator());
     this->{albumView}->setLocale($locale);
 
     this->connect(this->{albumView}, SIGNAL 'clicked(QModelIndex)',
@@ -284,7 +285,7 @@ sub createAlbumGroupBox
     this->connect(this->{albumView}, SIGNAL 'activated(QModelIndex)',
             this, SLOT 'showAlbumDetails(QModelIndex)');
 
-    my $layout = Qt4::VBoxLayout();
+    my $layout = Qt::VBoxLayout();
     $layout->addWidget(this->{albumView}, 0, 0);
     $box->setLayout($layout);
 
@@ -293,28 +294,28 @@ sub createAlbumGroupBox
 
 sub createDetailsGroupBox
 {
-    my $box = Qt4::GroupBox(this->tr('Details'));
+    my $box = Qt::GroupBox(this->tr('Details'));
 
-    this->{profileLabel} = Qt4::Label();
+    this->{profileLabel} = Qt::Label();
     this->{profileLabel}->setWordWrap(1);
-    this->{profileLabel}->setAlignment(Qt4::AlignBottom());
+    this->{profileLabel}->setAlignment(Qt::AlignBottom());
 
-    this->{titleLabel} = Qt4::Label();
+    this->{titleLabel} = Qt::Label();
     this->{titleLabel}->setWordWrap(1);
-    this->{titleLabel}->setAlignment(Qt4::AlignBottom());
+    this->{titleLabel}->setAlignment(Qt::AlignBottom());
 
-    this->{iconLabel} = Qt4::Label();
-    this->{iconLabel}->setAlignment(Qt4::AlignBottom() | Qt4::AlignRight());
-    this->{iconLabel}->setPixmap(Qt4::Pixmap('images/icon.png'));
+    this->{iconLabel} = Qt::Label();
+    this->{iconLabel}->setAlignment(Qt::AlignBottom() | Qt::AlignRight());
+    this->{iconLabel}->setPixmap(Qt::Pixmap('images/icon.png'));
 
-    this->{imageLabel} = Qt4::Label();
+    this->{imageLabel} = Qt::Label();
     this->{imageLabel}->setWordWrap(1);
-    this->{imageLabel}->setAlignment(Qt4::AlignCenter());
-    this->{imageLabel}->setPixmap(Qt4::Pixmap('images/image.png'));
+    this->{imageLabel}->setAlignment(Qt::AlignCenter());
+    this->{imageLabel}->setPixmap(Qt::Pixmap('images/image.png'));
 
-    this->{trackList} = Qt4::ListWidget();
+    this->{trackList} = Qt::ListWidget();
 
-    my $layout = Qt4::GridLayout();
+    my $layout = Qt::GridLayout();
     $layout->addWidget(this->{imageLabel}, 0, 0, 3, 2);
     $layout->addWidget(this->{profileLabel}, 0, 0);
     $layout->addWidget(this->{iconLabel}, 0, 1);
@@ -328,15 +329,15 @@ sub createDetailsGroupBox
 
 sub createMenuBar
 {
-    my $addAction = Qt4::Action(this->tr('&Add album...'), this);
-    my $deleteAction = Qt4::Action(this->tr('&Delete album...'), this);
-    my $quitAction = Qt4::Action(this->tr('&Quit'), this);
-    my $aboutAction = Qt4::Action(this->tr('&About'), this);
-    my $aboutQtAction = Qt4::Action(this->tr('About &Qt'), this);
+    my $addAction = Qt::Action(this->tr('&Add album...'), this);
+    my $deleteAction = Qt::Action(this->tr('&Delete album...'), this);
+    my $quitAction = Qt::Action(this->tr('&Quit'), this);
+    my $aboutAction = Qt::Action(this->tr('&About'), this);
+    my $aboutQtAction = Qt::Action(this->tr('About &Qt'), this);
 
-    $addAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+A')));
-    $deleteAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+D')));
-    $quitAction->setShortcut(Qt4::KeySequence(this->tr('Ctrl+Q')));
+    $addAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+A')));
+    $deleteAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+D')));
+    $quitAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+Q')));
 
     my $fileMenu = this->menuBar()->addMenu(this->tr('&File'));
     $fileMenu->addAction($addAction);
@@ -376,7 +377,7 @@ sub indexOfArtist
             return $artistModel->index($i, 1);
         }
     }
-    return Qt4::ModelIndex();
+    return Qt::ModelIndex();
 }
 
 sub updateHeader
@@ -387,14 +388,14 @@ sub updateHeader
 sub adjustHeader
 {
     this->{albumView}->hideColumn(0);
-    this->{albumView}->horizontalHeader()->setResizeMode(1, Qt4::HeaderView::Stretch());
+    this->{albumView}->horizontalHeader()->setResizeMode(1, Qt::HeaderView::Stretch());
     this->{albumView}->resizeColumnToContents(2);
     this->{albumView}->resizeColumnToContents(3);
 }
 
 sub about
 {
-    Qt4::MessageBox::about(this, this->tr('About Music Archive'),
+    Qt::MessageBox::about(this, this->tr('About Music Archive'),
             this->tr('<p>The <b>Music Archive</b> example shows how to present ' .
                'data from different data sources in the same application. ' .
                'The album titles, and the corresponding artists and release dates, ' .

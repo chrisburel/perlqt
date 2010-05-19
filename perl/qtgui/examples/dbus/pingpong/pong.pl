@@ -5,9 +5,10 @@ package Pong;
 use strict;
 use warnings;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Object );
-use Qt4::slots
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Object );
+use QtCore4::slots
     'QString ping' => ['QString'];
 
 sub NEW {
@@ -16,7 +17,7 @@ sub NEW {
 
 sub ping {
     my ( $arg ) = @_;
-    Qt4::MetaObject::invokeMethod(Qt4::CoreApplication::instance(), 'quit');
+    Qt::MetaObject::invokeMethod(Qt::CoreApplication::instance(), 'quit');
     return "ping(\"$arg\") got called";
 }
 
@@ -26,26 +27,27 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
+use QtCore4;
+use QtGui4;
 use Pong;
 use PingCommon qw( SERVICE_NAME );
 
 sub main {
-    my $app = Qt4::Application(\@ARGV);
+    my $app = Qt::Application(\@ARGV);
 
-    if (!Qt4::DBusConnection::sessionBus()->isConnected()) {
+    if (!Qt::DBusConnection::sessionBus()->isConnected()) {
         die "Cannot connect to the D-BUS session bus.\n" .
                 "To start it, run:\n" .
                 "\teval `dbus-launch --auto-syntax`\n";
     }
 
-    if (!Qt4::DBusConnection::sessionBus()->registerService(SERVICE_NAME)) {
-        die Qt4::DBusConnection::sessionBus()->lastError()->message();
+    if (!Qt::DBusConnection::sessionBus()->registerService(SERVICE_NAME)) {
+        die Qt::DBusConnection::sessionBus()->lastError()->message();
         exit(1);
     }
 
     my $pong = Pong();
-    Qt4::DBusConnection::sessionBus()->registerObject('/', $pong, Qt4::DBusConnection::ExportAllSlots());
+    Qt::DBusConnection::sessionBus()->registerObject('/', $pong, Qt::DBusConnection::ExportAllSlots());
     
     exit $app->exec();
 }

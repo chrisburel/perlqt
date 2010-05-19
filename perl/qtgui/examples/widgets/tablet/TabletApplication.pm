@@ -4,8 +4,9 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Application );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Application );
 
 sub setCanvas {
     my ($canvas) = @_;
@@ -19,9 +20,9 @@ sub myCanvas() {
 # [0]
 sub event {
     my ($event) = @_;
-    if ($event->type() == Qt4::Event::TabletEnterProximity() ||
-        $event->type() == Qt4::Event::TabletLeaveProximity()) {
-        CAST( $event, 'Qt4::TabletEvent' );
+    if ($event->type() == Qt::Event::TabletEnterProximity() ||
+        $event->type() == Qt::Event::TabletLeaveProximity()) {
+        CAST( $event, 'Qt::TabletEvent' );
         this->myCanvas->setTabletDevice(
             $event->device());
         return 1;

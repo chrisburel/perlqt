@@ -2,12 +2,13 @@ package DisplayWidget;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 # [DisplayWidget class definition]
-use Qt4::isa qw( Qt4::Widget );
-use Qt4::slots
+use QtCore4::isa qw( Qt::Widget );
+use QtCore4::slots
     setBackground => ['int'],
-    setColor => ['const Qt4::Color &'],
+    setColor => ['const Qt::Color &'],
     setShape => ['int'];
 
 use constant { House => 0, Car => 1 };
@@ -41,14 +42,14 @@ sub NEW
 {
     my ($class, $parent) = @_;
     $class->SUPER::NEW($parent);
-    my $car = Qt4::PainterPath();
-    my $house = Qt4::PainterPath();
-    this->{tree} = Qt4::PainterPath();
-    this->{moon} = Qt4::PainterPath();
+    my $car = Qt::PainterPath();
+    my $house = Qt::PainterPath();
+    this->{tree} = Qt::PainterPath();
+    this->{moon} = Qt::PainterPath();
 
-    my $file = Qt4::File('resources/shapes.dat');
-    $file->open(Qt4::File::ReadOnly());
-    my $stream = Qt4::DataStream($file);
+    my $file = Qt::File('resources/shapes.dat');
+    $file->open(Qt::File::ReadOnly());
+    my $stream = Qt::DataStream($file);
     no warnings qw(void);
     $stream >> $car >> $house >> this->{tree} >> this->{moon};
     use warnings;
@@ -60,7 +61,7 @@ sub NEW
     };
 
     this->{background} = Sky;
-    this->{shapeColor} = Qt4::Color(Qt4::darkYellow());
+    this->{shapeColor} = Qt::Color(Qt::darkYellow());
     this->{shape} = House;
 }
 
@@ -68,9 +69,9 @@ sub NEW
 sub paintEvent
 {
     my ($event) = @_;
-    my $painter = Qt4::Painter();
+    my $painter = Qt::Painter();
     $painter->begin(this);
-    $painter->setRenderHint(Qt4::Painter::Antialiasing());
+    $painter->setRenderHint(Qt::Painter::Antialiasing());
     this->paint($painter);
     $painter->end();
 }
@@ -81,14 +82,14 @@ sub paint
 {
     my ($painter) = @_;
 #[paint picture]
-    $painter->setClipRect(Qt4::Rect(0, 0, 200, 200));
-    $painter->setPen(Qt4::NoPen());
+    $painter->setClipRect(Qt::Rect(0, 0, 200, 200));
+    $painter->setPen(Qt::NoPen());
 
     if (this->background == Trees)
     {
-        $painter->fillRect(Qt4::Rect(0, 0, 200, 200), Qt4::Color(Qt4::darkGreen()));
-        $painter->setBrush(Qt4::Brush(Qt4::Color(Qt4::green())));
-        $painter->setPen(Qt4::black());
+        $painter->fillRect(Qt::Rect(0, 0, 200, 200), Qt::Color(Qt::darkGreen()));
+        $painter->setBrush(Qt::Brush(Qt::Color(Qt::green())));
+        $painter->setPen(Qt::black());
         for (my $y = -55, my $row = 0; $y < 200; $y += 50, ++$row) {
             my $xs;
             if ($row == 2 || $row == 3) {
@@ -106,21 +107,21 @@ sub paint
         }
     }
     elsif (this->background == Road) {
-        $painter->fillRect(Qt4::Rect(0, 0, 200, 200), Qt4::Color(Qt4::gray()));
-        $painter->setPen(Qt4::Pen(Qt4::Brush(Qt4::Color(Qt4::white())), 4, Qt4::DashLine()));
-        $painter->drawLine(Qt4::Line(0, 35, 200, 35));
-        $painter->drawLine(Qt4::Line(0, 165, 200, 165));
+        $painter->fillRect(Qt::Rect(0, 0, 200, 200), Qt::Color(Qt::gray()));
+        $painter->setPen(Qt::Pen(Qt::Brush(Qt::Color(Qt::white())), 4, Qt::DashLine()));
+        $painter->drawLine(Qt::Line(0, 35, 200, 35));
+        $painter->drawLine(Qt::Line(0, 165, 200, 165));
     }
     else {
-        $painter->fillRect(Qt4::Rect(0, 0, 200, 200), Qt4::Color(Qt4::darkBlue()));
+        $painter->fillRect(Qt::Rect(0, 0, 200, 200), Qt::Color(Qt::darkBlue()));
         $painter->translate(145, 10);
-        $painter->setBrush(Qt4::Brush(Qt4::Color(Qt4::white())));
+        $painter->setBrush(Qt::Brush(Qt::Color(Qt::white())));
         $painter->drawPath(this->moon);
         $painter->translate(-145, -10);
     }
 
-    $painter->setBrush(Qt4::Brush(this->shapeColor));
-    $painter->setPen(Qt4::black());
+    $painter->setBrush(Qt::Brush(this->shapeColor));
+    $painter->setPen(Qt::black());
     $painter->translate(100, 100);
     $painter->drawPath(this->shapeMap->{this->shape});
 #[paint picture]

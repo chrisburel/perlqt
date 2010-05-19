@@ -4,13 +4,14 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::MainWindow );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::MainWindow );
 
 use StyleSheetEditor;
 use Ui_MainWindow;
 
-use Qt4::slots
+use QtCore4::slots
     on_editStyleAction_triggered => [],
     on_aboutAction_triggered => [];
 
@@ -20,12 +21,12 @@ sub NEW {
 
     my $ui = Ui_MainWindow->setupUi(this);
 
-    $ui->nameLabel()->setProperty("class", Qt4::Variant(Qt4::String("mandatory Qt4::Label")));
+    $ui->nameLabel()->setProperty("class", Qt::Variant(Qt::String("mandatory Qt::Label")));
 
     my $styleSheetEditor = StyleSheetEditor(this);
     this->{styleSheetEditor} = $styleSheetEditor;
 
-    this->statusBar()->addWidget(Qt4::Label(this->tr("Ready")));
+    this->statusBar()->addWidget(Qt::Label(this->tr("Ready")));
 
     this->connect($ui->exitAction(), SIGNAL 'triggered()', qApp, SLOT 'quit()');
     this->connect($ui->aboutQtAction(), SIGNAL 'triggered()', qApp, SLOT 'aboutQt()');
@@ -41,7 +42,7 @@ sub on_editStyleAction_triggered {
 }
 
 sub on_aboutAction_triggered {
-    Qt4::MessageBox::about(this, this->tr('About Style sheet'),
+    Qt::MessageBox::about(this, this->tr('About Style sheet'),
         this->tr('The <b>Style Sheet</b> example shows how widgets can be styled ' .
            'using <a href=\'http://doc.trolltech.com/4.2/stylesheet.html\'>Qt4 ' .
            'Style Sheets</a>. Click <b>File|Edit Style Sheet</b> to pop up the ' .

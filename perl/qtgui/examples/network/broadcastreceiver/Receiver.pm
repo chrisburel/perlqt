@@ -2,9 +2,10 @@ package Receiver;
 
 use strict;
 use warnings;
-use Qt4;
-use Qt4::isa qw( Qt4::Dialog );
-use Qt4::slots
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Dialog );
+use QtCore4::slots
     processPendingDatagrams => [];
 
 sub statusLabel() {
@@ -23,11 +24,11 @@ sub NEW
 {
     my ($class, $parent) = @_;
     $class->SUPER::NEW($parent);
-    this->{statusLabel} = Qt4::Label(this->tr('Listening for broadcasted messages'));
-    this->{quitButton} = Qt4::PushButton(this->tr('&Quit'));
+    this->{statusLabel} = Qt::Label(this->tr('Listening for broadcasted messages'));
+    this->{quitButton} = Qt::PushButton(this->tr('&Quit'));
 
 # [0]
-    this->{udpSocket} = Qt4::UdpSocket(this);
+    this->{udpSocket} = Qt::UdpSocket(this);
     this->udpSocket->bind(45454);
 # [0]
 
@@ -37,12 +38,12 @@ sub NEW
 # [1]
     this->connect(this->quitButton, SIGNAL 'clicked()', this, SLOT 'close()');
 
-    my $buttonLayout = Qt4::HBoxLayout();
+    my $buttonLayout = Qt::HBoxLayout();
     $buttonLayout->addStretch(1);
     $buttonLayout->addWidget(this->quitButton);
     $buttonLayout->addStretch(1);
 
-    my $mainLayout = Qt4::VBoxLayout();
+    my $mainLayout = Qt::VBoxLayout();
     $mainLayout->addWidget(this->statusLabel);
     $mainLayout->addLayout($buttonLayout);
     this->setLayout($mainLayout);
@@ -54,7 +55,7 @@ sub processPendingDatagrams
 {
 # [2]
     while (this->udpSocket->hasPendingDatagrams()) {
-        my $datagram = Qt4::ByteArray();
+        my $datagram = Qt::ByteArray();
         $datagram->resize(this->udpSocket->pendingDatagramSize());
         this->udpSocket->readDatagram($datagram->data(), $datagram->size());
         this->statusLabel->setText(sprintf this->tr('Received datagram: \'%s\''),

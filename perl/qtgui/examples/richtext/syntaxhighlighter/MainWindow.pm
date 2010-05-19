@@ -2,11 +2,12 @@ package MainWindow;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 # [0]
-use Qt4::isa qw( Qt4::MainWindow );
-use Qt4::slots
+use QtCore4::isa qw( Qt::MainWindow );
+use QtCore4::slots
     about => [],
     newFile => [],
     openFile => ['const QString &', 'QString'],
@@ -31,10 +32,10 @@ sub NEW
 
 sub about
 {
-    Qt4::MessageBox::about(this, this->tr('About Syntax Highlighter'),
+    Qt::MessageBox::about(this, this->tr('About Syntax Highlighter'),
                 this->tr('<p>The <b>Syntax Highlighter</b> example shows how ' .
                    'to perform simple syntax highlighting by subclassing ' .
-                   'the Qt4::SyntaxHighlighter class and describing ' .
+                   'the Qt::SyntaxHighlighter class and describing ' .
                    'highlighting rules using regular expressions.</p>'));
 }
 
@@ -53,13 +54,13 @@ sub openFile
     my $fileName = $path;
 
     if (!$fileName) {
-        $fileName = Qt4::FileDialog::getOpenFileName(this,
+        $fileName = Qt::FileDialog::getOpenFileName(this,
             this->tr('Open File'), '', 'C++ Files (*.cpp *.h)');
     }
 
     if ($fileName) {
-        my $file = Qt4::File($fileName);
-        if ($file->open(Qt4::File::ReadOnly() | Qt4::File::Text())) {
+        my $file = Qt::File($fileName);
+        if ($file->open(Qt::File::ReadOnly() | Qt::File::Text())) {
             this->{editor}->setPlainText($file->readAll()->data());
         }
     }
@@ -68,18 +69,18 @@ sub openFile
 # [1]
 sub setupEditor
 {
-    my $font = Qt4::Font();
+    my $font = Qt::Font();
     $font->setFamily('Courier');
     $font->setFixedPitch(1);
     $font->setPointSize(10);
 
-    this->{editor} = Qt4::TextEdit();
+    this->{editor} = Qt::TextEdit();
     this->{editor}->setFont($font);
 
     this->{highlighter} = Highlighter(this->{editor}->document());
 
-    my $file = Qt4::File('mainwindow.h');
-    if ($file->open(Qt4::File::ReadOnly() | Qt4::File::Text())) {
+    my $file = Qt::File('mainwindow.h');
+    if ($file->open(Qt::File::ReadOnly() | Qt::File::Text())) {
         this->{editor}->setPlainText($file->readAll());
     }
 }
@@ -87,23 +88,23 @@ sub setupEditor
 
 sub setupFileMenu
 {
-    my $fileMenu = Qt4::Menu(this->tr('&File'), this);
+    my $fileMenu = Qt::Menu(this->tr('&File'), this);
     this->menuBar()->addMenu($fileMenu);
 
     $fileMenu->addAction(this->tr('&New'), this, SLOT 'newFile()',
-                        Qt4::KeySequence(Qt4::KeySequence::New()));
+                        Qt::KeySequence(Qt::KeySequence::New()));
 
     $fileMenu->addAction(this->tr('&Open...'), this, SLOT 'openFile2()',
-                        Qt4::KeySequence(Qt4::KeySequence::Open()));
+                        Qt::KeySequence(Qt::KeySequence::Open()));
                         
     $fileMenu->addAction(this->tr('E&xit'), qApp, SLOT 'quit()',
-                        #Qt4::KeySequence(Qt4::KeySequence::Quit()));
-                        Qt4::KeySequence('Ctrl+Q'));
+                        #Qt::KeySequence(Qt::KeySequence::Quit()));
+                        Qt::KeySequence('Ctrl+Q'));
 }
 
 sub setupHelpMenu
 {
-    my $helpMenu = Qt4::Menu(this->tr('&Help'), this);
+    my $helpMenu = Qt::Menu(this->tr('&Help'), this);
     this->menuBar()->addMenu($helpMenu);
 
     $helpMenu->addAction(this->tr('&About'), this, SLOT 'about()');

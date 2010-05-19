@@ -2,12 +2,13 @@
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 use MainWindow;
 
 sub main
 {
-    my $app = Qt4::Application(\@ARGV);
+    my $app = Qt::Application(\@ARGV);
     my $window = MainWindow();
     $window->resize(640, 256);
     $window->show();

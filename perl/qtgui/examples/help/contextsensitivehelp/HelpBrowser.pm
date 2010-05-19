@@ -2,19 +2,20 @@ package HelpBrowser;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
-use Qt4::isa qw( Qt4::TextBrowser );
+use QtCore4::isa qw( Qt::TextBrowser );
 
 sub NEW
 {
     my ($class, $parent) = @_;
     $class->SUPER::NEW($parent);
 
-    my $collectionFile = Qt4::LibraryInfo::location(Qt4::LibraryInfo::ExamplesPath())
+    my $collectionFile = Qt::LibraryInfo::location(Qt::LibraryInfo::ExamplesPath())
         . '/help/contextsensitivehelp/doc/wateringmachine.qhc';
 
-    this->{m_helpEngine} = Qt4::HelpEngineCore($collectionFile, this);
+    this->{m_helpEngine} = Qt::HelpEngineCore($collectionFile, this);
     if (!this->{m_helpEngine}->setupData()) {
         this->{m_helpEngine} = 0;
     }
@@ -24,7 +25,7 @@ sub showHelpForKeyword
 {
     my ($id) = @_;
     if (this->{m_helpEngine}) {
-        #Qt4::Map<Qt4::String, Qt4::Url> links = this->{m_helpEngine}->linksForIdentifier(id);
+        #Qt::Map<Qt::String, Qt::Url> links = this->{m_helpEngine}->linksForIdentifier(id);
         my $links = this->{m_helpEngine}->linksForIdentifier($id);
         if ($links && ref $links eq 'ARRAY') {
             this->setSource($links->[0]->value());
@@ -35,9 +36,9 @@ sub showHelpForKeyword
 sub loadResource
 {
     my ($type, $name) = @_;
-    my $ba = Qt4::ByteArray();
+    my $ba = Qt::ByteArray();
     if ($type < 4 && this->{m_helpEngine}) {
-        my $url = Qt4::Url($name);
+        my $url = Qt::Url($name);
         if ($name->isRelative()) {
             $url = this->source()->resolved($url);
         }

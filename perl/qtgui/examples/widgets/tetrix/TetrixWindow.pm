@@ -4,19 +4,20 @@ use strict;
 use warnings;
 use blib;
 
-use Qt4;
-use Qt4::isa qw( Qt4::Widget );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Widget );
 use TetrixBoard;
 
 # [0]
 #    TetrixBoard *board;
-#    Qt4::Label *nextPieceLabel;
-#    Qt4::LCDNumber *scoreLcd;
-#    Qt4::LCDNumber *levelLcd;
-#    Qt4::LCDNumber *linesLcd;
-#    Qt4::PushButton *startButton;
-#    Qt4::PushButton *quitButton;
-#    Qt4::PushButton *pauseButton;
+#    Qt::Label *nextPieceLabel;
+#    Qt::LCDNumber *scoreLcd;
+#    Qt::LCDNumber *levelLcd;
+#    Qt::LCDNumber *linesLcd;
+#    Qt::PushButton *startButton;
+#    Qt::PushButton *quitButton;
+#    Qt::PushButton *pauseButton;
 # [0]
 
 # [0]
@@ -27,35 +28,35 @@ sub NEW {
     this->{board} = $board;
 # [0]
 
-    my $nextPieceLabel = Qt4::Label();
+    my $nextPieceLabel = Qt::Label();
     this->{nextPieceLabel} = $nextPieceLabel;
-    $nextPieceLabel->setFrameStyle(Qt4::Frame::Box() | Qt4::Frame::Raised());
-    $nextPieceLabel->setAlignment(Qt4::AlignCenter());
+    $nextPieceLabel->setFrameStyle(Qt::Frame::Box() | Qt::Frame::Raised());
+    $nextPieceLabel->setAlignment(Qt::AlignCenter());
     $board->setNextPieceLabel($nextPieceLabel);
 
 # [1]
-    my $scoreLcd = Qt4::LCDNumber(5);
+    my $scoreLcd = Qt::LCDNumber(5);
     this->{scoreLcd} = $scoreLcd;
-    $scoreLcd->setSegmentStyle(Qt4::LCDNumber::Filled());
+    $scoreLcd->setSegmentStyle(Qt::LCDNumber::Filled());
 # [1]
-    my $levelLcd = Qt4::LCDNumber(2);
+    my $levelLcd = Qt::LCDNumber(2);
     this->{levelLcd} = $levelLcd;
-    $levelLcd->setSegmentStyle(Qt4::LCDNumber::Filled());
-    my $linesLcd = Qt4::LCDNumber(5);
+    $levelLcd->setSegmentStyle(Qt::LCDNumber::Filled());
+    my $linesLcd = Qt::LCDNumber(5);
     this->{linesLcd} = $linesLcd;
-    $linesLcd->setSegmentStyle(Qt4::LCDNumber::Filled());
+    $linesLcd->setSegmentStyle(Qt::LCDNumber::Filled());
 
 # [2]
-    my $startButton = Qt4::PushButton(this->tr('&Start'));
+    my $startButton = Qt::PushButton(this->tr('&Start'));
     this->{startButton} = $startButton;
-    $startButton->setFocusPolicy(Qt4::NoFocus());
-    my $quitButton = Qt4::PushButton(this->tr('&Quit'));
+    $startButton->setFocusPolicy(Qt::NoFocus());
+    my $quitButton = Qt::PushButton(this->tr('&Quit'));
     this->{quitButton} = $quitButton;
-    $quitButton->setFocusPolicy(Qt4::NoFocus());
-    my $pauseButton = Qt4::PushButton(this->tr('&Pause'));
+    $quitButton->setFocusPolicy(Qt::NoFocus());
+    my $pauseButton = Qt::PushButton(this->tr('&Pause'));
     this->{pauseButton} = $pauseButton;
 # [2] //! [3]
-    $pauseButton->setFocusPolicy(Qt4::NoFocus());
+    $pauseButton->setFocusPolicy(Qt::NoFocus());
 # [3] //! [4]
 
     this->connect($startButton, SIGNAL 'clicked()', $board, SLOT 'start()');
@@ -69,7 +70,7 @@ sub NEW {
 # [5]
 
 # [6]
-    my $layout = Qt4::GridLayout();
+    my $layout = Qt::GridLayout();
     $layout->addWidget(createLabel(this->tr('NEXT')), 0, 0);
     $layout->addWidget($nextPieceLabel, 1, 0);
     $layout->addWidget(createLabel(this->tr('LEVEL')), 2, 0);
@@ -92,8 +93,8 @@ sub NEW {
 # [7]
 sub createLabel {
     my ( $text ) = @_;
-    my $lbl = Qt4::Label($text);
-    $lbl->setAlignment(Qt4::AlignHCenter() | Qt4::AlignBottom());
+    my $lbl = Qt::Label($text);
+    $lbl->setAlignment(Qt::AlignHCenter() | Qt::AlignBottom());
     return $lbl;
 }
 # [7]

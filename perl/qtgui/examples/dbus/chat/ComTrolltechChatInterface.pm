@@ -2,14 +2,15 @@ package ComTrolltechChatInterface;
 
 use strict;
 use warnings;
-use Qt4;
-use Qt4::isa qw( Qt4::DBusAbstractInterface );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::DBusAbstractInterface );
 
 sub staticInterfaceName {
     return 'com.trolltech.chat';
 }
 
-use Qt4::signals
+use QtCore4::signals
     action => ['const QString &', 'const QString &' ],
     message => ['const QString &', 'const QString &' ];
 

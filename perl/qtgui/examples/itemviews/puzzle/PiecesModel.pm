@@ -3,8 +3,9 @@ package PiecesModel;
 use strict;
 use warnings;
 use List::Util qw( min max );
-use Qt4;
-use Qt4::isa qw( Qt4::AbstractListModel );
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::AbstractListModel );
 
 use constant { RAND_MAX => 2147483647 };
 
@@ -29,21 +30,21 @@ sub data
 {
     my ($index, $role) = @_;
     if (!$index->isValid()) {
-        return Qt4::Variant();
+        return Qt::Variant();
     }
 
-    if ($role == Qt4::DecorationRole()) {
-        return Qt4::qVariantFromValue(Qt4::Icon(this->pixmaps->[$index->row()]->scaled(60, 60,
-                         Qt4::KeepAspectRatio(), Qt4::SmoothTransformation())));
+    if ($role == Qt::DecorationRole()) {
+        return Qt::qVariantFromValue(Qt::Icon(this->pixmaps->[$index->row()]->scaled(60, 60,
+                         Qt::KeepAspectRatio(), Qt::SmoothTransformation())));
     }
-    elsif ($role == Qt4::UserRole()) {
-        return Qt4::qVariantFromValue(this->pixmaps->[$index->row()]);
+    elsif ($role == Qt::UserRole()) {
+        return Qt::qVariantFromValue(this->pixmaps->[$index->row()]);
     }
-    elsif ($role == Qt4::UserRole() + 1) {
-        return Qt4::Variant(this->locations->[$index->row()]);
+    elsif ($role == Qt::UserRole() + 1) {
+        return Qt::Variant(this->locations->[$index->row()]);
     }
 
-    return Qt4::Variant();
+    return Qt::Variant();
 }
 
 sub addPiece
@@ -57,7 +58,7 @@ sub addPiece
         $row = scalar @{this->pixmaps};
     }
 
-    this->beginInsertRows(Qt4::ModelIndex(), $row, $row);
+    this->beginInsertRows(Qt::ModelIndex(), $row, $row);
     splice @{this->pixmaps}, $row, 0, $pixmap;
     splice @{this->locations}, $row, 0, $location;
     this->endInsertRows();
@@ -67,10 +68,10 @@ sub flags
 {
     my ($index) = @_;
     if ($index->isValid()) {
-        return (Qt4::ItemIsEnabled() | Qt4::ItemIsSelectable() | Qt4::ItemIsDragEnabled());
+        return (Qt::ItemIsEnabled() | Qt::ItemIsSelectable() | Qt::ItemIsDragEnabled());
     }
 
-    return Qt4::ItemIsDropEnabled();
+    return Qt::ItemIsDropEnabled();
 }
 
 sub removeRows
@@ -107,15 +108,15 @@ sub mimeTypes
 sub mimeData
 {
     my ($indexes) = @_;
-    my $mimeData = Qt4::MimeData();
-    my $encodedData = Qt4::ByteArray();
+    my $mimeData = Qt::MimeData();
+    my $encodedData = Qt::ByteArray();
 
-    my $stream = Qt4::DataStream($encodedData, Qt4::IODevice::WriteOnly());
+    my $stream = Qt::DataStream($encodedData, Qt::IODevice::WriteOnly());
 
     foreach my $index ( @{$indexes} ) {
         if ($index->isValid()) {
-            my $pixmap = Qt4::qVariantValue( this->data($index, Qt4::UserRole()), 'Qt4::Pixmap' );
-            my $location = this->data($index, Qt4::UserRole()+1)->toPoint();
+            my $pixmap = Qt::qVariantValue( this->data($index, Qt::UserRole()), 'Qt::Pixmap' );
+            my $location = this->data($index, Qt::UserRole()+1)->toPoint();
             no warnings qw(void); # Ignore bitshift warning
             $stream << $pixmap << $location;
             use warnings;
@@ -133,7 +134,7 @@ sub dropMimeData
         return 0;
     }
 
-    if ($action == Qt4::IgnoreAction()) {
+    if ($action == Qt::IgnoreAction()) {
         return 1;
     }
 
@@ -155,16 +156,16 @@ sub dropMimeData
     }
 
     my $encodedData = $data->data('image/x-puzzle-piece');
-    my $stream = Qt4::DataStream($encodedData, Qt4::IODevice::ReadOnly());
+    my $stream = Qt::DataStream($encodedData, Qt::IODevice::ReadOnly());
 
     while (!$stream->atEnd()) {
-        my $pixmap = Qt4::Pixmap();
-        my $location = Qt4::Point();
+        my $pixmap = Qt::Pixmap();
+        my $location = Qt::Point();
         no warnings qw(void); # Ignore bitshift warning
         $stream >> $pixmap >> $location;
         use warnings;
 
-        this->beginInsertRows(Qt4::ModelIndex(), $endRow, $endRow);
+        this->beginInsertRows(Qt::ModelIndex(), $endRow, $endRow);
         splice @{this->pixmaps}, $endRow, 0, $pixmap;
         splice @{this->locations}, $endRow, 0, $location;
         this->endInsertRows();
@@ -188,20 +189,20 @@ sub rowCount
 
 sub supportedDropActions
 {
-    return Qt4::CopyAction() | Qt4::MoveAction();
+    return Qt::CopyAction() | Qt::MoveAction();
 }
 
 sub addPieces
 {
     my ($pixmap) = @_;
-    this->beginRemoveRows(Qt4::ModelIndex(), 0, 24);
+    this->beginRemoveRows(Qt::ModelIndex(), 0, 24);
     this->{pixmaps} = [];
     this->{locations} = [];
     this->endRemoveRows();
     foreach my $y (0..4) {
         foreach my $x (0..4) {
             my $pieceImage = $pixmap->copy($x*80, $y*80, 80, 80);
-            this->addPiece($pieceImage, Qt4::Point($x, $y));
+            this->addPiece($pieceImage, Qt::Point($x, $y));
         }
     }
 }

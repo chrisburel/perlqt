@@ -2,9 +2,10 @@ package SvgTextObject;
 
 use strict;
 use warnings;
-use Qt4;
-use Qt4::isa qw( Qt4::Object, Qt4::TextObjectInterface );
-    #Q_INTERFACES(Qt4::TextObjectInterface)
+use QtCore4;
+use QtGui4;
+use QtCore4::isa qw( Qt::Object, Qt::TextObjectInterface );
+    #Q_INTERFACES(Qt::TextObjectInterface)
 
 use constant SvgData => 1;
 
@@ -24,7 +25,7 @@ sub intrinsicSize
         $size *= 25.0 / $size->height();
     }
 
-    return Qt4::SizeF($size);
+    return Qt::SizeF($size);
 }
 #[0]
 

@@ -2,23 +2,24 @@ package Database;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 sub createConnection
 {
-    my $db = Qt4::SqlDatabase::addDatabase('QSQLITE');
+    my $db = Qt::SqlDatabase::addDatabase('QSQLITE');
     $db->setDatabaseName(':memory:');
     if (!$db->open()) {
-        Qt4::MessageBox::critical(0, qApp->tr('Cannot open database'),
+        Qt::MessageBox::critical(0, qApp->tr('Cannot open database'),
             qApp->tr("Unable to establish a database connection.\n" .
                      'This example needs SQLite support. Please read ' .
                      'the Qt SQL driver documentation for information how ' .
                      "to build it.\n\n" .
-                     'Click Cancel to exit.'), Qt4::MessageBox::Cancel());
+                     'Click Cancel to exit.'), Qt::MessageBox::Cancel());
         return 0;
     }
 
-    my $query = Qt4::SqlQuery();
+    my $query = Qt::SqlQuery();
 
     $query->exec('create table artists (id int primary key, ' .
                                      'artist varchar(40), ' .

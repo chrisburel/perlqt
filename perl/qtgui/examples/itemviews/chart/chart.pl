@@ -3,12 +3,13 @@
 use strict;
 use warnings;
 
-use Qt4;
-#use Qt4::debug qw(all);
+use QtCore4;
+use QtGui4;
+#use Qt::debug qw(all);
 use MainWindow;
 
 sub main {
-    my $app = Qt4::Application( \@ARGV );
+    my $app = Qt::Application( \@ARGV );
     my $window = MainWindow();
     $window->show();
     exit $app->exec();

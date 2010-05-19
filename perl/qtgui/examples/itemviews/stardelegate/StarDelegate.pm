@@ -2,11 +2,12 @@ package StarDelegate;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 # [0]
-use Qt4::isa qw( Qt4::StyledItemDelegate );
-use Qt4::slots
+use QtCore4::isa qw( Qt::StyledItemDelegate );
+use QtCore4::slots
     commitAndCloseEditor => [];
 # [0]
 
@@ -26,7 +27,7 @@ sub paint
     my $starRating = $index->data()->value();
     if ( ref $starRating eq 'StarRating') {
 
-        if (${$option->state() & Qt4::Style::State_Selected()}) {
+        if (${$option->state() & Qt::Style::State_Selected()}) {
             $painter->fillRect($option->rect(), $option->palette()->highlight());
         }
 
@@ -88,7 +89,7 @@ sub setModelData
     my $starRating = $index->data()->value();
     if ( ref $starRating eq 'StarRating') {
         my $starEditor = $editor;
-        $model->setData($index, Qt4::qVariantFromValue($starEditor->starRating()));
+        $model->setData($index, Qt::qVariantFromValue($starEditor->starRating()));
     } else {
         this->SUPER::setModelData($editor, $model, $index);
     }

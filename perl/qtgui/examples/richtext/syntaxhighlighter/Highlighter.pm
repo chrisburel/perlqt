@@ -17,10 +17,11 @@ package Highlighter;
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 # [0]
-use Qt4::isa qw( Qt4::SyntaxHighlighter );
+use QtCore4::isa qw( Qt::SyntaxHighlighter );
 
 # [0]
 sub NEW
@@ -28,15 +29,15 @@ sub NEW
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW($parent);
 
-    this->{keywordFormat} = Qt4::TextCharFormat();
-    this->{classFormat} = Qt4::TextCharFormat();
-    this->{singleLineCommentFormat} = Qt4::TextCharFormat();
-    this->{multiLineCommentFormat} = Qt4::TextCharFormat();
-    this->{quotationFormat} = Qt4::TextCharFormat();
-    this->{functionFormat} = Qt4::TextCharFormat();
+    this->{keywordFormat} = Qt::TextCharFormat();
+    this->{classFormat} = Qt::TextCharFormat();
+    this->{singleLineCommentFormat} = Qt::TextCharFormat();
+    this->{multiLineCommentFormat} = Qt::TextCharFormat();
+    this->{quotationFormat} = Qt::TextCharFormat();
+    this->{functionFormat} = Qt::TextCharFormat();
 
-    this->{keywordFormat}->setForeground(Qt4::Brush(Qt4::darkBlue()));
-    this->{keywordFormat}->setFontWeight(Qt4::Font::Bold());
+    this->{keywordFormat}->setForeground(Qt::Brush(Qt::darkBlue()));
+    this->{keywordFormat}->setFontWeight(Qt::Font::Bold());
     my @keywordPatterns = (
                     "\\bchar\\b", "\\bclass\\b", "\\bconst\\b",
                     "\\bdouble\\b", "\\benum\\b", "\\bexplicit\\b",
@@ -50,7 +51,7 @@ sub NEW
                     "\\bvoid\\b", "\\bvolatile\\b" );
     foreach my $pattern (@keywordPatterns) {
         my $rule = HighlightingRule->new(
-            Qt4::RegExp($pattern),
+            Qt::RegExp($pattern),
             this->{keywordFormat}
         );
         push @{this->{highlightingRules}}, $rule;
@@ -59,49 +60,49 @@ sub NEW
 # [1]
 
 # [2]
-    this->{classFormat}->setFontWeight(Qt4::Font::Bold());
-    this->{classFormat}->setForeground(Qt4::Brush(Qt4::darkMagenta()));
+    this->{classFormat}->setFontWeight(Qt::Font::Bold());
+    this->{classFormat}->setForeground(Qt::Brush(Qt::darkMagenta()));
     push @{this->{highlightingRules}},
         HighlightingRule->new(
-            Qt4::RegExp("\\bQ[A-Za-z]+\\b"),
+            Qt::RegExp("\\bQ[A-Za-z]+\\b"),
             this->{classFormat}
         );
 # [2]
 
 # [3]
-    this->{singleLineCommentFormat}->setForeground(Qt4::Brush(Qt4::red()));
+    this->{singleLineCommentFormat}->setForeground(Qt::Brush(Qt::red()));
     
     push @{this->{highlightingRules}},
         HighlightingRule->new(
-            Qt4::RegExp("//[^\n]*"),
+            Qt::RegExp("//[^\n]*"),
             this->{singleLineCommentFormat}
         );
 
-    this->{multiLineCommentFormat}->setForeground(Qt4::Brush(Qt4::red()));
+    this->{multiLineCommentFormat}->setForeground(Qt::Brush(Qt::red()));
 # [3]
 
 # [4]
-    this->{quotationFormat}->setForeground(Qt4::Brush(Qt4::darkGreen()));
+    this->{quotationFormat}->setForeground(Qt::Brush(Qt::darkGreen()));
     push @{this->{highlightingRules}},
         HighlightingRule->new(
-            Qt4::RegExp("\'.*\'"),
+            Qt::RegExp("\'.*\'"),
             this->{quotationFormat}
         );
 # [4]
 
 # [5]
     this->{functionFormat}->setFontItalic(1);
-    this->{functionFormat}->setForeground(Qt4::Brush(Qt4::blue()));
+    this->{functionFormat}->setForeground(Qt::Brush(Qt::blue()));
     push @{this->{highlightingRules}},
         HighlightingRule->new(
-            Qt4::RegExp("\\b[A-Za-z0-9_]+(?=\\()"),
+            Qt::RegExp("\\b[A-Za-z0-9_]+(?=\\()"),
             this->{functionFormat}
         );
 # [5]
 
 # [6]
-    this->{commentStartExpression} = Qt4::RegExp("/\\*");
-    this->{commentEndExpression} = Qt4::RegExp("\\*/");
+    this->{commentStartExpression} = Qt::RegExp("/\\*");
+    this->{commentEndExpression} = Qt::RegExp("\\*/");
 }
 # [6]
 
@@ -110,7 +111,7 @@ sub highlightBlock
 {
     my ($text) = @_;
     foreach my $rule ( @{this->{highlightingRules}} ) {
-        my $expression = Qt4::RegExp($rule->pattern());
+        my $expression = Qt::RegExp($rule->pattern());
         my $index = $expression->indexIn($text);
         while ($index >= 0) {
             my $length = $expression->matchedLength();

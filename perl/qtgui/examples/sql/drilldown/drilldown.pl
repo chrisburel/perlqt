@@ -2,7 +2,8 @@
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 
 use lib '../';
 use Connection;
@@ -10,7 +11,7 @@ use View;
 
 sub main
 {
-    my $app = Qt4::Application(\@ARGV);
+    my $app = Qt::Application(\@ARGV);
 
     if (!Connection::createConnection()) {
         return 1;
@@ -18,7 +19,7 @@ sub main
 
     my $view = View('offices', 'images');
     $view->show();
-    #Qt4::Application::setNavigationMode(Qt4::NavigationModeCursorAuto());
+    #Qt::Application::setNavigationMode(Qt::NavigationModeCursorAuto());
     return $app->exec();
 }
 
