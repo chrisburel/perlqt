@@ -1,23 +1,29 @@
-project(perlqt4)
+#####################################################################
+# PerlQt4
 
-add_subdirectory(generator)
+OPTION(ENABLE_PERLQT4 "build PerlQt4" ON)
+OPTION(ENABLE_PERLQTCORE4 "build PerlQtCore4" ON)
+OPTION(ENABLE_PERLQTGUI4 "build PerlQtGui4" ON)
+OPTION(ENABLE_PERLQTTEST4 "build PerlQtTest4" ON)
+OPTION(ENABLE_PERLKDECORE4 "build PerlKDECore4" ON)
+OPTION(ENABLE_PERLKDEUI4 "build PerlKDEUi4" ON)
+OPTION(ENABLE_PERLKIO4 "build PerlKIO4" ON)
+OPTION(ENABLE_PERLPLASMA4 "build PerlPlasma4" ON)
 
-# where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules )
+add_definitions( -DDEBUG )
+FIND_PACKAGE ( Perl )
+FIND_PACKAGE ( PerlLibs )
 
-# search packages used by KDE
-find_package(KDE4 REQUIRED)
-include(KDE4Defaults)
-include(MacroLibrary)
-include(MacroOptionalAddBindings)
+include (FindPerlMore)
+SET(CUSTOM_PERL_SITE_ARCH_DIR ${PERL_SITE_ARCH_DIR} CACHE DIR "Custom installation directory for perl binary extension" )
 
-FIND_PACKAGE(Perl REQUIRED)
-FIND_PACKAGE (Qt4 REQUIRED)
+macro_optional_add_bindings(QT_QTCORE_FOUND "PerlQtCore" qtcore)
+macro_optional_add_bindings(QT_QTGUI_FOUND "PerlQtGui" qtgui)
+macro_optional_add_bindings(QT_QTTEST_FOUND "PerlQtTest" qttest)
 
-add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS} -DQT3_SUPPORT)
-include_directories (${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${KDE4_INCLUDES})
+macro_optional_add_bindings(KDE4_FOUND "PerlKDECore" kdecore)
+macro_optional_add_bindings(KDE4_FOUND "PerlKDEUi" kdeui)
+macro_optional_add_bindings(KDE4_FOUND "PerlKIO" kio)
+macro_optional_add_bindings(KDE4_FOUND "PerlPlasma" plasma)
 
-FIND_PACKAGE (OpenGL REQUIRED)
-
-add_subdirectory(smoke)
-add_subdirectory(perl)
+macro_display_bindings_log()
