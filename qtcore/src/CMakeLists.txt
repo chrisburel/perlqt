@@ -34,6 +34,7 @@ target_link_libraries(perlqtcore4
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${PERL_LIBRARY}
+    smokebase
     smokeqtcore
     smokeqtgui
     smokeqtnetwork
