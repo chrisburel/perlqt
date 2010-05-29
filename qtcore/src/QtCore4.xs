@@ -441,6 +441,8 @@ BOOT:
     newXS(" Qt::AbstractItemModel::removeRows", XS_qabstract_item_model_removerows, __FILE__);
     newXS(" Qt::AbstractItemModel::rowCount", XS_qabstract_item_model_rowcount, __FILE__);
     newXS(" Qt::AbstractItemModel::setData", XS_qabstract_item_model_setdata, __FILE__);
+    newXS(" Qt::AbstractItemModel::createIndex", XS_qabstractitemmodel_createindex, __FILE__);
+    newXS("Qt::AbstractItemModel::createIndex", XS_qabstractitemmodel_createindex, __FILE__);
     newXS(" Qt::ModelIndex::internalPointer", XS_qmodelindex_internalpointer, __FILE__);
 
     sv_this = newSV(0);

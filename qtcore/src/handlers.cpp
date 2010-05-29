@@ -330,9 +330,12 @@ void marshall_basetype(Marshall* m) {
 
                     if( !m->cleanup() && m->type().isStack()) {
                         ptr = construct_copy( o );
-                        if(ptr) {
-                            o->ptr = ptr;
-                        }
+                        // We don't want to set o->ptr = ptr here.  Doing that
+                        // will muck with our input variable.  It can cause a
+                        // situation where two perl variables point to the same
+                        // c++ pointer, and both perl variables say they own
+                        // that memory.  Then when GC happens, we'd get a
+                        // double free.
                     }
 
                     const Smoke::Class& c = m->smoke()->classes[m->type().classId()];

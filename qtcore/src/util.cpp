@@ -1316,16 +1316,11 @@ XS(XS_qabstractitemmodel_createindex) {
                 stack[1].s_int = SvIV(ST(0));
                 stack[2].s_int = SvIV(ST(1));
                 if (items == 2) {
-                    fprintf(stderr, "Setting to undef\n");
                     stack[3].s_voidp = (void*) &PL_sv_undef;
                 } else {
-                    SV* arg3 = 0;
-                    if( SvROK(ST(2)) )
-                        arg3 = newRV_inc(SvRV(ST(2)));
-                    else
-                        arg3 = newRV_inc(ST(2));
-
-                    stack[3].s_voidp = (void*) arg3;
+                    SvREFCNT_inc(ST(2));
+                    stack[3].s_voidp = (void*)ST(2);
+                    smokeperl_object* foo = sv_obj_info(ST(2));
                 }
                 (*fn)(m.method, o->ptr, stack);
                 smokeperl_object* result = alloc_smokeperl_object(
