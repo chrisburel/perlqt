@@ -1601,6 +1601,9 @@ Qt::_internal::installSub(' Qt::Variant::value', sub {
     elsif( $type == Qt::Variant::Font() ) {
         return Qt::qVariantValue($this, 'Qt::Font');
     }
+    elsif( $type == Qt::Variant::Hash() ) {
+        return $this->toHash();
+    }
     elsif( $type == Qt::Variant::Icon() ) {
         return Qt::qVariantValue($this, 'Qt::Icon');
     }

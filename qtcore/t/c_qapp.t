@@ -5,11 +5,11 @@ use QtGui4;
 
 $a=0;
 
-# Test if the Qt4::Application ctor works
+# Test if the Qt::Application ctor works
 
-eval { $a = Qt4::Application( \@ARGV ) };
+eval { $a = Qt::Application( \@ARGV ) };
 
-ok( !+$@, 'Qt4::Application ctor' );
+ok( !+$@, 'Qt::Application ctor' );
 
 # Test wether the global qApp object is properly set up
 
@@ -19,6 +19,6 @@ ok( !+$@, 'qApp properly set up' ) or diag( $@ );
 
 # One second test of the event loop
 
-Qt4::Timer::singleShot( 300, qApp, SLOT 'quit()' );
+Qt::Timer::singleShot( 300, qApp, SLOT 'quit()' );
 
 ok( !qApp->exec, 'One second event loop' );

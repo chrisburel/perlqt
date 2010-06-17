@@ -4,11 +4,11 @@ use Test::More;
 
 use QtCore4;
 use QtGui4;
-use Qt4::isa('Qt4::Application');
-use Qt4::slots
+use QtCore4::isa('Qt::Application');
+use QtCore4::slots
         foo => ['int'],
         baz => [];
-use Qt4::signals
+use QtCore4::signals
         bar => ['int'];
 
 sub NEW {
@@ -39,7 +39,7 @@ use Test::More;
 
 use QtCore4;
 use QtGui4;
-use Qt4::isa('MyApp');
+use QtCore4::isa('MyApp');
 
 sub NEW 
 {
@@ -54,7 +54,7 @@ sub baz
    # 3) testing Perl to Perl SUPER
    this->SUPER::baz();
    # 4) 5) 6) testing non-qualified enum calls vs. Perl method/static calls
-   ok( eval { Qt4::blue } );
+   ok( eval { Qt::blue } );
    ok( !$@ ) or diag( $@ );
    coincoin('a','b');
 }
@@ -72,6 +72,6 @@ use MySubApp;
 $a = 0;
 $a = MySubApp(\@ARGV);
 
-Qt4::Timer::singleShot( 300, qApp, SLOT "quit()" );
+Qt::Timer::singleShot( 300, qApp, SLOT "quit()" );
 
 exit qApp->exec;

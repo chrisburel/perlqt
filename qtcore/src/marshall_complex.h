@@ -4,7 +4,6 @@
 //-----------------------------------------------------------------------------
 template <>
 void marshall_from_perl<long long>(Marshall *m) {
-    UNTESTED_HANDLER("marshall_from_perl<long long>");
     SV *obj = m->var();
     m->item().s_voidp = new long long;
     *(long long *)m->item().s_voidp = perl_to_primitive<long long>(obj);

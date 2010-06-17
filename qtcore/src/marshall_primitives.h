@@ -140,7 +140,6 @@ SV *primitive_to_perl<unsigned long>(unsigned long sv) {
 //-----------------------------------------------------------------------------
 template <>
 long long perl_to_primitive<long long>(SV *sv) {
-    UNTESTED_HANDLER("perl_to_primitive<long long>");
     if ( !SvOK(sv) ) {
         return 0;
     } else {
@@ -149,7 +148,6 @@ long long perl_to_primitive<long long>(SV *sv) {
 }
 template <>
 SV *primitive_to_perl<long long>(long long sv) {
-    UNTESTED_HANDLER("primitive_to_perl<long long>");
     return newSViv(sv);
 }
 

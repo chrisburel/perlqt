@@ -1616,7 +1616,6 @@ void marshall_voidP_array(Marshall *m) {
 */
 
 Q_DECL_EXPORT void marshall_QHashQStringQVariant(Marshall *m) {
-    UNTESTED_HANDLER("marshall_QHashQStringQVariant");
     switch(m->action()) {
         case Marshall::FromSV: {
             SV *hashref = m->var();
@@ -2098,6 +2097,8 @@ Q_DECL_EXPORT TypeHandler Qt4_handlers[] = {
     { "int*", marshall_it<int *> },
     { "int&", marshall_it<int *> },
     { "KIO::filesize_t", marshall_it<long long> },
+    { "long long", marshall_it<long long> },
+    { "long long&", marshall_it<long long> },
     { "long long int", marshall_it<long long> },
     { "long long int&", marshall_it<long long> },
     { "QDBusVariant", marshall_QDBusVariant },
@@ -2119,6 +2120,7 @@ Q_DECL_EXPORT TypeHandler Qt4_handlers[] = {
     { "qint64", marshall_it<long long> },
     { "qint64&", marshall_it<long long> },
     { "QHash<QString,QVariant>", marshall_QHashQStringQVariant },
+    { "const QHash<QString,QVariant>&", marshall_QHashQStringQVariant },
     { "QList<const char*>", marshall_QListCharStar },
     { "QList<int>", marshall_QListInt },
     { "QList<int>&", marshall_QListInt },

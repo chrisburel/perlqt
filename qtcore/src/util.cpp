@@ -1318,9 +1318,23 @@ XS(XS_qabstractitemmodel_createindex) {
                 if (items == 2) {
                     stack[3].s_voidp = (void*) &PL_sv_undef;
                 } else {
-                    SvREFCNT_inc(ST(2));
-                    stack[3].s_voidp = (void*)ST(2);
-                    smokeperl_object* foo = sv_obj_info(ST(2));
+                    // In order for two model indexes to be considered
+                    // identical, they must have the same row, column, parent,
+                    // and internal pointer/id.  Because of that last
+                    // requirement, we can't store the RV as the internal
+                    // pointer, we must dereference it.  Then, in calls to
+                    // internalPointer(), we make a new reference, and return
+                    // that.  So to the user it is transparent.
+                    if ( !SvROK( ST(2) ) ) {
+                        croak( "%s", "Must provide a reference as 3rd argument "
+                            "to At::AbstractItemModel::createIndex" );
+                    }
+                    SV* refval = SvRV( ST(2) );
+
+                    //TODO: figure out a way to decrement the refcount when the
+                    //modelindex is deleted
+                    SvREFCNT_inc(refval);
+                    stack[3].s_voidp = (void*)refval;
                 }
                 (*fn)(m.method, o->ptr, stack);
                 smokeperl_object* result = alloc_smokeperl_object(
@@ -1347,7 +1361,11 @@ XS(XS_qmodelindex_internalpointer) {
 	QModelIndex * index = (QModelIndex *) o->ptr;
 	void * ptr = index->internalPointer();
     if(ptr) {
-        ST(0) = (SV*)ptr;
+        SV* svptr = (SV*)ptr;
+        if ( svptr != &PL_sv_undef ) {
+            svptr = newRV_inc( svptr );
+        }
+        ST(0) = (SV*)svptr;
     }
     else {
         ST(0) = &PL_sv_undef;

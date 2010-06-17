@@ -4,19 +4,19 @@ use Test::More tests => 4;
 
 use QtCore4;
 use QtGui4;
-use Qt4::isa qw(Qt4::Application);
-use Qt4::slots
+use QtCore4::isa qw(Qt::Application);
+use QtCore4::slots
         foo => [],
         slotToSignal => ['int','int'],
         slot => ['int','int'];
-use Qt4::signals
+use QtCore4::signals
         signal => ['int','int'],
         signalFromSlot => ['int','int'];
 
 sub NEW {
     shift->SUPER::NEW(@_);
 
-    # 1) testing correct subclassing of Qt4::Application and this pointer
+    # 1) testing correct subclassing of Qt::Application and this pointer
     is( ref(this), ' MyApp', 'Correct subclassing' );
 
     this->connect(this, SIGNAL 'signal(int,int)', SLOT 'slotToSignal(int,int)');
@@ -53,6 +53,6 @@ use MyApp;
 
 $a = MyApp(\@ARGV);
 
-Qt4::Timer::singleShot( 300, $a, SLOT "quit()" );
+Qt::Timer::singleShot( 300, $a, SLOT "quit()" );
 
 exit $a->exec;
