@@ -1,0 +1,78 @@
+/***************************************************************************
+                          QtXml4.xs  -  QtXml perl extension
+                             -------------------
+    begin                : 06-19-2010
+    copyright            : (C) 2009 by Chris Burel
+    email                : chrisburel@gmail.com
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+
+#include <QHash>
+#include <QList>
+#include <QtDebug>
+
+#include <iostream>
+
+// Perl headers
+extern "C" {
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include "ppport.h"
+}
+
+#include <smoke/qtxml_smoke.h>
+
+#include <smokeperl.h>
+#include <handlers.h>
+
+extern QList<Smoke*> smokeList;
+
+const char*
+resolve_classname_qtxml(smokeperl_object * o)
+{
+    return perlqt_modules[o->smoke].binding->className(o->classId);
+}
+
+extern TypeHandler QtXml4_handlers[];
+
+static PerlQt4::Binding bindingqtxml;
+
+MODULE = QtXml4            PACKAGE = QtXml4::_internal
+
+PROTOTYPES: DISABLE
+
+SV*
+getClassList()
+    CODE:
+        AV* classList = newAV();
+        for (int i = 1; i < qtxml_Smoke->numClasses; i++) {
+            if (qtxml_Smoke->classes[i].className && !qtxml_Smoke->classes[i].external)
+                av_push(classList, newSVpv(qtxml_Smoke->classes[i].className, 0));
+        }
+        RETVAL = newRV_noinc((SV*)classList);
+    OUTPUT:
+        RETVAL
+
+MODULE = QtXml4            PACKAGE = QtXml4
+
+PROTOTYPES: ENABLE
+
+BOOT:
+    init_qtxml_Smoke();
+    smokeList << qtxml_Smoke;
+
+    bindingqtxml = PerlQt4::Binding(qtxml_Smoke);
+
+    PerlQt4Module module = { "PerlQtXml4", resolve_classname_qtxml, 0, &bindingqtxml  };
+    perlqt_modules[qtxml_Smoke] = module;
+
+    install_handlers(QtXml4_handlers);

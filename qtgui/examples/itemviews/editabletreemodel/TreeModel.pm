@@ -61,7 +61,7 @@ sub flags
 sub getItem
 {
     my ($index) = @_;
-    if ($index->isValid()) {
+    if ($index && $index->isValid()) {
         my $item = $index->internalPointer();
         return $item;
     }
@@ -166,6 +166,7 @@ sub removeColumns
 sub removeRows
 {
     my ($position, $rows, $parent) = @_;
+    $parent = $parent ? $parent : Qt::ModelIndex();
     my $parentItem = this->getItem($parent);
     my $success = 1;
 

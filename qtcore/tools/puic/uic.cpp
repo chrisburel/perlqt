@@ -328,7 +328,7 @@ bool Uic::plwrite(DomUI *ui)
     	if (option().useKDE) {
 			out << "use KDE4;" << endl << endl;
 		} else {
-			out << "use Qt4;" << endl << endl;
+			out << "use QtCore4;" << endl << endl;
 		}
 	}
 
@@ -345,7 +345,7 @@ bool Uic::plwrite(DomUI *ui)
 			out << option().indent << "my $about = KDE::AboutData(\"" << className.toLower() << "\", \"" << className << "\", KDE.ki18n(\"\"), \"0.1\")" << endl;
 			out << option().indent << "KDE::CmdLineArgs.init(\\@ARGV, $about)" << endl;
 			out << option().indent << "my $a = KDE::Application" << endl;
-			parentClass.replace(QRegExp("^Q"), "Qt4::");
+			parentClass.replace(QRegExp("^Q"), "Qt::");
 			parentClass.replace(QRegExp("^K"), "KDE::");
 			out << option().indent << "my $w = " << parentClass << endl;
 			out << option().indent << option().prefix << className << "setupUi($w)" << endl;
@@ -356,8 +356,8 @@ bool Uic::plwrite(DomUI *ui)
 			out << "exit main()" << endl;
 		} else {
 			out << "\n\nsub main {" << endl;
-			out << option().indent << "my $a = Qt4::Application(\\@ARGV)" << endl;
-			parentClass.replace(QRegExp("^Q"), "Qt4::");
+			out << option().indent << "my $a = Qt::Application(\\@ARGV)" << endl;
+			parentClass.replace(QRegExp("^Q"), "Qt::");
 			out << option().indent << "my $w = " << parentClass << endl;
 			out << option().indent << "my $u = " << option().prefix << className << endl;
 			out << option().indent << "$w->show()" << endl;

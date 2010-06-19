@@ -107,7 +107,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
         if (connection == QLatin1String("(default)"))
             continue;
 
-        m_output << m_option.indent << "@" << connection << "Connection = Qt4::SqlDatabase.new\n";
+        m_output << m_option.indent << "@" << connection << "Connection = Qt::SqlDatabase.new\n";
     }
 
     TreeWalker::acceptWidget(node->elementWidget());
@@ -173,7 +173,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
 void WriteDeclaration::acceptWidget(DomWidget *node)
 {
-    QString className = QLatin1String("Qt4::Widget");
+    QString className = QLatin1String("Qt::Widget");
     if (node->hasAttributeClass())
         className = node->attributeClass();
 
@@ -188,7 +188,7 @@ void WriteDeclaration::acceptWidget(DomWidget *node)
 
 void WriteDeclaration::acceptLayout(DomLayout *node)
 {
-    QString className = QLatin1String("Qt4::Layout");
+    QString className = QLatin1String("Qt::Layout");
     if (node->hasAttributeClass())
         className = node->attributeClass();
 

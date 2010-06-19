@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtXml4;
 # [0]
 use QtCore4::isa qw( Qt::AbstractItemModel );
 use DomItem;
@@ -65,8 +66,7 @@ sub data
         return Qt::Variant(Qt::String($node->nodeName()));
     }
     elsif ($index->column() == 1) {
-        return Qt::Variant() unless $attributeMap->count();
-        foreach my $i (0..$attributeMap->count()) {
+        for (my $i = 0; $i < $attributeMap->count(); ++$i) {
             my $attribute = $attributeMap->item($i);
             my $nodeName = $attribute->nodeName();
             my $nodeValue = $attribute->nodeValue();

@@ -1796,7 +1796,7 @@ Each of the exported subroutines is prototyped.
 
 =item qApp
 
-Returns a reference to the Qt4::CoreApplication/Qt4::Application object.  This
+Returns a reference to the Qt::CoreApplication/Qt::Application object.  This
 mimics Qt's global qApp variable.
 
 =item SIGNAL, SLOT

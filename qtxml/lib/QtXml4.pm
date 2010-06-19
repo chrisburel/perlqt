@@ -1,7 +1,7 @@
 #***************************************************************************
-#                          KDECore4.pm  -  KDECore perl client lib
+#                          QtXml4.pm  -  QtXml perl client lib
 #                             -------------------
-#    begin                : 07-12-2009
+#    begin                : 06-19-2010
 #    copyright            : (C) 2009 by Chris Burel
 #    email                : chrisburel@gmail.com
 # ***************************************************************************
@@ -15,7 +15,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-package KDECore4::_internal;
+package QtXml4::_internal;
 
 use strict;
 use warnings;
@@ -24,22 +24,17 @@ use base qw(Qt::_internal);
 
 sub init {
     foreach my $c ( @{getClassList()} ) {
-        KDECore4::_internal->init_class($c);
+        QtXml4::_internal->init_class($c);
     }
 }
 
 sub normalize_classname {
     my ( $self, $cxxClassName ) = @_;
-    if( $cxxClassName =~ m/^K/ ) {
-        $cxxClassName =~ s/^K(?=[A-Z])/KDE::/;
-    }
-    else {
-        $cxxClassName = $self->SUPER::normalize_classname( $cxxClassName );
-    }
+    $cxxClassName = $self->SUPER::normalize_classname( $cxxClassName );
     return $cxxClassName;
 }
 
-package KDECore4;
+package QtXml4;
 
 use strict;
 use warnings;
@@ -49,16 +44,9 @@ require XSLoader;
 
 our $VERSION = '0.01';
 
-XSLoader::load('KDECore4', $VERSION);
+XSLoader::load('QtXml4', $VERSION);
 
-KDECore4::_internal::init();
-
-1;
-
-package Qt::GlobalSpace;
-
-our @EXPORT_OK;
-
-push @EXPORT_OK, qw( i18n ki18n );
+QtXml4::_internal::init();
 
 1;
+

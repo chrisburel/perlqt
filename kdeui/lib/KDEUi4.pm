@@ -34,7 +34,7 @@ sub KDE::Application::NEW {
     my $class = shift;
     my $retval = KDE::Application::KApplication( @_ );
     bless( $retval, " $class" );
-    Qt4::_internal::setThis( $retval );
+    Qt::_internal::setThis( $retval );
     setKApp( $retval );
 }
 

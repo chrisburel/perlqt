@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtXml4;
 use QtCore4::isa qw( Qt::MainWindow );
 use QtCore4::slots
     openFile => [];
