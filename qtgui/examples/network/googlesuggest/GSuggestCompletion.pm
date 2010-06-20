@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtNetwork4;
+use QtXml4;
 use QtCore4::isa qw( Qt::Object );
 use QtCore4::slots
     doneCompletion => [],
@@ -185,30 +187,21 @@ sub handleNetworkData
         my @hits;
 
         my $response = $networkReply->readAll();
-        # Eventually the code should do the following.  But Smoke is missing
-        # XmlStreamReader.
-        #my $xml = Qt::XmlStreamReader($response);
-        #while (!$xml->atEnd()) {
-            #$xml->readNext();
-            #if ($xml->tokenType() == Qt::XmlStreamReader::StartElement()) {
-                #if ($xml->name() eq 'suggestion') {
-                    #my $str = $xml->attributes()->value('data');
-                    #push @choices, $str->toString();
-                #}
-            #}
-            #if ($xml->tokenType() == Qt::XmlStreamReader::StartElement()) {
-                #if ($xml->name() eq 'num_queries') {
-                    #my $str = $xml->attributes()->value('int');
-                    #push @hits, $str->toString();
-                #}
-            #}
-        #}
-        my @xml = split "\n", $response->data();
-        @xml = grep{ $_ =~ m/CompleteSuggestion/ } @xml;
-        foreach my $line ( @xml ) {
-            my ($choice, $hits) = $line =~ m/.*suggestion data="(.*)"\/><num_queries int="(.*)"\/>/;
-            push @choices, $choice;
-            push @hits, $hits;
+        my $xml = Qt::XmlStreamReader($response);
+        while (!$xml->atEnd()) {
+            $xml->readNext();
+            if ($xml->tokenType() == Qt::XmlStreamReader::StartElement()) {
+                if ($xml->name()->toString() eq 'suggestion') {
+                    my $str = $xml->attributes()->value('data');
+                    push @choices, $str->toString();
+                }
+            }
+            if ($xml->tokenType() == Qt::XmlStreamReader::StartElement()) {
+                if ($xml->name()->toString() eq 'num_queries') {
+                    my $str = $xml->attributes()->value('int');
+                    push @hits, $str->toString();
+                }
+            }
         }
 
         this->showCompletion(\@choices, \@hits);

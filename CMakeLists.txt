@@ -17,6 +17,7 @@ add_subdirectory(qtcore)
 macro_optional_add_bindings(QT_QTGUI_FOUND "QtGui" qtgui)
 macro_optional_add_bindings(QT_QTTEST_FOUND "QtTest" qttest)
 macro_optional_add_bindings(QT_QTXML_FOUND "QtXml" qtxml)
+macro_optional_add_bindings(QT_QTNETWORK_FOUND "QtNetwork" qtnetwork)
 
 macro_optional_add_bindings(KDE4_FOUND "KDECore" kdecore)
 macro_optional_add_bindings(KDE4_FOUND "KDEUi" kdeui)
