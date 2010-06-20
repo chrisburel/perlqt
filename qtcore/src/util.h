@@ -87,6 +87,8 @@ XS(XS_qabstract_item_model_removecolumns);
 XS(XS_qabstractitemmodel_createindex);
 XS(XS_qmodelindex_internalpointer);
 
+XS(XS_qbytearray_data);
+
 XS(XS_qvariant_value);
 XS(XS_qvariant_from_value);
 

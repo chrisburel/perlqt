@@ -444,6 +444,8 @@ BOOT:
     newXS(" Qt::AbstractItemModel::createIndex", XS_qabstractitemmodel_createindex, __FILE__);
     newXS("Qt::AbstractItemModel::createIndex", XS_qabstractitemmodel_createindex, __FILE__);
     newXS(" Qt::ModelIndex::internalPointer", XS_qmodelindex_internalpointer, __FILE__);
+    newXS(" Qt::ByteArray::data", XS_qbytearray_data, __FILE__);
+    newXS(" Qt::ByteArray::constData", XS_qbytearray_data, __FILE__);
 
     sv_this = newSV(0);
     sv_qapp = newSV(0);

@@ -1,4 +1,4 @@
-use Test::More tests => 26;
+use Test::More tests => 27;
 
 use strict;
 use warnings;
@@ -115,6 +115,17 @@ my $app = Qt::Application( \@ARGV );
     use warnings;
     is ( $gotNum, $num, 'unsigned short' );
     is ( $streamPos, $shortSize, 'long' );
+}
+
+{
+    # Test length of QByteArray::data
+    my $buf = Qt::Buffer();
+    $buf->open( Qt::Buffer::ReadWrite() );
+    my $var = "Hello, \0World!";
+    $buf->write( $var, length $var );
+    $buf->seek(0);
+    my $ba = $buf->read( 14 );
+    is( length( $ba->data() ), length( $var ), "QByteArray::data length" );
 }
 
 {

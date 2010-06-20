@@ -1434,6 +1434,27 @@ XS(XS_qmodelindex_internalpointer) {
     XSRETURN(1);
 }
 
+XS(XS_qbytearray_data) {
+    dXSARGS;
+    if (items != 1) {
+        croak( "%s", "Invalid argument list to Qt::ByteArray::data()" );
+    }
+
+    smokeperl_object *o = sv_obj_info(ST(0));
+
+    if (!o) {
+        croak( "Qt::ByteArray::data() called on a non-Qt object" );
+    }
+    if(isDerivedFrom(o, "QByteArray") == -1) {
+        croak( "%s", "Qt4::ByteArray::data called on a"
+            " non-ByteArray object");
+    }
+
+    QByteArray * bytes = (QByteArray *) o->ptr;
+    ST(0) = sv_2mortal( newSVpvn( bytes->data(), bytes->size() ) );
+    XSRETURN(1);
+}
+
 // TODO: Find a better place to put these.
 Q_DECLARE_METATYPE(HV*)
 Q_DECLARE_METATYPE(AV*)
