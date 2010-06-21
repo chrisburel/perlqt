@@ -208,7 +208,6 @@ char* perl_to_primitive<char*>( SV* sv ) {
 //-----------------------------------------------------------------------------
 template <>
 unsigned char* perl_to_primitive<unsigned char *>(SV *sv) {
-    UNTESTED_HANDLER("perl_to_primitive<unsigned char *>");
     if ( !SvOK(sv) )
         return 0;
 

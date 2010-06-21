@@ -75,6 +75,10 @@ void marshall_to_perl<char*&>(Marshall* m) {
     m->unsupported();
 }
 
+template <>
+void marshall_from_perl<unsigned char*>(Marshall *m) {
+    m->item().s_voidp = perl_to_primitive<unsigned char*>(m->var());
+}
 
 template <>
 void marshall_to_perl<unsigned char *>(Marshall *m)

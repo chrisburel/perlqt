@@ -1,4 +1,4 @@
-use Test::More tests => 29;
+use Test::More tests => 30;
 
 use strict;
 use warnings;
@@ -89,6 +89,21 @@ my $app = Qt::Application( \@ARGV );
     $char = Qt::Char( 'f', 3 );
     is ( $char->row(), 3, 'unsigned char' );
     is ( $char->cell(), ord('f'), 'unsigned char' );
+}
+
+{
+    # Test uchar* marshalling
+    my $red = chr(64);
+    my $green = chr(128);
+    my $blue = chr(196);
+    my $alpha = chr(255);
+    my $val = $red . $green . $blue . $alpha;
+    my $w = 1;
+    my $h = 1;
+    my $buffer = $val x ($w*$h);
+    my $image = Qt::Image( $buffer, $w, $h, Qt::Image::Format_RGB32() );
+    my $result = $image->pixel(0,0);
+    is( $result, ord($red) << 0 | ord($green) << 8 | ord($blue) << 16 | ord($alpha) << 24, 'unsigned char*' );
 }
 
 {

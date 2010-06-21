@@ -423,11 +423,6 @@ void marshall_unknown(Marshall *m) {
     m->unsupported();
 }
 
-void marshall_ucharP(Marshall *m) {
-    UNTESTED_HANDLER("marshall_ucharP");
-    marshall_it<unsigned char *>(m);
-}
-
 static void marshall_doubleR(Marshall *m) {
     switch(m->action()) {
         case Marshall::FromSV: {
@@ -2244,7 +2239,8 @@ Q_DECL_EXPORT TypeHandler Qt4_handlers[] = {
     { "QwtArray<int>", marshall_QVectorint },
     { "QwtArray<int>&", marshall_QVectorint },
     { "signed int&", marshall_it<int *> },
-    { "uchar*", marshall_ucharP },
+    { "uchar*", marshall_it<unsigned char *> },
+    { "unsigned char*", marshall_it<unsigned char *> },
     { "unsigned long long int", marshall_it<long long> },
     { "unsigned long long int&", marshall_it<long long> },
     { "void", marshall_void },
