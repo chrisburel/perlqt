@@ -1,4 +1,4 @@
-use Test::More tests => 27;
+use Test::More tests => 29;
 
 use strict;
 use warnings;
@@ -235,4 +235,21 @@ my $app = Qt::Application( \@ARGV );
     is_deeply( $children, [$childWidget, $childPushButton], 'Qt::Object::findChildren' );
     $children = $widget->findChildren('Qt::PushButton');
     is_deeply( $children, [$childPushButton], 'Qt::Object::findChildren' );
+}
+
+{
+# Test Qt::IODevice::read
+    my $buf = Qt::Buffer();
+    $buf->open( Qt::Buffer::ReadWrite() );
+    my $var = "Hello, \0World!";
+    $buf->write( $var, length $var );
+    $buf->seek(0);
+    my $str = undef;
+    my $size = $buf->read( \$str, length $var );
+
+    is( $str, $var, "Qt::IODevice::read(char*, qint64)" );
+
+    $buf->seek(0);
+    my $ba = $buf->read( length $var );
+    is( $ba->data(), $var, 'Qt::IODevice::read(qint64)' );
 }

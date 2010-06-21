@@ -1446,13 +1446,66 @@ XS(XS_qbytearray_data) {
         croak( "Qt::ByteArray::data() called on a non-Qt object" );
     }
     if(isDerivedFrom(o, "QByteArray") == -1) {
-        croak( "%s", "Qt4::ByteArray::data called on a"
+        croak( "%s", "Qt::ByteArray::data called on a"
             " non-ByteArray object");
     }
 
     QByteArray * bytes = (QByteArray *) o->ptr;
     ST(0) = sv_2mortal( newSVpvn( bytes->data(), bytes->size() ) );
     XSRETURN(1);
+}
+
+XS(XS_qiodevice_read) {
+    dXSARGS;
+    if (items < 2 || items > 3) {
+        croak( "%s", "Invalid argument list to Qt::IODevice::read()" );
+    }
+
+    smokeperl_object *o = sv_obj_info(ST(0));
+
+    if (!o) {
+        croak( "Qt::IODevice::read() called on a non-Qt object" );
+    }
+    if(isDerivedFrom(o, "QIODevice") == -1) {
+        croak( "%s", "Qt::IODevice::read() called on a"
+            " non-IODevice object");
+    }
+
+    QIODevice * device = (QIODevice *) o->smoke->cast(
+        o->ptr,
+        o->classId,
+        o->smoke->idClass("QIODevice").index
+    );
+
+    if (items == 2) {
+        qint64 maxSize = SvIV( ST(1) );
+        QByteArray bytearray = device->read( maxSize );
+        // bytearray is stack allocated, so we have to copy
+        QByteArray * copy = new QByteArray( bytearray );
+        smokeperl_object* o = alloc_smokeperl_object(
+            true,
+            qtcore_Smoke,
+            qtcore_Smoke->idClass("QByteArray").index,
+            (void*)copy
+        );
+        ST(0) = sv_2mortal( set_obj_info( " Qt::ByteArray", o) );
+        XSRETURN(1);
+
+    }
+    else {
+        if ( !SvROK(ST(1)) ) {
+            croak( "%s", "Error: First argument to Qt::IODevice::read(char*, qint64) should be a scalar reference" );
+        }
+        qint64 maxSize = SvIV( ST(2) );
+        char* data = new char[maxSize];
+        qint64 bytesRead = device->read( data, maxSize );
+
+        STRLEN len = bytesRead;
+        sv_setsv( SvRV(ST(1)), newSVpvn( data, len ) );
+        delete[] data;
+        ST(0) = sv_2mortal( newSViv( bytesRead ) );
+        XSRETURN(1);
+    }
 }
 
 // TODO: Find a better place to put these.

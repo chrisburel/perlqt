@@ -446,6 +446,10 @@ BOOT:
     newXS(" Qt::ModelIndex::internalPointer", XS_qmodelindex_internalpointer, __FILE__);
     newXS(" Qt::ByteArray::data", XS_qbytearray_data, __FILE__);
     newXS(" Qt::ByteArray::constData", XS_qbytearray_data, __FILE__);
+    newXS(" Qt::IODevice::read", XS_qiodevice_read, __FILE__);
+    newXS(" Qt::Buffer::read", XS_qiodevice_read, __FILE__);
+    newXS(" Qt::TcpSocket::read", XS_qiodevice_read, __FILE__);
+    newXS(" Qt::TcpServer::read", XS_qiodevice_read, __FILE__);
 
     sv_this = newSV(0);
     sv_qapp = newSV(0);
