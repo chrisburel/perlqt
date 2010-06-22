@@ -46,4 +46,29 @@ XSLoader::load('QtGui4', $VERSION);
 
 QtGui4::_internal::init();
 
+package Qt;
+
+use strict;
+use warnings;
+
+sub Qt::GraphicsItem::ON_DESTROY {
+    package Qt::_internal;
+    my $parent = Qt::this()->parentItem();
+    if( defined $parent ) {
+        my $ptr = sv_to_ptr(Qt::this());
+        ${ $parent->{'hidden children'} }{ $ptr } = Qt::this();
+        Qt::this()->{'has been hidden'} = 1;
+        return 1;
+    }
+    return 0;
+}
+
+sub Qt::GraphicsWidget::ON_DESTROY {
+    Qt::GraphicsItem::ON_DESTROY();
+}
+
+sub Qt::GraphicsObject::ON_DESTROY {
+    Qt::GraphicsItem::ON_DESTROY();
+}
+
 1;

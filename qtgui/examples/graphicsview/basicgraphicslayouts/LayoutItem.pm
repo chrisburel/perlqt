@@ -36,11 +36,11 @@ sub paint
 # [2]
     # paint a background rect (with gradient)
     my $gradient = Qt::LinearGradient($frame->topLeft(), $frame->topLeft() + Qt::PointF(200,200));
-    push @stops, [0.0, Qt::Color(60, 60,  60)];
+    push @stops, [0.0, Qt::Color(60, 60, 60)];
     push @stops, [$frame->height()/2/$frame->height(), Qt::Color(102, 176, 54)];
 
     push @stops, [1.0, Qt::Color(215, 215, 215)];
-    #$gradient->setStops(\@stops);
+    $gradient->setStops(\@stops);
     $painter->setBrush(Qt::Brush($gradient));
     $painter->drawRoundedRect($frame, 10.0, 10.0);
 

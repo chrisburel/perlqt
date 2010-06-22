@@ -1105,6 +1105,129 @@ void marshall_QListLocaleCountry(Marshall *m){
     }
 }
 
+void marshall_QVectorQPairDoubleQColor(Marshall *m)  {
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *listref = m->var();
+            if ( !listref || !SvROK( listref ) || SvTYPE( SvRV(listref) ) != SVt_PVAV ) {
+                m->item().s_voidp = 0;
+                break;
+            }
+            AV *list = (AV*)SvRV(listref);
+            int count = av_len(list) + 1;
+            QVector <QPair<double,QColor> > *cpplist = new QVector< QPair<double,QColor> >;
+            for(long i = 0; i < count; ++i) {
+                SV **item = av_fetch(list, i, 0);
+                // TODO do type checking!
+                if(!item || !SvOK(*item) || !SvROK(*item) || SvTYPE(SvRV(*item)) != SVt_PVAV)
+                    continue;
+
+                AV* pair = (AV*)SvRV(*item);                
+                QPair<double,QColor>* qpair = new QPair<double,QColor>;
+                qpair->first = SvNV(*(av_fetch(pair, 0, 0)));
+                smokeperl_object* qcoloro = sv_obj_info(*(av_fetch(pair, 1, 0)));
+
+                if ( !qcoloro || !qcoloro->ptr )
+                    continue;
+
+                void* qcolorptr = qcoloro->smoke->cast(
+                    qcoloro->ptr,                // pointer
+                    qcoloro->classId,                // from
+                    qcoloro->smoke->idClass("QColor").index            // to
+                );
+                qpair->second = *(QColor*)qcolorptr;
+                cpplist->append(*qpair);
+            }
+
+            m->item().s_voidp = cpplist;
+            m->next();
+
+            if (!m->type().isConst()) {
+                av_clear(list);
+                for(int i=0; i < cpplist->size(); ++i) {
+                    QPair<double,QColor> qpair = cpplist->at(i);
+
+                    AV *pair = newAV();
+                    SV *pairref = newRV_noinc((SV*)pair);
+
+                    av_push( pair, newSVnv( qpair.first ) );
+
+                    SV *obj = getPointerObject((void*)&qpair.second);
+                    av_push( pair, obj );
+                    av_push(list, pairref);
+                }
+            }
+
+            if (m->cleanup()) {
+                delete cpplist;
+            }
+        }
+        break;
+
+        case Marshall::ToSV: {
+            QVector <QPair<double,QColor> > *valuelist = (QVector <QPair<double,QColor> >*)m->item().s_voidp;
+            if(!valuelist) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
+
+            AV* av = newAV();
+            SV* avref = newRV_noinc((SV*)av);
+
+            //int ix = m->smoke()->idClass(ItemSTR).index;
+            //const char * className = binding.className(ix);
+
+            for(int i=0; i < valuelist->size(); ++i) {
+                QPair<double,QColor> p = valuelist->at(i);
+
+                if(m->item().s_voidp == 0) {
+                    sv_setsv(m->var(), &PL_sv_undef);
+                    break;
+                }
+
+                AV *pair = newAV();
+                SV *pairref = newRV_noinc((SV*)pair);
+
+                av_push( pair, newSVnv( p.first ) );
+
+                SV *obj = getPointerObject((void*)&p.second);
+                if( !obj || !SvOK(obj) ) {
+                    Smoke::ModuleIndex mi = m->smoke()->findClass("QColor");
+                    smokeperl_object *o = alloc_smokeperl_object(
+                        false, mi.smoke, mi.index, (void*)&p.second );
+                    if( !m->cleanup() && m->type().isStack()) {
+
+                        void *ptr = construct_copy( o );
+                        if(ptr) {
+                            o->ptr = ptr;
+                            o->allocated = true;
+                        }
+                    }
+
+                    const char* classname = perlqt_modules[o->smoke].resolve_classname(o);
+
+                    obj = set_obj_info( classname, o );
+                }
+
+                av_push( pair, obj );
+
+                av_push(av, pairref);
+            }
+
+            sv_setsv(m->var(), avref);
+            m->next();
+
+            if (m->cleanup()) {
+                delete valuelist;
+            }
+        }
+        break;
+
+        default:
+            m->unsupported();
+        break;
+    }
+}
 
 void marshall_QVectorqreal(Marshall *m) {
     UNTESTED_HANDLER("marshall_QVectorqreal");
@@ -2232,6 +2355,8 @@ Q_DECL_EXPORT TypeHandler Qt4_handlers[] = {
     { "QVector<QTextLength>&", marshall_QTextLengthVector },
     { "QVector<QVariant>", marshall_QVariantVector },
     { "QVector<QVariant>&", marshall_QVariantVector },
+    { "QVector<QPair<double,QColor> >&", marshall_QVectorQPairDoubleQColor },
+    { "QVector<QPair<double,QColor> >", marshall_QVectorQPairDoubleQColor },
     { "QWidgetList", marshall_QWidgetList },
     { "QWidgetList&", marshall_QWidgetList },
     { "QwtArray<double>", marshall_QVectorqreal },
