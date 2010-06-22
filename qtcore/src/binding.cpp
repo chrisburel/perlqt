@@ -60,6 +60,11 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
         if(!PL_dirty && (do_debug && (do_debug & qtdb_virtual) && (do_debug & qtdb_verbose)))// If not in global destruction
             fprintf(stderr, "Cannot find object for virtual method\n");
 #endif
+        if ( isAbstract ) {
+            Smoke::Method methodobj = o->smoke->methods[method];
+            croak( "%s: %s::%s", "Unimplemented pure virtual method called",
+                o->smoke->classes[methodobj.classId].className, o->smoke->methodNames[methodobj.name] );
+        }
         return false;
     }
 
@@ -81,7 +86,14 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
     // Look up the autoload subroutine for that method
     GV *gv = gv_fetchmethod_autoload(stash, methodname, 0);
     // Found no autoload function
-    if(!gv) return false;
+    if(!gv) {
+        if ( isAbstract ) {
+            Smoke::Method methodobj = o->smoke->methods[method];
+            croak( "%s: %s::%s", "Unimplemented pure virtual method called",
+                o->smoke->classes[methodobj.classId].className, o->smoke->methodNames[methodobj.name] );
+        }
+        return false;
+    }
 
 #ifdef DEBUG
     if( do_debug && ( do_debug & qtdb_virtual ) )

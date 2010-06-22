@@ -54,6 +54,7 @@ use warnings;
 sub Qt::GraphicsItem::ON_DESTROY {
     package Qt::_internal;
     my $parent = Qt::this()->parentItem();
+    $parent = Qt::this()->scene() if !$parent;
     if( defined $parent ) {
         my $ptr = sv_to_ptr(Qt::this());
         ${ $parent->{'hidden children'} }{ $ptr } = Qt::this();

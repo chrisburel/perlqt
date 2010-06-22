@@ -5,7 +5,7 @@ use warnings;
 use QtCore4;
 use QtGui4;
 # [0]
-use QtCore4::isa qw( Qt::Object );
+use QtCore4::isa qw( Qt::GraphicsItem );
 use Math::Trig;
 
 sub angle() {
@@ -40,10 +40,6 @@ sub setColor($) {
     return this->{color} = shift;
 }
 
-sub graphicsItem {
-    return this->{graphicsItem};
-}
-
 # [0]
 
 my $Pi = 3.14159265358979323846264338327950288419717;
@@ -67,13 +63,11 @@ sub NEW
 {
     my ( $class ) = @_;
     $class->SUPER::NEW();
-    this->{graphicsItem} = Qt::GraphicsItem();
     this->setAngle(0);
     this->setSpeed(0);
     this->setMouseEyeDirection(0);
     this->setColor(Qt::Color(rand(RAND_MAX) % 256, rand(RAND_MAX) % 256, rand(RAND_MAX) % 256));
-    this->rotate(rand(RAND_MAX) % (360 * 16));
-    this->startTimer(1000 / 33);
+    this->setRotation(rand(RAND_MAX) % (360 * 16));
 }
 # [0]
 
@@ -100,7 +94,7 @@ sub paint
 {
     my ($painter) = @_;
     # Body
-    $painter->setBrush(this->color);
+    $painter->setBrush(Qt::Brush(this->color));
     $painter->drawEllipse(-10, -20, 20, 40);
 
     # Eyes
@@ -117,7 +111,10 @@ sub paint
     $painter->drawEllipse(Qt::RectF(4.0 + this->mouseEyeDirection, -17, 4, 4));
 
     # Ears
-    $painter->setBrush(this->scene()->collidingItems(this)->isEmpty() ? Qt::darkYellow() : Qt::red());
+    my $isColliding = this->scene()->collidingItems(this);
+    $painter->setBrush(ref $isColliding eq 'ARRAY' && scalar @{$isColliding} == 0 ?
+        Qt::Brush( Qt::darkYellow() ) :
+        Qt::Brush( Qt::red()));
     $painter->drawEllipse(-17, -12, 16, 16);
     $painter->drawEllipse(1, -12, 16, 16);
 
@@ -132,8 +129,13 @@ sub paint
 # [3]
 
 # [4]
-sub timerEvent
+sub advance
 {
+    my ($step) = @_;
+    if (!$step) {
+        return;
+    }
+
 # [4]
     # Don't move too far away
 # [5]
@@ -162,11 +164,12 @@ sub timerEvent
 
     # Try not to crash with any other mice
 # [7]
-    my $dangerMice = this->scene()->items( [
+    my $pgon = Qt::PolygonF( [
         this->mapToScene(0, 0),
         this->mapToScene(-30, -50),
         this->mapToScene(30, -50)
     ] );
+    my $dangerMice = this->scene->items( $pgon );
 
     foreach my $item ( @{$dangerMice} ) {
         if ($item == this) {
@@ -214,13 +217,5 @@ sub timerEvent
     this->setPos(this->mapToParent(0, -(3 + sin(this->speed) * 3)));
 }
 # [11]
-
-sub setPos {
-    this->graphicsItem->setPos( @_ );
-}
-
-sub rotate {
-    this->graphicsItem->rotate( @_ );
-}
 
 1;

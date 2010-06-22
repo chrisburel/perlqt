@@ -27,14 +27,14 @@ sub main
         my $mouse = Mouse();
         $mouse->setPos(sin(($i * 6.28) / $MouseCount) * 200,
                        cos(($i * 6.28) / $MouseCount) * 200);
-        $scene->addItem($mouse->graphicsItem);
+        $scene->addItem($mouse);
     }
 # [3]
 
 # [4]
     my $view = Qt::GraphicsView($scene);
     $view->setRenderHint(Qt::Painter::Antialiasing());
-    $view->setBackgroundBrush(Qt::Pixmap('images/cheese.jpg'));
+    $view->setBackgroundBrush(Qt::Brush(Qt::Pixmap('images/cheese.jpg')));
 # [4] //! [5]
     $view->setCacheMode(Qt::GraphicsView::CacheBackground());
     $view->setViewportUpdateMode(Qt::GraphicsView::BoundingRectViewportUpdate());
@@ -43,6 +43,10 @@ sub main
     $view->setWindowTitle(Qt::GraphicsView::tr('Colliding Mice'));
     $view->resize(400, 300);
     $view->show();
+
+    my $timer = Qt::Timer();
+    Qt::Object::connect( $timer, SIGNAL 'timeout()', $scene, SLOT 'advance()' );
+    $timer->start(1000 / 33);
 
     return $app->exec();
 }
