@@ -2,7 +2,6 @@ package CodeEditor;
 
 use strict;
 use warnings;
-use blib;
 
 use List::Util qw( max );
 use QtCore4;
@@ -31,7 +30,6 @@ package LineNumberArea;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;

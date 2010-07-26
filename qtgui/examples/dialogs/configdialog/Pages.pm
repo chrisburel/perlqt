@@ -2,7 +2,6 @@ package ConfigurationPage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -38,7 +37,6 @@ package UpdatePage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -86,7 +84,6 @@ package QueryPage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;

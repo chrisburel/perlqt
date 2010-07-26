@@ -2,7 +2,6 @@ package LicenseWizard;
 
 use strict;
 use warnings;
-use blib;
 
 use constant {
     Page_Intro => 1,
@@ -26,7 +25,6 @@ package IntroPage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -77,7 +75,6 @@ package EvaluatePage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -131,7 +128,6 @@ package RegisterPage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -183,7 +179,6 @@ package DetailsPage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -239,7 +234,6 @@ package ConclusionPage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;

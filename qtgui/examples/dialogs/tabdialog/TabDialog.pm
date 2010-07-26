@@ -2,7 +2,6 @@ package GeneralTab;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -51,7 +50,6 @@ package PermissionsTab;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -106,7 +104,6 @@ package ApplicationsTab;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -145,7 +142,6 @@ package TabDialog;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;

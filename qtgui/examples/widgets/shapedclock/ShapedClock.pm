@@ -2,7 +2,6 @@ package ShapedClock;
 
 use strict;
 use warnings;
-use blib;
 
 use List::Util qw( min );
 use QtCore4;

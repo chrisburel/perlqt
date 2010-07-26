@@ -2,7 +2,6 @@ package TetrixPiece;
 
 use strict;
 use warnings;
-use blib;
 
 use List::Util qw(min max);
 use QtCore4;

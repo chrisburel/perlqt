@@ -2,7 +2,6 @@ package IntroPage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -33,7 +32,6 @@ package ClassInfoPage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -119,7 +117,6 @@ package CodeStylePage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -213,7 +210,6 @@ package OutputFilesPage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -272,7 +268,6 @@ package ConclusionPage;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
@@ -303,7 +298,6 @@ package ClassWizard;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
