@@ -641,72 +641,6 @@ sub op_negate {
     return -${$_[0]};
 }
 
-package Qt::DBusReply;
-
-use strict;
-use warnings;
-
-sub new {
-    my ( $class, $reply ) = @_;
-    my $this = bless {}, $class;
-
-    my $error = Qt::DBusError($reply);
-    $this->{error} = $error;
-    if ( $error->isValid() ) {
-        $this->{data} = Qt::Variant();
-        return $this;
-    }
-
-    my $arguments = $reply->arguments();
-    if ( ref $arguments eq 'ARRAY' && scalar @{$arguments} >= 1 ) {
-        $this->{data} = $arguments->[0];
-        return $this;
-    }
-
-    # This only gets called if the 2 previous ifs weren't
-    $this->{error} = Qt::DBusError( Qt::DBusError::InvalidSignature(),
-                                     'Unexpected reply signature' );
-    $this->{data} = Qt::Variant();
-    return $this;
-}
-
-sub isValid {
-    my ( $this ) = @_;
-    return !$this->{error}->isValid();
-}
-
-sub value() {
-    my ( $this ) = @_;
-    return $this->{data}->value();
-}
-
-sub error() {
-    my ( $this ) = @_;
-    return $this->{error};
-}
-
-# Create the Qt::DBusReply() constructor
-Qt::_internal::installSub('Qt::DBusReply', sub { Qt::DBusReply->new(@_) });
-
-1;
-
-package Qt::DBusVariant;
-
-use strict;
-use warnings;
-
-sub NEW {
-    my ( $class, $value ) = @_;
-    if ( ref $value eq ' Qt::Variant' ) {
-        $class->SUPER::NEW( $value );
-    }
-    else {
-        $class->SUPER::NEW( $value );
-    }
-}
-
-1;
-
 package Qt::GlobalSpace;
 
 use strict;
@@ -751,9 +685,7 @@ our %classId2package;
 # purposes.
 our %pointer_map;
 
-my %customClasses = (
-    'Qt::DBusVariant' => 'Qt::Variant',
-);
+our %customClasses;
 
 my %arrayTypes = (
     'const QList<QVariant>&' => {
@@ -1818,8 +1750,9 @@ Serves a similar function to bless(), but takes care of Qt's specific quirks.
 
 =head2 INTRODUCTION
 
-This module provides bindings to a large part of the Qt library from Perl.
-This includes the QtCore, QtGui, QtNetwork, QtDBus, QtSql, and QtSvg modules.
+This module provides bindings to the QtCore module of the Qt library from Perl.
+There are separate Perl modules for each Qt module, including QtGui, QtNetwork,
+QtXml, and QtTest.  This document applies to all Qt4 and KDE4 modules.
 
 The module has been designed to work like writing Qt applications in C++.
 However, a few things have been renamed.  Everything is in the Qt:: namespace.
@@ -1839,17 +1772,17 @@ Qt::Application( \@ARGV );
 =head2 SUBCLASSING
 
 To create a subclass of a Qt class, declare a package, and then declare that
-package's base class by using Qt::isa and passing it an argument.  Multiple
-inheritance is not supported.  This package must implement a subroutine called
-NEW.  The NEW method is the constructor for that class.  The first argument to
-this method will be the name of the class being constructed, followed by the
-arguments passed to the constructor (just like in normal object-oriented Perl).
-The first thing that this method should do is call $class->SUPER::NEW().  This
-call constructs that parent's base class, and also sets the special this()
-value.  You don't need to return anything from NEW(), PerlQt will return the
-value of this() to the caller, regardless of what is returned from NEW().  Any
-package that wants to use your subclass should explicitly 'use' it, even if the
-two packages are defined in the same file.
+package's base class by using QtCore4::isa and passing it an argument.
+Multiple inheritance is not supported.  This package must implement a
+subroutine called NEW.  The NEW method is the constructor for that class.  The
+first argument to this method will be the name of the class being constructed,
+followed by the arguments passed to the constructor (just like in normal
+object-oriented Perl).  The first thing that this method should do is call
+$class->SUPER::NEW().  This call constructs that parent's base class, and also
+sets the special this() value.  You don't need to return anything from NEW(),
+PerlQt will return the value of this() to the caller, regardless of what is
+returned from NEW().  Any package that wants to use your subclass should
+explicitly 'use' it, even if the two packages are defined in the same file.
 
 This is a stub of a class called 'MyWidget', that subclasses Qt::Widget:
     package MyWidget;
@@ -1885,12 +1818,41 @@ name.  Since that instance of the class can already get a reference to itself
 by calling 'this', it is not passed in as the first argument.  If the C++
 function takes 2 arguments, @_ will contain 2 items.
 
+=head2 ABSTRACT CLASSES
+
+You can subclass from an abstract class, but you must ensure that you implement
+all pure virtual methods.  If a pure virtual function is called, and is not
+implemented, PerlQt will die with an error message telling you which function
+needs to be implemented.
+
 =head2 PERL-SPECIFIC DOCUMENTATION
 
 The following is a list of Perl-specific implementation details, broken up by
 class.
 
 =over
+
+=item Qt::Object
+
+=over
+
+=item Qt::Object::findChildren()
+
+Returns:
+An array reference of Qt::Objects
+
+Args:
+$type: A string containing the Perl type name
+$name: The Qt::Object name to search for.
+
+Description:
+Returns all children of this object with the given $name that inherit from
+type $type, or an empty list if there are no such objects. Omitting the $name
+argument causes all object names to be matched. The search is performed
+recursively.  $type should be the Perl name for the type, not the C++ one (i.e.
+'Qt::Object', not 'QObject').
+
+=back
 
 =item Qt::Variant
 
@@ -1921,7 +1883,9 @@ $typename: The name of the type of data you want out of the Qt::Variant.  This
 parameter is optional if the variant contains a Perl hash or array ref.
 
 Description:
-Equivalent to Qt's qVariantValue() function.
+Equivalent to Qt's qVariantValue() function.  It is often easier to call
+value() on the Qt::Variant object, and let PerlQt return the correct type based
+on the Qt::Variant's type.
 
 =item Qt::qVariantFromValue()
 
@@ -1934,8 +1898,17 @@ $value: The value to place into the Qt::Variant.
 
 Description:
 Equivalent to Qt's qVariantFromValue() function.  If $value is a hash or array
-ref, the resulting Qt::Variant will have it's typeName set to 'HV*' or 'AV*',
-respectively.
+ref, and is not a PerlQt object, the resulting Qt::Variant will have it's
+typeName set to 'HV*' or 'AV*', respectively.
+
+=item Qt::Variant::value()
+
+Returns:
+The data contained within a Qt::Variant
+
+Description:
+PerlQt reimplements this function to make it easier to all data types out of a
+variant (i.e. it is not limited to returning types from the QtCore module).
 
 =back
 
@@ -1959,7 +1932,7 @@ Chris Burel, E<lt>chrisburel@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2008-2009 by Chris Burel
+Copyright (C) 2008-2010 by Chris Burel
 
 Based on PerlQt3,
 Copyright (C) 2002, Ashley Winters <jahqueel@yahoo.com>

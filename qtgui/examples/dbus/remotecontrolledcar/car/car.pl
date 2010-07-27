@@ -2,31 +2,32 @@
 
 use strict;
 use warnings;
-use Qt4;
+use QtCore4;
+use QtGui4;
 use Car;
 use CarAdaptor;
 
 sub main
 {
-    my $app = Qt4::Application(\@ARGV);
+    my $app = Qt::Application(\@ARGV);
 
-    my $scene = Qt4::GraphicsScene();
+    my $scene = Qt::GraphicsScene();
     $scene->setSceneRect(-500, -500, 1000, 1000);
-    $scene->setItemIndexMethod(Qt4::GraphicsScene::NoIndex());
+    $scene->setItemIndexMethod(Qt::GraphicsScene::NoIndex());
 
     my $car = Car();
     $scene->addItem($car);
 
-    my $view = Qt4::GraphicsView($scene);
-    $view->setRenderHint(Qt4::Painter::Antialiasing());
-    $view->setBackgroundBrush(Qt4::Brush(Qt4::darkGray()));
-    $view->setWindowTitle(qApp->translate('Qt4::GraphicsView', 'Qt DBus Controlled Car'));
+    my $view = Qt::GraphicsView($scene);
+    $view->setRenderHint(Qt::Painter::Antialiasing());
+    $view->setBackgroundBrush(Qt::Brush(Qt::darkGray()));
+    $view->setWindowTitle(qApp->translate('Qt::GraphicsView', 'Qt DBus Controlled Car'));
     $view->resize(400, 300);
     $view->show();
 
-    my $adaptorParent = Qt4::Object();
+    my $adaptorParent = Qt::Object();
     my $adaptor = CarAdaptor($adaptorParent, $car);
-    my $connection = Qt4::DBusConnection::sessionBus();
+    my $connection = Qt::DBusConnection::sessionBus();
     $connection->registerObject('/Car', $adaptorParent);
     $connection->registerService('com.trolltech.CarExample');
 

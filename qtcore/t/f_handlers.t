@@ -1,4 +1,4 @@
-use Test::More tests => 30;
+use Test::More tests => 31;
 
 use strict;
 use warnings;
@@ -245,9 +245,12 @@ my $app = Qt::Application( \@ARGV );
     # Test Qt::Object::findChildren
     my $widget = Qt::Widget();
     my $childWidget = Qt::Widget($widget);
+    $childWidget->setObjectName('childWidget');
     my $childPushButton = Qt::PushButton($childWidget);
     my $children = $widget->findChildren('Qt::Widget');
     is_deeply( $children, [$childWidget, $childPushButton], 'Qt::Object::findChildren' );
+    $children = $widget->findChildren('Qt::Widget', 'childWidget');
+    is_deeply( $children, [$childWidget], 'Qt::Object::findChildren' );
     $children = $widget->findChildren('Qt::PushButton');
     is_deeply( $children, [$childPushButton], 'Qt::Object::findChildren' );
 }

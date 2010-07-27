@@ -45,10 +45,10 @@ PerlQt4::Binding binding;
 QHash<Smoke*, PerlQt4Module> perlqt_modules;
 
 // Global variables
-SV* sv_this = 0;
+Q_DECL_EXPORT SV* sv_this = 0;
 SV* sv_qapp = 0;
-HV* pointer_map = 0;
-int do_debug = 0;
+Q_DECL_EXPORT HV* pointer_map = 0;
+Q_DECL_EXPORT int do_debug = 0;
 
 // There's a comment in QtRuby about possible memory leaks with these.
 // Method caches, to avoid expensive lookups
@@ -391,7 +391,7 @@ int isDerivedFrom( smokeperl_object *o, const char *baseClassName ) {
 // into pointer_map hash
 // Recurse to store it also as casted to its parent classes, which could (and
 // does) have different memory addresses
-void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void *lastptr) {
+Q_DECL_EXPORT void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId, void *lastptr) {
     void *ptr = o->smoke->cast(o->ptr, o->classId, classId);
     // This ends the recursion
     if(ptr != lastptr) {
@@ -426,9 +426,10 @@ SV* package_classId( const char *package ) {
     }
 
     // Get the ISA array, nisa is a temp string to build package::ISA
-    char nisa[strlen(package)+6];
+    char *nisa = new char[strlen(package)+6];
     sprintf( nisa, "%s::ISA", package );
     AV* isa = get_av( nisa, true );
+    delete[] nisa;
 
     // Loop over the ISA array
     for( int i = 0; i <= av_len( isa ); i++ ) {
