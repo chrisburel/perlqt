@@ -2,7 +2,6 @@ package AddressWidget;
 
 use strict;
 use warnings;
-use blib;
 
 use Devel::Peek;
 use QtCore4;

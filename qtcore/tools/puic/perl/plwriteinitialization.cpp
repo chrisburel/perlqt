@@ -2051,7 +2051,7 @@ QString WriteInitialization::disableSorting(DomWidget *w, const QString &varName
         m_refreshOut << "\n";
         m_refreshOut << m_option.indent << "my " << tempName
             << " = " << "$self->" << varName << "()->isSortingEnabled();\n";
-        m_refreshOut << "$self->" << m_option.indent << varName << "()->setSortingEnabled( 0 );\n";
+        m_refreshOut << m_option.indent << "$self->" << varName << "()->setSortingEnabled( 0 );\n";
     }
     return tempName;
 }
@@ -2131,7 +2131,7 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
     if (w->elementItem().size()) {
         QString tempName = disableSorting(w, varNameNoSigil);
 
-        initializeTreeWidgetItems(className, varName, w->elementItem(), varName + QLatin1String("->topLevelItem("));
+        initializeTreeWidgetItems(className, varName, w->elementItem(), "$self->" + varNameNoSigil + QLatin1String("->topLevelItem("));
 
         enableSorting(w, varNameNoSigil, tempName);
     }
@@ -2167,17 +2167,18 @@ void WriteInitialization::initializeTreeWidgetItems(const QString &className, co
             }
         }
         if (icons.isEmpty() && (item->elementItem().size() == 0)) {
-            m_output << m_option.indent << "Qt::TreeWidgetItem (" << varName << " );\n";
+            m_output << m_option.indent << "Qt::TreeWidgetItem( " << varName << " );\n";
         } else {
-            const QString itemName = m_driver->unique(QLatin1String("__treeItem"));
-            m_output << m_option.indent << itemName << " = Qt::TreeWidgetItem( " << varName << " );\n";
+            const QString itemNameNoSigil = m_driver->unique(QLatin1String("__treeItem"));
+            const QString itemName = toPerlIdentifier(itemNameNoSigil);
+            m_output << m_option.indent << "my " << itemName << " = Qt::TreeWidgetItem( " << varName << " );\n";
 
             QStringListIterator it(icons);
             while (it.hasNext())
                 m_output << m_option.indent << itemName << it.next();
 
             if (item->elementItem().size()) {
-                const QString childPath = parentPath + QString::number(i) + QLatin1String(").child(");
+                const QString childPath = parentPath + QString::number(i) + QLatin1String(")->child(");
                 initializeTreeWidgetItems(className, itemName, item->elementItem(), childPath);
             }
         }

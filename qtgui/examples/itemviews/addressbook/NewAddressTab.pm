@@ -2,7 +2,6 @@ package NewAddressTab;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;

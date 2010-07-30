@@ -7,8 +7,9 @@ use warnings;
 
 use QtCore4;
 use QtGui4;
+use QtDBus4;
 use QtCore4::isa qw( Qt::DBusAbstractAdaptor );
-use Qt::classinfo
+use QtCore4::classinfo
     'D-Bus Interface' => 'com.trolltech.QtDBus.ComplexPong.Pong';
 
 use QtCore4::signals
@@ -68,6 +69,7 @@ use warnings;
 
 use QtCore4;
 use QtGui4;
+use QtDBus4;
 use PingCommon qw( SERVICE_NAME );
 use Pong;
 

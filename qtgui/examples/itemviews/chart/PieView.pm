@@ -2,7 +2,6 @@ package PieView;
 
 use strict;
 use warnings;
-use blib;
 
 use List::Util qw(min max);
 use Math::Trig;

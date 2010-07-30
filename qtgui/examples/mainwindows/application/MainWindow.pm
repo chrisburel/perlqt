@@ -1,7 +1,6 @@
 package MainWindow;
 
 use strict;
-use blib;
 
 use File::Basename;
 

@@ -88,6 +88,15 @@ sub NEW
 }
 # [constructor part5]
 
+sub simplified
+{
+    my ($text) = @_;
+    $text =~ s/[\s]+/ /g;
+    $text =~ s/^ //g;
+    $text =~ s/ $//g;
+    return $text;
+}
+
 # [updateFormatsTable() part1]
 sub updateFormatsTable
 {
@@ -108,9 +117,9 @@ sub updateFormatsTable
 # [updateFormatsTable() part3]
         my $text;
         if ($format eq 'text/plain') {
-            $text = $mimeData->text()->simplified();
+            $text = this->simplified($mimeData->text());
         } elsif ($format eq 'text/html') {
-            $text = $mimeData->html()->simplified();
+            $text = this->simplified($mimeData->html());
         } elsif ($format eq 'text/uri-list') {
             my $urlList = $mimeData->urls();
             foreach my $url ( @{$urlList} ) {
@@ -129,7 +138,7 @@ sub updateFormatsTable
         my $row = this->formatsTable->rowCount();
         this->formatsTable->insertRow($row);
         this->formatsTable->setItem($row, 0, Qt::TableWidgetItem($format));
-        this->formatsTable->setItem($row, 1, Qt::TableWidgetItem($text));
+        this->formatsTable->setItem($row, 1, Qt::TableWidgetItem(Qt::String($text)));
     }
     
     this->formatsTable->resizeColumnToContents(0);

@@ -2,7 +2,6 @@ package MainWindow;
 
 use strict;
 use warnings;
-use blib;
 
 use List::Util qw( max );
 use QtCore4;

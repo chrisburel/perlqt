@@ -7,6 +7,7 @@ use warnings;
 
 use QtCore4;
 use QtGui4;
+use QtDBus4;
 use QtCore4::isa qw( Qt::Object );
 use QtCore4::slots
     'QString ping' => ['QString'];
@@ -25,10 +26,10 @@ package main;
 
 use strict;
 use warnings;
-use blib;
 
 use QtCore4;
 use QtGui4;
+use QtDBus4;
 use Pong;
 use PingCommon qw( SERVICE_NAME );
 

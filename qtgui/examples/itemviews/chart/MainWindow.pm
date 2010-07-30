@@ -2,7 +2,6 @@ package MainWindow;
 
 use strict;
 use warnings;
-use blib;
 
 use PieView;
 use QtCore4;

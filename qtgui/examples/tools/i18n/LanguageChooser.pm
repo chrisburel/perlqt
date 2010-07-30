@@ -2,7 +2,6 @@ package LanguageChooser;
 
 use strict;
 use warnings;
-use blib;
 
 # Since we lack qHash, use md5
 use Digest::MD5 qw(md5_hex);

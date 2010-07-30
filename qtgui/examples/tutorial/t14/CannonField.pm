@@ -2,7 +2,6 @@ package CannonField;
 
 use strict;
 use warnings;
-use blib;
 
 use Math::Trig;
 

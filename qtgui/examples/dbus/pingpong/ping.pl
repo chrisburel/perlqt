@@ -5,6 +5,7 @@ use warnings;
 
 use QtCore4;
 use QtGui4;
+use QtDBus4;
 use QtCore4::isa qw( Qt::Object );
 
 use PingCommon qw( SERVICE_NAME );
