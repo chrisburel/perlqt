@@ -77,7 +77,7 @@ sub read
 
     clear();
 
-    disconnect(this, SIGNAL 'itemChanged(QTreeWidgetItem*,int)',
+    this->disconnect(this, SIGNAL 'itemChanged(QTreeWidgetItem*,int)',
                this, SLOT 'updateDomElement(QTreeWidgetItem*,int)');
 
     my $child = $root->firstChildElement('folder');
@@ -105,7 +105,9 @@ sub write
 sub updateDomElement
 {
     my ($item, $column) = @_;
-    my $element = domElementForItem->{$item};
+    # We must use some unique identifier that is compatible with perl hashes.
+    my $id = indexFromItem($item)->internalId();
+    my $element = domElementForItem->{$id};
     if ($element && !$element->isNull()) {
         if ($column == 0) {
             my $oldTitleElement = $element->firstChildElement('title');
@@ -137,12 +139,11 @@ sub parseFolderElement
     $item->setIcon(0, folderIcon);
     $item->setText(0, $title);
 
-    my $folded = $element->attribute('folded') eq 'no';
+    my $folded = $element->attribute('folded') ne 'no';
     setItemExpanded($item, !$folded);
 
     my $child = $element->firstChildElement();
     while (!$child->isNull()) {
-        $DB::single=1;
         if ($child->tagName() eq 'folder') {
             parseFolderElement($child, $item);
         } elsif ($child->tagName() eq 'bookmark') {
@@ -160,8 +161,7 @@ sub parseFolderElement
         } elsif ($child->tagName() eq 'separator') {
             my $childItem = createItem($child, $item);
             $childItem->setFlags($item->flags() & ~(Qt::ItemIsSelectable() | Qt::ItemIsEditable()));
-            #$childItem->setText(0, Qt::String(30, 0xB7));
-            $childItem->setText(0, '-');
+            $childItem->setText(0, chr(0xB7) x 30);
         }
         $child = $child->nextSiblingElement();
     }
@@ -176,7 +176,9 @@ sub createItem
     } else {
         $item = Qt::TreeWidgetItem(this);
     }
-    domElementForItem->{$item} = $element;
+    # We must use some unique identifier that is compatible with perl hashes.
+    my $id = indexFromItem($item)->internalId();
+    domElementForItem->{$id} = $element;
     return $item;
 }
 

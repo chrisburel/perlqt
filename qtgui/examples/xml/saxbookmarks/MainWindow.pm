@@ -4,17 +4,17 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
-
-use XbelTree;
-
+use QtXml4;
 use QtCore4::isa qw( Qt::MainWindow );
 use QtCore4::slots
     open => [],
     saveAs => [],
     about => [];
+use XbelGenerator;
+use XbelHandler;
 
-sub xbelTree() {
-    return this->{xbelTree};
+sub treeWidget() {
+    return this->{treeWidget};
 }
 
 sub fileMenu() {
@@ -47,23 +47,36 @@ sub aboutQtAct() {
 
 sub NEW
 {
-    my ( $class ) = @_;
+    my ($class) = @_;
     $class->SUPER::NEW();
 
-    this->{xbelTree} = XbelTree();
-    setCentralWidget(xbelTree);
+    my @labels = (this->tr('Title'), this->tr('Location'));
+
+    this->{treeWidget} = Qt::TreeWidget();
+    treeWidget->header()->setResizeMode(Qt::HeaderView::Stretch());
+    treeWidget->setHeaderLabels(\@labels);
+    setCentralWidget(treeWidget);
 
     createActions();
     createMenus();
 
     statusBar()->showMessage(this->tr('Ready'));
 
-    setWindowTitle(this->tr('DOM Bookmarks'));
+    setWindowTitle(this->tr('SAX Bookmarks'));
     resize(480, 320);
 }
 
 sub open
 {
+#if defined(Q_OS_SYMBIAN)
+    # Look for bookmarks on the same drive where the application is installed to,
+    # if drive is not read only. Qt::DesktopServices::DataLocation does this check,
+    # and returns writable drive.
+    #Qt::String bookmarksFolder =
+            #Qt::DesktopServices::storageLocation(Qt::DesktopServices::DataLocation).left(1);
+    #bookmarksFolder.append(':/Data/qt/saxbookmarks');
+    #Qt::Dir::setCurrent(bookmarksFolder);
+#endif
     my $fileName =
             Qt::FileDialog::getOpenFileName(this, this->tr('Open Bookmark File'),
                                          Qt::Dir::currentPath(),
@@ -71,6 +84,13 @@ sub open
     if (!$fileName) {
         return;
     }
+
+    treeWidget->clear();
+
+    my $handler = XbelHandler(treeWidget);
+    my $reader = Qt::XmlSimpleReader();
+    $reader->setContentHandler($handler);
+    $reader->setErrorHandler($handler);
 
     my $file = Qt::File($fileName);
     if (!$file->open(Qt::File::ReadOnly() | Qt::File::Text())) {
@@ -81,7 +101,8 @@ sub open
         return;
     }
 
-    if (xbelTree->read($file)) {
+    my $xmlInputSource = Qt::XmlInputSource($file);
+    if ($reader->parse($xmlInputSource)) {
         statusBar()->showMessage(this->tr('File loaded'), 2000);
     }
 }
@@ -105,32 +126,32 @@ sub saveAs
         return;
     }
 
-    if (xbelTree->write($file)) {
+    my $generator = XbelGenerator(treeWidget);
+    if ($generator->write($file)) {
         statusBar()->showMessage(this->tr('File saved'), 2000);
     }
-    $file->close();
 }
 
 sub about
 {
-   Qt::MessageBox::about(this, this->tr('About DOM Bookmarks'),
-                      this->tr('The <b>DOM Bookmarks</b> example demonstrates how to ' .
-                         'use Qt\'s DOM classes to read and write XML ' .
-                         'documents.'));
+   Qt::MessageBox::about(this, this->tr('About SAX Bookmarks'),
+            this->tr('The <b>SAX Bookmarks</b> example demonstrates how to use Qt\'s ' .
+               'SAX classes to read XML documents and how to generate XML by ' .
+               'hand.'));
 }
 
 sub createActions
 {
     this->{openAct} = Qt::Action(this->tr('&Open...'), this);
-    openAct->setShortcuts(Qt::KeySequence::Open());
+    openAct->setShortcut(Qt::KeySequence(Qt::KeySequence::Open()));
     this->connect(openAct, SIGNAL 'triggered()', this, SLOT 'open()');
 
     this->{saveAsAct} = Qt::Action(this->tr('&Save As...'), this);
-    saveAsAct->setShortcuts(Qt::KeySequence::SaveAs());
+    saveAsAct->setShortcut(Qt::KeySequence(Qt::KeySequence::SaveAs()));
     this->connect(saveAsAct, SIGNAL 'triggered()', this, SLOT 'saveAs()');
 
     this->{exitAct} = Qt::Action(this->tr('E&xit'), this);
-    exitAct->setShortcuts(Qt::KeySequence::Quit());
+    exitAct->setShortcut(Qt::KeySequence(Qt::KeySequence::Quit()));
     this->connect(exitAct, SIGNAL 'triggered()', this, SLOT 'close()');
 
     this->{aboutAct} = Qt::Action(this->tr('&About'), this);
@@ -147,7 +168,7 @@ sub createMenus
     fileMenu->addAction(saveAsAct);
     fileMenu->addAction(exitAct);
 
-    this->menuBar()->addSeparator();
+    menuBar()->addSeparator();
 
     this->{helpMenu} = menuBar()->addMenu(this->tr('&Help'));
     helpMenu->addAction(aboutAct);

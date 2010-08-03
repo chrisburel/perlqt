@@ -407,6 +407,7 @@ use overload
     '^'  => 'Qt::enum::_overload::op_xor',
     '|'  => 'Qt::enum::_overload::op_or',
     '&'  => 'Qt::enum::_overload::op_and',
+    '~'  => 'Qt::enum::_overload::op_unarynegate',
     '--' => 'Qt::enum::_overload::op_decrement',
     '++' => 'Qt::enum::_overload::op_increment',
     'neg'=> 'Qt::enum::_overload::op_negate';
@@ -627,6 +628,10 @@ sub op_and {
     else {
         return bless( \(${$_[0]} & $_[1]), ref $_[0] );
     }
+}
+
+sub op_unarynegate {
+    return bless( \(~${$_[0]}), ref $_[0] );
 }
 
 sub op_decrement {
@@ -880,9 +885,11 @@ sub argmatch {
         else {
             # Optional const, some words, optional & or *.  Note ?: does not
             # make a backreference, (\w*) is the only thing actually captured.
+            my $isConst = ($typeName =~ m/const/);
             $typeName =~ s/^(?:const\s+)?(\w*)[&*]?$/$1/g;
             my $isa = classIsa( $argType, $typeName );
             if ( $isa != -1 ) {
+                ++$isa if $isConst;
                 $match{$methodIdIdx} = [-$isa, [$smokeId,$methodId]];
             }
         }
@@ -1177,6 +1184,8 @@ sub init_class {
         # Adds $perlClassName to the front of @_
         $perlClassName->new(@_);
     }) unless(defined &{$perlClassName});
+
+    Qt::_internal::installSub( " ${perlClassName}::isa", \&Qt::_internal::isa );
 }
 
 sub permateMungedMethods {

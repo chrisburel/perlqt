@@ -176,6 +176,9 @@ void *construct_copy(smokeperl_object *o) {
     args[1].s_voidp = o->ptr;
     Smoke::ClassFn fn = o->smoke->classes[o->classId].classFn;
     (*fn)(o->smoke->methods[ccMeth].method, 0, args);
+    // Assign the new object's binding
+    args[1].s_voidp = perlqt_modules[o->smoke].binding;
+    (*fn)(0, args[0].s_voidp, args);
     return args[0].s_voidp;
 }
 
