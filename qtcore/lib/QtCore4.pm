@@ -1331,7 +1331,7 @@ sub makeMetaData {
             push @$data, $MethodScriptable | $MethodSignal | $AccessPublic; # flags
         }
         else {
-            push @$data, $MethodSignal | $AccessProtected; # flags
+            push @$data, $MethodSignal | $AccessPrivate; # flags
         }
     }
 
@@ -1353,7 +1353,7 @@ sub makeMetaData {
             push @$data, $nullposition; #return type, void
         }
         push @$data, $nullposition; #tag
-        push @$data, $MethodSlot | $AccessPublic; # flags
+        push @$data, $MethodSlot | $AccessPrivate; # flags
     }
 
     push @$data, 0; #eod

@@ -26,7 +26,7 @@ struct PerlQt4Module {
 extern Q_DECL_EXPORT QHash<Smoke*, PerlQt4Module> perlqt_modules;
 
 inline smokeperl_object* sv_obj_info(SV* sv) { // ptr on success, null on fail
-    if(!sv || !SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVHV)
+    if(!sv || !SvROK(sv) || !(SvTYPE(SvRV(sv)) == SVt_PVHV || SvTYPE(SvRV(sv)) == SVt_PVAV))
         return 0;
     SV *obj = SvRV(sv);
     MAGIC *mg = mg_find(obj, '~');
