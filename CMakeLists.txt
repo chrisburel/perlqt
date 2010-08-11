@@ -19,7 +19,7 @@ macro_optional_add_bindings(QT_QTTEST_FOUND "QtTest" qttest)
 macro_optional_add_bindings(QT_QTXML_FOUND "QtXml" qtxml)
 macro_optional_add_bindings(QT_QTNETWORK_FOUND "QtNetwork" qtnetwork)
 macro_optional_add_bindings(QT_QTDBUS_FOUND "QtDBus" qtdbus)
-macro_optional_add_bindings(QT_QTDBUS_FOUND "QtSql" qtsql)
+macro_optional_add_bindings(QT_QTSQL_FOUND "QtSql" qtsql)
 
 macro_optional_add_bindings(KDE4_FOUND "KDECore" kdecore)
 macro_optional_add_bindings(KDE4_FOUND "KDEUi" kdeui)
