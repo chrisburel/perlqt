@@ -75,7 +75,6 @@ void marshall_ItemList(Marshall *m) {
             m->item().s_voidp = cpplist;
             m->next();
 
-            /*
             if (!m->type().isConst()) {
                 av_clear(list);
     
@@ -84,7 +83,6 @@ void marshall_ItemList(Marshall *m) {
                     av_push(list, obj);
                 }
             }
-            */
 
             if (m->cleanup()) {
                 delete cpplist;
@@ -93,8 +91,8 @@ void marshall_ItemList(Marshall *m) {
         break;
       
         case Marshall::ToSV: {
-            ItemList *valuelist = (ItemList*)m->item().s_voidp;
-            if(!valuelist) {
+            ItemList * cpplist = (ItemList*)m->item().s_voidp;
+            if(cpplist == 0) {
                 sv_setsv(m->var(), &PL_sv_undef);
                 break;
             }
@@ -102,8 +100,10 @@ void marshall_ItemList(Marshall *m) {
             AV* av = newAV();
             SV* avref = newRV_noinc((SV*)av);
 
-            for (int i=0; i < valuelist->size(); ++i) {
-                void *p = (void *) valuelist->at(i);
+            Smoke::ModuleIndex mi = Smoke::findClass(ItemSTR);
+
+            for (int i=0; i < cpplist->size(); ++i) {
+                void *p = (void *) cpplist->at(i);
 
                 if (m->item().s_voidp == 0) {
                     sv_setsv(m->var(), &PL_sv_undef);
@@ -112,16 +112,8 @@ void marshall_ItemList(Marshall *m) {
 
                 SV* obj = getPointerObject(p);
                 if (!obj || !SvOK(obj) ) {
-                    Smoke::ModuleIndex mi = m->smoke()->findClass(ItemSTR);
                     smokeperl_object *o = alloc_smokeperl_object(
                         false, mi.smoke, mi.index, p );
-                    if( !m->cleanup() && m->type().isStack()) {
-                        void *ptr = construct_copy( o );
-                        if(ptr) {
-                            o->ptr = ptr;
-                            o->allocated = true;
-                        }
-                    }
 
                     const char* classname = perlqt_modules[o->smoke].resolve_classname(o);
 
@@ -134,8 +126,32 @@ void marshall_ItemList(Marshall *m) {
             sv_setsv(m->var(), avref);
             m->next();
 
+            if (!m->type().isConst()) {
+                int count = av_len(av) + 1;
+                long i;
+                cpplist->clear();
+                for (i = 0; i < count; ++i) {
+                    SV** itemref = av_fetch(av, i, 0);
+                    if( !itemref )
+                        continue;
+                    SV* item = *itemref;
+                    // TODO do type checking!
+                    smokeperl_object *o = sv_obj_info(item);
+                    if(!o || !o->ptr)
+                        continue;
+                    void *ptr = o->ptr;
+                    ptr = o->smoke->cast(
+                            ptr,				// pointer
+                            o->classId,				// from
+                            o->smoke->idClass(ItemSTR, true).index	// to
+                            );
+
+                    cpplist->append((Item*)ptr);
+                }
+            }
+
             if (m->cleanup()) {
-                delete valuelist;
+                delete cpplist;
             }
         }
         break;
@@ -161,7 +177,7 @@ void marshall_ValueListItem(Marshall *m) {
             for(long i = 0; i < count; ++i) {
                 SV **item = av_fetch(list, i, 0);
                 // TODO do type checking!
-                if(!item || !SvOK(*item))
+                if(!item)
                     continue;
                 smokeperl_object *o = sv_obj_info(*item);
 
@@ -221,8 +237,8 @@ void marshall_ValueListItem(Marshall *m) {
             AV* av = newAV();
             SV* avref = newRV_noinc((SV*)av);
 
-            //int ix = m->smoke()->idClass(ItemSTR).index;
-            //const char * className = binding.className(ix);
+			Smoke::ModuleIndex mi = Smoke::findClass(ItemSTR);
+			const char * className = perlqt_modules[mi.smoke].binding->className(mi.index);
 
             for(int i=0; i < valuelist->size(); ++i) {
                 void *p = (void *) &(valuelist->at(i));
@@ -234,21 +250,10 @@ void marshall_ValueListItem(Marshall *m) {
 
                 SV *obj = getPointerObject(p);
                 if( !obj || !SvOK(obj) ) {
-                    Smoke::ModuleIndex mi = m->smoke()->findClass(ItemSTR);
                     smokeperl_object *o = alloc_smokeperl_object(
                         false, mi.smoke, mi.index, p );
-                    if( !m->cleanup() && m->type().isStack()) {
 
-                        void *ptr = construct_copy( o );
-                        if(ptr) {
-                            o->ptr = ptr;
-                            o->allocated = true;
-                        }
-                    }
-
-                    const char* classname = perlqt_modules[o->smoke].resolve_classname(o);
-
-                    obj = set_obj_info( classname, o );
+                    obj = set_obj_info( className, o );
                 }
 
                 av_push(av, obj);

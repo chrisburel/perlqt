@@ -26,7 +26,7 @@ sub testSave {
     $mainWin->newFile();
     my $activeWindow = $mainWin->activeMdiChild();
     my $text = 'Hello, World!';
-    Qt::Test::keyClicks($activeWindow, $text, Qt::NoModifier(), 10);
+    Qt::Test::keyClicks($activeWindow, $text, Qt::NoModifier());
 
     my $filename = 'MdiTestFile';
     $activeWindow->saveFile($filename);

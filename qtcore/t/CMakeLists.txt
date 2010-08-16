@@ -8,3 +8,4 @@ add_test(perlqt_handlers          prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR
 add_test(perlqt_mainwindowsmdi    prove ${prove_args} -I${CMAKE_SOURCE_DIR}/perl/qtgui/examples/mainwindows/mdi ${CMAKE_CURRENT_SOURCE_DIR}/g_mainwindowsmdi.t)
 add_test(perlqt_widgetscalculator prove ${prove_args} -I${CMAKE_SOURCE_DIR}/perl/qtgui/examples/widgets/calculator ${CMAKE_CURRENT_SOURCE_DIR}/h_widgetscalculator.t)
 add_test(perlqt_xmlstreambookmarks prove ${prove_args} -I${CMAKE_SOURCE_DIR}/perl/qtgui/examples/xml/streambookmarks ${CMAKE_CURRENT_SOURCE_DIR}/i_xmlstreambookmarks.t)
+add_test(perlqt_paintingfontsampler prove ${prove_args} -I${CMAKE_SOURCE_DIR}/perl/qtgui/examples/painting/fontsampler ${CMAKE_CURRENT_SOURCE_DIR}/j_paintingfontsampler.t)

@@ -183,9 +183,9 @@ my $app = Qt::Application( \@ARGV );
 
 {
     # Test marshall_ValueListItem ToSV
-    my $shortcut1 = Qt::KeySequence( Qt::Key_Enter() );
-    my $shortcut2 = Qt::KeySequence( Qt::Key_Tab() );
-    my $shortcut3 = Qt::KeySequence( Qt::Key_Space() );
+    my $shortcut1 = Qt::KeySequence( 'Enter' );
+    my $shortcut2 = Qt::KeySequence( 'Tab' );
+    my $shortcut3 = Qt::KeySequence( 'Space' );
     my $shortcuts = [ $shortcut1, $shortcut2, $shortcut3 ];
     my $action = Qt::Action( 'Foobar', undef );
 
