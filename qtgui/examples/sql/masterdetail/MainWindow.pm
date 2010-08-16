@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtSql4;
+use QtXml4;
 use QtCore4::isa qw( Qt::MainWindow );
 use QtCore4::slots
     about => [],
@@ -77,6 +79,7 @@ sub changeArtist
 sub showArtistProfile
 {
     my ($index) = @_;
+    $DB::single=1;
     my $record = this->{model}->relationModel(2)->record($index->row());
 
     my $name = $record->value('artist')->toString();
@@ -102,6 +105,7 @@ sub showAlbumDetails
     my $year = $record->value('year')->toString();
     my $albumId = $record->value('albumid')->toString();
 
+    $DB::single=1;
     this->showArtistProfile(this->indexOfArtist($artist));
     this->{titleLabel}->setText(sprintf this->tr('Title: %s (%s)'), $title, $year);
     this->{titleLabel}->show();
@@ -373,7 +377,7 @@ sub indexOfArtist
 
     foreach my $i (0..$artistModel->rowCount()-1) {
         my $record = $artistModel->record($i);
-        if ($record->value('artist') eq $artist) {
+        if ($record->value('artist')->toString() eq $artist) {
             return $artistModel->index($i, 1);
         }
     }

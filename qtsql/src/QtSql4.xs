@@ -18,6 +18,7 @@
 #include <QHash>
 #include <QList>
 #include <QtDebug>
+#include <QSqlTableModel>
 
 #include <iostream>
 
@@ -33,6 +34,7 @@ extern "C" {
 
 #include <smokeperl.h>
 #include <handlers.h>
+#include <util.h>
 
 extern QList<Smoke*> smokeList;
 
@@ -45,6 +47,8 @@ resolve_classname_qtsql(smokeperl_object * o)
 extern TypeHandler QtSql4_handlers[];
 
 static PerlQt4::Binding bindingqtsql;
+
+DEF_ABSTRACT_ITEM_MODEL_FLAGS(SqlTableModel);
 
 MODULE = QtSql4            PACKAGE = QtSql4::_internal
 
@@ -89,3 +93,5 @@ BOOT:
     perlqt_modules[qtsql_Smoke] = module;
 
     install_handlers(QtSql4_handlers);
+
+    newXS("Qt::SqlTableModel::flags", XS_QSqlTableModel_flags, __FILE__);

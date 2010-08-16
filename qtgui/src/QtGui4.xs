@@ -18,6 +18,13 @@
 #include <QHash>
 #include <QList>
 #include <QtDebug>
+#include <QtGui/QAbstractProxyModel>
+#include <QtGui/QSortFilterProxyModel>
+#include <QtGui/QDirModel>
+#include <QtGui/QFileSystemModel>
+#include <QtGui/QProxyModel>
+#include <QtGui/QStandardItemModel>
+#include <QtGui/QStringListModel>
 
 #include <iostream>
 
@@ -33,6 +40,7 @@ extern "C" {
 
 #include <smokeperl.h>
 #include <handlers.h>
+#include <util.h>
 
 extern QList<Smoke*> smokeList;
 
@@ -45,6 +53,14 @@ resolve_classname_qtgui(smokeperl_object * o)
 extern TypeHandler QtGui4_handlers[];
 
 static PerlQt4::Binding bindingqtgui;
+
+DEF_ABSTRACT_ITEM_MODEL_FLAGS(AbstractProxyModel)
+DEF_ABSTRACT_ITEM_MODEL_FLAGS(DirModel)
+DEF_ABSTRACT_ITEM_MODEL_FLAGS(FileSystemModel)
+DEF_ABSTRACT_ITEM_MODEL_FLAGS(ProxyModel)
+DEF_ABSTRACT_ITEM_MODEL_FLAGS(SortFilterProxyModel)
+DEF_ABSTRACT_ITEM_MODEL_FLAGS(StandardItemModel)
+DEF_ABSTRACT_ITEM_MODEL_FLAGS(StringListModel)
 
 MODULE = QtGui4            PACKAGE = QtGui4::_internal
 
@@ -91,3 +107,11 @@ BOOT:
     perlqt_modules[qtgui_Smoke] = module;
 
     install_handlers(QtGui4_handlers);
+    newXS("Qt::AbstractProxyModel::flags", XS_QAbstractProxyModel_flags, __FILE__);
+    newXS("Qt::DirModel::flags", XS_QDirModel_flags, __FILE__);
+    newXS("Qt::FileSystemModel::flags", XS_QFileSystemModel_flags, __FILE__);
+    newXS("Qt::ProxyModel::flags", XS_QProxyModel_flags, __FILE__);
+    newXS("Qt::SortFilterProxyModel::flags", XS_QSortFilterProxyModel_flags, __FILE__);
+    newXS("Qt::StandardItemModel::flags", XS_QStandardItemModel_flags, __FILE__);
+    newXS("Qt::StringListModel::flags", XS_QStringListModel_flags, __FILE__);
+

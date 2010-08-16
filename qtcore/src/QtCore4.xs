@@ -435,6 +435,8 @@ BOOT:
     newXS("Qt::Object::qobject_cast", XS_qobject_qt_metacast, __FILE__);
     newXS(" Qt::AbstractItemModel::columnCount", XS_qabstract_item_model_columncount, __FILE__);
     newXS(" Qt::AbstractItemModel::data", XS_qabstract_item_model_data, __FILE__);
+    newXS(" Qt::AbstractItemModel::flags", XS_QAbstractItemModel_flags, __FILE__);
+    newXS("Qt::AbstractItemModel::flags", XS_QAbstractItemModel_flags, __FILE__);
     newXS(" Qt::AbstractItemModel::insertColumns", XS_qabstract_item_model_insertcolumns, __FILE__);
     newXS(" Qt::AbstractItemModel::insertRows", XS_qabstract_item_model_insertrows, __FILE__);
     newXS(" Qt::AbstractItemModel::removeColumns", XS_qabstract_item_model_removecolumns, __FILE__);

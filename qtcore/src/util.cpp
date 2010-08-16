@@ -34,6 +34,7 @@ extern "C" {
 #include "QtCore4.h"
 #include "binding.h"
 #include "smokeperl.h"
+#include "util.h"
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
 
@@ -1169,28 +1170,7 @@ XS(XS_qabstract_item_model_setdata) {
     }
 }
 
-XS(XS_qabstract_item_model_flags) {
-    dXSARGS;
-    smokeperl_object *o = sv_obj_info(ST(0));
-    if(!o)
-        croak( "%s", "Qt::AbstractItemModel::flags called on a non-Qt4"
-            " object");
-    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt::AbstractItemModel::flags called on a"
-            " non-AbstractItemModel object");
-	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
-
-    smokeperl_object * mi = sv_obj_info(ST(1));
-    if(!mi)
-        croak( "%s", "1st argument to Qt::AbstractItemModel::flags is"
-            " not a Qt4 object");
-    if(isDerivedFrom(mi, "QModelIndex") == -1)
-        croak( "%s", "1st argument to Qt::AbstractItemModel::flags is"
-            " not a Qt::ModelIndex" );
-	const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
-
-	XSRETURN_IV((IV)model->flags(*modelIndex));
-}
+DEF_ABSTRACT_ITEM_MODEL_FLAGS(AbstractItemModel)
 
 XS(XS_qabstract_item_model_insertrows) {
     dXSARGS;
