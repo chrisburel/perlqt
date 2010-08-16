@@ -1,0 +1,78 @@
+/***************************************************************************
+                          QtDeclarative4.xs  -  QtDeclarative perl extension
+                             -------------------
+    begin                : 06-19-2010
+    copyright            : (C) 2009 by Chris Burel
+    email                : chrisburel@gmail.com
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+
+#include <QHash>
+#include <QList>
+#include <QtDebug>
+
+#include <iostream>
+
+// Perl headers
+extern "C" {
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include "ppport.h"
+}
+
+#include <smoke/qtdeclarative_smoke.h>
+
+#include <smokeperl.h>
+#include <handlers.h>
+
+extern QList<Smoke*> smokeList;
+
+const char*
+resolve_classname_qtdeclarative(smokeperl_object * o)
+{
+    return perlqt_modules[o->smoke].binding->className(o->classId);
+}
+
+extern TypeHandler QtDeclarative4_handlers[];
+
+static PerlQt4::Binding bindingqtdeclarative;
+
+MODULE = QtDeclarative4            PACKAGE = QtDeclarative4::_internal
+
+PROTOTYPES: DISABLE
+
+SV*
+getClassList()
+    CODE:
+        AV* classList = newAV();
+        for (int i = 1; i < qtdeclarative_Smoke->numClasses; i++) {
+            if (qtdeclarative_Smoke->classes[i].className && !qtdeclarative_Smoke->classes[i].external)
+                av_push(classList, newSVpv(qtdeclarative_Smoke->classes[i].className, 0));
+        }
+        RETVAL = newRV_noinc((SV*)classList);
+    OUTPUT:
+        RETVAL
+
+MODULE = QtDeclarative4            PACKAGE = QtDeclarative4
+
+PROTOTYPES: ENABLE
+
+BOOT:
+    init_qtdeclarative_Smoke();
+    smokeList << qtdeclarative_Smoke;
+
+    bindingqtdeclarative = PerlQt4::Binding(qtdeclarative_Smoke);
+
+    PerlQt4Module module = { "PerlQtDeclarative4", resolve_classname_qtdeclarative, 0, &bindingqtdeclarative  };
+    perlqt_modules[qtdeclarative_Smoke] = module;
+
+    install_handlers(QtDeclarative4_handlers);
