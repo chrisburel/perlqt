@@ -1369,7 +1369,7 @@ XS(XS_qabstractitemmodel_createindex) {
                     // that.  So to the user it is transparent.
                     if ( !SvROK( ST(2) ) ) {
                         croak( "%s", "Must provide a reference as 3rd argument "
-                            "to At::AbstractItemModel::createIndex" );
+                            "to Qt::AbstractItemModel::createIndex" );
                     }
                     SV* refval = SvRV( ST(2) );
 
