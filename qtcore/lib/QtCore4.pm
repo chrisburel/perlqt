@@ -1644,64 +1644,72 @@ Qt::_internal::installSub(' Qt::Variant::value', sub {
 });
 
 sub String {
-    if ( @_ ) {
-        return bless \shift, 'Qt::String';
+    my $var = shift;
+    if ( $var ) {
+        return bless $var, 'Qt::String';
     } else {
         return bless '', 'Qt::String';
     }
 }
 
 sub CString {
-    if ( @_ ) {
-        return bless \shift, 'Qt::CString';
+    my $var = shift;
+    if ( $var ) {
+        return bless $var, 'Qt::CString';
     } else {
         return bless '', 'Qt::CString';
     }
 }
 
 sub Int {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Int';
+    my $var = shift;
+    if ( $var ) {
+        return bless \$var, 'Qt::Int';
     } else {
         return bless '', 'Qt::Int';
     }
 }
 
 sub Uint {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Uint';
+    my $var = shift;
+    if ( $var ) {
+        return bless $var, 'Qt::Uint';
     } else {
         return bless '', 'Qt::Uint';
     }
 }
 
 sub Bool {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Bool';
+    my $var = shift;
+    if ( $var ) {
+        return bless $var, 'Qt::Bool';
     } else {
         return bless '', 'Qt::Bool';
     }
 }
 
 sub Short {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Short';
+    my $var = shift;
+    if ( $var ) {
+        return bless $var, 'Qt::Short';
     } else {
         return bless '', 'Qt::Short';
     }
 }
 
 sub Ushort {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Ushort';
+    my $var = shift;
+    if ( $var ) {
+        return bless $var, 'Qt::Ushort';
     } else {
         return bless '', 'Qt::Ushort';
     }
 }
 
 sub Uchar {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Uchar';
+    my $var = shift;
+    if ( $var ) {
+        return bless $var, 'Qt::Uchar';
     } else {
         return bless '', 'Qt::Uchar';
     }
