@@ -1,4 +1,5 @@
-#include "QtCore/QObject"
+#include <QObject>
+#include <QRegExp>
 
 #include "marshall_types.h"
 #include "binding.h"
@@ -50,6 +51,7 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
     // interpreter
     PERL_SET_CONTEXT(PL_curinterp);
 
+
     // Look for a perl sv associated with this pointer
     SV *obj = getPointerObject(ptr);
     smokeperl_object *o = sv_obj_info(obj);
@@ -95,9 +97,28 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
         return false;
     }
 
+    // If this virtual method call came from a Perl method, and '::SUPER' is in
+    // that method name, we need to check to make sure that the method we're
+    // about to call isn't the same method we just came from.  Otherwise we'd
+    // end up in an infinite loop.
+    SV* autoload = get_sv( "Qt::AutoLoad::AUTOLOAD", TRUE );
+    char* srcpackage = SvPV_nolen( autoload );
+    char* srcmethod = srcpackage + strlen(srcpackage)+2;
+    static QRegExp rx("::SUPER$");
+    int index = rx.indexIn( srcpackage );
+    if ( index >= 0 ) {
+        srcpackage[index] = 0;
+        if ( qstrcmp( HvNAME(stash), srcpackage ) == 0 &&
+            qstrcmp( methodname, srcmethod ) == 0 ) {
+            return false;
+        }
+    }
+
+
 #ifdef DEBUG
-    if( do_debug && ( do_debug & qtdb_virtual ) )
-        fprintf(stderr, "In Virtual override for %s\n", methodname);
+    if( do_debug && ( do_debug & qtdb_virtual ) ) {
+        fprintf(stderr, "In Virtual override for %s, called from %s %s\n", methodname, srcpackage, srcmethod);
+    }
 #endif
 
     VirtualMethodCall call(smoke, method, args, obj, gv);

@@ -1645,74 +1645,50 @@ Qt::_internal::installSub(' Qt::Variant::value', sub {
 
 sub String {
     my $var = shift;
-    if ( $var ) {
-        return bless $var, 'Qt::String';
-    } else {
-        return bless '', 'Qt::String';
-    }
+    $var = '' if !defined $var;
+    return bless \$var, 'Qt::String';
 }
 
 sub CString {
     my $var = shift;
-    if ( $var ) {
-        return bless $var, 'Qt::CString';
-    } else {
-        return bless '', 'Qt::CString';
-    }
+    $var = '' if !defined $var;
+    return bless \$var, 'Qt::CString';
 }
 
 sub Int {
     my $var = shift;
-    if ( $var ) {
-        return bless \$var, 'Qt::Int';
-    } else {
-        return bless '', 'Qt::Int';
-    }
+    $var = '' if !defined $var;
+    return bless \$var, 'Qt::Int';
 }
 
 sub Uint {
     my $var = shift;
-    if ( $var ) {
-        return bless $var, 'Qt::Uint';
-    } else {
-        return bless '', 'Qt::Uint';
-    }
+    $var = '' if !defined $var;
+    return bless \$var, 'Qt::Uint';
 }
 
 sub Bool {
     my $var = shift;
-    if ( $var ) {
-        return bless $var, 'Qt::Bool';
-    } else {
-        return bless '', 'Qt::Bool';
-    }
+    $var = '' if !defined $var;
+    return bless \$var, 'Qt::Bool';
 }
 
 sub Short {
     my $var = shift;
-    if ( $var ) {
-        return bless $var, 'Qt::Short';
-    } else {
-        return bless '', 'Qt::Short';
-    }
+    $var = '' if !defined $var;
+    return bless \$var, 'Qt::Short';
 }
 
 sub Ushort {
     my $var = shift;
-    if ( $var ) {
-        return bless $var, 'Qt::Ushort';
-    } else {
-        return bless '', 'Qt::Ushort';
-    }
+    $var = '' if !defined $var;
+    return bless \$var, 'Qt::Ushort';
 }
 
 sub Uchar {
     my $var = shift;
-    if ( $var ) {
-        return bless $var, 'Qt::Uchar';
-    } else {
-        return bless '', 'Qt::Uchar';
-    }
+    $var = '' if !defined $var;
+    return bless \$var, 'Qt::Uchar';
 }
 
 1;

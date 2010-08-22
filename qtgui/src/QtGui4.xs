@@ -18,6 +18,9 @@
 #include <QHash>
 #include <QList>
 #include <QtDebug>
+#include <QPolygonF>
+#include <QPointF>
+#include <QVector>
 #include <QtGui/QAbstractProxyModel>
 #include <QtGui/QSortFilterProxyModel>
 #include <QtGui/QDirModel>
@@ -43,6 +46,7 @@ extern "C" {
 #include <util.h>
 
 extern QList<Smoke*> smokeList;
+extern SV* sv_this;
 
 const char*
 resolve_classname_qtgui(smokeperl_object * o)
@@ -54,13 +58,79 @@ extern TypeHandler QtGui4_handlers[];
 
 static PerlQt4::Binding bindingqtgui;
 
-DEF_ABSTRACT_ITEM_MODEL_FLAGS(AbstractProxyModel)
-DEF_ABSTRACT_ITEM_MODEL_FLAGS(DirModel)
-DEF_ABSTRACT_ITEM_MODEL_FLAGS(FileSystemModel)
-DEF_ABSTRACT_ITEM_MODEL_FLAGS(ProxyModel)
-DEF_ABSTRACT_ITEM_MODEL_FLAGS(SortFilterProxyModel)
-DEF_ABSTRACT_ITEM_MODEL_FLAGS(StandardItemModel)
-DEF_ABSTRACT_ITEM_MODEL_FLAGS(StringListModel)
+MODULE = QtGui4            PACKAGE = Qt::PolygonF
+PROTOTYPES: DISABLE
+
+SV*
+at( index )
+        int index
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+        if ( 0 > index || index > polygon->size() - 1 )
+            XSRETURN_UNDEF;
+        QPointF* point = new QPointF(polygon->at(index));
+        Smoke::ModuleIndex mi = Smoke::classMap["QPointF"];
+        smokeperl_object* reto = alloc_smokeperl_object(
+            true, mi.smoke, mi.index, (void*)point );
+        const char* classname = perlqt_modules[reto->smoke].resolve_classname(reto);
+        RETVAL = set_obj_info( classname, reto );
+    OUTPUT:
+        RETVAL
+
+bool
+exists( index )
+        int index
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+        if ( 0 > index || index > polygon->size() - 1 )
+            RETVAL = false;
+        else
+            RETVAL = true;
+    OUTPUT:
+        RETVAL
+
+int
+size()
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+        RETVAL = polygon->size();
+    OUTPUT:
+        RETVAL
+
+SV*
+store( index, value )
+        int index
+        SV* value
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        smokeperl_object* valueo = sv_obj_info(value);
+        if (!valueo || !valueo->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+        QPointF* point = (QPointF*)valueo->ptr;
+
+        if ( 0 > index )
+            XSRETURN_UNDEF;
+        else if ( index > polygon->size() )
+            XSRETURN_UNDEF;
+        else if ( index == polygon->size() )
+            polygon->append( *point );
+        else
+            polygon->replace( index, *point );
+        RETVAL = value;
+    OUTPUT:
+        RETVAL
 
 MODULE = QtGui4            PACKAGE = QtGui4::_internal
 
@@ -107,11 +177,4 @@ BOOT:
     perlqt_modules[qtgui_Smoke] = module;
 
     install_handlers(QtGui4_handlers);
-    newXS("Qt::AbstractProxyModel::flags", XS_QAbstractProxyModel_flags, __FILE__);
-    newXS("Qt::DirModel::flags", XS_QDirModel_flags, __FILE__);
-    newXS("Qt::FileSystemModel::flags", XS_QFileSystemModel_flags, __FILE__);
-    newXS("Qt::ProxyModel::flags", XS_QProxyModel_flags, __FILE__);
-    newXS("Qt::SortFilterProxyModel::flags", XS_QSortFilterProxyModel_flags, __FILE__);
-    newXS("Qt::StandardItemModel::flags", XS_QStandardItemModel_flags, __FILE__);
-    newXS("Qt::StringListModel::flags", XS_QStringListModel_flags, __FILE__);
 

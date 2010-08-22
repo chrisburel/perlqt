@@ -71,51 +71,6 @@ Q_DECL_EXPORT SV* set_obj_info(const char * className, smokeperl_object * o);
 
 void unmapPointer(smokeperl_object* o, Smoke::Index classId, void* lastptr);
 
-/*
-This define will make a function to call flags() for a subclass of
-QAbstractItemModel.  This is necessary for calls to this->SUPER::flags() when
-subclassing one of those classes in Perl.  The last line is what is important.
-If you just write model->flags(), the virtual method call will go to the smoke
-subclass, which will look for a perl override of that method, which would end
-up coming back to this method = infinite recursion.  So we have to bypass the
-smoke subclass, to bypass calling a perl method again.  We get around it by
-calling model->(super class)::flags().  But for that to work correctly, we need
-separate methods for each subclass of QAbstractItemModel that reimplements
-flags(), to call the correct super class.
-*/
-
-#define DEF_ABSTRACT_ITEM_MODEL_FLAGS( CLASSNAME )\
-XS(XS_Q##CLASSNAME##_flags) {\
-    dXSARGS;\
-    int shiftStack = 0;\
-    if(items == 1)\
-        shiftStack = 1;\
-    smokeperl_object *o;\
-    if (shiftStack)\
-        o = sv_obj_info(sv_this);\
-    else\
-        o = sv_obj_info(ST(0));\
-\
-    if(!o)\
-        croak( "%s", "Qt::" #CLASSNAME "::flags called on a non-Qt4"\
-            " object");\
-    if(!Smoke::isDerivedFrom(o->smoke->classes[o->classId].className, "Q" #CLASSNAME))\
-        croak( "%s", "Qt::" #CLASSNAME "::flags called on a"\
-            " non-" #CLASSNAME " object");\
-	Q##CLASSNAME * model = (Q##CLASSNAME *) o->ptr;\
-\
-    smokeperl_object * modelindex = sv_obj_info(ST(1-shiftStack));\
-    if(!modelindex)\
-        croak( "%s", "1st argument to Qt::" #CLASSNAME "::flags is"\
-            " not a Qt4 object");\
-    if(!Smoke::isDerivedFrom(modelindex->smoke->classes[modelindex->classId].className, "QModelIndex"))\
-        croak( "%s", "1st argument to Qt::" #CLASSNAME "::flags is"\
-            " not a Qt::ModelIndex" );\
-	const QModelIndex * modelIndex = (const QModelIndex *) modelindex->ptr;\
-\
-	XSRETURN_IV((IV)model->Q##CLASSNAME::flags(*modelIndex));\
-}
-
 XS(XS_qobject_qt_metacast);
 XS(XS_find_qobject_children);
 
@@ -123,7 +78,6 @@ XS(XS_qabstract_item_model_rowcount);
 XS(XS_qabstract_item_model_columncount);
 XS(XS_qabstract_item_model_data);
 XS(XS_qabstract_item_model_setdata);
-XS(XS_QAbstractItemModel_flags);
 XS(XS_qabstract_item_model_insertrows);
 XS(XS_qabstract_item_model_insertcolumns);
 XS(XS_qabstract_item_model_removerows);

@@ -1170,8 +1170,6 @@ XS(XS_qabstract_item_model_setdata) {
     }
 }
 
-DEF_ABSTRACT_ITEM_MODEL_FLAGS(AbstractItemModel)
-
 XS(XS_qabstract_item_model_insertrows) {
     dXSARGS;
     smokeperl_object *o = sv_obj_info(ST(0));
@@ -1344,16 +1342,16 @@ XS(XS_qabstractitemmodel_createindex) {
         smokeperl_object* o = sv_obj_info(sv_this);
         if (!o)
             croak( "%s", "Qt::AbstractItemModel::createIndex must be called as a method on a Qt::AbstractItemModel object, eg. $model->createIndex" );
-        Smoke::ModuleIndex nameId = o->smoke->idMethodName("createIndex$$$");
-        Smoke::ModuleIndex meth = o->smoke->findMethod(qtcore_Smoke->findClass("QAbstractItemModel"), nameId);
+        Smoke::ModuleIndex nameId = qtcore_Smoke->idMethodName("createIndex$$$");
+        Smoke::ModuleIndex meth = qtcore_Smoke->findMethod(qtcore_Smoke->findClass("QAbstractItemModel"), nameId);
         Smoke::Index i = meth.smoke->methodMaps[meth.index].method;
         i = -i;		// turn into ambiguousMethodList index
-        while (o->smoke->ambiguousMethodList[i] != 0) {
-            if ( qstrcmp( o->smoke->types[o->smoke->argumentList[o->smoke->methods[o->smoke->ambiguousMethodList[i]].args + 2]].name,
+        while (meth.smoke->ambiguousMethodList[i] != 0) {
+            if ( qstrcmp( meth.smoke->types[meth.smoke->argumentList[meth.smoke->methods[meth.smoke->ambiguousMethodList[i]].args + 2]].name,
                         "void*" ) == 0 )
             {
-                Smoke::Method &m = o->smoke->methods[o->smoke->ambiguousMethodList[i]];
-                Smoke::ClassFn fn = o->smoke->classes[m.classId].classFn;
+                Smoke::Method &m = meth.smoke->methods[meth.smoke->ambiguousMethodList[i]];
+                Smoke::ClassFn fn = meth.smoke->classes[m.classId].classFn;
                 Smoke::StackItem stack[4];
                 stack[1].s_int = SvIV(ST(0));
                 stack[2].s_int = SvIV(ST(1));
@@ -1381,8 +1379,8 @@ XS(XS_qabstractitemmodel_createindex) {
                 (*fn)(m.method, o->ptr, stack);
                 smokeperl_object* result = alloc_smokeperl_object(
                     true, 
-                    o->smoke, 
-                    o->smoke->idClass("QModelIndex").index, 
+                    qtcore_Smoke,
+                    qtcore_Smoke->idClass("QModelIndex").index, 
                     stack[0].s_voidp
                 );
 
