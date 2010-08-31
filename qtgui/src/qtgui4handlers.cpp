@@ -32,5 +32,22 @@ extern "C" {
 
 TypeHandler QtGui4_handlers[] = {
     //{ "QList<QTestAccessibilityEvent>", marshall_QTestAccessibilityEventList },
+    { "QFlags<QAbstractSpinBox::StepEnabledFlag>&", marshall_it< unsigned int *> },
+    { "QFlags<QPaintEngine::DirtyFlag>&", marshall_it< unsigned int *> },
+    { "QFlags<QPaintEngine::PaintEngineFeature>&", marshall_it< unsigned int *> },
+    { "QFlags<QStyle::StateFlag>&", marshall_it< unsigned int *> },
+    { "QFlags<QStyle::SubControl>&", marshall_it< unsigned int *> },
+    { "QFlags<QStyleOptionButton::ButtonFeature>&", marshall_it< unsigned int *> },
+    { "QFlags<QStyleOptionFrameV2::FrameFeature>&", marshall_it< unsigned int *> },
+    { "QFlags<QStyleOptionTab::CornerWidget>&", marshall_it< unsigned int *> },
+    { "QFlags<QStyleOptionToolBar::ToolBarFeature>&", marshall_it< unsigned int *> },
+    { "QFlags<QStyleOptionToolButton::ToolButtonFeature>&", marshall_it< unsigned int *> },
+    { "QFlags<QStyleOptionViewItemV2::ViewItemFeature>&", marshall_it< unsigned int *> },
+    { "QFlags<Qt::AlignmentFlag>&", marshall_it< unsigned int *> },
+    { "QFlags<Qt::DropAction>&", marshall_it< unsigned int *> },
+    { "QFlags<Qt::KeyboardModifier>&", marshall_it< unsigned int *> },
+    { "QFlags<Qt::MouseButton>&", marshall_it< unsigned int *> },
+    { "QFlags<Qt::TouchPointState>&", marshall_it< unsigned int *> },
+    { "QFlags<Qt::WindowType>&", marshall_it< unsigned int *> },
     { 0, 0 }
 };

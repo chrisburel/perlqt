@@ -27,7 +27,7 @@ void invoke_dtor(smokeperl_object* o);
 // destroyed
 extern struct mgvtbl vtbl_smoke;
 
-template <class T> static void marshall_it(Marshall* m);
+template <class T> void marshall_it(Marshall* m);
 
 Q_DECL_EXPORT void *construct_copy(smokeperl_object *o);
 void marshall_basetype(Marshall* m);

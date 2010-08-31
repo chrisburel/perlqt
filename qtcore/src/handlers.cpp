@@ -183,7 +183,7 @@ void *construct_copy(smokeperl_object *o) {
 }
 
 template <class T>
-static void marshall_it(Marshall* m) {
+void marshall_it(Marshall* m) {
     switch( m->action() ) {
         case Marshall::FromSV:
             marshall_from_perl<T>( m );
@@ -198,6 +198,8 @@ static void marshall_it(Marshall* m) {
         break;
     }
 }
+
+template Q_DECL_EXPORT void marshall_it<unsigned int *>(Marshall* m);
 
 QString* qstringFromPerlString( SV* perlstring ) {
     // Finally found how 'in_constructor' is being used
