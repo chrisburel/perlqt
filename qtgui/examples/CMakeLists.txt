@@ -1,3 +1,4 @@
+
 set ( perlqtui_SRCS
     dbus/chat/chatmainwindow.ui                        dbus/chat/Ui_ChatMainWindow.pm
     dbus/chat/chatsetnickname.ui                       dbus/chat/Ui_NicknameDialog.pm
@@ -33,5 +34,5 @@ while ( uifileindex LESS numsrcs)
 endwhile ( uifileindex LESS numsrcs)
 
 add_custom_target( perlqtgui4examples ALL
-    SOURCES ${perlqtuipm_SRCS}
+    DEPENDS ${perlqtuipm_SRCS}
 )
