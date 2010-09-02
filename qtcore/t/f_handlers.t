@@ -117,6 +117,8 @@ my $app = Qt::Application( \@ARGV );
     $stream << Qt::Short($num);
     my $streamPos = $stream->device()->pos();
     $stream->device()->seek(0);
+    Qt::_internal::setDebug(0xffffff);
+    $DB::single=1;
     $stream >> Qt::Short($gotNum);
     use warnings;
     is ( $gotNum, $num, 'signed short' );
