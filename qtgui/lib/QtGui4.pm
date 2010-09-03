@@ -72,4 +72,25 @@ sub Qt::GraphicsObject::ON_DESTROY {
     Qt::GraphicsItem::ON_DESTROY();
 }
 
+package Qt::PolygonF;
+
+sub EXISTS {
+    my ( $index ) = @_;
+    return Qt::this()->exists($index);
+}
+
+sub FETCH {
+    my ( $index ) = @_;
+    return Qt::this()->at($index);
+}
+
+sub FETCHSIZE {
+    return Qt::this()->size();
+}
+
+sub STORE {
+    my ( $index, $value ) = @_;
+    return Qt::this()->store($index, $value);
+}
+
 1;
