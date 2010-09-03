@@ -814,21 +814,26 @@ const char* resolve_classname_qt( smokeperl_object* o ) {
 
 Q_DECL_EXPORT SV* set_obj_info(const char * className, smokeperl_object * o) {
     // The hash
-    HV* hv = newHV();
+    SV* obj;
+    SV* var;
+    if( !strcmp( className, " Qt::PolygonF" ) ) {
+        obj = (SV*)newAV();
+        var = newRV_noinc((SV*)obj);
+        hv_magic((AV*)obj, var, PERL_MAGIC_tied);
+    }
+    else {
+        obj = (SV*)newHV();
+        var = newRV_noinc((SV*)obj);
+    }
+
     // The hash reference to return
-    SV* var = newRV_noinc((SV*)hv);
 
     // Bless the sv to that package.
     sv_bless( var, gv_stashpv(className, TRUE) );
 
     // For this, we need a magic wand.  This is what actually
     // stores 'o' into our hash.
-    sv_magic((SV*)hv, 0, '~', (char*)o, sizeof(*o));
-
-    // Associate our vtbl_smoke with our sv, so that
-    // smokeperl_free is called for us when the sv's refcount goes to 0
-    MAGIC* mg = mg_find((SV*)hv, '~');
-    mg->mg_virtual = &vtbl_smoke;
+    sv_magicext((SV*)obj, 0, '~', &vtbl_smoke, (char*)o, sizeof(*o));
 
     // We're done with our local var
     return var;
