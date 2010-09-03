@@ -58,7 +58,7 @@ sub headerData
 {
     my ($section, $orientation, $role) = @_;
     if ($role == Qt::SizeHintRole()) {
-        return Qt::Size(1, 1);
+        return Qt::Variant( Qt::Size(1, 1) );
     }
     return Qt::Variant();
 }
