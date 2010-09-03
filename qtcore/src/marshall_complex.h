@@ -97,7 +97,6 @@ void marshall_from_perl<unsigned int *>(Marshall *m) {
 }
 template <>
 void marshall_to_perl<unsigned int *>(Marshall *m) {
-    UNTESTED_HANDLER("marshall_to_perl<unsigned int *>");
     unsigned int *ip = (unsigned int*) m->item().s_voidp;
     SV *sv = m->var();
     if (ip == 0) {

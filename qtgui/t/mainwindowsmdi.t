@@ -14,6 +14,7 @@ use QtCore4::slots
     initTestCase => [],
     testSave => [],
     testFocus => [];
+use Test::More;
 
 sub NEW {
     my ($class, $parent) = @_;
@@ -34,7 +35,8 @@ sub testSave {
     my $result = <$fh>;
     close $fh;
 
-    QVERIFY( $text eq $result, 'File write contents' );
+    #QVERIFY( $text eq $result, 'File write contents' );
+    is( $text, $result, 'File write contents' );
 
     unlink $filename;
     $activeWindow->parent->close();
@@ -66,7 +68,8 @@ sub testFocus {
             $child = $child2;
         }
 
-        QVERIFY( $mainWin->activeMdiChild() eq $child, 'Widget focus' );
+        #QVERIFY( $mainWin->activeMdiChild() eq $child, 'Widget focus' );
+        is( $mainWin->activeMdiChild(), $child, 'Widget focus' );
         Qt::Test::qWait(200);
     }
     $child1->parent()->close();
@@ -88,5 +91,6 @@ use QtCore4;
 use QtGui4;
 use QtTest4 qw(QTEST_MAIN);
 use MainWindowsMDITest;
+use Test::More tests => 5;
 
 exit QTEST_MAIN('MainWindowsMDITest');

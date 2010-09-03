@@ -1,4 +1,4 @@
-use Test::More tests => 31;
+use Test::More tests => 32;
 
 use strict;
 use warnings;
@@ -81,6 +81,14 @@ my $app = Qt::Application( \@ARGV );
 }
 
 {
+    # Test unsigned int * marshalling
+    my $option = Qt::StyleOption();
+    my $state = Qt::Style::State_On() | Qt::Style::State_HasFocus();
+    eval{ $option->setState( $state ) };
+    is( $option->state(), ${$state}, 'unsigned int *' );
+}
+
+{
     # Test char and uchar marshalling
     my $char = Qt::Char( Qt::Int(87) );
     is ( $char->toAscii(), 87, 'signed char' );
@@ -117,8 +125,6 @@ my $app = Qt::Application( \@ARGV );
     $stream << Qt::Short($num);
     my $streamPos = $stream->device()->pos();
     $stream->device()->seek(0);
-    Qt::_internal::setDebug(0xffffff);
-    $DB::single=1;
     $stream >> Qt::Short($gotNum);
     use warnings;
     is ( $gotNum, $num, 'signed short' );
