@@ -48,50 +48,53 @@ findMethod( classname, methodname )
         char* classname
         char* methodname
     PPCODE:
-        Smoke::ModuleIndex mi;
+        QList<Smoke::ModuleIndex> milist;
         if ( strcmp( classname, "QGlobalSpace" ) == 0 ) {
             // All modules put their global functions in "QGlobalSpace".  So we
             // have to use each smoke object to look for this method.
             for (int i = 0; i < smokeList.size(); ++i) {
-                mi = smokeList.at(i)->findMethod(classname, methodname);
+                Smoke::ModuleIndex mi = smokeList.at(i)->findMethod(classname, methodname);
                 if( mi.smoke ) {
-                    break;
+                    // Found a result, add it to the return
+                    milist.append(mi);
                 }
             }
         }
         else {
             // qtcore_Smoke will be able to find any method not in QGlobalSpace
-            mi = qtcore_Smoke->findMethod(classname, methodname);
+            milist.append( qtcore_Smoke->findMethod(classname, methodname) );
         }
-        if ( !mi.index ) {
-            // empty list
-        }
-        else if ( mi.index  > 0 ) {
-            int smokeId = smokeList.indexOf(mi.smoke);
-            if ( smokeId == -1 ) {
-                croak( "Method \"%s::%s\" called, which is defined in the smoke"
-                    "module \"%s\", which has not been loaded\n", classname,
-                    methodname, mi.smoke->moduleName() );
+        foreach (Smoke::ModuleIndex mi, milist) {
+            if ( !mi.index ) {
+                // empty list
             }
-            Smoke::Index methodId = mi.smoke->methodMaps[mi.index].method;
-            if ( !methodId ) {
-                croak( "Corrupt method %s::%s", classname, methodname );
-            }
-            else if ( methodId > 0 ) {     // single match
-                XPUSHs( sv_2mortal(alloc_perl_moduleindex(smokeId, methodId)) );
-            }
-            else {                  // multiple match
-                // trun into ambiguousMethodList index
-                methodId = -methodId;
+            else if ( mi.index  > 0 ) {
+                int smokeId = smokeList.indexOf(mi.smoke);
+                if ( smokeId == -1 ) {
+                    croak( "Method \"%s::%s\" called, which is defined in the smoke"
+                        "module \"%s\", which has not been loaded\n", classname,
+                        methodname, mi.smoke->moduleName() );
+                }
+                Smoke::Index methodId = mi.smoke->methodMaps[mi.index].method;
+                if ( !methodId ) {
+                    croak( "Corrupt method %s::%s", classname, methodname );
+                }
+                else if ( methodId > 0 ) {     // single match
+                    XPUSHs( sv_2mortal(alloc_perl_moduleindex(smokeId, methodId)) );
+                }
+                else {                  // multiple match
+                    // trun into ambiguousMethodList index
+                    methodId = -methodId;
 
-                // Put all ambiguous method possibilities onto the stack
-                while( mi.smoke->ambiguousMethodList[methodId] ) {
-                    XPUSHs( 
-                        sv_2mortal(
-                            alloc_perl_moduleindex(smokeId, (IV)mi.smoke->ambiguousMethodList[methodId])
-                        )
-                    );
-                    ++methodId;
+                    // Put all ambiguous method possibilities onto the stack
+                    while( mi.smoke->ambiguousMethodList[methodId] ) {
+                        XPUSHs( 
+                            sv_2mortal(
+                                alloc_perl_moduleindex(smokeId, (IV)mi.smoke->ambiguousMethodList[methodId])
+                            )
+                        );
+                        ++methodId;
+                    }
                 }
             }
         }
