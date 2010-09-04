@@ -34,9 +34,9 @@ sub testMark {
         my $item1 = $window->{ui}->fontTree->topLevelItem(0);
         ok( $item1->checkState(0) == Qt::Unchecked() );
         Qt::Test::qWaitForWindowShown( $window );
-        Qt::Test::keyClicks( $window, 'M', Qt::ControlModifier() );
+        Qt::Test::keyClicks( $window, 'M', Qt::ControlModifier(), 10 );
         ok( $item1->checkState(0) == Qt::Checked() );
-        Qt::Test::keyClicks( $window, 'U', Qt::ControlModifier() );
+        Qt::Test::keyClicks( $window, 'U', Qt::ControlModifier(), 10 );
         ok( $item1->checkState(0) == Qt::Unchecked() );
     }
 }

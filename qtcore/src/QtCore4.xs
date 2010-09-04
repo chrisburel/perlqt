@@ -384,6 +384,18 @@ void*
 sv_to_ptr(sv)
     SV* sv
 
+void
+sv_obj_info(sv)
+        SV* sv
+    PPCODE:
+        smokeperl_object* o = sv_obj_info(sv);
+        if( !o || !o->ptr )
+            XSRETURN_UNDEF;
+        XPUSHs(sv_2mortal(newSViv(o->allocated ? 1 : 0)));
+        XPUSHs(sv_2mortal(newSVpv(o->smoke->classes[o->classId].className, strlen(o->smoke->classes[o->classId].className))));
+        XPUSHs(sv_2mortal(newSVpv(o->smoke->moduleName(), strlen(o->smoke->moduleName()))));
+        XPUSHs(sv_2mortal(newSVpvf("0x%x", (IV)o->ptr)));
+
 MODULE = Qt                 PACKAGE = Qt
 
 PROTOTYPES: ENABLE
@@ -438,8 +450,6 @@ BOOT:
     newXS("Qt::Object::qobject_cast", XS_qobject_qt_metacast, __FILE__);
     newXS(" Qt::AbstractItemModel::columnCount", XS_qabstract_item_model_columncount, __FILE__);
     newXS(" Qt::AbstractItemModel::data", XS_qabstract_item_model_data, __FILE__);
-    //newXS(" Qt::AbstractItemModel::flags", XS_QAbstractItemModel_flags, __FILE__);
-    //newXS("Qt::AbstractItemModel::flags", XS_QAbstractItemModel_flags, __FILE__);
     newXS(" Qt::AbstractItemModel::insertColumns", XS_qabstract_item_model_insertcolumns, __FILE__);
     newXS(" Qt::AbstractItemModel::insertRows", XS_qabstract_item_model_insertrows, __FILE__);
     newXS(" Qt::AbstractItemModel::removeColumns", XS_qabstract_item_model_removecolumns, __FILE__);

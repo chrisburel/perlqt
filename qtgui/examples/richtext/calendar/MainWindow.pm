@@ -134,7 +134,7 @@ sub insertCalendar
     $boldFormat->setFontWeight(Qt::Font::Bold());
 
     my $highlightedFormat = Qt::TextCharFormat($boldFormat);
-    $highlightedFormat->setBackground(Qt::yellow());
+    $highlightedFormat->setBackground(Qt::Brush(Qt::Color(Qt::yellow())));
 # [10]
 
 # [11]
@@ -142,7 +142,7 @@ sub insertCalendar
         my $cell = $table->cellAt(0, $weekDay-1);
 # [11] //! [12]
         my $cellCursor = $cell->firstCursorPosition();
-        $cellCursor->insertText( '\'' . Qt::Date::longDayName($weekDay) . '\'',
+        $cellCursor->insertText( Qt::Date::longDayName($weekDay),
                               $boldFormat);
     }
 # [12]
@@ -157,10 +157,10 @@ sub insertCalendar
         my $cellCursor = $cell->firstCursorPosition();
 
         if ($date == Qt::Date::currentDate()) {
-            $cellCursor->insertText( '\''.$date->day().'\'', $highlightedFormat);
+            $cellCursor->insertText( $date->day(), $highlightedFormat);
         }
         else {
-            $cellCursor->insertText('\''.$date->day().'\'', $format);
+            $cellCursor->insertText($date->day(), $format);
         }
 
         $date = $date->addDays(1);

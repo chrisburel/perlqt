@@ -54,11 +54,11 @@ sub testFocus {
 
     Qt::Test::qWaitForWindowShown($child2);
 
-    foreach my $winId ( 1, 2, 1, 2 ) {
+    foreach my $winId ( 2, 1, 2, 1 ) {
         Qt::Test::keyClicks($mainWin, 'w', Qt::ALT());
         Qt::Test::qWaitForWindowShown($windowMenu);
         Qt::Test::keyClicks($windowMenu, $winId);
-        Qt::Test::qWait(100);
+        Qt::Test::qWait(200);
 
         my $child;
         if ( $winId == 1 ) {
@@ -70,7 +70,6 @@ sub testFocus {
 
         #QVERIFY( $mainWin->activeMdiChild() eq $child, 'Widget focus' );
         is( $mainWin->activeMdiChild(), $child, 'Widget focus' );
-        Qt::Test::qWait(200);
     }
     $child1->parent()->close();
     $child2->parent()->close();

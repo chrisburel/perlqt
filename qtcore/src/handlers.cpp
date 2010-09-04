@@ -103,6 +103,10 @@ void invoke_dtor(smokeperl_object* o) {
             Smoke::Method& m = o->smoke->methods[o->smoke->methodMaps[method].method];
             Smoke::ClassFn fn = o->smoke->classes[m.classId].classFn;
             Smoke::StackItem i[1];
+#ifdef DEBUG
+            if( do_debug && (do_debug & qtdb_gc) )
+                fprintf( stderr, "Deleting (%s*)%p\n", o->smoke->classes[o->classId].className, o->ptr );
+#endif
             (*fn)(m.method, o->ptr, i);
         }
         delete [] methodName;
@@ -361,13 +365,6 @@ void marshall_basetype(Marshall* m) {
                     // Get return value
                     void* cxxptr = m->item().s_voidp;
 
-                    // See if we already made a perl object for this pointer
-                    SV* var = getPointerObject(cxxptr);
-                    if (var) {
-                        SvSetMagicSV(m->var(), var);
-                        break;
-                    }
-
                     // The return type may be a class that is defined in a
                     // different smoke object.  So we need to find out which
                     // smoke object to put into the resulting perl object.
@@ -377,6 +374,23 @@ void marshall_basetype(Marshall* m) {
                         Smoke::classMap[returnCxxClassname].smoke;
                     // Now translate the classId to that smoke;
                     returnCId = returnSmoke->idClass(returnCxxClassname).index;
+
+                    // See if we already made a perl object for this pointer
+                    SV* var = getPointerObject(cxxptr);
+                    if (var) {
+                        // We've found something in the pointer map that
+                        // matches.  Let's make sure that object is still
+                        // valid.  This shouldn't be necessary, but it seems
+                        // that some things bypass the Binding::deleted code.
+                        smokeperl_object* o = sv_obj_info(var);
+                        if ( Smoke::isDerivedFrom( o->smoke, o->classId, returnSmoke, returnCId ) ) {
+                            SvSetMagicSV(m->var(), var);
+                            break;
+                        }
+                        else {
+                            unmapPointer( o, o->classId, 0 );
+                        }
+                    }
 
                     // We have a pointer to something that we didn't create.
                     // We don't own this memory, so we don't want to delete it.
