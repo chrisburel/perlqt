@@ -55,6 +55,70 @@ Q_DECL_EXPORT int do_debug = 0;
 // Method caches, to avoid expensive lookups
 QHash<QByteArray, Smoke::ModuleIndex *> methcache;
 
+// These 2 functions, S_dopoptosub_at and caller() were copied from pp_ctl.c in
+// Perl 5.10.1.  They may not work with all perl versions.  It makes
+// determining the caller much easier. caller() is PP(pp_caller).
+#define dopoptosub_at		S_dopoptosub_at
+STATIC I32
+S_dopoptosub_at(const PERL_CONTEXT *cxstk, I32 startingblock)
+{
+    dVAR;
+    I32 i;
+
+    for (i = startingblock; i >= 0; i--) {
+        register const PERL_CONTEXT * const cx = &cxstk[i];
+        switch (CxTYPE(cx)) {
+            default:
+                continue;
+            case CXt_EVAL:
+            case CXt_SUB:
+            case CXt_FORMAT:
+                DEBUG_l( Perl_deb(aTHX_ "(Found sub #%ld)\n", (long)i));
+                return i;
+        }
+    }
+    return i;
+}
+
+COP* caller(I32 count)
+{
+    register I32 cxix = dopoptosub_at(cxstack, cxstack_ix);
+    register const PERL_CONTEXT *cx;
+    register const PERL_CONTEXT *ccstack = cxstack;
+    const PERL_SI *top_si = PL_curstackinfo;
+
+    for (;;) {
+        /* we may be in a higher stacklevel, so dig down deeper */
+        while (cxix < 0 && top_si->si_type != PERLSI_MAIN) {
+            top_si = top_si->si_prev;
+            ccstack = top_si->si_cxstack;
+            cxix = dopoptosub_at(ccstack, top_si->si_cxix);
+        }
+        if (cxix < 0) {
+            return 0;
+        }
+        /* caller() should not report the automatic calls to &DB::sub */
+        if (PL_DBsub && GvCV(PL_DBsub) && cxix >= 0 &&
+                ccstack[cxix].blk_sub.cv == GvCV(PL_DBsub))
+            count++;
+        if (!count--)
+            break;
+        cxix = dopoptosub_at(ccstack, cxix - 1);
+    }
+
+    cx = &ccstack[cxix];
+    if (CxTYPE(cx) == CXt_SUB || CxTYPE(cx) == CXt_FORMAT) {
+        const I32 dbcxix = dopoptosub_at(ccstack, cxix - 1);
+	/* We expect that ccstack[dbcxix] is CXt_SUB, anyway, the
+	   field below is defined for any cx. */
+	/* caller() should not report the automatic calls to &DB::sub */
+	if (PL_DBsub && GvCV(PL_DBsub) && dbcxix >= 0 && ccstack[dbcxix].blk_sub.cv == GvCV(PL_DBsub))
+	    cx = &ccstack[dbcxix];
+    }
+
+    return cx->blk_oldcop;
+}
+
 Q_DECL_EXPORT smokeperl_object * 
 alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr) {
     smokeperl_object * o = new smokeperl_object;
@@ -2249,6 +2313,21 @@ XS(XS_signal){
 		XSRETURN_UNDEF;
 	}
     QMetaMethod method = metaobject->method(index);
+    if ( method.parameterTypes().size() != items ) {
+        // Incorrect arguments
+        COP* callercop = caller(2);
+        croak( "Wrong number of arguments in signal call %s::%s\n" 
+            "Got     : %s(%s)\n"
+            "Expected: %s\n"
+            "called at line %lu in %s\n",
+            HvNAME( GvSTASH(gv) ),
+            GvNAME(gv),
+            GvNAME(gv),
+            SvPV_nolen(sv_2mortal(catArguments(SP - items + 1, items ))),
+            method.signature(),
+            CopLINE(callercop), GvNAME(CopFILEGV(callercop))+2 );
+    }
+
     QList<MocArgument*> args = getMocArguments(o->smoke, method.typeName(), method.parameterTypes());
 
     SV* retval = sv_2mortal(newSV(0));
@@ -2274,3 +2353,4 @@ XS(XS_this) {
     ST(0) = sv_this;
     XSRETURN(1);
 }
+

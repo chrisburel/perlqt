@@ -39,7 +39,8 @@ sub NEW {
 sub dragEnterEvent {
     my ($event) = @_;
     if ($event->mimeData()->hasFormat('application/x-dnditemdata')) {
-        if ($event->source() == this) {
+        my $source = $event->source();
+        if (defined $source && $source == this) {
             $event->setDropAction(Qt::MoveAction());
             $event->accept();
         } else {
@@ -53,7 +54,8 @@ sub dragEnterEvent {
 sub dragMoveEvent {
     my ($event) = @_;
     if ($event->mimeData()->hasFormat('application/x-dnditemdata')) {
-        if ($event->source() == this) {
+        my $source = $event->source();
+        if (defined $source && $source == this) {
             $event->setDropAction(Qt::MoveAction());
             $event->accept();
         } else {
@@ -83,7 +85,8 @@ sub dropEvent {
         $newIcon->show();
         $newIcon->setAttribute(Qt::WA_DeleteOnClose());
 
-        if ($event->source() == this) {
+        my $source = $event->source();
+        if (defined $source && $source == this) {
             $event->setDropAction(Qt::MoveAction());
             $event->accept();
         } else {
@@ -124,15 +127,16 @@ sub mousePressEvent {
     $drag->setHotSpot($event->pos() - $child->pos());
 # [3]
 
-    # XXX Fix this.  Shared memory on the Pixmap (I think) causes $tempPixmap
-    # and $pixmap to point to the same data.
-    my $tempPixmap = $pixmap;
+    # XXX Fix this.  Shared memory on the Pixmap causes $tempPixmap and $pixmap
+    # to point to the same data.  The C++ code paints on the tempPixmap instead
+    # of the pixmap.
+    my $tempPixmap = Qt::Pixmap($pixmap);
     my $painter = Qt::Painter();
-    $painter->begin($tempPixmap);
+    $painter->begin($pixmap);
     $painter->fillRect($tempPixmap->rect(), Qt::Color(127,127,127,127));
     $painter->end();
 
-    $child->setPixmap($tempPixmap);
+    $child->setPixmap($pixmap);
 
     my $result = $drag->exec(Qt::CopyAction() | Qt::MoveAction(), Qt::CopyAction());
     if ($result == Qt::MoveAction()) {
@@ -140,7 +144,7 @@ sub mousePressEvent {
     }
     else {
         $child->show();
-        $child->setPixmap($pixmap);
+        $child->setPixmap($tempPixmap);
     }
 }
 

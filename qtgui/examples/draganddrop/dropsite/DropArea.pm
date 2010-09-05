@@ -104,7 +104,7 @@ sub clear
     this->setText(this->tr('<drop content>'));
     this->setBackgroundRole(Qt::Palette::Dark());
 
-    emit this->changed();
+    emit this->changed(Qt::MimeData());
 }
 # [clear() function]
 
