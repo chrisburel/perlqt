@@ -33,8 +33,10 @@ extern "C" {
 
 #include <smokeperl.h>
 #include <handlers.h>
+#include "xsfunctions.h"
 
 extern QList<Smoke*> smokeList;
+extern SV* sv_this;
 
 const char*
 resolve_classname_qtnetwork(smokeperl_object * o)
@@ -89,3 +91,4 @@ BOOT:
     perlqt_modules[qtnetwork_Smoke] = module;
 
     install_handlers(QtNetwork4_handlers);
+    newXS(" Qt::UdpSocket::readDatagram", XS_qudpsocket_readdatagram, __FILE__);

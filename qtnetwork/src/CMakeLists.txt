@@ -11,13 +11,16 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtNetwork4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build QtNetwork4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtNetwork4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(qtnetwork4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/QtNetwork4.c
     qtnetwork4handlers.cpp
+    xsfunctions.cpp
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtNetwork4)

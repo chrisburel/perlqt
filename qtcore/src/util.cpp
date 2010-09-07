@@ -446,7 +446,7 @@ int isDerivedFrom(Smoke *smoke, const char *className, const char *baseClassName
     return isDerivedFrom(smoke, idClass, idBase, cnt);
 }
 
-int isDerivedFrom( smokeperl_object *o, const char *baseClassName ) {
+Q_DECL_EXPORT int isDerivedFrom( smokeperl_object *o, const char *baseClassName ) {
     Smoke::Index idClass = o->classId;
     Smoke::Index idBase = o->smoke->idClass(baseClassName).index;
     return isDerivedFrom(o->smoke, idClass, idBase, 0);
@@ -1404,7 +1404,6 @@ XS(XS_qabstract_item_model_removecolumns) {
 	croak("%s", "Invalid argument list to Qt::AbstractItemModel::removeColumns");
 }
 
-//qabstractitemmodel_createindex(int argc, VALUE * argv, VALUE self)
 XS(XS_qabstractitemmodel_createindex) {
     dXSARGS;
     if (items == 2 || items == 3) {

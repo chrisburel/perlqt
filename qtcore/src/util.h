@@ -51,12 +51,11 @@ QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName,
   QList<QByteArray> methodTypes);
 Q_DECL_EXPORT SV* getPointerObject(void* ptr);
 
-int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke *baseSmoke, Smoke::Index baseId, int count);
 int isDerivedFromByName(const char *className, const char *baseClassName, int count);
-int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke::Index baseId,
-  int cnt);
-int isDerivedFrom(Smoke *smoke, const char *className,
-  const char *baseClassName, int cnt);
+int isDerivedFrom(smokeperl_object *o, const char *baseClassName);
+int isDerivedFrom(Smoke *smoke, const char *className, const char *baseClassName, int cnt);
+int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke *baseSmoke, Smoke::Index baseId, int count);
+int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke::Index baseId, int cnt);
 
 void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId,
   void *lastptr);
