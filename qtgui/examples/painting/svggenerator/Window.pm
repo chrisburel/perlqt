@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtSvg4;
 use Ui_Window;
 use DisplayWidget;
 # [Window class definition]
@@ -27,7 +28,6 @@ sub displayWidget {
 }
 
 # [Window class definition]
-
 
 sub NEW
 {
