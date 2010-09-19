@@ -1,43 +1,41 @@
 /****************************************************************************
 **
-** Copyright (C) 1992-2008 Trolltech ASA. All rights reserved.
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
-** This file may be used under the terms of the GNU General Public
-** License versions 2.0 or 3.0 as published by the Free Software
-** Foundation and appearing in the files LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file.  Alternatively you may (at
-** your option) use any later version of the GNU General Public
-** License if such license has been publicly approved by Trolltech ASA
-** (or its successors, if any) and the KDE Free Qt Foundation. In
-** addition, as a special exception, Trolltech gives you certain
-** additional rights. These rights are described in the Trolltech GPL
-** Exception version 1.2, which can be found at
-** http://www.trolltech.com/products/qt/gplexception/ and in the file
-** GPL_EXCEPTION.txt in this package.
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
 **
-** Please review the following information to ensure GNU General
-** Public Licensing requirements will be met:
-** http://trolltech.com/products/qt/licenses/licensing/opensource/. If
-** you are unsure which license is appropriate for your use, please
-** review the following information:
-** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
-** or contact the sales department at sales@trolltech.com.
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Trolltech, as the sole
-** copyright holder for Qt Designer, grants users of the Qt/Eclipse
-** Integration plug-in the right for the Qt/Eclipse Integration to
-** link to functionality provided by Qt Designer and its related
-** libraries.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** This file is provided "AS IS" with NO WARRANTY OF ANY KIND,
-** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE. Trolltech reserves all rights not expressly
-** granted herein.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
 **
-** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -60,9 +58,10 @@
 
 #ifdef QT_UIC_PERL_GENERATOR
 #include "plwritedeclaration.h"
+#include "plwriteincludes.h"
 #endif
 
-#include <QtXml/QDomDocument>
+#include <QtCore/QXmlStreamReader>
 #include <QtCore/QFileInfo>
 #include <QtCore/QRegExp>
 #include <QtCore/QTextStream>
@@ -72,9 +71,7 @@
 #include <qt_windows.h>
 #endif
 
-#if defined(QT_BEGIN_NAMESPACE)
-  QT_BEGIN_NAMESPACE
-#endif
+QT_BEGIN_NAMESPACE
 
 Uic::Uic(Driver *d)
      : drv(d),
@@ -102,20 +99,13 @@ bool Uic::printDependencies()
             return false;
     }
 
-    QDomDocument doc;                        // ### generalize. share more code with the other tools!
-    if (!doc.setContent(&f))
-        return false;
-
-    QDomElement root = doc.firstChildElement();
-    DomUI *ui = new DomUI();
-    ui->read(root);
-
-    double version = ui->attributeVersion().toDouble();
-    if (version < 4.0) {
-        delete ui;
-
-        fprintf(stderr, "uic: File generated with too old version of Qt Designer\n");
-        return false;
+    DomUI *ui = 0;
+    {
+        QXmlStreamReader reader;
+        reader.setDevice(&f);
+        ui = parseUiFile(reader);
+        if (!ui)
+            return false;
     }
 
     if (DomIncludes *includes = ui->elementIncludes()) {
@@ -148,47 +138,96 @@ bool Uic::printDependencies()
 void Uic::writeCopyrightHeader(DomUI *ui)
 {
     QString comment = ui->elementComment();
-#ifdef QT_UIC_PERL_GENERATOR
-    if (comment.size())
-        out << "\n=begin\n" << comment << "\n=cut\n\n";
+    if ( this->option().generator == Option::PerlGenerator ) {
+        if (comment.size())
+            out << "/*\n" << comment << "\n*/\n\n";
 
-	out << "\n=begin\n\n";
-	out << "** Form generated from reading ui file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
-	out << "**\n";
-	out << "** Created: " << QDateTime::currentDateTime().toString() << "\n";
-	out << "**      " << QString("by: Qt User Interface Compiler version %1\n").arg(QT_VERSION_STR);
-	out << "**\n";
-	out << "** WARNING! All changes made in this file will be lost when recompiling ui file!\n";
-	out << "\n=cut\n\n";
-#else
-    if (comment.size())
-        out << "/*\n" << comment << "\n*/\n\n";
+            out << "#################################################################################\n";
+            out << "## Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
+            out << "##\n";
+            out << "## Created: " << QDateTime::currentDateTime().toString() << "\n";
+            out << "##      " << QString::fromLatin1("by: Qt User Interface Compiler version %1\n").arg(QLatin1String(QT_VERSION_STR));
+            out << "##\n";
+            out << "## WARNING! All changes made in this file will be lost when recompiling UI file!\n";
+            out << "################################################################################\n\n";
+    }
+    else {
+        if (comment.size())
+            out << "/*\n" << comment << "\n*/\n\n";
 
-        out << "/********************************************************************************\n";
-        out << "** Form generated from reading ui file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
-        out << "**\n";
-        out << "** Created: " << QDateTime::currentDateTime().toString() << "\n";
-        out << "**      " << QString::fromLatin1("by: Qt User Interface Compiler version %1\n").arg(QLatin1String(QT_VERSION_STR));
-        out << "**\n";
-        out << "** WARNING! All changes made in this file will be lost when recompiling ui file!\n";
-        out << "********************************************************************************/\n\n";
-#endif
+            out << "/********************************************************************************\n";
+            out << "** Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
+            out << "**\n";
+            out << "** Created: " << QDateTime::currentDateTime().toString() << "\n";
+            out << "**      " << QString::fromLatin1("by: Qt User Interface Compiler version %1\n").arg(QLatin1String(QT_VERSION_STR));
+            out << "**\n";
+            out << "** WARNING! All changes made in this file will be lost when recompiling UI file!\n";
+            out << "********************************************************************************/\n\n";
+    }
+}
+
+// Check the version with a stream reader at the <ui> element.
+
+static double versionFromUiAttribute(QXmlStreamReader &reader)
+{
+    const QXmlStreamAttributes attributes = reader.attributes();
+    const QString versionAttribute = QLatin1String("version");
+    if (!attributes.hasAttribute(versionAttribute))
+        return 4.0;
+    const QString version = attributes.value(versionAttribute).toString();
+    return version.toDouble();
+}
+
+DomUI *Uic::parseUiFile(QXmlStreamReader &reader)
+{
+    DomUI *ui = 0;
+
+    const QString uiElement = QLatin1String("ui");
+    while (!reader.atEnd()) {
+        if (reader.readNext() == QXmlStreamReader::StartElement) {
+            if (reader.name().compare(uiElement, Qt::CaseInsensitive) == 0
+                && !ui) {
+                const double version = versionFromUiAttribute(reader);
+                if (version < 4.0) {
+                    const QString msg = QString::fromLatin1("uic: File generated with too old version of Qt Designer (%1)").arg(version);
+                    fprintf(stderr, "%s\n", qPrintable(msg));
+                    return 0;
+                }
+
+                ui = new DomUI();
+                ui->read(reader);
+            } else {
+                reader.raiseError(QLatin1String("Unexpected element ") + reader.name().toString());
+            }
+        }
+    }
+    if (reader.hasError()) {
+        delete ui;
+        ui = 0;
+        fprintf(stderr, "%s\n", qPrintable(QString::fromLatin1("uic: Error in line %1, column %2 : %3")
+                                    .arg(reader.lineNumber()).arg(reader.columnNumber())
+                                    .arg(reader.errorString())));
+    }
+
+    return ui;
 }
 
 bool Uic::write(QIODevice *in)
 {
-    QDomDocument doc;
-    if (!doc.setContent(in))
-        return false;
-
     if (option().generator == Option::JavaGenerator) {
          // the Java generator ignores header protection
         opt.headerProtection = false;
     }
 
-    QDomElement root = doc.firstChildElement();
-    DomUI *ui = new DomUI();
-    ui->read(root);
+    DomUI *ui = 0;
+    {
+        QXmlStreamReader reader;
+        reader.setDevice(in);
+        ui = parseUiFile(reader);
+
+        if (!ui)
+            return false;
+    }
 
     double version = ui->attributeVersion().toDouble();
     if (version < 4.0) {
@@ -321,7 +360,7 @@ bool Uic::plwrite(DomUI *ui)
 
     info.acceptUI(ui);
     cWidgetsInfo.acceptUI(ui);
-//    WriteIncludes(this).acceptUI(ui);
+    WriteIncludes(this).acceptUI(ui);
 
     Validator(this).acceptUI(ui);
     if (option().execCode) {
@@ -404,7 +443,8 @@ bool Uic::isButton(const QString &className) const
     return customWidgetsInfo()->extends(className, QLatin1String("QRadioButton"))
         || customWidgetsInfo()->extends(className, QLatin1String("QToolButton"))
         || customWidgetsInfo()->extends(className, QLatin1String("QCheckBox"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QPushButton"));
+        || customWidgetsInfo()->extends(className, QLatin1String("QPushButton"))
+        || customWidgetsInfo()->extends(className, QLatin1String("QCommandLinkButton"));
 }
 
 bool Uic::isContainer(const QString &className) const
@@ -414,7 +454,13 @@ bool Uic::isContainer(const QString &className) const
         || customWidgetsInfo()->extends(className, QLatin1String("QTabWidget"))
         || customWidgetsInfo()->extends(className, QLatin1String("QScrollArea"))
         || customWidgetsInfo()->extends(className, QLatin1String("QMdiArea"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QWizard"));
+        || customWidgetsInfo()->extends(className, QLatin1String("QWizard"))
+        || customWidgetsInfo()->extends(className, QLatin1String("QDockWidget"));
+}
+
+bool Uic::isCustomWidgetContainer(const QString &className) const
+{
+    return customWidgetsInfo()->isCustomWidgetContainer(className);
 }
 
 bool Uic::isStatusBar(const QString &className) const
@@ -433,6 +479,4 @@ bool Uic::isMenu(const QString &className) const
         || customWidgetsInfo()->extends(className, QLatin1String("QPopupMenu"));
 }
 
-#if defined(QT_END_NAMESPACE)
-  QT_END_NAMESPACE
-#endif
+QT_END_NAMESPACE

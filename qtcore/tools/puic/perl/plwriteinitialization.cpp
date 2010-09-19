@@ -486,26 +486,22 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     acceptWidget(node->elementWidget());
 
-    /*
     for (int i=0; i<m_buddies.size(); ++i) {
         const Buddy &b = m_buddies.at(i);
         QString name(b.objName);
-        name.replace("@", "");
-        QString buddyName(b.buddy);
-        buddyName.replace("@", "");
+        QString buddyName = toPerlIdentifier(b.buddy);
 
-        if (!m_registeredWidgets.contains(name) && !m_registeredWidgets.contains(name)) {
-            fprintf(stderr, "'@%s' isn't a valid widget\n", name.toLatin1().data());
+        if (!m_registeredWidgets.contains(name)) {
+            fprintf(stderr, "'%s' isn't a valid widget\n", name.toLatin1().data());
             continue;
-        } else if (!m_registeredWidgets.contains(b.buddy) && !m_registeredWidgets.contains(buddyName)) {
-            fprintf(stderr, "'@%s' isn't a valid widget\n", buddyName.toLatin1().data());
+        } else if (!m_registeredWidgets.contains(buddyName)) {
+            fprintf(stderr, "'%s' isn't a valid widget\n", buddyName.toLatin1().data());
             continue;
         }
 
-        m_output << m_option.indent << "@" << name << ".buddy = @" << buddyName << "\n";
+        m_output << m_option.indent << name << "->setBuddy( " << buddyName << " );\n";
     }
 
-    */
     if (node->elementTabStops())
         acceptTabStops(node->elementTabStops());
 
@@ -2466,7 +2462,7 @@ DomImage *WriteInitialization::findImage(const QString &name) const
     return m_registeredImages.value(name);
 }
 
-DomWidget *WriteInitialization::findWidget(const QString &widgetClass)
+DomWidget *WriteInitialization::findWidget(const QLatin1String &widgetClass)
 {
     for (int i = m_widgetChain.count() - 1; i >= 0; --i) {
         DomWidget *widget = m_widgetChain.at(i);

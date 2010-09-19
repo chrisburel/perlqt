@@ -39,41 +39,78 @@
 **
 ****************************************************************************/
 
-#ifndef DATABASEINFO_H
-#define DATABASEINFO_H
+#ifndef PLWRITEINCLUDES_H
+#define PLWRITEINCLUDES_H
 
 #include "treewalker.h"
-#include <QtCore/QStringList>
+
+#include <QtCore/QHash>
 #include <QtCore/QMap>
+#include <QtCore/QSet>
+#include <QtCore/QString>
 
 QT_BEGIN_NAMESPACE
 
+class QTextStream;
 class Driver;
+class Uic;
 
-class DatabaseInfo : public TreeWalker
+namespace Perl {
+
+struct WriteIncludes : public TreeWalker
 {
-public:
-    DatabaseInfo(Driver *driver);
+    WriteIncludes(Uic *uic);
 
     void acceptUI(DomUI *node);
     void acceptWidget(DomWidget *node);
+    void acceptLayout(DomLayout *node);
+    void acceptSpacer(DomSpacer *node);
+    void acceptProperty(DomProperty *node);
+    void acceptWidgetScripts(const DomScripts &, DomWidget *, const DomWidgets &);
 
-    inline QStringList connections() const
-    { return m_connections; }
+//
+// custom widgets
+//
+    void acceptCustomWidgets(DomCustomWidgets *node);
+    void acceptCustomWidget(DomCustomWidget *node);
 
-    inline QStringList cursors(const QString &connection) const
-    { return m_cursors.value(connection); }
+//
+// include hints
+//
+    void acceptIncludes(DomIncludes *node);
+    void acceptInclude(DomInclude *node);
 
-    inline QStringList fields(const QString &connection) const
-    { return m_fields.value(connection); }
+    bool scriptsActivated() const { return m_scriptsActivated; }
 
 private:
-    Driver *driver;
-    QStringList m_connections;
-    QMap<QString, QStringList> m_cursors;
-    QMap<QString, QStringList> m_fields;
+    void add(const QString &className, bool determineHeader = true, const QString &header = QString(), bool global = false);
+
+private:
+    typedef QMap<QString, bool> OrderedSet;
+    void insertIncludeForClass(const QString &className, QString header = QString(), bool global = false);
+    void insertInclude(const QString &header, bool global);
+    void writeHeaders(const OrderedSet &headers, bool global);
+    QString headerForClassName(const QString &className) const;
+    void activateScripts();
+
+    const Uic *m_uic;
+    QTextStream &m_output;
+
+    OrderedSet m_localIncludes;
+    OrderedSet m_globalIncludes;
+    QSet<QString> m_includeBaseNames;
+
+    QSet<QString> m_knownClasses;
+
+    typedef QMap<QString, QString> StringMap;
+    StringMap m_classToHeader;
+    StringMap m_oldHeaderToNewHeader;
+
+    bool m_scriptsActivated;
 };
+
+} // namespace CPP
 
 QT_END_NAMESPACE
 
-#endif // DATABASEINFO_H
+#endif // PLWRITEINCLUDES_H

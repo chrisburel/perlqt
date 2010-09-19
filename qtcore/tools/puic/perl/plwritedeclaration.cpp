@@ -92,14 +92,6 @@ void WriteDeclaration::acceptUI(DomUI *node)
     if (namespaceList.count())
         m_output << "\n";
 
-    m_output << "package " << m_option.prefix << className << ";\n";
-    m_output << "\n";
-    m_output << "use strict;\n";
-    m_output << "use warnings;\n";
-    m_output << "use utf8;\n";
-    m_output << "use QtCore4;\n";
-    m_output << "\n";
-
     const QStringList connections = m_uic->databaseInfo()->connections();
     for (int i=0; i<connections.size(); ++i) {
         const QString connection = connections.at(i);
