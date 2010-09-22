@@ -73,6 +73,9 @@ void unmapPointer(smokeperl_object* o, Smoke::Index classId, void* lastptr);
 XS(XS_qobject_qt_metacast);
 XS(XS_find_qobject_children);
 
+XS(XS_q_register_resource_data);
+XS(XS_q_unregister_resource_data);
+
 XS(XS_qabstract_item_model_rowcount);
 XS(XS_qabstract_item_model_columncount);
 XS(XS_qabstract_item_model_data);

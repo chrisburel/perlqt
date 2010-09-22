@@ -25,8 +25,8 @@ sub flashTimer() {
 sub NEW {
     my ( $class, $parent ) = @_;
     $class->SUPER::NEW( $parent );
-    this->{onPixmap} = Qt::Pixmap('ledon.png');
-    this->{offPixmap} = Qt::Pixmap('ledoff.png');
+    this->{onPixmap} = Qt::Pixmap(':/ledon.png');
+    this->{offPixmap} = Qt::Pixmap(':/ledoff.png');
     this->setPixmap(this->offPixmap());
     this->{flashTimer} = Qt::Timer();
     this->flashTimer->setInterval(200);

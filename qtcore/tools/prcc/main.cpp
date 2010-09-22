@@ -59,7 +59,6 @@ void showHelp(const QString &argv0, const QString &error)
         "Options:\n"
         "  -o file              write output to file rather than stdout\n"
         "  -name name           create an external initialization function with name\n"
-        "  -package name        place code in specified package\n"
         "  -threshold level     threshold to consider compressing files\n"
         "  -compress level      compress input files by level\n"
         "  -root path           prefix resource access path with root path\n"
@@ -148,18 +147,13 @@ int runRcc(int argc, char *argv[])
                     break;
                 }
                 outFilename = args[++i];
+                library.setPackageName(outFilename);
             } else if (opt == QLatin1String("-name")) {
                 if (!(i < argc-1)) {
                     errorMsg = QLatin1String("Missing target name");
                     break;
                 }
                 library.setInitName(args[++i]);
-            } else if (opt == QLatin1String("-package")) {
-                if (!(i < argc-1)) {
-                    errorMsg = QLatin1String("Missing target name");
-                    break;
-                }
-                library.setPackageName(args[++i]);
             } else if (opt == QLatin1String("-root")) {
                 if (!(i < argc-1)) {
                     errorMsg = QLatin1String("Missing root path");

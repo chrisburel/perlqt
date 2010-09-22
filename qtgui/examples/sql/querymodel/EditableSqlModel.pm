@@ -74,8 +74,8 @@ sub setLastName
     my ($personId, $lastName) = @_;
     my $query = Qt::SqlQuery();
     $query->prepare('update person set lastname = ? where id = ?');
-    $query->addBindValue($lastName);
-    $query->addBindValue($personId);
+    $query->addBindValue(Qt::Variant(Qt::String($lastName)));
+    $query->addBindValue(Qt::Variant(Qt::String($personId)));
     return $query->exec();
 }
 

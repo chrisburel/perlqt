@@ -448,6 +448,8 @@ BOOT:
     newXS(" Qt::Object::findChildren", XS_find_qobject_children, __FILE__);
     newXS("Qt::Object::findChildren", XS_find_qobject_children, __FILE__);
     newXS("Qt::Object::qobject_cast", XS_qobject_qt_metacast, __FILE__);
+    newXS("Qt::qRegisterResourceData", XS_q_register_resource_data, __FILE__);
+    newXS("Qt::qUnregisterResourceData", XS_q_unregister_resource_data, __FILE__);
     newXS(" Qt::AbstractItemModel::columnCount", XS_qabstract_item_model_columncount, __FILE__);
     newXS(" Qt::AbstractItemModel::data", XS_qabstract_item_model_data, __FILE__);
     newXS(" Qt::AbstractItemModel::insertColumns", XS_qabstract_item_model_insertcolumns, __FILE__);

@@ -38,6 +38,9 @@ extern "C" {
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
 
+extern bool qRegisterResourceData(int, const unsigned char *, const unsigned char *, const unsigned char *);
+extern bool qUnregisterResourceData(int, const unsigned char *, const unsigned char *, const unsigned char *);
+
 // Standard smoke variables
 extern Q_DECL_EXPORT Smoke* qtcore_Smoke;
 extern Q_DECL_EXPORT QList<Smoke*> smokeList;
@@ -1073,6 +1076,56 @@ XS(XS_find_qobject_children) {
     SV* result = newRV_noinc((SV*)list);
     ST(0) = result;
     XSRETURN(1);
+}
+
+XS(XS_q_register_resource_data)
+{
+    dXSARGS;
+    if ( items != 4 ) {
+        croak( "Usage: Qt::qRegisterResourceData( $version, $tree_value, $name_value, $data_value" );
+    }
+
+    SV* tree_value = ST(1);
+    SV* name_value = ST(2);
+    SV* data_value = ST(3);
+	const unsigned char * tree = (const unsigned char *) malloc(SvLEN(tree_value));
+	memcpy((void *) tree, (const void *) SvPV_nolen(tree_value), SvLEN(tree_value));
+
+	const unsigned char * name = (const unsigned char *) malloc(SvLEN(name_value));
+	memcpy((void *) name, (const void *) SvPV_nolen(name_value), SvLEN(name_value));
+
+	const unsigned char * data = (const unsigned char *) malloc(SvLEN(data_value));
+	memcpy((void *) data, (const void *) SvPV_nolen(data_value), SvLEN(data_value));
+
+	if ( qRegisterResourceData(SvIV(ST(0)), tree, name, data) )
+        XSRETURN_YES;
+    else
+        XSRETURN_NO;
+}
+
+XS(XS_q_unregister_resource_data)
+{
+    dXSARGS;
+    if ( items != 4 ) {
+        croak( "Usage: Qt::qUnregisterResourceData( $version, $tree_value, $name_value, $data_value" );
+    }
+
+    SV* tree_value = ST(1);
+    SV* name_value = ST(2);
+    SV* data_value = ST(3);
+	const unsigned char * tree = (const unsigned char *) malloc(SvLEN(tree_value));
+	memcpy((void *) tree, (const void *) SvPV_nolen(tree_value), SvLEN(tree_value));
+
+	const unsigned char * name = (const unsigned char *) malloc(SvLEN(name_value));
+	memcpy((void *) name, (const void *) SvPV_nolen(name_value), SvLEN(name_value));
+
+	const unsigned char * data = (const unsigned char *) malloc(SvLEN(data_value));
+	memcpy((void *) data, (const void *) SvPV_nolen(data_value), SvLEN(data_value));
+
+	if ( qUnregisterResourceData(SvIV(ST(0)), tree, name, data) )
+        XSRETURN_YES;
+    else
+        XSRETURN_NO;
 }
 
 XS(XS_qabstract_item_model_rowcount) {

@@ -8,6 +8,7 @@ use warnings;
 use QtCore4;
 use QtGui4;
 use Ui_ValidatorsForm;
+use ValidatorsResources;
 use QtCore4::isa qw( Qt::Widget Ui_ValidatorsForm );
 use QtCore4::slots
     updateValidator => [],

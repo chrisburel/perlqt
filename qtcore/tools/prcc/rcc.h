@@ -82,7 +82,11 @@ public:
     void setVerbose(bool b) { m_verbose = b; }
     bool verbose() const { return m_verbose; }
 
-    void setPackageName(const QString &name) { m_packageName = name; }
+    void setPackageName(const QString &name) {
+        m_packageName = name;
+        m_packageName.replace(QRegExp(QLatin1String("[/]")), QLatin1String("::"));
+        m_packageName.remove(QRegExp(QLatin1String("\\.pm$")));
+    }
     QString packageName() const { return m_packageName; }
 
     void setInitName(const QString &name) { m_initName = name; }
