@@ -517,7 +517,7 @@ void WriteInitialization::acceptUI(DomUI *node)
         m_output << "\n" << m_delayedInitialization << "\n";
 
     if (m_option.autoConnection)
-        m_output << "\n" << m_option.indent << "Qt::MetaObject->connectSlotsByName( " << m_mainWidget << " );\n";
+        m_output << "\n" << m_option.indent << "Qt::MetaObject::connectSlotsByName( " << m_mainWidget << " );\n";
     //m_output << "\n" << m_option.indent << "return bless {}, \"shift\";\n";
 
     m_output << m_option.indent << "return $self;\n";
@@ -750,7 +750,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     const QStringList zOrder = node->elementZOrder();
     for (int i = 0; i < zOrder.size(); ++i) {
-        const QString name = zOrder.at(i);
+        const QString name = toPerlIdentifier(zOrder.at(i));
 
         if (!m_registeredWidgets.contains(name)) {
             fprintf(stderr, "'%s' isn't a valid widget\n", name.toLatin1().data());
@@ -1704,7 +1704,7 @@ void WriteInitialization::acceptTabStops(DomTabStops *tabStops)
 
     const QStringList l = tabStops->elementTabStop();
     for (int i=0; i<l.size(); ++i) {
-        QString name = l.at(i);
+        QString name = toPerlIdentifier(l.at(i));
 
         if (!m_registeredWidgets.contains(name)) {
             fprintf(stderr, "'%s' isn't a valid widget\n", name.toLatin1().data());
@@ -1718,7 +1718,7 @@ void WriteInitialization::acceptTabStops(DomTabStops *tabStops)
             continue;
         }
 
-        m_output << m_option.indent << "Qt::Widget.setTabOrder( $" << lastName << ", $" << name << ")\n";
+        m_output << m_option.indent << "Qt::Widget::setTabOrder( " << lastName << ", " << name << " );\n";
 
         lastName = name;
     }
@@ -2446,7 +2446,7 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
     if (sender.isEmpty() || receiver.isEmpty())
         return;
 
-    m_output << m_option.indent << "Qt::Object->connect("
+    m_output << m_option.indent << "Qt::Object::connect("
         << sender
         << ", "
         << "SIGNAL '" << connection->elementSignal() << "' "

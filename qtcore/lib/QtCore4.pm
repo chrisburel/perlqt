@@ -35,6 +35,11 @@ sub tr {
     return Qt::qApp()->translate( $context, @_ );
 }
 
+sub getPointer {
+    my ( $self ) = @_;
+    return Qt::_internal::sv_to_ptr( $self );
+}
+
 package Qt::base::_overload;
 use strict;
 
@@ -1718,6 +1723,7 @@ QtCore4 - Perl bindings for the QtCore version 4 library
 =head1 SYNOPSIS
 
   use QtCore4;
+  use QtGui4;
   my $app = Qt::Application(\@ARGV);
   my $button = Qt::PushButton( 'Hello, World!', undef);
   $button->show();
@@ -1840,6 +1846,20 @@ The following is a list of Perl-specific implementation details, broken up by
 class.
 
 =over
+
+=item Global methods to all classes
+
+=item getPointer
+
+This method is used to retrieve an object's numeric memory location.  It is
+defined in the Qt::base class, which all Qt objects inherit.
+
+Currently, none of the classes that provided by this binding implement a method
+called getPointer().  But if one did, calling $object->getPointer() would not
+end up calling this method.  To force this method to be called, you can call
+$object->Qt::base::getPointer().
+
+=back
 
 =item Qt::Object
 
