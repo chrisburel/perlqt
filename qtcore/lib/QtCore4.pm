@@ -757,7 +757,7 @@ sub argmatch {
         my $typeName = getTypeNameOfArg( $smokeId, $methodId, $argNum );
         #ints and bools
         if ( $argType eq 'i' ) {
-            if( $typeName =~ m/^(?:bool|(?:(?:un)?signed )?(?:int|long)|uint)[*&]?$/ ) {
+            if( $typeName =~ m/^(?:bool|(?:(?:un)?signed )?(?:int|(?:long )?long)|uint)[*&]?$/ ) {
                 $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
         }
@@ -938,6 +938,12 @@ sub dumpCandidates {
     return @methods;
 }
 
+sub uniqMethods {
+    my ( @input ) = @_;
+    my $hash;
+    map( $hash->{$_->[0]}->{$_->[1]} = undef, @_ );
+    return map{ my $id = $_; map( [$id, $_], keys %{$hash->{$id}} ) } keys %{$hash};
+}
 
 # Args: @_: the args to the method being called
 #       $classname: the c++ class being called
@@ -966,7 +972,7 @@ sub getSmokeMethodId {
             @mungedMethods = map { $_ . '$' } @mungedMethods;
         }
     }
-    my @methodIds = map { findMethod( $classname, $_ ) } @mungedMethods;
+    my @methodIds = uniqMethods( map { findMethod( $classname, $_ ) } @mungedMethods );
 
     my $cacheLookup = 1;
 

@@ -26,6 +26,9 @@ sub init {
     foreach my $c ( @{getClassList()} ) {
         QtXmlPatterns4::_internal->init_class($c);
     }
+    foreach my $e ( @{getEnumList()} ) {
+        QtXmlPatterns4::_internal->init_enum($e);
+    }
 }
 
 sub normalize_classname {

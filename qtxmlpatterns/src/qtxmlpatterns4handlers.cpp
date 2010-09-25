@@ -15,6 +15,9 @@
  *                                                                         *
  ***************************************************************************/
 
+#include <QtCore/QVector>
+#include <QtXmlPatterns/QXmlNodeModelIndex>
+
 // Perl headers
 extern "C" {
 #include "EXTERN.h"
@@ -26,6 +29,9 @@ extern "C" {
 #include <smokeperl.h>
 #include <marshall_macros.h>
 
+DEF_VALUELIST_MARSHALLER( QXmlNodeModelIndexVector , QVector<QXmlNodeModelIndex>, QXmlNodeModelIndex )
+
 TypeHandler QtXmlPatterns4_handlers[] = {
+    { "QVector<QXmlNodeModelIndex>", marshall_QXmlNodeModelIndexVector },    
     { 0, 0 }
 };

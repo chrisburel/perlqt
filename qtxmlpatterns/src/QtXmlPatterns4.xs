@@ -54,11 +54,24 @@ SV*
 getClassList()
     CODE:
         AV* classList = newAV();
-        for (int i = 1; i < qtxmlpatterns_Smoke->numClasses; i++) {
+        for (int i = 1; i <= qtxmlpatterns_Smoke->numClasses; i++) {
             if (qtxmlpatterns_Smoke->classes[i].className && !qtxmlpatterns_Smoke->classes[i].external)
                 av_push(classList, newSVpv(qtxmlpatterns_Smoke->classes[i].className, 0));
         }
         RETVAL = newRV_noinc((SV*)classList);
+    OUTPUT:
+        RETVAL
+
+SV*
+getEnumList()
+    CODE:
+        AV *av = newAV();
+        for(int i = 1; i < qtxmlpatterns_Smoke->numTypes; i++) {
+            Smoke::Type curType = qtxmlpatterns_Smoke->types[i];
+            if( (curType.flags & Smoke::tf_elem) == Smoke::t_enum )
+                av_push(av, newSVpv(curType.name, 0));
+        }
+        RETVAL = newRV_noinc((SV*)av);
     OUTPUT:
         RETVAL
 
