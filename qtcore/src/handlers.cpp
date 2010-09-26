@@ -183,6 +183,15 @@ void *construct_copy(smokeperl_object *o) {
     // Assign the new object's binding
     args[1].s_voidp = perlqt_modules[o->smoke].binding;
     (*fn)(0, args[0].s_voidp, args);
+
+    if( do_debug && (do_debug & qtdb_gc) )
+        fprintf( stderr, "Copied (%s*)%p to (%s*)%p\n",
+            o->smoke->classes[o->classId].className,
+            o->ptr,
+            o->smoke->classes[o->classId].className,
+            args[0].s_voidp
+        );
+
     return args[0].s_voidp;
 }
 

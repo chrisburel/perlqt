@@ -50,8 +50,8 @@
 #include <QtCore/qset.h>
 
 #include <QtDBus/QtDBus>
-#include "private/qdbusmetaobject_p.h"
-#include "private/qdbusintrospection_p.h"
+#include "qdbusmetaobject_p.h"
+#include "qdbusintrospection_p.h"
 
 #include <sys/types.h>
 #include <stdio.h>

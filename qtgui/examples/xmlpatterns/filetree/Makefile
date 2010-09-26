@@ -1,6 +1,6 @@
 all : QueriesResources.pm Ui_MainWindow.pm
 
-QueriesResources.pm : queries.qrc
+QueriesResources.pm : queries.qrc queries/wholeTree.xq queries/listCPPFiles.xq
 	prcc4 queries.qrc -o QueriesResources.pm
 
 Ui_MainWindow.pm : forms/mainwindow.ui

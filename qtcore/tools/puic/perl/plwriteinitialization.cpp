@@ -1526,11 +1526,12 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
     }
 
     // insert with new name
-    const QString iconName = m_driver->unique(QLatin1String("icon"));
+    const QString iconNameNoSigil = m_driver->unique(QLatin1String("icon"));
+    const QString iconName = toPerlIdentifier(iconNameNoSigil);
     m_iconPropertiesNameMap.insert(IconHandle(i), iconName);
     if (isIconFormat44(i)) {
         const QString pixmap = QLatin1String("Qt::Pixmap");
-        m_output << m_option.indent << iconName << " = Qt::Icon\n";
+        m_output << m_option.indent << "my " << iconName << " = Qt::Icon\n";
         if (i->hasElementNormalOff())
             m_output << m_option.indent << iconName << "->addPixmap(" << pixCall(pixmap, i->elementNormalOff()->text()) << ", Qt::Icon::Normal(), Qt::Icon::Off() );\n";
         if (i->hasElementNormalOn())
@@ -1548,7 +1549,7 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
         if (i->hasElementSelectedOn())
             m_output << m_option.indent << iconName << "->addPixmap(" << pixCall(pixmap, i->elementSelectedOn()->text()) << ", Qt::Icon::Selected(), Qt::Icon::On() );\n";
     } else { // pre-4.4 legacy
-        m_output <<  m_option.indent << iconName << " = " << pixCall(QLatin1String("Qt::Icon"), i->text())<< "\n";
+        m_output <<  m_option.indent << "my " << iconName << " = " << pixCall(QLatin1String("Qt::Icon"), i->text())<< ";\n";
     }
     return iconName;
 }

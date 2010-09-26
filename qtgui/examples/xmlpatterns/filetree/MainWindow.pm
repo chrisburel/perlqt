@@ -89,7 +89,7 @@ sub evaluateResult
     }
 
     my $query = Qt::XmlQuery(m_namePool);
-    $query->bindVariable('ui.fileTree', Qt::XmlItem(m_fileNode));
+    $query->bindVariable('fileTree', Qt::XmlItem(m_fileNode));
     $query->setQuery(Qt::Url('qrc:/queries/' . ui->queryBox->currentText()));
 
     my $formatterOutput = Qt::ByteArray();
@@ -124,7 +124,8 @@ sub loadDirectory
 # [5]
 
     my $query = Qt::XmlQuery(m_namePool);
-    $query->bindVariable('fileTree', Qt::XmlItem(m_fileNode));
+    my $xmlItem = Qt::XmlItem(m_fileNode);
+    $query->bindVariable('fileTree', $xmlItem );
     $query->setQuery(Qt::Url('qrc:/queries/wholeTree.xq'));
 
     my $output = Qt::ByteArray();

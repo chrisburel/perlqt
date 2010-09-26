@@ -161,7 +161,7 @@ sub nextSibling
     die "Offset must be -1 or 1" unless ($offset == -1 || $offset == 1);
 
     # Get the context node's parent.
-    my $parent = Qt::XmlNodeModelIndex(nextFromSimpleAxis(Qt::AbstractXmlNodeModelParent(), $nodeIndex));
+    my $parent = Qt::XmlNodeModelIndex(nextFromSimpleAxis(Qt::AbstractXmlNodeModel::Parent(), $nodeIndex));
 
     if ($parent->isNull()) {
         return Qt::XmlNodeModelIndex();
@@ -173,18 +173,18 @@ sub nextSibling
     my $siblings = Qt::Dir($parentFI->absoluteFilePath())->entryInfoList([],
                                                                          m_filterAllowAll,
                                                                          m_sortFlags);
-    print STDERR 'Can\'t happen! We started at a child.' if $siblings->isEmpty();
+    print STDERR 'Can\'t happen! We started at a child.' if (!defined $siblings || scalar @{$siblings} < 0);
 
     # Find the index of the child where we started.
-    my $indexOfMe = $siblings->indexOf($fileInfo);
+    my $indexOfMe = first_index { $_ == $fileInfo } @{$siblings};
 
     # Apply the offset.
     my $siblingIndex = $indexOfMe + $offset;
-    if ($siblingIndex < 0 || $siblingIndex > $siblings->count() - 1) {
+    if ($siblingIndex < 0 || $siblingIndex > scalar @{$siblings} - 1) {
         return Qt::XmlNodeModelIndex();
     }
     else {
-        return toNodeIndex($siblings->at($siblingIndex));
+        return toNodeIndex($siblings->[$siblingIndex]);
     }
 }
 # [5]
@@ -239,10 +239,10 @@ sub nextFromSimpleAxis
             my $children = $dir->entryInfoList([],
                                                m_filterAllowAll,
                                                m_sortFlags);
-            if (defined $children && scalar @{$children} > 0) {
+            if (defined $children && scalar @{$children} <= 0) {
                 return Qt::XmlNodeModelIndex();
             }
-            my $firstChild = Qt::FileInfo($children->first());
+            my $firstChild = Qt::FileInfo($children->[0]);
             return toNodeIndex($firstChild);
         }
     }
