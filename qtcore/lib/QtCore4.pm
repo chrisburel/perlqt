@@ -37,6 +37,7 @@ sub tr {
 
 sub getPointer {
     my ( $self ) = @_;
+    $self = Qt::this() if !defined $self;
     return Qt::_internal::sv_to_ptr( $self );
 }
 

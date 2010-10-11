@@ -13,6 +13,11 @@ set ( perlqtui_SRCS
     widgets/stylesheet/mainwindow.ui                   widgets/stylesheet/Ui_MainWindow.pm
     widgets/stylesheet/stylesheeteditor.ui             widgets/stylesheet/Ui_StylesheetEditor.pm
     widgets/validators/validators.ui                   widgets/validators/Ui_ValidatorsForm.pm
+    xmlpatterns/qobjectxmlmodel/forms/mainwindow.ui    xmlpatterns/qobjectxmlmodel/Ui_MainWindow.pm
+)
+
+set ( perlqtrc_SRCS
+    xmlpatterns/qobjectxmlmodel/queries.qrc    xmlpatterns/qobjectxmlmodel/QueriesResources.pm
 )
 
 set( uifileindex 0 )
@@ -33,6 +38,24 @@ while ( uifileindex LESS numsrcs)
     MATH ( EXPR uifileindex "${uifileindex} + 2" )
 endwhile ( uifileindex LESS numsrcs)
 
+set( rcfileindex 0 )
+list( LENGTH perlqtrc_SRCS numsrcs )
+while ( rcfileindex LESS numsrcs)
+    list ( GET perlqtrc_SRCS ${rcfileindex} rcfile )
+    set ( pmfileindex ${rcfileindex} )
+    math ( EXPR pmfileindex "${pmfileindex} + 1" )
+    list ( GET perlqtrc_SRCS ${pmfileindex} pmfile )
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${pmfile}
+        COMMAND prcc4_bin -o ${pmfile} ${rcfile}
+        DEPENDS prcc4_bin
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        VERBATIM
+    )
+    list( APPEND perlqtrcpm_SRCS ${pmfile} )
+    MATH ( EXPR rcfileindex "${rcfileindex} + 2" )
+endwhile ( rcfileindex LESS numsrcs)
+
 add_custom_target( perlqtgui4examples ALL
-    DEPENDS ${perlqtuipm_SRCS}
+    DEPENDS ${perlqtuipm_SRCS} ${perlqtrcpm_SRCS}
 )

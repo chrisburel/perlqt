@@ -53,8 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
-enum { debugWriteIncludes = 1 };
-enum { warnHeaderGeneration = 1 };
+enum { debugWriteIncludes = 0 };
+enum { warnHeaderGeneration = 0 };
 
 struct ClassInfoEntry
 {
@@ -98,7 +98,6 @@ WriteIncludes::WriteIncludes(Uic *uic)
         } else {
             const QString newHeader = moduleHeader(module, klass);
             m_classToHeader.insert(klass, module);
-            fprintf( stderr, "Inserting %s->%s\n", qPrintable(klass), qPrintable(module ) );
             m_oldHeaderToNewHeader.insert(header, module);
         }
     }
