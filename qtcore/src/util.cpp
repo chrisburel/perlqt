@@ -83,7 +83,7 @@ S_dopoptosub_at(const PERL_CONTEXT *cxstk, I32 startingblock)
     return i;
 }
 
-COP* caller(I32 count)
+Q_DECL_EXPORT COP* caller(I32 count)
 {
     register I32 cxix = dopoptosub_at(cxstack, cxstack_ix);
     register const PERL_CONTEXT *cx;
@@ -2371,13 +2371,14 @@ XS(XS_signal){
         croak( "Wrong number of arguments in signal call %s::%s\n" 
             "Got     : %s(%s)\n"
             "Expected: %s\n"
-            "called at line %lu in %s\n",
+            "called at %s line %lu\n",
             HvNAME( GvSTASH(gv) ),
             GvNAME(gv),
             GvNAME(gv),
             SvPV_nolen(sv_2mortal(catArguments(SP - items + 1, items ))),
             method.signature(),
-            CopLINE(callercop), GvNAME(CopFILEGV(callercop))+2 );
+            GvNAME(CopFILEGV(callercop))+2,
+            CopLINE(callercop));
     }
 
     QList<MocArgument*> args = getMocArguments(o->smoke, method.typeName(), method.parameterTypes());

@@ -33,6 +33,8 @@ extern "C" {
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
 
+Q_DECL_EXPORT COP* caller(I32 count);
+
 Q_DECL_EXPORT smokeperl_object * alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr);
 SV* alloc_perl_moduleindex( int smokeIndex, Smoke::Index classOrMethIndex );
 

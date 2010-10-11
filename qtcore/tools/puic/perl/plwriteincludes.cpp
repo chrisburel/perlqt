@@ -53,8 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
-enum { debugWriteIncludes = 0 };
-enum { warnHeaderGeneration = 0 };
+enum { debugWriteIncludes = 1 };
+enum { warnHeaderGeneration = 1 };
 
 struct ClassInfoEntry
 {
@@ -98,6 +98,7 @@ WriteIncludes::WriteIncludes(Uic *uic)
         } else {
             const QString newHeader = moduleHeader(module, klass);
             m_classToHeader.insert(klass, module);
+            fprintf( stderr, "Inserting %s->%s\n", qPrintable(klass), qPrintable(module ) );
             m_oldHeaderToNewHeader.insert(header, module);
         }
     }
@@ -192,14 +193,21 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
         fprintf(stderr, "%s %s '%s' %d\n", Q_FUNC_INFO, qPrintable(className), qPrintable(header), global);
 
     do {
-        if (!header.isEmpty())
-            break;
+
+        // Always check for known classes.  The .ui file could have a Qt header
+        // specified explicitly, and we need to resolve that to a PerlQt module
+        // name.
 
         // Known class        
         const StringMap::const_iterator it = m_classToHeader.constFind(className);
         if (it != m_classToHeader.constEnd()) {
             header = it.value();
             global =  true;
+            break;
+        }
+
+        if (!header.isEmpty()) {
+            fprintf( stderr, "Header is %s\n", qPrintable(header) );
             break;
         }
 

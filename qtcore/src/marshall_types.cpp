@@ -9,6 +9,7 @@
 #include "smokehelp.h" // for SmokeType and SmokeClass
 #include "handlers.h" // for getMarshallType
 #include "QtCore4.h" // for extern sv_this
+#include "util.h" // for caller()
 
 extern Smoke* qtcore_Smoke;
 
@@ -238,10 +239,13 @@ namespace PerlQt4 {
     }
 
     void MethodReturnValueBase::unsupported() {
-        croak("Cannot handle '%s' as return-type of %s::%s",
+        COP* callercop = caller(0);
+        croak("Cannot handle '%s' as return-type of %s::%s at %s line %lu\n",
             type().name(),
             _smoke->className(method().classId),
-            _smoke->methodNames[method().name]);
+            _smoke->methodNames[method().name],
+            GvNAME(CopFILEGV(callercop))+2,
+            CopLINE(callercop));
     }
 
     SV* MethodReturnValueBase::var() {
@@ -388,10 +392,14 @@ namespace PerlQt4 {
     }
 
     void MethodCallBase::unsupported() {
-        croak("Cannot handle '%s' as argument of virtual method %s::%s",
-                type().name(),
-                _smoke->className(method().classId),
-                _smoke->methodNames[method().name]);
+        COP* callercop = caller(0);
+        croak("Cannot handle '%s' as argument of virtual method %s::%s"
+            "at %s line %lu\n",
+            type().name(),
+            _smoke->className(method().classId),
+            _smoke->methodNames[method().name],
+            GvNAME(CopFILEGV(callercop))+2,
+            CopLINE(callercop));
     }
 
     const char* MethodCallBase::classname() {
@@ -630,8 +638,12 @@ namespace PerlQt4 {
     }
 
     void InvokeSlot::unsupported() {
+        COP* callercop = caller(0);
         croak("Cannot handle '%s' as argument of slot call",
-              type().name() );
+            "at %s line %lu\n",
+            type().name(),
+            GvNAME(CopFILEGV(callercop))+2,
+            CopLINE(callercop));
     }
 
     bool InvokeSlot::cleanup() {
