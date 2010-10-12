@@ -17,6 +17,7 @@ set ( perlqtui_SRCS
 )
 
 set ( perlqtrc_SRCS
+    help/remotecontrol/remotecontrol.qrc       help/remotecontrol/RemoteControlResources.pm
     xmlpatterns/qobjectxmlmodel/queries.qrc    xmlpatterns/qobjectxmlmodel/QueriesResources.pm
 )
 

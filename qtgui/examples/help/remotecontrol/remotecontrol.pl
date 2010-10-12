@@ -6,6 +6,7 @@ use QtCore4;
 use QtGui4;
 
 use RemoteControl;
+use RemoteControlResources;
 
 sub main
 {

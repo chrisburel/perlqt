@@ -67,18 +67,16 @@ sub on_launchButton_clicked
         return;
     }
 
-    #my $app = Qt::LibraryInfo::location(Qt::LibraryInfo::BinariesPath())
-    #my $app = '/opt/qt-4.6.0/bin'
-            #. chr Qt::Dir::separator()->toLatin1();
-    #$app .= 'assistant';
-    my $app = '/usr/bin/perl';
+    my $app = Qt::LibraryInfo::location(Qt::LibraryInfo::BinariesPath())
+            . chr Qt::Dir::separator()->toLatin1();
+    $app .= 'assistant';
+
 
     this->{ui}->contentsCheckBox->setChecked(1);
     this->{ui}->indexCheckBox->setChecked(1);
     this->{ui}->bookmarksCheckBox->setChecked(1);
 
-    my @args;
-    push @args, '-d', './echoer';
+    my @args = ('-enableRemoteControl');
     this->{process}->start($app, \@args);
     if (!this->{process}->waitForStarted()) {
         Qt::MessageBox::critical(this, this->tr('Remote Control'),
@@ -102,8 +100,9 @@ sub sendCommand
     if (this->{process}->state() != Qt::Process::Running()) {
         return;
     }
-    this->{process}->write($cmd . "\0");
-    print this->{process}->readAllStandardOutput()->data() . "\n";
+    $cmd = Qt::ByteArray( $cmd );
+    $cmd->append( "\0", 1 );
+    this->{process}->write($cmd);
 }
 
 sub on_indexButton_clicked
