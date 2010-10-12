@@ -1070,7 +1070,7 @@ sub getSmokeMethodId {
         }
         else {
             my $noMethodFound = reportNoMethodFound( $classname, $methodname, @_ );
-            $noMethodFound .= "'use QtCore4::debug qw(ambiguous)' for more information.";
+            $noMethodFound .= "'use QtCore4::debug qw(ambiguous)' for more information.\n";
             die $noMethodFound;
         }
     }

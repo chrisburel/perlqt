@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtHelp4;
 
 use QtCore4::isa qw( Qt::TextBrowser );
 
@@ -25,10 +26,9 @@ sub showHelpForKeyword
 {
     my ($id) = @_;
     if (this->{m_helpEngine}) {
-        #Qt::Map<Qt::String, Qt::Url> links = this->{m_helpEngine}->linksForIdentifier(id);
         my $links = this->{m_helpEngine}->linksForIdentifier($id);
-        if ($links && ref $links eq 'ARRAY') {
-            this->setSource($links->[0]->value());
+        if ($links && ref $links eq 'HASH') {
+            this->setSource((values %{$links})[0]);
         }
     }
 }

@@ -206,7 +206,6 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
         }
 
         if (!header.isEmpty()) {
-            fprintf( stderr, "Header is %s\n", qPrintable(header) );
             break;
         }
 

@@ -9,7 +9,6 @@ use WateringConfigDialog;
 
 sub main
 {
-    die "This example does not yet work.  The bindings do not provide support for QHelpEngineCore.\n";
     my $a = Qt::Application(\@ARGV);
     my $dia = WateringConfigDialog();
     return $dia->exec();
