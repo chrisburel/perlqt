@@ -684,6 +684,7 @@ package Qt::_internal;
 use strict;
 use warnings;
 use Scalar::Util qw( blessed );
+use List::MoreUtils qw( any );
 
 # These 2 hashes provide lookups from a perl package name to a smoke
 # classid, and vice versa
@@ -940,10 +941,15 @@ sub dumpCandidates {
 }
 
 sub uniqMethods {
-    my ( @input ) = @_;
-    my $hash;
-    map( $hash->{$_->[0]}->{$_->[1]} = undef, @_ );
-    return map{ my $id = $_; map( [$id, $_], keys %{$hash->{$id}} ) } keys %{$hash};
+    my ($methodIds, $numArgs) = @_;
+    my %hash;
+    foreach my $moduleId ( @{$methodIds} ) {
+        my $smokeId = $moduleId->[0];
+        my $methodId = $moduleId->[1];
+        my $sig = join ',', map( getTypeNameOfArg( $smokeId, $methodId, $_ ), 0..$numArgs-1 );
+        $hash{$sig} = $moduleId;
+    }
+    return values %hash;
 }
 
 # Args: @_: the args to the method being called
@@ -973,7 +979,7 @@ sub getSmokeMethodId {
             @mungedMethods = map { $_ . '$' } @mungedMethods;
         }
     }
-    my @methodIds = uniqMethods( map { findMethod( $classname, $_ ) } @mungedMethods );
+    my @methodIds = map { findMethod( $classname, $_ ) } @mungedMethods;
 
     my $cacheLookup = 1;
 
@@ -993,6 +999,10 @@ sub getSmokeMethodId {
             }
         }
 
+        if ( @methodIds > 1 && $classname eq 'QGlobalSpace' ) {
+            @methodIds = uniqMethods( \@methodIds, scalar @_ );
+        }
+
         # If we still have more than 1 match, use the first one.
         if ( @methodIds > 1 ) {
             # Keep in sync with debug.pm's $channel{ambiguous} value
@@ -1001,16 +1011,17 @@ sub getSmokeMethodId {
                 # else will be 2
                 my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
                 my @caller = caller($stackDepth);
+                $DB::single=1;
                 while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/QtCore4\/isa\.pm/ ) {
                     ++$stackDepth;
                     @caller = caller($stackDepth);
                 }
-                my $msg = "--- Ambiguous method ${classname}::$methodname" .
-                    ' called at ' . $caller[1] .
-                    ' line ' . $caller[2] . "\n";
+                my $msg = "--- Ambiguous method ${classname}::$methodname";
                 $msg .= "Candidates are:\n\t";
                 $msg .= join "\n\t", dumpCandidates( $classname, $methodname, \@methodIds );
-                $msg .= "\nChoosing first one...\n";
+                $msg .= "\nChoosing first one... " .
+                    ' at ' . $caller[1] .
+                    ' line ' . $caller[2] . "\n";
                 warn $msg;
             }
             @methodIds = $methodIds[0];
@@ -1033,13 +1044,13 @@ sub getSmokeMethodId {
             }
             my $errStr = '--- Arguments for method call ' .
                 "$classname\::$methodname did not match C++ method ".
-                "signature," .
-                ' called at ' . $caller[1] .
-                ' line ' . $caller[2] . "\n";
+                "signature\n";
             $errStr .= "Method call was:\n\t";
             $errStr .= "$classname\::$methodname( " . dumpArgs(@_) . " )\n";
             $errStr .= "C++ signature is:\n\t";
-            $errStr .= (dumpCandidates( $classname, $methodname, \@methodIds ))[0] . "\n";
+            $errStr .= (dumpCandidates( $classname, $methodname, \@methodIds ))[0] . "\n" .
+                ' at ' . $caller[1] .
+                ' line ' . $caller[2] . "\n";
             @methodIds = ();
             print STDERR $errStr and die;
         }
