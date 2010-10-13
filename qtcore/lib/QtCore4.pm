@@ -772,7 +772,7 @@ sub argmatch {
         # enums
         elsif ( $argType eq 'e' ) {
             my $refName = ref $args->[$argNum];
-            if( $typeName =~ m/^$refName[s]?$/ ) {
+            if( $typeName =~ m/^(?:QFlags<)?$refName[s]?[>]?$/ ) {
                 $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
         }
@@ -1011,7 +1011,6 @@ sub getSmokeMethodId {
                 # else will be 2
                 my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
                 my @caller = caller($stackDepth);
-                $DB::single=1;
                 while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/QtCore4\/isa\.pm/ ) {
                     ++$stackDepth;
                     @caller = caller($stackDepth);
