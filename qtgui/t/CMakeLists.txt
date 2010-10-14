@@ -14,5 +14,6 @@ add_test(perlqt_networkfortune           ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURC
 add_test(perlqt_networkgooglesuggest     ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/perl/qtgui/examples/network/googlesuggest     prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/networkgooglesuggest.t)
 add_test(perlqt_paintingfontsampler      ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/perl/qtgui/examples/painting/fontsampler      prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/paintingfontsampler.t)
 add_test(perlqt_richtextcalendar         ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/perl/qtgui/examples/richtext/calendar         prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/richtextcalendar.t)
+add_test(perlqt_sqlquerymodel            ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/perl/qtgui/examples/sql/querymodel            prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/sqlquerymodel.t)
 add_test(perlqt_widgetscalculator        ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/perl/qtgui/examples/widgets/calculator        prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/widgetscalculator.t)
 add_test(perlqt_xmlstreambookmarks       ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/perl/qtgui/examples/xml/streambookmarks       prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/xmlstreambookmarks.t)
