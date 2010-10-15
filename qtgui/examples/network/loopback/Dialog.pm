@@ -14,7 +14,6 @@ use QtCore4::slots
     updateClientProgress => ['qint64'],
     displayError => ['QAbstractSocket::SocketError'];
 use List::Util qw( min );
-use QtCore4::debug qw( signals slots verbose );
 
 sub clientProgressBar() {
     return this->{clientProgressBar};

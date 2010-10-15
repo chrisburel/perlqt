@@ -5,7 +5,6 @@ use warnings;
 use QtCore4;
 use QtGui4;
 use ChatDialog;
-use QtCore4::debug qw(ambiguous);
 
 sub main
 {

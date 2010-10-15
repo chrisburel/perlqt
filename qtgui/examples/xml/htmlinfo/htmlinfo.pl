@@ -6,7 +6,6 @@ use warnings;
 use QtCore4;
 use QtGui4;
 
-use QtCore4::debug qw(ambiguous);
 
 sub parseHtmlFile {
     my ($fileName) = @_;

@@ -11,7 +11,6 @@ use QtCore4::slots
     execute => [],
     downloadFinished => ['QNetworkReply *'];
 use List::MoreUtils qw( first_index );
-use QtCore4::debug qw(ambiguous);
 
 sub manager {
     return this->{manager};

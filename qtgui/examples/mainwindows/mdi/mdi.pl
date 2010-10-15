@@ -7,7 +7,6 @@ use QtGui4;
 
 =begin
 
-use Qt::debug qw(
         ambiguous
         autoload
         calls

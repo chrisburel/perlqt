@@ -163,7 +163,6 @@ sub readBroadcastDatagram
             next;
         }
 
-        $DB::single=1;
         if (!client->hasConnection($senderIp)) {
             my $connection = Connection(this);
             emit newConnection($connection);

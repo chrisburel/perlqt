@@ -65,7 +65,6 @@ sub NEW
 
 sub insertChild
 {
-    $DB::single=1;
     my $view = this->{ui}->view();
     my $index = $view->selectionModel()->currentIndex();
     my $model = $view->model();

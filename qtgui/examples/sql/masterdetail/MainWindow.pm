@@ -79,7 +79,6 @@ sub changeArtist
 sub showArtistProfile
 {
     my ($index) = @_;
-    $DB::single=1;
     my $record = this->{model}->relationModel(2)->record($index->row());
 
     my $name = $record->value('artist')->toString();
@@ -105,7 +104,6 @@ sub showAlbumDetails
     my $year = $record->value('year')->toString();
     my $albumId = $record->value('albumid')->toString();
 
-    $DB::single=1;
     this->showArtistProfile(this->indexOfArtist($artist));
     this->{titleLabel}->setText(sprintf this->tr('Title: %s (%s)'), $title, $year);
     this->{titleLabel}->show();

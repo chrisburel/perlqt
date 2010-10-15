@@ -8,6 +8,8 @@ set ( perlqtui_SRCS
     help/contextsensitivehelp/wateringconfigdialog.ui  help/contextsensitivehelp/Ui_WateringConfigDialog.pm
     help/remotecontrol/remotecontrol.ui                help/remotecontrol/Ui_RemoteControlClass.pm
     itemviews/editabletreemodel/mainwindow.ui          itemviews/editabletreemodel/Ui_MainWindow.pm
+    network/http/authenticationdialog.ui               network/http/Ui_Dialog.pm
+    network/network-chat/chatdialog.ui                 network/network-chat/Ui_ChatDialog.pm
     painting/fontsampler/mainwindowbase.ui             painting/fontsampler/Ui_MainWindowBase.pm
     painting/svggenerator/window.ui                    painting/svggenerator/Ui_Window.pm
     widgets/stylesheet/mainwindow.ui                   widgets/stylesheet/Ui_MainWindow.pm

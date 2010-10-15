@@ -3,7 +3,6 @@ package Client;
 use strict;
 use warnings;
 use QtCore4;
-use QtCore4::debug qw(ambiguous);
 use QtGui4;
 use QtNetwork4;
 
