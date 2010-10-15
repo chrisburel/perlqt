@@ -1,10 +1,11 @@
-use Test::More tests => 32;
+use Test::More tests => 34;
 
 use strict;
 use warnings;
 use Devel::Peek;
 use QtCore4;
 use QtGui4;
+use QtNetwork4;
 
 my $app = Qt::Application( \@ARGV );
 
@@ -84,7 +85,7 @@ my $app = Qt::Application( \@ARGV );
     # Test unsigned int * marshalling
     my $option = Qt::StyleOption();
     my $state = Qt::Style::State_On() | Qt::Style::State_HasFocus();
-    eval{ $option->setState( $state ) };
+    $option->setState( $state );
     is( $option->state(), ${$state}, 'unsigned int *' );
 }
 
@@ -141,6 +142,14 @@ my $app = Qt::Application( \@ARGV );
 }
 
 {
+    # Test ushort marshalling
+    my $tcpSocket = Qt::TcpSocket(undef);
+    my $port = 29031;
+    $tcpSocket->setPeerPort($port);
+    is( $tcpSocket->peerPort(), $port, 'unsigned short' );
+}
+
+{
     # Test length of QByteArray::data
     my $buf = Qt::Buffer();
     $buf->open( Qt::Buffer::ReadWrite() );
@@ -179,6 +188,15 @@ my $app = Qt::Application( \@ARGV );
     my $gotactions = $widget->actions();
 
     is_deeply( $actions, $gotactions, 'marshall_ItemList<>' );
+}
+
+{
+    # Test QIntList
+    my $w = Qt::ColumnView();
+    $w->setModel(Qt::DirModel());
+    my $widths = [237];
+    $w->setColumnWidths( $widths );
+    is_deeply( $w->columnWidths, $widths, 'marshall_QIntList' );
 }
 
 {

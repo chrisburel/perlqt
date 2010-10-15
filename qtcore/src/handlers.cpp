@@ -818,7 +818,6 @@ void marshall_QListCharStar(Marshall *m) {
 }
 
 void marshall_QListInt(Marshall *m) {
-    UNTESTED_HANDLER("marshall_QListInt");
     switch(m->action()) {
         case Marshall::FromSV: {
             SV *listref = m->var();

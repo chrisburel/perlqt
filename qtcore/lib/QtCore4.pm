@@ -1015,7 +1015,7 @@ sub getSmokeMethodId {
                     ++$stackDepth;
                     @caller = caller($stackDepth);
                 }
-                my $msg = "--- Ambiguous method ${classname}::$methodname";
+                my $msg = "--- Ambiguous method ${classname}::$methodname\n";
                 $msg .= "Candidates are:\n\t";
                 $msg .= join "\n\t", dumpCandidates( $classname, $methodname, \@methodIds );
                 $msg .= "\nChoosing first one... " .
@@ -1225,11 +1225,16 @@ sub reportAlternativeMethods {
     my $methodIds = shift;
     # @_ now equals the original argument array of the method call
     my $stackDepth = ( $methodname eq $classname ) ? 5 : 3;
+    my @caller = caller($stackDepth);
+    while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/QtCore4\/isa\.pm/ ) {
+        ++$stackDepth;
+        @caller = caller($stackDepth);
+    }
     my $errStr = '--- Arguments for method call ' .
         "$classname\::$methodname did not match any known C++ method ".
         "signature," .
-        ' called at ' . (caller($stackDepth))[1] .
-        ' line ' . (caller($stackDepth))[2] . "\n";
+        ' called at ' . $caller[1] .
+        ' line ' . $caller[2] . "\n";
     $errStr .= "Method call was:\n\t";
     $errStr .= "$classname\::$methodname( " . dumpArgs(@_) . " )\n";
     $errStr .= "Possible candidates:\n\t";
