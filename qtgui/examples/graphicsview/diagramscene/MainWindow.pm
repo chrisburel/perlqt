@@ -210,16 +210,16 @@ sub backgroundButtonGroupClicked
     }
     my $text = $button->text();
     if ($text eq this->tr('Blue Grid')) {
-        this->scene->setBackgroundBrush(Qt::Pixmap('images/background1.png'));
+        this->scene->setBackgroundBrush(Qt::Brush(Qt::Pixmap(':/images/background1.png')));
     }
     elsif ($text eq this->tr('White Grid')) {
-        this->scene->setBackgroundBrush(Qt::Pixmap('images/background2.png'));
+        this->scene->setBackgroundBrush(Qt::Brush(Qt::Pixmap(':/images/background2.png')));
     }
     elsif ($text eq this->tr('Gray Grid')) {
-        this->scene->setBackgroundBrush(Qt::Pixmap('images/background3.png'));
+        this->scene->setBackgroundBrush(Qt::Brush(Qt::Pixmap(':/images/background3.png')));
     }
     else {
-        this->scene->setBackgroundBrush(Qt::Pixmap('images/background4.png'));
+        this->scene->setBackgroundBrush(Qt::Brush(Qt::Pixmap(':/images/background4.png')));
     }
 
     this->scene->update();
@@ -360,7 +360,7 @@ sub textColorChanged
 {
     this->{textAction} = this->sender();
     this->fontColorToolButton->setIcon(this->createColorToolButtonIcon(
-                'images/textpointer.png',
+                ':/images/textpointer.png',
                 this->textAction->data()->value()));
     this->textButtonTriggered();
 }
@@ -371,7 +371,7 @@ sub itemColorChanged
 {
     this->{fillAction} = this->sender();
     this->fillColorToolButton->setIcon(this->createColorToolButtonIcon(
-                 'images/floodfill.png',
+                 ':/images/floodfill.png',
                  this->fillAction->data()->value()));
     this->fillButtonTriggered();
 }
@@ -382,7 +382,7 @@ sub lineColorChanged
 {
     this->{lineAction} = this->sender();
     this->lineColorToolButton->setIcon(this->createColorToolButtonIcon(
-                 'images/linecolor.png',
+                 ':/images/linecolor.png',
                  this->lineAction->data()->value()));;
     this->lineButtonTriggered();
 }
@@ -466,7 +466,7 @@ sub createToolBox
     my $textButton = Qt::ToolButton();
     $textButton->setCheckable(1);
     this->buttonGroup->addButton($textButton, $InsertTextButton);
-    $textButton->setIcon(Qt::Icon(Qt::Pixmap('images/textpointer.png')
+    $textButton->setIcon(Qt::Icon(Qt::Pixmap(':/images/textpointer.png')
                         ->scaled(30, 30)));
     $textButton->setIconSize(Qt::Size(50, 50));
     my $textLayout = Qt::GridLayout();
@@ -488,13 +488,13 @@ sub createToolBox
 
     my $backgroundLayout = Qt::GridLayout();
     $backgroundLayout->addWidget(this->createBackgroundCellWidget(this->tr('Blue Grid'),
-                'images/background1.png'), 0, 0);
+                ':/images/background1.png'), 0, 0);
     $backgroundLayout->addWidget(this->createBackgroundCellWidget(this->tr('White Grid'),
-                'images/background2.png'), 0, 1);
+                ':/images/background2.png'), 0, 1);
     $backgroundLayout->addWidget(this->createBackgroundCellWidget(this->tr('Gray Grid'),
-                    'images/background3.png'), 1, 0);
+                    ':/images/background3.png'), 1, 0);
     $backgroundLayout->addWidget(this->createBackgroundCellWidget(this->tr('No Grid'),
-                'images/background4.png'), 1, 1);
+                ':/images/background4.png'), 1, 1);
 
     $backgroundLayout->setRowStretch(2, 10);
     $backgroundLayout->setColumnStretch(2, 10);
@@ -515,7 +515,7 @@ sub createToolBox
 # [23]
 sub createActions
 {
-    this->{toFrontAction} = Qt::Action(Qt::Icon('images/bringtofront.png'),
+    this->{toFrontAction} = Qt::Action(Qt::Icon(':/images/bringtofront.png'),
                                 this->tr('Bring to &Front'), this);
     this->toFrontAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+F')));
     this->toFrontAction->setStatusTip(this->tr('Bring item to front'));
@@ -523,14 +523,14 @@ sub createActions
             this, SLOT 'bringToFront()');
 # [23]
 
-    this->{sendBackAction} = Qt::Action(Qt::Icon('images/sendtoback.png'),
+    this->{sendBackAction} = Qt::Action(Qt::Icon(':/images/sendtoback.png'),
                                  this->tr('Send to &Back'), this);
     this->sendBackAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+B')));
     this->sendBackAction->setStatusTip(this->tr('Send item to back'));
     this->connect(this->sendBackAction, SIGNAL 'triggered()',
         this, SLOT 'sendToBack()');
 
-    this->{deleteAction} = Qt::Action(Qt::Icon('images/delete.png'),
+    this->{deleteAction} = Qt::Action(Qt::Icon(':/images/delete.png'),
                                this->tr('&Delete'), this);
     this->deleteAction->setShortcut(Qt::KeySequence(this->tr('Delete')));
     this->deleteAction->setStatusTip(this->tr('Delete item from diagram'));
@@ -544,20 +544,20 @@ sub createActions
 
     this->{boldAction} = Qt::Action(this->tr('Bold'), this);
     this->boldAction->setCheckable(1);
-    my $pixmap = Qt::Pixmap('images/bold.png');
+    my $pixmap = Qt::Pixmap(':/images/bold.png');
     this->boldAction->setIcon(Qt::Icon($pixmap));
     this->boldAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+B')));
     this->connect(this->boldAction, SIGNAL 'triggered()',
             this, SLOT 'handleFontChange()');
 
-    this->{italicAction} = Qt::Action(Qt::Icon('images/italic.png'),
+    this->{italicAction} = Qt::Action(Qt::Icon(':/images/italic.png'),
                                this->tr('Italic'), this);
     this->italicAction->setCheckable(1);
     this->italicAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+I')));
     this->connect(this->italicAction, SIGNAL 'triggered()',
             this, SLOT 'handleFontChange()');
 
-    this->{underlineAction} = Qt::Action(Qt::Icon('images/underline.png'),
+    this->{underlineAction} = Qt::Action(Qt::Icon(':/images/underline.png'),
                                   this->tr('Underline'), this);
     this->underlineAction->setCheckable(1);
     this->underlineAction->setShortcut(Qt::KeySequence(this->tr('Ctrl+U')));
@@ -617,7 +617,7 @@ sub createToolbars
                                                  Qt::black()));
     this->{textAction} = this->fontColorToolButton->menu()->defaultAction();
     this->fontColorToolButton->setIcon(this->createColorToolButtonIcon(
-        'images/textpointer.png', Qt::black()));
+        ':/images/textpointer.png', Qt::black()));
     this->fontColorToolButton->setAutoFillBackground(1);
     this->connect(this->fontColorToolButton, SIGNAL 'clicked()',
             this, SLOT 'textButtonTriggered()');
@@ -629,7 +629,7 @@ sub createToolbars
                          Qt::white()));
     this->{fillAction} = this->fillColorToolButton->menu()->defaultAction();
     this->fillColorToolButton->setIcon(this->createColorToolButtonIcon(
-        'images/floodfill.png', Qt::white()));
+        ':/images/floodfill.png', Qt::white()));
     this->connect(this->fillColorToolButton, SIGNAL 'clicked()',
             this, SLOT 'fillButtonTriggered()');
 # [26]
@@ -640,7 +640,7 @@ sub createToolbars
                                  Qt::black()));
     this->{lineAction} = this->lineColorToolButton->menu()->defaultAction();
     this->lineColorToolButton->setIcon(this->createColorToolButtonIcon(
-        'images/linecolor.png', Qt::black()));
+        ':/images/linecolor.png', Qt::black()));
     this->connect(this->lineColorToolButton, SIGNAL 'clicked()',
             this, SLOT 'lineButtonTriggered()');
 
@@ -659,10 +659,10 @@ sub createToolbars
     my $pointerButton = Qt::ToolButton();
     $pointerButton->setCheckable(1);
     $pointerButton->setChecked(1);
-    $pointerButton->setIcon(Qt::Icon('images/pointer.png'));
+    $pointerButton->setIcon(Qt::Icon(':/images/pointer.png'));
     my $linePointerButton = Qt::ToolButton();
     $linePointerButton->setCheckable(1);
-    $linePointerButton->setIcon(Qt::Icon('images/linepointer.png'));
+    $linePointerButton->setIcon(Qt::Icon(':/images/linepointer.png'));
 
     this->{pointerTypeGroup} = Qt::ButtonGroup();
     this->pointerTypeGroup->addButton($pointerButton, DiagramScene::MoveItem);

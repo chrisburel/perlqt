@@ -91,6 +91,7 @@ sub paint
     $painter->setBrush(Qt::Brush(this->myColor));
 # [4] //! [5]
 
+    $DB::single=1;
     my $centerLine = Qt::LineF(this->startItem->pos(), this->endItem->pos());
     my $endPolygon = Qt::PolygonF(this->endItem->polygon());
     my $p1 = $endPolygon->[0] + this->endItem->pos();
@@ -103,12 +104,12 @@ sub paint
         my $intersectType =
             $polyLine->intersect($centerLine, $intersectPoint);
         if ($intersectType == Qt::LineF::BoundedIntersection()) {
-            next;
+            last;
         }
         $p1 = $p2;
     }
 
-    this->setLine(Qt::LineF(this->startItem->pos(), $intersectPoint));
+    this->setLine(Qt::LineF($intersectPoint, this->startItem->pos()));
 # [5] //! [6]
 
     my $angle = acos(this->line()->dx() / this->line()->length());

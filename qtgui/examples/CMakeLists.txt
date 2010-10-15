@@ -9,6 +9,9 @@ set ( perlqtui_SRCS
     help/remotecontrol/remotecontrol.ui                help/remotecontrol/Ui_RemoteControlClass.pm
     itemviews/editabletreemodel/mainwindow.ui          itemviews/editabletreemodel/Ui_MainWindow.pm
     network/http/authenticationdialog.ui               network/http/Ui_Dialog.pm
+    network/securesocketclient/sslclient.ui            network/securesocketclient/Ui_Form.pm 
+    network/securesocketclient/certificateinfo.ui      network/securesocketclient/Ui_CertificateInfo.pm
+    network/securesocketclient/sslerrors.ui            network/securesocketclient/Ui_SslErrors.pm
     network/network-chat/chatdialog.ui                 network/network-chat/Ui_ChatDialog.pm
     painting/fontsampler/mainwindowbase.ui             painting/fontsampler/Ui_MainWindowBase.pm
     painting/svggenerator/window.ui                    painting/svggenerator/Ui_Window.pm
@@ -19,8 +22,10 @@ set ( perlqtui_SRCS
 )
 
 set ( perlqtrc_SRCS
-    help/remotecontrol/remotecontrol.qrc       help/remotecontrol/RemoteControlResources.pm
-    xmlpatterns/qobjectxmlmodel/queries.qrc    xmlpatterns/qobjectxmlmodel/QueriesResources.pm
+    help/remotecontrol/remotecontrol.qrc              help/remotecontrol/RemoteControlResources.pm
+    graphicsview/diagramscene/diagramscene.qrc        graphicsview/diagramscene/DiagramSceneResources.pm
+    network/securesocketclient/securesocketclient.qrc network/securesocketclient/SecureSocketClientResources.pm
+    xmlpatterns/qobjectxmlmodel/queries.qrc           xmlpatterns/qobjectxmlmodel/QueriesResources.pm
 )
 
 set( uifileindex 0 )
