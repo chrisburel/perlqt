@@ -19,13 +19,15 @@ use QtCore4::slots
     addContact => [],
     submitContact => [],
     cancel => [],
-# [edit and remove slots]
     editContact => [],
     removeContact => [],
-# [edit and remove slots]
     next => [],
     previous => [],
-    findContact => [];
+    findContact => [],
+#!  [save and load functions declaration]
+    saveToFile => [],
+    loadFromFile => [],
+    exportAsVCard => [];
 
 sub NEW
 {
@@ -44,10 +46,8 @@ sub NEW
     this->{editButton}->setEnabled(0);
     this->{removeButton} = Qt::PushButton(this->tr('&Remove'));
     this->{removeButton}->setEnabled(0);
-# [instantiating findButton]
     this->{findButton} = Qt::PushButton(this->tr("&Find"));
     this->{findButton}->setEnabled(0);
-# [instantiating findButton]
     this->{submitButton} = Qt::PushButton(this->tr('&Submit'));
     this->{submitButton}->hide();
     this->{cancelButton} = Qt::PushButton(this->tr('&Cancel'));
@@ -58,9 +58,17 @@ sub NEW
     this->{previousButton} = Qt::PushButton(this->tr('&Previous'));
     this->{previousButton}->setEnabled(0);
 
-# [instantiating FindDialog]
+    this->{loadButton} = Qt::PushButton(this->tr("&Load..."));
+    this->{loadButton}->setToolTip(this->tr("Load contacts from a file"));
+    this->{saveButton} = Qt::PushButton(this->tr("Sa&ve..."));
+    this->{saveButton}->setToolTip(this->tr("Save contacts to a file"));
+    this->{saveButton}->setEnabled(0);
+
+    this->{exportButton} = Qt::PushButton(this->tr("E&xport"));
+    this->{exportButton}->setToolTip(this->tr("Export as vCard"));
+    this->{exportButton}->setEnabled(0);
+
     this->{dialog} = FindDialog(this);
-# [instantiating FindDialog]
 
     this->{order} = 0;
 
@@ -72,16 +80,21 @@ sub NEW
     this->connect(this->{nextButton}, SIGNAL 'clicked()', this, SLOT 'next()');
     this->connect(this->{previousButton}, SIGNAL 'clicked()', this, SLOT 'previous()');
     this->connect(this->{findButton}, SIGNAL 'clicked()', this, SLOT 'findContact()');
+    this->connect(this->{loadButton}, SIGNAL 'clicked()', this, SLOT 'loadFromFile()');
+    this->connect(this->{saveButton}, SIGNAL 'clicked()', this, SLOT 'saveToFile()');
+    this->connect(this->{exportButton}, SIGNAL 'clicked()', this, SLOT 'exportAsVCard()');
+
 
     my $buttonLayout1 = Qt::VBoxLayout();
     $buttonLayout1->addWidget(this->{addButton});
     $buttonLayout1->addWidget(this->{editButton});
     $buttonLayout1->addWidget(this->{removeButton});
-# [adding findButton to layout]     
     $buttonLayout1->addWidget(this->{findButton});
-# [adding findButton to layout]     
     $buttonLayout1->addWidget(this->{submitButton});
     $buttonLayout1->addWidget(this->{cancelButton});
+    $buttonLayout1->addWidget(this->{loadButton});
+    $buttonLayout1->addWidget(this->{saveButton});
+    $buttonLayout1->addWidget(this->{exportButton});
     $buttonLayout1->addStretch();
 
     my $buttonLayout2 = Qt::HBoxLayout();
@@ -153,6 +166,8 @@ sub submitContact
                 Qt::MessageBox::information(this, this->tr('Edit Successful'),
                     sprintf this->tr('\'%s\' has been edited in your address book.'), this->{oldName});
                 this->{contacts}->{$name}->{address} = $address;
+                this->{contacts}->{$name}->{order} = this->{contacts}->{this->{oldName}}->{order};
+                delete this->{contacts}->{this->{oldName}};
             } else {
                 Qt::MessageBox::information(this, this->tr('Edit Unsuccessful'),
                     sprintf this->tr('Sorry, \'%s\' is already in your address book.'), $name);
@@ -241,11 +256,10 @@ sub previous
     this->{addressText}->setText(this->{contacts}->{$newName}->{address});
 }
 
-# [findContact() function] 
 sub findContact {
     this->{dialog}->show();
 
-    if (this->{dialog}->exec() == Qt::Dialog::Accepted()) {
+    if (this->{dialog}->exec() == 1) {
         my $contactName = this->{dialog}->getFindText();
 
         if (exists this->{contacts}->{$contactName}) {
@@ -260,7 +274,6 @@ sub findContact {
 
     this->updateInterface(NavigationMode);
 }
-# [findContact() function] 
 
 sub updateInterface
 {
@@ -281,6 +294,10 @@ sub updateInterface
 
         this->{submitButton}->show();
         this->{cancelButton}->show();
+
+        this->{loadButton}->setEnabled(0);
+        this->{saveButton}->setEnabled(0);
+        this->{exportButton}->setEnabled(0);
     }
     elsif ($mode == NavigationMode) {
         if (scalar keys %{this->{contacts}} == 0) {
@@ -301,7 +318,151 @@ sub updateInterface
 
         this->{submitButton}->hide();
         this->{cancelButton}->hide();
+
+        this->{exportButton}->setEnabled($number >= 1);
+
+        this->{loadButton}->setEnabled(1);
+        this->{saveButton}->setEnabled($number >= 1);
     }
 }
+
+sub saveToFile
+{
+    my $fileName = Qt::FileDialog::getSaveFileName(this,
+        this->tr('Save Address Book'), '',
+        this->tr('Address Book (*.abk);;All Files (*)'));
+
+    if (!$fileName) {
+        return;
+    }
+    else {
+        my $file = Qt::File($fileName);
+        if (!$file->open(Qt::IODevice::WriteOnly())) {
+            Qt::MessageBox::information(this, this->tr('Unable to open file'),
+                $file->errorString());
+            return;
+        }
+
+        my $out = Qt::DataStream($file);
+        $out->setVersion(Qt::DataStream::Qt_4_5());
+        no warnings qw(void);
+        $out << [keys %{this->{contacts}}];
+        $out << [map{ keys %{$_} } values %{this->{contacts}}];
+        $out << [map{ values %{$_} } values %{this->{contacts}}];
+        use warnings;
+        $file->close();
+    }       
+    this->updateInterface(NavigationMode);
+}
+
+sub loadFromFile
+{
+    my $fileName = Qt::FileDialog::getOpenFileName(this,
+        this->tr('Open Address Book'), '',
+        this->tr('Address Book (*.abk);;All Files (*)'));
+    if (!$fileName) {
+        return;
+    }
+    else {
+        
+        my $file = Qt::File($fileName);
+        
+        if (!$file->open(Qt::IODevice::ReadOnly())) {
+            Qt::MessageBox::information(this, this->tr('Unable to open file'),
+                $file->errorString());
+            return;
+        }
+        
+        my $in = Qt::DataStream($file);
+        $in->setVersion(Qt::DataStream::Qt_4_5());
+        my @keys;
+        my @valuekeys;
+        my @valuevalues;
+        no warnings qw(void);
+        $in >> \@keys;
+        $in >> \@valuekeys;
+        $in >> \@valuevalues;
+        use warnings;
+        @{this->{contacts}}{@keys} = map{ {$valuekeys[$_*2] => $valuevalues[$_*2], $valuekeys[$_*2+1] => $valuevalues[$_*2+1]} } 0..((@valuevalues-1)/2);
+
+        if (scalar keys %{this->{contacts}} == 0) {
+            Qt::MessageBox::information(this, this->tr('No contacts in file'),
+                this->tr('The file you are attempting to open contains no contacts.'));
+        } else {
+            this->{nameLine}->setText((keys %{this->{contacts}})[0]);
+            this->{addressText}->setText((values %{this->{contacts}})[0]->{address});
+        }
+        $file->close();
+    }
+
+    this->updateInterface(NavigationMode);
+}
+
+# [export function part1]
+sub exportAsVCard
+{
+    my $name = this->{nameLine}->text();
+    my $address = this->{addressText}->toPlainText();
+    my $firstName;
+    my $lastName;
+    my @nameList;
+
+    if ($name =~ m/ /) {
+        @nameList = split m/\s+/, $name;
+        $firstName = $nameList[0];
+        $lastName = $nameList[-1];
+    } else {
+        $firstName = $name;
+        $lastName = '';
+    }
+
+    my $fileName = Qt::FileDialog::getSaveFileName(this,
+        this->tr('Export Contact'), '',
+        this->tr('vCard Files (*.vcf);;All Files (*)'));
+        
+    if (!$fileName) {
+        return;
+    }
+
+    my $file = Qt::File($fileName);
+# [export function part1]
+    
+# [export function part2]    
+    if (!$file->open(Qt::IODevice::WriteOnly())) {
+        Qt::MessageBox::information(this, this->tr('Unable to open file'),
+            $file->errorString());
+        return;
+    }
+
+    my $out = Qt::TextStream($file);
+# [export function part2]
+
+# [export function part3]
+    no warnings qw(void);
+    $out << "BEGIN:VCARD\n";
+    $out << "VERSION:2.1\n";
+    $out << "N:$lastName;$firstName\n";
+        
+    if (@nameList) {  
+       $out << 'FN:' . join( ' ', @nameList ) . "\n";
+    }
+    else {
+       $out << 'FN:' . $firstName . "\n";
+    }
+# [export function part3] 
+
+# [export function part4]
+    $address =~ s/;/\\;/g;
+    $address =~ s/\n/;/g;
+    $address =~ s/,/ /g;
+
+    $out << 'ADR;HOME:;' . $address . "\n";
+    $out << 'END:VCARD' . "\n";
+
+    Qt::MessageBox::information(this, this->tr('Export Successful'),
+        sprintf this->tr('\'%s\' has been exported as a vCard.'), $name);
+    $file->close();
+}
+# [export function part4]
 
 1;

@@ -19,13 +19,14 @@ use QtCore4::slots
     addContact => [],
     submitContact => [],
     cancel => [],
-# [edit and remove slots]
     editContact => [],
     removeContact => [],
-# [edit and remove slots]
     next => [],
     previous => [],
-    findContact => [];
+    findContact => [],
+#!  [save and load functions declaration]
+    saveToFile => [],
+    loadFromFile => [];
 
 sub NEW
 {
@@ -44,10 +45,8 @@ sub NEW
     this->{editButton}->setEnabled(0);
     this->{removeButton} = Qt::PushButton(this->tr('&Remove'));
     this->{removeButton}->setEnabled(0);
-# [instantiating findButton]
     this->{findButton} = Qt::PushButton(this->tr("&Find"));
     this->{findButton}->setEnabled(0);
-# [instantiating findButton]
     this->{submitButton} = Qt::PushButton(this->tr('&Submit'));
     this->{submitButton}->hide();
     this->{cancelButton} = Qt::PushButton(this->tr('&Cancel'));
@@ -58,9 +57,17 @@ sub NEW
     this->{previousButton} = Qt::PushButton(this->tr('&Previous'));
     this->{previousButton}->setEnabled(0);
 
-# [instantiating FindDialog]
+    this->{loadButton} = Qt::PushButton(this->tr("&Load..."));
+#!  [tooltip 1]    
+    this->{loadButton}->setToolTip(this->tr("Load contacts from a file"));
+#!  [tooltip 1]        
+    this->{saveButton} = Qt::PushButton(this->tr("Sa&ve..."));
+#!  [tooltip 2]
+    this->{saveButton}->setToolTip(this->tr("Save contacts to a file"));
+#!  [tooltip 2]
+    this->{saveButton}->setEnabled(0);
+
     this->{dialog} = FindDialog(this);
-# [instantiating FindDialog]
 
     this->{order} = 0;
 
@@ -72,16 +79,19 @@ sub NEW
     this->connect(this->{nextButton}, SIGNAL 'clicked()', this, SLOT 'next()');
     this->connect(this->{previousButton}, SIGNAL 'clicked()', this, SLOT 'previous()');
     this->connect(this->{findButton}, SIGNAL 'clicked()', this, SLOT 'findContact()');
+    this->connect(this->{loadButton}, SIGNAL 'clicked()', this, SLOT 'loadFromFile()');
+    this->connect(this->{saveButton}, SIGNAL 'clicked()', this, SLOT 'saveToFile()');
+
 
     my $buttonLayout1 = Qt::VBoxLayout();
     $buttonLayout1->addWidget(this->{addButton});
     $buttonLayout1->addWidget(this->{editButton});
     $buttonLayout1->addWidget(this->{removeButton});
-# [adding findButton to layout]     
     $buttonLayout1->addWidget(this->{findButton});
-# [adding findButton to layout]     
     $buttonLayout1->addWidget(this->{submitButton});
     $buttonLayout1->addWidget(this->{cancelButton});
+    $buttonLayout1->addWidget(this->{loadButton});
+    $buttonLayout1->addWidget(this->{saveButton});
     $buttonLayout1->addStretch();
 
     my $buttonLayout2 = Qt::HBoxLayout();
@@ -241,11 +251,10 @@ sub previous
     this->{addressText}->setText(this->{contacts}->{$newName}->{address});
 }
 
-# [findContact() function] 
 sub findContact {
     this->{dialog}->show();
 
-    if (this->{dialog}->exec() == Qt::Dialog::Accepted()) {
+    if (this->{dialog}->exec() == 1) {
         my $contactName = this->{dialog}->getFindText();
 
         if (exists this->{contacts}->{$contactName}) {
@@ -260,7 +269,6 @@ sub findContact {
 
     this->updateInterface(NavigationMode);
 }
-# [findContact() function] 
 
 sub updateInterface
 {
@@ -281,6 +289,9 @@ sub updateInterface
 
         this->{submitButton}->show();
         this->{cancelButton}->show();
+
+        this->{loadButton}->setEnabled(0);
+        this->{saveButton}->setEnabled(0);
     }
     elsif ($mode == NavigationMode) {
         if (scalar keys %{this->{contacts}} == 0) {
@@ -301,7 +312,94 @@ sub updateInterface
 
         this->{submitButton}->hide();
         this->{cancelButton}->hide();
+
+        this->{loadButton}->setEnabled(1);
+        this->{saveButton}->setEnabled($number >= 1);
     }
 }
+
+# [saveToFile() function part1]
+sub saveToFile
+{
+    my $fileName = Qt::FileDialog::getSaveFileName(this,
+        this->tr('Save Address Book'), '',
+        this->tr('Address Book (*.abk);;All Files (*)'));
+
+# [saveToFile() function part1]
+# [saveToFile() function part2]
+    if (!$fileName) {
+        return;
+    }
+    else {
+        my $file = Qt::File($fileName);
+        if (!$file->open(Qt::IODevice::WriteOnly())) {
+            Qt::MessageBox::information(this, this->tr('Unable to open file'),
+                $file->errorString());
+            return;
+        }
+
+# [saveToFile() function part2]        
+# [saveToFile() function part3]
+        my $out = Qt::DataStream($file);
+        $out->setVersion(Qt::DataStream::Qt_4_5());
+        no warnings qw(void);
+        $out << [keys %{this->{contacts}}];
+        $out << [map{ keys %{$_} } values %{this->{contacts}}];
+        $out << [map{ values %{$_} } values %{this->{contacts}}];
+        use warnings;
+        $file->close();
+    }       
+}
+# [saveToFile() function part3]
+
+# [loadFromFile() function part1]
+sub loadFromFile
+{
+    my $fileName = Qt::FileDialog::getOpenFileName(this,
+        this->tr('Open Address Book'), '',
+        this->tr('Address Book (*.abk);;All Files (*)'));
+# [loadFromFile() function part1]
+
+# [loadFromFile() function part2]
+    if (!$fileName) {
+        return;
+    }
+    else {
+        
+        my $file = Qt::File($fileName);
+        
+        if (!$file->open(Qt::IODevice::ReadOnly())) {
+            Qt::MessageBox::information(this, this->tr('Unable to open file'),
+                $file->errorString());
+            return;
+        }
+        
+        my $in = Qt::DataStream($file);
+        $in->setVersion(Qt::DataStream::Qt_4_5());
+        my @keys;
+        my @valuekeys;
+        my @valuevalues;
+        no warnings qw(void);
+        $in >> \@keys;
+        $in >> \@valuekeys;
+        $in >> \@valuevalues;
+        use warnings;
+        @{this->{contacts}}{@keys} = map{ {$valuekeys[$_*2] => $valuevalues[$_*2], $valuekeys[$_*2+1] => $valuevalues[$_*2+1]} } 0..((@valuevalues-1)/2);
+# [loadFromFile() function part2]
+
+# [loadFromFile() function part3]
+        if (scalar keys %{this->{contacts}} == 0) {
+            Qt::MessageBox::information(this, this->tr('No contacts in file'),
+                this->tr('The file you are attempting to open contains no contacts.'));
+        } else {
+            this->{nameLine}->setText((keys %{this->{contacts}})[0]);
+            this->{addressText}->setText((values %{this->{contacts}})[0]->{address});
+        }
+        $file->close();
+    }
+
+    this->updateInterface(NavigationMode);
+}
+# [loadFromFile() function part3]
 
 1;
