@@ -25,6 +25,7 @@ set ( perlqtrc_SRCS
     help/remotecontrol/remotecontrol.qrc              help/remotecontrol/RemoteControlResources.pm
     graphicsview/diagramscene/diagramscene.qrc        graphicsview/diagramscene/DiagramSceneResources.pm
     network/securesocketclient/securesocketclient.qrc network/securesocketclient/SecureSocketClientResources.pm
+    tools/customcompleter/customcompleter.qrc         tools/customcompleter/CustomCompleterResources.pm
     xmlpatterns/qobjectxmlmodel/queries.qrc           xmlpatterns/qobjectxmlmodel/QueriesResources.pm
 )
 
