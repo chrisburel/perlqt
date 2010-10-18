@@ -122,15 +122,199 @@ store( index, value )
 
         if ( 0 > index )
             XSRETURN_UNDEF;
-        else if ( index > polygon->size() )
-            XSRETURN_UNDEF;
-        else if ( index == polygon->size() )
-            polygon->append( *point );
-        else
-            polygon->replace( index, *point );
-        RETVAL = value;
+
+        if ( index > polygon->size() ) {
+            polygon->resize( index );
+        }
+        polygon->append( *point );
+
+        RETVAL = newSVsv(value);
     OUTPUT:
         RETVAL
+
+AV*
+storesize( count )
+        int count
+    PPCODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+
+        polygon->resize( count );
+
+SV*
+delete( index )
+        int index
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+
+        QPointF* point = new QPointF(polygon->at(index));
+
+        polygon->replace( index, QPointF() );
+
+        Smoke::ModuleIndex mi = Smoke::classMap["QPointF"];
+        smokeperl_object* reto = alloc_smokeperl_object(
+            true, mi.smoke, mi.index, (void*)point );
+        const char* classname = perlqt_modules[reto->smoke].resolve_classname(reto);
+        RETVAL = set_obj_info( classname, reto );
+    OUTPUT:
+        RETVAL
+
+void
+clear( )
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+
+        polygon->resize(0);
+
+int
+push( ... )
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+
+        for( int i = 0; i < items; ++i ) {
+            smokeperl_object *arg = sv_obj_info(ST(i));
+            if (!arg || !arg->ptr)
+                continue;
+            QPointF* point = (QPointF*)arg->ptr;
+            polygon->append( *point );
+        }
+        RETVAL = polygon->size();
+    OUTPUT:
+        RETVAL
+
+SV*
+pop()
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+
+        QPointF* point = new QPointF(polygon->last());
+        Smoke::ModuleIndex mi = Smoke::classMap["QPointF"];
+        smokeperl_object* reto = alloc_smokeperl_object(
+            true, mi.smoke, mi.index, (void*)point );
+        const char* classname = perlqt_modules[reto->smoke].resolve_classname(reto);
+        RETVAL = set_obj_info( classname, reto );
+        polygon->remove(polygon->size()-1);
+    OUTPUT:
+        RETVAL
+
+SV*
+shift()
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+
+        QPointF* point = new QPointF(polygon->first());
+        Smoke::ModuleIndex mi = Smoke::classMap["QPointF"];
+        smokeperl_object* reto = alloc_smokeperl_object(
+            true, mi.smoke, mi.index, (void*)point );
+        const char* classname = perlqt_modules[reto->smoke].resolve_classname(reto);
+        RETVAL = set_obj_info( classname, reto );
+        polygon->remove(0);
+    OUTPUT:
+        RETVAL
+
+int
+unshift( ... )
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+
+        for( int i = items-1; i >= 0; --i ) {
+            smokeperl_object *arg = sv_obj_info(ST(i));
+            if (!arg || !arg->ptr)
+                continue;
+            QPointF* point = (QPointF*)arg->ptr;
+            polygon->insert( 0, *point );
+        }
+        RETVAL = polygon->size();
+    OUTPUT:
+        RETVAL
+
+void
+splice( firstIndex = 0, length = -1, ... )
+        int firstIndex
+        int length
+    CODE:
+        smokeperl_object* o = sv_obj_info(sv_this);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon = (QPolygonF*)o->ptr;
+
+        if ( firstIndex > polygon->size() )
+            firstIndex = polygon->size();
+
+        if ( length == -1 )
+            length = polygon->size()-firstIndex;
+
+        int lastIndex = firstIndex + length;
+
+        AV* args = newAV();
+        for( int i = 2; i < items; ++i ) {
+            av_push(args, ST(i));
+        }
+
+        EXTEND(SP, length);
+
+        Smoke::ModuleIndex mi = Smoke::classMap["QPointF"];
+        for( int i = firstIndex, j = 0; i < lastIndex; ++i, ++j ) {
+            QPointF* point = new QPointF(polygon->at(firstIndex));
+
+            smokeperl_object* reto = alloc_smokeperl_object(
+                    true, mi.smoke, mi.index, (void*)point );
+            const char* classname = perlqt_modules[reto->smoke].resolve_classname(reto);
+            SV* retval = set_obj_info( classname, reto );
+            point = (QPointF*)sv_obj_info(retval)->ptr;
+            ST(j) = retval;
+            polygon->remove(firstIndex);
+        }
+
+        for( int i = items-3; i >= 0; --i ) {
+            QPointF* point = (QPointF*)(sv_obj_info(av_pop(args))->ptr);
+            polygon->insert(firstIndex, *point);
+        }
+
+        XSRETURN( length );
+
+MODULE = QtGui4            PACKAGE = Qt::PolygonF::_overload
+PROTOTYPES: DISABLE
+
+bool
+op_equality( first, second, reversed )
+        SV* first
+        SV* second
+    CODE:
+        smokeperl_object* o1 = sv_obj_info(first);
+        if (!o1 || !o1->ptr)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon1 = (QPolygonF*)o1->ptr;
+
+        smokeperl_object* o2 = sv_obj_info(second);
+        if (!o2 || !o2->ptr || isDerivedFrom(o2, "QPolygonF") == -1)
+            XSRETURN_UNDEF;
+        QPolygonF* polygon2 = (QPolygonF*)o2->ptr;
+
+        RETVAL = *polygon1 == *polygon2;
+    OUTPUT:
+        RETVAL
+        
 
 MODULE = QtGui4            PACKAGE = QtGui4::_internal
 
@@ -178,3 +362,15 @@ BOOT:
 
     install_handlers(QtGui4_handlers);
 
+    newXS("Qt::PolygonF::EXISTS"   , XS_Qt__PolygonF_exists, __FILE__);
+    newXS("Qt::PolygonF::FETCH"    , XS_Qt__PolygonF_at, __FILE__);
+    newXS("Qt::PolygonF::FETCHSIZE", XS_Qt__PolygonF_size, __FILE__);
+    newXS("Qt::PolygonF::STORE"    , XS_Qt__PolygonF_store, __FILE__);
+    newXS("Qt::PolygonF::STORESIZE", XS_Qt__PolygonF_storesize, __FILE__);
+    newXS("Qt::PolygonF::DELETE"   , XS_Qt__PolygonF_delete, __FILE__);
+    newXS("Qt::PolygonF::CLEAR"    , XS_Qt__PolygonF_clear, __FILE__);
+    newXS("Qt::PolygonF::PUSH"     , XS_Qt__PolygonF_push, __FILE__);
+    newXS("Qt::PolygonF::POP"      , XS_Qt__PolygonF_pop, __FILE__);
+    newXS("Qt::PolygonF::SHIFT"    , XS_Qt__PolygonF_shift, __FILE__);
+    newXS("Qt::PolygonF::UNSHIFT"  , XS_Qt__PolygonF_unshift, __FILE__);
+    newXS("Qt::PolygonF::SPLICE"   , XS_Qt__PolygonF_splice, __FILE__);

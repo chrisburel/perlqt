@@ -659,8 +659,120 @@ use warnings;
 
 our @EXPORT_OK;
 
-unless(exists $::INC{'QtCore4/GlobalSpace.pm'}) {
-    $::INC{'QtCore4/GlobalSpace.pm'} = $::INC{'QtCore4.pm'};
+push @EXPORT_OK, qw(
+LicensedActiveQt
+LicensedCore
+LicensedDBus
+LicensedDeclarative
+LicensedGui
+LicensedHelp
+LicensedMultimedia
+LicensedNetwork
+LicensedOpenGL
+LicensedOpenVG
+LicensedQt3Support
+LicensedQt3SupportLight
+LicensedScript
+LicensedScriptTools
+LicensedSql
+LicensedSvg
+LicensedTest
+LicensedXml
+LicensedXmlPatterns
+qAcos
+qAddPostRoutine
+qAppName
+qAsin
+qAtan
+qAtan2
+qbswap_helper
+qCeil
+qChecksum
+Q_COMPLEX_TYPE
+qCompress
+qCos
+qCritical
+qDebug
+Q_DUMMY_TYPE
+qExp
+qFabs
+qFastCos
+qFastSin
+qFlagLocation
+qFloor
+qFree
+qFreeAligned
+qFuzzyCompare
+qFuzzyIsNull
+qgetenv
+qHash
+qInf
+qInstallMsgHandler
+qIntCast
+qIsFinite
+qIsInf
+qIsNaN
+qIsNull
+qLn
+qMalloc
+qMallocAligned
+qMemCopy
+qMemSet
+Q_MOVABLE_TYPE
+qPow
+Q_PRIMITIVE_TYPE
+qputenv
+qQNaN
+qrand
+qRealloc
+qReallocAligned
+qRegisterStaticPluginInstanceFunction
+qRemovePostRoutine
+qRound
+qRound64
+qSetFieldWidth
+qSetPadChar
+qSetRealNumberPrecision
+qSharedBuild
+qSin
+qSNaN
+qSqrt
+qsrand
+Q_STATIC_TYPE
+qstrcmp
+qstrcpy
+qstrdup
+qstricmp
+qStringComparisonHelper
+qstrlen
+qstrncmp
+qstrncpy
+qstrnicmp
+qstrnlen
+qTan
+qt_assert
+qt_assert_x
+qt_check_pointer
+QtCriticalMsg
+QtDebugMsg
+qt_error_string
+QtFatalMsg
+qt_message_output
+qt_noop
+qt_qFindChild_helper
+qt_qFindChildren_helper
+QtSystemMsg
+qtTrId
+QtWarningMsg
+qUncompress
+qvariant_cast_helper
+qVersion
+qvsnprintf
+qWarning
+);
+
+unless(exists $::INC{'Qt/GlobalSpace.pm'}) {
+    $::INC{'Qt/GlobalSpace.pm'} = $::INC{'QtCore4.pm'};
 }
 
 sub import {
@@ -698,6 +810,8 @@ our %classId2package;
 our %pointer_map;
 
 our %customClasses;
+
+our %vectorTypes;
 
 my %arrayTypes = (
     'const QList<QVariant>&' => {
@@ -1177,7 +1291,10 @@ sub init_class {
     @{arrayByName($perlClassName.'::ISA')} = @isa;
 
     # Define overloaded operators
-    @{arrayByName(" $perlClassName\::ISA")} = ('Qt::base::_overload');
+    if ( exists $vectorTypes{$perlClassName} ) {
+        push @{arrayByName(" $perlClassName\::ISA")}, "$perlClassName\::_overload";
+    }
+    push @{arrayByName(" $perlClassName\::ISA")}, 'Qt::base::_overload';
 
     foreach my $sp ('', ' ') {
         my $where = $sp . $perlClassName;
@@ -1735,6 +1852,36 @@ sub Uchar {
 }
 
 1;
+
+package Qt::String;
+
+use strict;
+use warnings;
+
+use overload
+    '""' => 'Qt::String::toString';
+
+sub arg {
+    my $string = shift;
+    my @fields = @_;
+
+    my $stringRef = ${$string};
+
+    my $escapeNum = 1;
+    while ( $escapeNum < 99 && $stringRef !~ m/%$escapeNum/ ) {
+        ++$escapeNum;
+    }
+    while ( @fields ) {
+        my $field = shift @fields;
+        ${$string} =~ s/%$escapeNum/$field/;
+        ++$escapeNum;
+    }
+    return $string;
+}
+
+sub toString {
+    return ${$_[0]};
+}
 
 =pod
 

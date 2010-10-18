@@ -22,8 +22,10 @@ use warnings;
 
 use QtCore4;
 use base qw(Qt::_internal);
+use Devel::Peek qw( SvREFCNT_inc );
 
 sub init {
+    @Qt::_internal::vectorTypes{qw(Qt::Polygon Qt::PolygonF)} = (undef, undef);
     foreach my $c ( @{getClassList()} ) {
         QtGui4::_internal->init_class($c);
     }
@@ -72,25 +74,20 @@ sub Qt::GraphicsObject::ON_DESTROY {
     Qt::GraphicsItem::ON_DESTROY();
 }
 
+sub Qt::UndoCommand::ON_DESTROY {
+    Devel::Peek::SvREFCNT_inc( Qt::this() );
+    # XXX is there a better solution here?
+    return 1;
+}
+
 package Qt::PolygonF;
 
-sub EXISTS {
-    my ( $index ) = @_;
-    return Qt::this()->exists($index);
+sub EXTEND {
 }
 
-sub FETCH {
-    my ( $index ) = @_;
-    return Qt::this()->at($index);
-}
+package Qt::PolygonF::_overload;
 
-sub FETCHSIZE {
-    return Qt::this()->size();
-}
-
-sub STORE {
-    my ( $index, $value ) = @_;
-    return Qt::this()->store($index, $value);
-}
+use overload
+    '==' => \&op_equality;
 
 1;
