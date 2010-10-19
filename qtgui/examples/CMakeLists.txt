@@ -22,6 +22,7 @@ set ( perlqtui_SRCS
 )
 
 set ( perlqtrc_SRCS
+    draganddrop/puzzle/puzzle.qrc                     draganddrop/puzzle/PuzzleResources.pm
     help/remotecontrol/remotecontrol.qrc              help/remotecontrol/RemoteControlResources.pm
     graphicsview/diagramscene/diagramscene.qrc        graphicsview/diagramscene/DiagramSceneResources.pm
     network/securesocketclient/securesocketclient.qrc network/securesocketclient/SecureSocketClientResources.pm
