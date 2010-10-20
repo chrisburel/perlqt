@@ -229,12 +229,15 @@ QString* qstringFromPerlString( SV* perlstring ) {
         return new QString();
 
     COP *cop = cxstack[cxstack_ix].blk_oldcop;
+    STRLEN len;
+    char* buf = SvPV(perlstring, len);
     if ( SvUTF8( perlstring ) )
-        return new QString(QString::fromUtf8(SvPV_nolen(perlstring)));
+        return new QString(QString::fromUtf8(buf, len));
     else if ( cop->op_private & HINT_LOCALE )
-        return new QString(QString::fromLocal8Bit(SvPV_nolen(perlstring)));
+        return new QString(QString::fromLocal8Bit(buf, len));
+
     else
-        return new QString(QString::fromLatin1(SvPV_nolen(perlstring)));
+        return new QString(QString::fromLatin1(buf, len));
 }
 
 QByteArray* qbytearrayFromPerlString( SV* perlstring ) {
@@ -247,13 +250,13 @@ SV* perlstringFromQString( QString * s ) {
     SV *retval = newSV(0);
     COP *cop = cxstack[cxstack_ix].blk_oldcop;
     if ( !(cop->op_private & HINT_BYTES ) ) {
-        sv_setpv( retval, (const char *)s->toUtf8() );
+        sv_setpvn( retval, s->toUtf8().constData(), s->toUtf8().length() );
         SvUTF8_on( retval );
     }
     else if ( cop->op_private & HINT_LOCALE )
-        sv_setpv( retval, (const char *)s->toLocal8Bit() );
+        sv_setpvn( retval, s->toLocal8Bit().constData(), s->toLocal8Bit().length() );
     else
-        sv_setpv( retval, (const char *)s->toLatin1() );
+        sv_setpvn( retval, s->toLatin1().constData(), s->toLatin1().length() );
 
     return retval;
 }

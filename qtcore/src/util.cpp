@@ -1280,7 +1280,7 @@ XS(XS_qabstract_item_model_setdata) {
         }
 	}
     else if ( items == 4 ) {
-        SV* dataRole = ST(2);
+        SV* dataRole = ST(3);
         if(SvROK(dataRole))
             dataRole = SvRV(dataRole);
         if ( model->setData( *modelIndex, *variant, SvIV(dataRole) ) ) {
@@ -1551,7 +1551,8 @@ XS(XS_qbytearray_data) {
     }
 
     QByteArray * bytes = (QByteArray *) o->ptr;
-    ST(0) = sv_2mortal( newSVpvn( bytes->data(), bytes->size() ) );
+    ST(0) = sv_2mortal( perlstringFromQByteArray(bytes) );
+
     XSRETURN(1);
 }
 

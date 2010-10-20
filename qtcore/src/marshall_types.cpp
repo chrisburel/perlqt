@@ -482,8 +482,9 @@ namespace PerlQt4 {
                         break;
                     case 'u':
                     case 'U':
-                        croak( "Expected return value of type %s, but got an "
-                               "undefined value", r.type().name() );
+                        if ( !r.type().flags() & Smoke::tf_ptr )
+                            croak( "Expected return value of type %s, but got an "
+                                   "undefined value", r.type().name() );
                 }
             }
         }
