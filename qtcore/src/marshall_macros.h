@@ -119,6 +119,18 @@ void marshall_ItemList(Marshall *m) {
 
                     obj = set_obj_info( classname, o );
                 }
+                else {
+                    // There's this weird problem where if we just return obj,
+                    // if the user then calls something like shift on the array
+                    // returned, the refcount of obj goes to 0, and the value
+                    // in Qt::_internal::pointer_map gets corrupted.  We can't
+                    // just call SvREFCNT_inc on obj either, because I was
+                    // seeing that the refcount of the values in the
+                    // pointer_map were not getting decremented, even after the
+                    // array returned here goes out of scope.  So we return a
+                    // new reference.
+                    obj = newRV_inc(SvRV(obj));
+                }
             
                 av_push(av, obj);
             }
@@ -254,6 +266,10 @@ void marshall_ValueListItem(Marshall *m) {
                         false, mi.smoke, mi.index, p );
 
                     obj = set_obj_info( className, o );
+                }
+                else {
+                    // See above.
+                    obj = newRV_inc(SvRV(obj));
                 }
 
                 av_push(av, obj);

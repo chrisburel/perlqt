@@ -231,10 +231,6 @@ sub mouseReleaseEvent
             shift @{$endItems};
         }
 
-        if (scalar @{$endItems} && !ref $endItems->[0]) {
-            shift @{$endItems};
-        }
-
         this->removeItem(this->line);
 # [11] //! [12]
 

@@ -62,10 +62,11 @@ MODULE = QtGui4            PACKAGE = Qt::PolygonF
 PROTOTYPES: DISABLE
 
 SV*
-at( index )
+at( array, index )
+        SV* array
         int index
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
@@ -81,10 +82,11 @@ at( index )
         RETVAL
 
 bool
-exists( index )
+exists( array, index )
+        SV* array
         int index
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
@@ -96,9 +98,10 @@ exists( index )
         RETVAL
 
 int
-size()
+size( array )
+        SV* array
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
@@ -107,11 +110,12 @@ size()
         RETVAL
 
 SV*
-store( index, value )
+store( array, index, value )
+        SV* array
         int index
         SV* value
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         smokeperl_object* valueo = sv_obj_info(value);
@@ -133,10 +137,11 @@ store( index, value )
         RETVAL
 
 AV*
-storesize( count )
+storesize( array, count )
+        SV* array
         int count
     PPCODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
@@ -144,10 +149,11 @@ storesize( count )
         polygon->resize( count );
 
 SV*
-delete( index )
+delete( array, index )
+        SV* array
         int index
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
@@ -165,9 +171,10 @@ delete( index )
         RETVAL
 
 void
-clear( )
+clear( array )
+        SV* array
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
@@ -175,14 +182,15 @@ clear( )
         polygon->resize(0);
 
 int
-push( ... )
+push( array, ... )
+        SV* array
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
 
-        for( int i = 0; i < items; ++i ) {
+        for( int i = 1; i < items; ++i ) {
             smokeperl_object *arg = sv_obj_info(ST(i));
             if (!arg || !arg->ptr)
                 continue;
@@ -194,9 +202,10 @@ push( ... )
         RETVAL
 
 SV*
-pop()
+pop( array )
+        SV* array
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
@@ -212,9 +221,10 @@ pop()
         RETVAL
 
 SV*
-shift()
+shift( array )
+        SV* array
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
@@ -230,14 +240,15 @@ shift()
         RETVAL
 
 int
-unshift( ... )
+unshift( array, ... )
+        SV* array
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
 
-        for( int i = items-1; i >= 0; --i ) {
+        for( int i = items-1; i >= 1; --i ) {
             smokeperl_object *arg = sv_obj_info(ST(i));
             if (!arg || !arg->ptr)
                 continue;
@@ -249,11 +260,12 @@ unshift( ... )
         RETVAL
 
 void
-splice( firstIndex = 0, length = -1, ... )
+splice( array, firstIndex = 0, length = -1, ... )
+        SV* array
         int firstIndex
         int length
     CODE:
-        smokeperl_object* o = sv_obj_info(sv_this);
+        smokeperl_object* o = sv_obj_info(array);
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         QPolygonF* polygon = (QPolygonF*)o->ptr;
@@ -267,7 +279,7 @@ splice( firstIndex = 0, length = -1, ... )
         int lastIndex = firstIndex + length;
 
         AV* args = newAV();
-        for( int i = 2; i < items; ++i ) {
+        for( int i = 3; i < items; ++i ) {
             av_push(args, ST(i));
         }
 
@@ -286,7 +298,7 @@ splice( firstIndex = 0, length = -1, ... )
             polygon->remove(firstIndex);
         }
 
-        for( int i = items-3; i >= 0; --i ) {
+        for( int i = items-4; i >= 0; --i ) {
             QPointF* point = (QPointF*)(sv_obj_info(av_pop(args))->ptr);
             polygon->insert(firstIndex, *point);
         }
@@ -362,15 +374,15 @@ BOOT:
 
     install_handlers(QtGui4_handlers);
 
-    newXS("Qt::PolygonF::EXISTS"   , XS_Qt__PolygonF_exists, __FILE__);
-    newXS("Qt::PolygonF::FETCH"    , XS_Qt__PolygonF_at, __FILE__);
-    newXS("Qt::PolygonF::FETCHSIZE", XS_Qt__PolygonF_size, __FILE__);
-    newXS("Qt::PolygonF::STORE"    , XS_Qt__PolygonF_store, __FILE__);
-    newXS("Qt::PolygonF::STORESIZE", XS_Qt__PolygonF_storesize, __FILE__);
-    newXS("Qt::PolygonF::DELETE"   , XS_Qt__PolygonF_delete, __FILE__);
-    newXS("Qt::PolygonF::CLEAR"    , XS_Qt__PolygonF_clear, __FILE__);
-    newXS("Qt::PolygonF::PUSH"     , XS_Qt__PolygonF_push, __FILE__);
-    newXS("Qt::PolygonF::POP"      , XS_Qt__PolygonF_pop, __FILE__);
-    newXS("Qt::PolygonF::SHIFT"    , XS_Qt__PolygonF_shift, __FILE__);
-    newXS("Qt::PolygonF::UNSHIFT"  , XS_Qt__PolygonF_unshift, __FILE__);
-    newXS("Qt::PolygonF::SPLICE"   , XS_Qt__PolygonF_splice, __FILE__);
+    newXS(" Qt::PolygonF::EXISTS"   , XS_Qt__PolygonF_exists, __FILE__);
+    newXS(" Qt::PolygonF::FETCH"    , XS_Qt__PolygonF_at, __FILE__);
+    newXS(" Qt::PolygonF::FETCHSIZE", XS_Qt__PolygonF_size, __FILE__);
+    newXS(" Qt::PolygonF::STORE"    , XS_Qt__PolygonF_store, __FILE__);
+    newXS(" Qt::PolygonF::STORESIZE", XS_Qt__PolygonF_storesize, __FILE__);
+    newXS(" Qt::PolygonF::DELETE"   , XS_Qt__PolygonF_delete, __FILE__);
+    newXS(" Qt::PolygonF::CLEAR"    , XS_Qt__PolygonF_clear, __FILE__);
+    newXS(" Qt::PolygonF::PUSH"     , XS_Qt__PolygonF_push, __FILE__);
+    newXS(" Qt::PolygonF::POP"      , XS_Qt__PolygonF_pop, __FILE__);
+    newXS(" Qt::PolygonF::SHIFT"    , XS_Qt__PolygonF_shift, __FILE__);
+    newXS(" Qt::PolygonF::UNSHIFT"  , XS_Qt__PolygonF_unshift, __FILE__);
+    newXS(" Qt::PolygonF::SPLICE"   , XS_Qt__PolygonF_splice, __FILE__);

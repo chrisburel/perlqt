@@ -91,7 +91,6 @@ sub paint
     $painter->setBrush(Qt::Brush(this->myColor));
 # [4] //! [5]
 
-    $DB::single=1;
     my $centerLine = Qt::LineF(this->startItem->pos(), this->endItem->pos());
     my $endPolygon = Qt::PolygonF(this->endItem->polygon());
     my $p1 = $endPolygon->[0] + this->endItem->pos();
