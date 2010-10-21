@@ -228,6 +228,16 @@ QString* qstringFromPerlString( SV* perlstring ) {
     else if( !SvOK( perlstring ) )
         return new QString();
 
+    switch( SvTYPE(perlstring) ) {
+        case SVt_PVAV:
+        case SVt_PVHV:
+        case SVt_PVCV:
+        case SVt_PVGV:
+            croak( "Request to convert non scalar type to a string\n" );
+            break;
+        default:
+            break; // no error
+    }
     COP *cop = cxstack[cxstack_ix].blk_oldcop;
     STRLEN len;
     char* buf = SvPV(perlstring, len);
@@ -502,9 +512,7 @@ void marshall_QString(Marshall* m) {
         case Marshall::FromSV: {
             SV* sv = m->var();
             QString* mystr = 0;
-            if( SvROK(sv) ) {
-                sv = SvRV(sv);
-            }
+
             // Don't check for SvPOK.  Calling SvPV_nolen will stringify the
             // sv, which is what we want for numbers.
             mystr = qstringFromPerlString( sv );

@@ -27,6 +27,7 @@ set ( perlqtrc_SRCS
     graphicsview/diagramscene/diagramscene.qrc        graphicsview/diagramscene/DiagramSceneResources.pm
     network/securesocketclient/securesocketclient.qrc network/securesocketclient/SecureSocketClientResources.pm
     tools/customcompleter/customcompleter.qrc         tools/customcompleter/CustomCompleterResources.pm
+    tools/treemodelcompleter/treemodelcompleter.qrc   tools/treemodelcompleter/TreeModelCompleterResources.pm
     tools/undoframework/undoframework.qrc             tools/undoframework/UndoFrameworkResources.pm
     widgets/validators/validators.qrc                 widgets/validators/ValidatorsResources.pm
     xmlpatterns/filetree/queries.qrc                  xmlpatterns/filetree/QueriesResources.pm

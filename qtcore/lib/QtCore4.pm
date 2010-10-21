@@ -1113,9 +1113,7 @@ sub getSmokeMethodId {
             }
         }
 
-        if ( @methodIds > 1 && $classname eq 'QGlobalSpace' ) {
-            @methodIds = uniqMethods( \@methodIds, scalar @_ );
-        }
+        @methodIds = uniqMethods( \@methodIds, scalar @_ );
 
         # If we still have more than 1 match, use the first one.
         if ( @methodIds > 1 ) {
