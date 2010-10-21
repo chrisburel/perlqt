@@ -513,6 +513,9 @@ void marshall_QString(Marshall* m) {
             SV* sv = m->var();
             QString* mystr = 0;
 
+            if( SvROK( sv ) )
+                sv = SvRV( sv );
+
             // Don't check for SvPOK.  Calling SvPV_nolen will stringify the
             // sv, which is what we want for numbers.
             mystr = qstringFromPerlString( sv );

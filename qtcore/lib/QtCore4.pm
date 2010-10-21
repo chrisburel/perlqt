@@ -1057,10 +1057,14 @@ sub dumpCandidates {
 sub uniqMethods {
     my ($methodIds, $numArgs) = @_;
     my %hash;
-    foreach my $moduleId ( @{$methodIds} ) {
+    foreach my $moduleId ( reverse @{$methodIds} ) {
         my $smokeId = $moduleId->[0];
         my $methodId = $moduleId->[1];
-        my $sig = join ',', map( getTypeNameOfArg( $smokeId, $methodId, $_ ), 0..$numArgs-1 );
+        my $sig = join ',', map{
+            my $str = getTypeNameOfArg( $smokeId, $methodId, $_ );
+            $str =~ s/^const //;
+            $str =~ s/[*&]$//;
+            $str} ( 0..$numArgs-1 );
         $hash{$sig} = $moduleId;
     }
     return values %hash;

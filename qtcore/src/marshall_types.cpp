@@ -502,6 +502,15 @@ namespace PerlQt4 {
 
     MethodCall::MethodCall(Smoke *smoke, Smoke::Index method, smokeperl_object *call_this, SV **sp, int items):
       MethodCallBase(smoke,method), _this(call_this), _sp(sp), _items(items) {
+        if ( !(this->method().flags & (Smoke::mf_static|Smoke::mf_ctor)) && _this->ptr == 0 ) {
+            COP* callercop = caller(0);
+            croak( "%s::%s(): Non-static method called with no \"this\" value "
+                "at %s line %lu\n",
+                _smoke->className(this->method().classId),
+                _smoke->methodNames[this->method().name],
+                GvNAME(CopFILEGV(callercop))+2,
+                CopLINE(callercop) );
+        }
         _stack = new Smoke::StackItem[items + 1];
         _args = _smoke->argumentList + _smoke->methods[_method].args;
         _retval = newSV(0);
