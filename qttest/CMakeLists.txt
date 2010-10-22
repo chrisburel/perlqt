@@ -29,3 +29,7 @@ set_target_properties(perlqttest4 PROPERTIES PREFIX "")
 add_custom_target(perlqttest4pm ALL ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/QtTest4.pm ${CMAKE_BINARY_DIR}/perl/blib/lib/QtTest4.pm)
 install(TARGETS perlqttest4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtTest4/)
 install(FILES QtTest4.pm DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/)
+
+if( KDE4_BUILD_TESTS )
+    add_subdirectory( t )
+endif( KDE4_BUILD_TESTS )

@@ -213,6 +213,7 @@ namespace PerlQt4 {
 
     MethodReturnValueBase::MethodReturnValueBase(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack) :
       _smoke(smoke), _methodIndex(methodIndex), _stack(stack) {
+        _type = SmokeType(_smoke, method().ret);
     }
 
     const Smoke::Method &MethodReturnValueBase::method() {
@@ -228,7 +229,7 @@ namespace PerlQt4 {
     }
 
     SmokeType MethodReturnValueBase::type() {
-        return SmokeType(_smoke, method().ret);
+        return _type;
     }
 
     void MethodReturnValueBase::next() {
@@ -271,6 +272,14 @@ namespace PerlQt4 {
       MethodReturnValueBase(smoke, methodIndex, stack)  {
         _retval = newSV(0);
         Marshall::HandlerFn fn = getMarshallFn(type());
+        (*fn)(this);
+    }
+
+    MethodReturnValue::MethodReturnValue(Smoke *smoke, Smoke::Stack stack, SmokeType type) :
+      MethodReturnValueBase(smoke, 0, stack) {
+        _retval = newSV(0);
+        _type = type;
+        Marshall::HandlerFn fn = getMarshallFn(this->type());
         (*fn)(this);
     }
 

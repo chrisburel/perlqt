@@ -17,7 +17,8 @@
 
 #include <QHash>
 #include <QList>
-#include <QtDebug>
+#include <QSignalSpy>
+#include <QVariant>
 
 #include <iostream>
 
@@ -33,6 +34,8 @@ extern "C" {
 
 #include <smokeperl.h>
 #include <handlers.h>
+#include <util.h>
+#include <listclass_macros.h>
 
 extern QList<Smoke*> smokeList;
 
@@ -45,6 +48,8 @@ resolve_classname_qttest(smokeperl_object * o)
 extern TypeHandler QtTest4_handlers[];
 
 static PerlQt4::Binding bindingtest;
+
+DEF_LISTCLASS_FUNCTIONS(QSignalSpy, QList<QVariant>, Qt::SignalSpy)
 
 MODULE = QtTest4            PACKAGE = QtTest4::_internal
 
@@ -76,3 +81,17 @@ BOOT:
     perlqt_modules[qttest_Smoke] = module;
 
     install_handlers(QtTest4_handlers);
+
+    newXS(" Qt::SignalSpy::EXISTS"   , XS_QSignalSpy_exists, __FILE__);
+    newXS(" Qt::SignalSpy::FETCH"    , XS_QSignalSpy_at, __FILE__);
+    newXS(" Qt::SignalSpy::FETCHSIZE", XS_QSignalSpy_size, __FILE__);
+    newXS(" Qt::SignalSpy::STORE"    , XS_QSignalSpy_store, __FILE__);
+    newXS(" Qt::SignalSpy::STORESIZE", XS_QSignalSpy_storesize, __FILE__);
+    newXS(" Qt::SignalSpy::DELETE"   , XS_QSignalSpy_delete, __FILE__);
+    newXS(" Qt::SignalSpy::CLEAR"    , XS_QSignalSpy_clear, __FILE__);
+    newXS(" Qt::SignalSpy::PUSH"     , XS_QSignalSpy_push, __FILE__);
+    newXS(" Qt::SignalSpy::POP"      , XS_QSignalSpy_pop, __FILE__);
+    newXS(" Qt::SignalSpy::SHIFT"    , XS_QSignalSpy_shift, __FILE__);
+    newXS(" Qt::SignalSpy::UNSHIFT"  , XS_QSignalSpy_unshift, __FILE__);
+    newXS(" Qt::SignalSpy::SPLICE"   , XS_QSignalSpy_splice, __FILE__);
+    newXS("Qt::SignalSpy::_overload::op_equality", XS_QSignalSpy___overload_op_equality, __FILE__);

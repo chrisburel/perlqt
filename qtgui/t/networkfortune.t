@@ -26,13 +26,15 @@ sub getFortune {
     my $server = this->{server};
     my $client = this->{client};
 
+    my $spy = Qt::SignalSpy( $client->getFortuneButton(), SIGNAL 'clicked()' );
+
     Qt::Test::keyClicks(
         $client->portLineEdit(),
         $server->tcpServer()->serverPort(),
         Qt::NoModifier()
     );
 
-    foreach (0..30) {
+    foreach (0..29) {
         Qt::Test::keyClick(
             $client->getFortuneButton(),
             Qt::Key_Enter(),
@@ -41,7 +43,7 @@ sub getFortune {
         );
     }
 
-    pass( 'Typing' );
+    is( scalar @{$spy}, 30, '30 Fortunes received' );
 }
 
 sub initTestCase {

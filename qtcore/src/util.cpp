@@ -44,6 +44,7 @@ extern bool qUnregisterResourceData(int, const unsigned char *, const unsigned c
 // Standard smoke variables
 extern Q_DECL_EXPORT Smoke* qtcore_Smoke;
 extern Q_DECL_EXPORT QList<Smoke*> smokeList;
+extern Q_DECL_EXPORT QList<QString> arrayTypes;
 
 PerlQt4::Binding binding;
 QHash<Smoke*, PerlQt4Module> perlqt_modules;
@@ -883,7 +884,7 @@ Q_DECL_EXPORT SV* set_obj_info(const char * className, smokeperl_object * o) {
     // The hash
     SV* obj;
     SV* var;
-    if( !strcmp( className, " Qt::PolygonF" ) ) {
+    if( arrayTypes.contains( className ) ) {
         obj = (SV*)newAV();
         var = newRV_noinc((SV*)obj);
         hv_magic((AV*)obj, var, PERL_MAGIC_tied);

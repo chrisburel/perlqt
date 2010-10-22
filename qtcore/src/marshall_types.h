@@ -39,6 +39,7 @@ protected:
     Smoke::Index _methodIndex;
     Smoke::Stack _stack;
     SV *_retval;
+    SmokeType _type;
 };
 
 class Q_DECL_EXPORT VirtualMethodReturnValue : public MethodReturnValueBase {
@@ -50,6 +51,7 @@ public:
 class Q_DECL_EXPORT MethodReturnValue : public MethodReturnValueBase {
 public:
     MethodReturnValue(Smoke *smoke, Smoke::Index meth, Smoke::Stack stack);
+    MethodReturnValue(Smoke *smoke, Smoke::Stack stack, SmokeType type);
     Marshall::Action action();
 };
 

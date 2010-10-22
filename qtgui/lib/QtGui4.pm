@@ -25,7 +25,10 @@ use base qw(Qt::_internal);
 use Devel::Peek qw( SvREFCNT_inc );
 
 sub init {
-    @Qt::_internal::vectorTypes{qw(Qt::Polygon Qt::PolygonF)} = (undef, undef);
+    foreach my $type qw(Qt::Polygon Qt::PolygonF) {
+        $Qt::_internal::vectorTypes{$type} = undef;
+        Qt::_internal::setIsArrayType( " $type" );
+    }
     foreach my $c ( @{getClassList()} ) {
         QtGui4::_internal->init_class($c);
     }
@@ -85,7 +88,17 @@ package Qt::PolygonF;
 sub EXTEND {
 }
 
+package Qt::Polygon;
+
+sub EXTEND {
+}
+
 package Qt::PolygonF::_overload;
+
+use overload
+    '==' => \&op_equality;
+
+package Qt::Polygon::_overload;
 
 use overload
     '==' => \&op_equality;

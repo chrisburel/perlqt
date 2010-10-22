@@ -24,6 +24,7 @@ extern "C" void init_qtcore_Smoke();
 extern Q_DECL_EXPORT QHash<Smoke*, PerlQt4Module> perlqt_modules;
 extern SV* sv_qapp;
 QList<Smoke*> smokeList;
+QList<QString> arrayTypes;
 
 MODULE = Qt                 PACKAGE = Qt::_internal
 
@@ -395,6 +396,13 @@ sv_obj_info(sv)
         XPUSHs(sv_2mortal(newSVpv(o->smoke->classes[o->classId].className, strlen(o->smoke->classes[o->classId].className))));
         XPUSHs(sv_2mortal(newSVpv(o->smoke->moduleName(), strlen(o->smoke->moduleName()))));
         XPUSHs(sv_2mortal(newSVpvf("0x%x", (IV)o->ptr)));
+
+void
+setIsArrayType(typeName)
+        const char* typeName
+    CODE:
+        arrayTypes.append(typeName);
+
 
 MODULE = Qt                 PACKAGE = Qt
 

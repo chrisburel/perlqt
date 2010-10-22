@@ -24,6 +24,10 @@ use QtCore4;
 use base qw(Qt::_internal);
 
 sub init {
+    foreach my $c qw(Qt::SignalSpy) {
+        $Qt::_internal::vectorTypes{$c} = undef;
+        Qt::_internal::setIsArrayType(" $c");
+    }
     foreach my $c ( @{getClassList()} ) {
         QtTest4::_internal->init_class($c);
     }
@@ -75,5 +79,15 @@ sub QVERIFY {
         (caller(1))[2]
     );
 }
+
+package Qt::SignalSpy;
+
+sub EXTEND {
+}
+
+package Qt::SignalSpy::_overload;
+
+use overload
+    '==' => \&op_equality;
 
 1;
