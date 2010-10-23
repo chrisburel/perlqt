@@ -120,7 +120,7 @@ BOOT:
     newXS(" Qt::PolygonF::SHIFT"    , XS_QPolygonF_shift, __FILE__);
     newXS(" Qt::PolygonF::UNSHIFT"  , XS_QPolygonF_unshift, __FILE__);
     newXS(" Qt::PolygonF::SPLICE"   , XS_QPolygonF_splice, __FILE__);
-    newXS("Qt::PolygonF::_overload::op_equality", XS_QPolygonF___overload_op_equality, __FILE__);
+    newXS("Qt::PolygonF::_overload::op_equality", XS_QPolygonF__overload_op_equality, __FILE__);
 
     newXS(" Qt::Polygon::EXISTS"   , XS_QPolygon_exists, __FILE__);
     newXS(" Qt::Polygon::FETCH"    , XS_QPolygon_at, __FILE__);
@@ -134,4 +134,4 @@ BOOT:
     newXS(" Qt::Polygon::SHIFT"    , XS_QPolygon_shift, __FILE__);
     newXS(" Qt::Polygon::UNSHIFT"  , XS_QPolygon_unshift, __FILE__);
     newXS(" Qt::Polygon::SPLICE"   , XS_QPolygon_splice, __FILE__);
-    newXS("Qt::Polygon::_overload::op_equality", XS_QPolygon___overload_op_equality, __FILE__);
+    newXS("Qt::Polygon::_overload::op_equality", XS_QPolygon__overload_op_equality, __FILE__);

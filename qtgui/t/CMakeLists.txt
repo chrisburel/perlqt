@@ -2,6 +2,7 @@ enable_testing()
 set(prove_args -I${CMAKE_BINARY_DIR}/perl/blib/lib -I${CMAKE_BINARY_DIR}/perl/blib/arch)
 
 # Class tests
+add_test(perlqt_qpolygon           prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/qpolygon.t)
 add_test(perlqt_qpolygonf          prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/qpolygonf.t)
 add_test(perlqt_qstringlistmodel   prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/qstringlistmodel.t)
 

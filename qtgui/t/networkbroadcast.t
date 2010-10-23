@@ -26,12 +26,16 @@ sub getBroadcast {
     my $sender = this->{sender};
     my $receiver = this->{receiver};
 
+    my $spy = Qt::SignalSpy( $sender->timer, SIGNAL 'timeout()' );
+
     Qt::Test::keyClick(
         $sender->startButton(),
         Qt::Key_Enter(),
     );
 
     Qt::Test::qWait(3500);
+
+    is( scalar @{$spy}, 3, 'Send/Receive datagram count' );
 
     is( $receiver->statusLabel()->text(),
         'Received datagram: "Broadcast message 3"',
@@ -61,6 +65,6 @@ use QtCore4;
 use QtGui4;
 use QtTest4 qw(QTEST_MAIN);
 use NetworkBroadcastTest;
-use Test::More tests => 2;
+use Test::More tests => 3;
 
 exit QTEST_MAIN('NetworkBroadcastTest');

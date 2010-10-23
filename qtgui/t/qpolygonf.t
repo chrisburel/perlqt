@@ -28,12 +28,12 @@ ok( $polygon->[-1] == Qt::PointF(2,0), 'Qt::PolygonF::FETCH' );
 is( scalar @{$polygon}, 7, 'Qt::PolygonF::FETCHSIZE' );
 
 $#{$polygon} = 9;
-is( scalar @{$polygon}, 10, 'Qt::PolygonF::FETCHSIZE' );
+is( scalar @{$polygon}, 10, 'Qt::PolygonF::STORESIZE' );
 $#{$polygon} = 2;
-is( $#{$polygon}, 2, 'Qt::PolygonF::FETCHSIZE' );
+is( $#{$polygon}, 2, 'Qt::PolygonF::STORESIZE' );
 
 ok( delete( $polygon->[1] ) == Qt::PointF(0,1), 'Qt::PolygonF::DELETE' );
-is( $polygon->[1]->y->y, 0, 'Qt::PolygonF::DELETE' );
+is( $polygon->[1]->y, 0, 'Qt::PolygonF::DELETE' );
 
 is( push( @{$polygon}, Qt::PointF(50,50), Qt::PointF(60,60), Qt::PointF(70,70) ),
     6,

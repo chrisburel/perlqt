@@ -49,7 +49,7 @@ extern TypeHandler QtTest4_handlers[];
 
 static PerlQt4::Binding bindingtest;
 
-DEF_LISTCLASS_FUNCTIONS(QSignalSpy, QList<QVariant>, Qt::SignalSpy)
+DEF_LISTCLASS_FUNCTIONS(QSignalSpy, QList<QVariant>, QVariantList, Qt::SignalSpy)
 
 MODULE = QtTest4            PACKAGE = QtTest4::_internal
 
@@ -90,8 +90,8 @@ BOOT:
     newXS(" Qt::SignalSpy::DELETE"   , XS_QSignalSpy_delete, __FILE__);
     newXS(" Qt::SignalSpy::CLEAR"    , XS_QSignalSpy_clear, __FILE__);
     newXS(" Qt::SignalSpy::PUSH"     , XS_QSignalSpy_push, __FILE__);
-    newXS(" Qt::SignalSpy::POP"      , XS_QSignalSpy_pop, __FILE__);
+    //newXS(" Qt::SignalSpy::POP"      , XS_QSignalSpy_pop, __FILE__);
     newXS(" Qt::SignalSpy::SHIFT"    , XS_QSignalSpy_shift, __FILE__);
     newXS(" Qt::SignalSpy::UNSHIFT"  , XS_QSignalSpy_unshift, __FILE__);
-    newXS(" Qt::SignalSpy::SPLICE"   , XS_QSignalSpy_splice, __FILE__);
-    newXS("Qt::SignalSpy::_overload::op_equality", XS_QSignalSpy___overload_op_equality, __FILE__);
+    //newXS(" Qt::SignalSpy::SPLICE"   , XS_QSignalSpy_splice, __FILE__);
+    newXS("Qt::SignalSpy::_overload::op_equality", XS_QSignalSpy__overload_op_equality, __FILE__);

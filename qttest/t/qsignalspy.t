@@ -33,7 +33,7 @@ use QtGui4;
 use QtTest4;
 use MyWidget;
 
-use Test::More tests => 4;
+use Test::More tests => 6;
 
 my $app = Qt::Application(\@ARGV);
 my $box = Qt::CheckBox( undef );
@@ -49,7 +49,10 @@ is($arguments->[0]->toBool(), 1);
 my $widget = MyWidget();
 $spy = Qt::SignalSpy($widget, SIGNAL 'doCoolStuff(int)');
 $widget->doStuff();
-is(scalar @{$spy}, 6);
+is(scalar @{$spy}, 6, 'Qt::SignalSpy::FETCHSIZE');
 is_deeply( [map($_->[0]->toInt(), @{$spy})],
            [1, 2, 3, 4, 5, 6],
            'Spy Perl signals' );
+
+ok( exists $spy->[0], 'Qt::SignalSpy::EXISTS' );
+ok( !exists $spy->[7], 'Qt::SignalSpy::EXISTS' );
