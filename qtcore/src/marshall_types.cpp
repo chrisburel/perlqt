@@ -553,6 +553,50 @@ namespace PerlQt4 {
 
     //------------------------------------------------
 
+    MarshallSingleArg::MarshallSingleArg(Smoke *smoke, SV* sv, SmokeType type) :
+      MethodCallBase(smoke, 0) {
+        _type = type;
+        _sv = sv;
+        _stack = new Smoke::StackItem[1];
+        Marshall::HandlerFn fn = getMarshallFn(this->type());
+        _cur = 0;
+        (*fn)(this);
+    }
+
+    MarshallSingleArg::~MarshallSingleArg() {
+        delete[] _stack;
+    }
+
+    // We're passing an SV from perl to c++
+    Marshall::Action MarshallSingleArg::action() {
+        return Marshall::FromSV;
+    }
+
+    SmokeType MarshallSingleArg::type() {
+        return this->_type;
+    }
+
+    SV *MarshallSingleArg::var() {
+        return _sv;
+    }
+
+    int MarshallSingleArg::items() {
+        return 1;
+    }
+
+    bool MarshallSingleArg::cleanup() {
+        return false;
+    }
+
+    const char *MarshallSingleArg::classname() {
+        return 0;
+    }
+
+    Smoke::StackItem &MarshallSingleArg::item() {
+        return _stack[0];
+    }
+    //------------------------------------------------
+
     // The steps are:
     // Copy Qt4 stack to Smoke Stack
     // use next() to marshall the smoke stack
@@ -658,7 +702,7 @@ namespace PerlQt4 {
 
     void InvokeSlot::unsupported() {
         COP* callercop = caller(0);
-        croak("Cannot handle '%s' as argument of slot call",
+        croak("Cannot handle '%s' as argument of slot call"
             "at %s line %lu\n",
             type().name(),
             GvNAME(CopFILEGV(callercop))+2,

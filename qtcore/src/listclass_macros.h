@@ -239,8 +239,8 @@ template <class ItemVector, class Item, const char *ItemSTR, const char* PerlNam
 void XS_ItemVector_push( PerlInterpreter* my_perl , CV* cv)
 {
     dXSARGS;
-        if (items < 1)
-            Perl_croak(aTHX_ "Usage: %s::push(array, ...)", PerlName);
+    if (items < 1)
+        Perl_croak(aTHX_ "Usage: %s::push(array, ...)", PerlName);
     PERL_UNUSED_VAR(cv); /* -W */
     {
         SV*	array = ST(0);
@@ -251,11 +251,18 @@ void XS_ItemVector_push( PerlInterpreter* my_perl , CV* cv)
             XSRETURN_UNDEF;
         ItemVector* vector = (ItemVector*)o->ptr;
 
+        Smoke::ModuleIndex typeId;
+        foreach( Smoke* smoke, smokeList ) {
+            if( typeId.index = smoke->idType(ItemSTR) ) {
+                typeId.smoke = smoke;
+                break;
+            }
+        }
+        SmokeType type( typeId.smoke, typeId.index );
+
         for( int i = 1; i < items; ++i ) {
-            smokeperl_object *arg = sv_obj_info(ST(i));
-            if (!arg || !arg->ptr)
-                continue;
-            Item* point = (Item*)arg->ptr;
+            PerlQt4::MarshallSingleArg marshalledArg( typeId.smoke, ST(i), type );
+            Item* point = (Item*)marshalledArg.item().s_voidp;
             vector->append( *point );
         }
         RETVAL = vector->size();
@@ -279,6 +286,8 @@ void XS_ItemVector_pop( PerlInterpreter* my_perl , CV* cv)
         if (!o || !o->ptr)
             XSRETURN_UNDEF;
         ItemVector* vector = (ItemVector*)o->ptr;
+        if ( vector->isEmpty() )
+            XSRETURN_UNDEF;
 
         Smoke::StackItem retval[1];
         retval[0].s_voidp = (void*)new Item(vector->last());
@@ -356,11 +365,18 @@ void XS_ItemVector_unshift( PerlInterpreter* my_perl , CV* cv)
             XSRETURN_UNDEF;
         ItemVector* vector = (ItemVector*)o->ptr;
 
+        Smoke::ModuleIndex typeId;
+        foreach( Smoke* smoke, smokeList ) {
+            if( typeId.index = smoke->idType(ItemSTR) ) {
+                typeId.smoke = smoke;
+                break;
+            }
+        }
+        SmokeType type( typeId.smoke, typeId.index );
+
         for( int i = items-1; i >= 1; --i ) {
-            smokeperl_object *arg = sv_obj_info(ST(i));
-            if (!arg || !arg->ptr)
-                continue;
-            Item* point = (Item*)arg->ptr;
+            PerlQt4::MarshallSingleArg marshalledArg( typeId.smoke, ST(i), type );
+            Item* point = (Item*)marshalledArg.item().s_voidp;
             vector->insert( 0, *point );
         }
         RETVAL = vector->size();
@@ -413,21 +429,27 @@ void XS_ItemVector_splice( PerlInterpreter* my_perl , CV* cv)
 
         EXTEND(SP, length);
 
+        Smoke::ModuleIndex typeId;
+        foreach( Smoke* smoke, smokeList ) {
+            if( typeId.index = smoke->idType(ItemSTR) ) {
+                typeId.smoke = smoke;
+                break;
+            }
+        }
+        SmokeType type( typeId.smoke, typeId.index );
         Smoke::ModuleIndex mi = Smoke::classMap[ItemSTR];
         for( int i = firstIndex, j = 0; i < lastIndex; ++i, ++j ) {
-            Item* point = new Item(vector->at(firstIndex));
-
-            smokeperl_object* reto = alloc_smokeperl_object(
-                    true, mi.smoke, mi.index, (void*)point );
-            const char* classname = perlqt_modules[reto->smoke].resolve_classname(reto);
-            SV* retval = set_obj_info( classname, reto );
-            point = (Item*)sv_obj_info(retval)->ptr;
-            ST(j) = retval;
+            Smoke::StackItem retval[1];
+            retval[0].s_voidp = (void*)new Item(vector->at(firstIndex));
+            PerlQt4::MethodReturnValue callreturn( typeId.smoke, retval, type );
+            
+            ST(j) = callreturn.var();
             vector->remove(firstIndex);
         }
 
         for( int i = items-4; i >= 0; --i ) {
-            Item* point = (Item*)(sv_obj_info(av_pop(args))->ptr);
+            PerlQt4::MarshallSingleArg marshalledArg( typeId.smoke, av_pop(args), type );
+            Item* point = (Item*)marshalledArg.item().s_voidp;
             vector->insert(firstIndex, *point);
         }
 
@@ -436,6 +458,77 @@ void XS_ItemVector_splice( PerlInterpreter* my_perl , CV* cv)
     XSRETURN(1);
 }
 
+template <class ItemList, class Item, const char *ItemSTR, const char* PerlName>
+void XS_ItemList_splice( PerlInterpreter* my_perl , CV* cv)
+{
+    dXSARGS;
+        if (items < 1)
+            Perl_croak(aTHX_ "Usage: %s::splice(array, firstIndex = 0, length = -1, ...)", PerlName);
+    PERL_UNUSED_VAR(cv); /* -W */
+    {
+        SV*	array = ST(0);
+        int	firstIndex;
+        int	length;
+
+        if (items < 2)
+            firstIndex = 0;
+        else {
+            firstIndex = (int)SvIV(ST(1));
+        }
+
+        if (items < 3)
+            length = -1;
+        else {
+            length = (int)SvIV(ST(2));
+        }
+        smokeperl_object* o = sv_obj_info(array);
+        if (!o || !o->ptr)
+            XSRETURN_UNDEF;
+        ItemList* list = (ItemList*)o->ptr;
+
+        if ( firstIndex > list->size() )
+            firstIndex = list->size();
+
+        if ( length == -1 )
+            length = list->size()-firstIndex;
+
+        int lastIndex = firstIndex + length;
+
+        AV* args = newAV();
+        for( int i = 3; i < items; ++i ) {
+            av_push(args, ST(i));
+        }
+
+        EXTEND(SP, length);
+
+        Smoke::ModuleIndex typeId;
+        foreach( Smoke* smoke, smokeList ) {
+            if( typeId.index = smoke->idType(ItemSTR) ) {
+                typeId.smoke = smoke;
+                break;
+            }
+        }
+        SmokeType type( typeId.smoke, typeId.index );
+        Smoke::ModuleIndex mi = Smoke::classMap[ItemSTR];
+        for( int i = firstIndex, j = 0; i < lastIndex; ++i, ++j ) {
+            Smoke::StackItem retval[1];
+            retval[0].s_voidp = (void*)&list->at(firstIndex); 
+            PerlQt4::MethodReturnValue callreturn( typeId.smoke, retval, type );
+            
+            ST(j) = callreturn.var();
+            list->removeAt(firstIndex);
+        }
+
+        for( int i = items-4; i >= 0; --i ) {
+            PerlQt4::MarshallSingleArg marshalledArg( typeId.smoke, av_pop(args), type );
+            Item* point = (Item*)marshalledArg.item().s_voidp;
+            list->insert(firstIndex, *point);
+        }
+
+        XSRETURN( length );
+    }
+    XSRETURN(1);
+}
 
 template <class ItemVector, class Item, const char *ItemSTR, const char* PerlName, const char *ItemVectorSTR>
 void XS_ItemVector__overload_op_equality( PerlInterpreter* my_perl , CV* cv)
@@ -499,8 +592,10 @@ void (*XS_##ItemList##_storesize)(PerlInterpreter*, CV*)             = XS_ItemLi
 void (*XS_##ItemList##_delete)(PerlInterpreter*, CV*)                = XS_ItemVector_delete<ItemList, Item, ItemName##STR, ItemName##PerlNameSTR>;\
 void (*XS_##ItemList##_clear)(PerlInterpreter*, CV*)                 = XS_ItemVector_clear<ItemList, Item, ItemName##STR, ItemName##PerlNameSTR>;\
 void (*XS_##ItemList##_push)(PerlInterpreter*, CV*)                  = XS_ItemVector_push<ItemList, Item, ItemName##STR, ItemName##PerlNameSTR>;\
+void (*XS_##ItemList##_pop)(PerlInterpreter*, CV*)                   = XS_ItemVector_pop<ItemList, Item, ItemName##STR, ItemName##PerlNameSTR>;\
 void (*XS_##ItemList##_shift)(PerlInterpreter*, CV*)                 = XS_ItemVector_shift<ItemList, Item, ItemName##STR, ItemName##PerlNameSTR>;\
 void (*XS_##ItemList##_unshift)(PerlInterpreter*, CV*)               = XS_ItemVector_unshift<ItemList, Item, ItemName##STR, ItemName##PerlNameSTR>;\
+void (*XS_##ItemList##_splice)(PerlInterpreter*, CV*)                = XS_ItemList_splice<ItemList, Item, ItemName##STR, ItemName##PerlNameSTR>;\
 void (*XS_##ItemList##__overload_op_equality)(PerlInterpreter*, CV*) = XS_ItemVector__overload_op_equality<ItemList, Item, ItemName##STR, ItemName##PerlNameSTR, ItemList##STR>;\
 \
 }

@@ -165,6 +165,28 @@ private:
     const char *classname();
 };
 
+class Q_DECL_EXPORT MarshallSingleArg : public MethodCallBase {
+public:
+    MarshallSingleArg(Smoke *smoke, SV* sv, SmokeType type);
+    ~MarshallSingleArg();
+    Marshall::Action action();
+    SV *var();
+
+    void callMethod() {}
+
+    int items(); // What's this?
+    bool cleanup();
+
+    SmokeType type();
+    Smoke::StackItem &item();
+
+private:
+    SV *_sv;
+    SV *_retval;
+    SmokeType _type;
+    const char *classname();
+};
+
 class Q_DECL_EXPORT InvokeSlot : public Marshall {
 public:
     InvokeSlot(SV* call_this, char* methodname, QList<MocArgument*> args, void** a);
