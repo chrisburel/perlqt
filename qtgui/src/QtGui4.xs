@@ -59,6 +59,7 @@ extern TypeHandler QtGui4_handlers[];
 
 static PerlQt4::Binding bindingqtgui;
 
+DEF_LISTCLASS_FUNCTIONS(QItemSelection, QItemSelectionRange, QItemSelectionRange, Qt::ItemSelection)
 DEF_VECTORCLASS_FUNCTIONS(QPolygonF, QPointF, Qt::PolygonF)
 DEF_VECTORCLASS_FUNCTIONS(QPolygon, QPoint, Qt::Polygon)
 
@@ -135,3 +136,17 @@ BOOT:
     newXS(" Qt::Polygon::UNSHIFT"  , XS_QPolygon_unshift, __FILE__);
     newXS(" Qt::Polygon::SPLICE"   , XS_QPolygon_splice, __FILE__);
     newXS("Qt::Polygon::_overload::op_equality", XS_QPolygon__overload_op_equality, __FILE__);
+
+    newXS(" Qt::ItemSelection::EXISTS"   , XS_QItemSelection_exists, __FILE__);
+    newXS(" Qt::ItemSelection::FETCH"    , XS_QItemSelection_at, __FILE__);
+    newXS(" Qt::ItemSelection::FETCHSIZE", XS_QItemSelection_size, __FILE__);
+    newXS(" Qt::ItemSelection::STORE"    , XS_QItemSelection_store, __FILE__);
+    newXS(" Qt::ItemSelection::STORESIZE", XS_QItemSelection_storesize, __FILE__);
+    newXS(" Qt::ItemSelection::DELETE"   , XS_QItemSelection_delete, __FILE__);
+    newXS(" Qt::ItemSelection::CLEAR"    , XS_QItemSelection_clear, __FILE__);
+    newXS(" Qt::ItemSelection::PUSH"     , XS_QItemSelection_push, __FILE__);
+    newXS(" Qt::ItemSelection::POP"      , XS_QItemSelection_pop, __FILE__);
+    newXS(" Qt::ItemSelection::SHIFT"    , XS_QItemSelection_shift, __FILE__);
+    newXS(" Qt::ItemSelection::UNSHIFT"  , XS_QItemSelection_unshift, __FILE__);
+    newXS(" Qt::ItemSelection::SPLICE"   , XS_QItemSelection_splice, __FILE__);
+    newXS("Qt::ItemSelection::_overload::op_equality", XS_QItemSelection__overload_op_equality, __FILE__);

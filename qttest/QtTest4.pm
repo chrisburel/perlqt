@@ -24,10 +24,7 @@ use QtCore4;
 use base qw(Qt::_internal);
 
 sub init {
-    foreach my $c qw(Qt::SignalSpy) {
-        $Qt::_internal::vectorTypes{$c} = undef;
-        Qt::_internal::setIsArrayType(" $c");
-    }
+    @Qt::_internal::vectorTypes{qw(Qt::SignalSpy Qt::TestEventList)} = undef;
     foreach my $c ( @{getClassList()} ) {
         QtTest4::_internal->init_class($c);
     }
@@ -86,6 +83,16 @@ sub EXTEND {
 }
 
 package Qt::SignalSpy::_overload;
+
+use overload
+    '==' => \&op_equality;
+
+package Qt::TestEventList;
+
+sub EXTEND {
+}
+
+package Qt::TestEventList::_overload;
 
 use overload
     '==' => \&op_equality;

@@ -2,6 +2,8 @@
 //perl stuff below
 #include "util.h"
 
+#include <QXmlStreamAttributes>
+
 // Perl headers
 extern "C" {
 #include "EXTERN.h"
@@ -17,6 +19,7 @@ extern "C" {
 #include "smokeperl.h"
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
+#include "listclass_macros.h"
 
 extern PerlQt4::Binding binding;
 extern Q_DECL_EXPORT Smoke* qtcore_Smoke;
@@ -25,6 +28,8 @@ extern Q_DECL_EXPORT QHash<Smoke*, PerlQt4Module> perlqt_modules;
 extern SV* sv_qapp;
 QList<Smoke*> smokeList;
 QList<QString> arrayTypes;
+
+DEF_VECTORCLASS_FUNCTIONS(QXmlStreamAttributes, QXmlStreamAttribute, Qt::XmlStreamAttributes);
 
 MODULE = Qt                 PACKAGE = Qt::_internal
 
@@ -475,6 +480,21 @@ BOOT:
     newXS(" Qt::Buffer::read", XS_qiodevice_read, __FILE__);
     newXS(" Qt::TcpSocket::read", XS_qiodevice_read, __FILE__);
     newXS(" Qt::TcpServer::read", XS_qiodevice_read, __FILE__);
+
+    newXS(" Qt::XmlStreamAttributes::EXISTS"   , XS_QXmlStreamAttributes_exists, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::FETCH"    , XS_QXmlStreamAttributes_at, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::FETCHSIZE", XS_QXmlStreamAttributes_size, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::STORE"    , XS_QXmlStreamAttributes_store, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::STORESIZE", XS_QXmlStreamAttributes_storesize, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::DELETE"   , XS_QXmlStreamAttributes_delete, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::CLEAR"    , XS_QXmlStreamAttributes_clear, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::PUSH"     , XS_QXmlStreamAttributes_push, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::POP"      , XS_QXmlStreamAttributes_pop, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::SHIFT"    , XS_QXmlStreamAttributes_shift, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::UNSHIFT"  , XS_QXmlStreamAttributes_unshift, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::SPLICE"   , XS_QXmlStreamAttributes_splice, __FILE__);
+    newXS("Qt::XmlStreamAttributes::_overload::op_equality", XS_QXmlStreamAttributes__overload_op_equality, __FILE__);
+
 
     sv_this = newSV(0);
     sv_qapp = newSV(0);

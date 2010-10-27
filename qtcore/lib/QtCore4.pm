@@ -1295,6 +1295,7 @@ sub init_class {
     # Define overloaded operators
     if ( exists $vectorTypes{$perlClassName} ) {
         push @{arrayByName(" $perlClassName\::ISA")}, "$perlClassName\::_overload";
+        setIsArrayType( " $perlClassName" );
     }
     push @{arrayByName(" $perlClassName\::ISA")}, 'Qt::base::_overload';
 
@@ -1399,6 +1400,7 @@ sub init_enum {
 # Returns: none
 # Desc: sets up each class
 sub init {
+    $Qt::_internal::vectorTypes{'Qt::XmlStreamAttributes'} = undef;
     my $classes = getClassList();
     Qt::_internal->init_class($_) for(@$classes);
 
@@ -1884,6 +1886,16 @@ sub arg {
 sub toString {
     return ${$_[0]};
 }
+
+package Qt::XmlStreamAttributes
+
+sub EXTEND {
+}
+
+package Qt::XmlStreamAttributes::_overload;
+
+use overload
+    '==' => \&op_equality;
 
 =pod
 

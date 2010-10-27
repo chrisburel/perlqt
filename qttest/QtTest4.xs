@@ -18,6 +18,8 @@
 #include <QHash>
 #include <QList>
 #include <QSignalSpy>
+#include <qtest_gui.h>
+#include <QTestEventList>
 #include <QVariant>
 
 #include <iostream>
@@ -36,6 +38,7 @@ extern "C" {
 #include <handlers.h>
 #include <util.h>
 #include <listclass_macros.h>
+#include <qtesteventlist_macros.h>
 
 extern QList<Smoke*> smokeList;
 
@@ -50,6 +53,7 @@ extern TypeHandler QtTest4_handlers[];
 static PerlQt4::Binding bindingtest;
 
 DEF_LISTCLASS_FUNCTIONS(QSignalSpy, QList<QVariant>, QVariantList, Qt::SignalSpy)
+DEF_QTESTEVENTLIST_FUNCTIONS(QTestEventList, QTestEvent, QTestEvent, Qt::TestEventList)
 
 MODULE = QtTest4            PACKAGE = QtTest4::_internal
 
@@ -95,3 +99,16 @@ BOOT:
     newXS(" Qt::SignalSpy::UNSHIFT"  , XS_QSignalSpy_unshift, __FILE__);
     newXS(" Qt::SignalSpy::SPLICE"   , XS_QSignalSpy_splice, __FILE__);
     newXS("Qt::SignalSpy::_overload::op_equality", XS_QSignalSpy__overload_op_equality, __FILE__);
+
+    newXS(" Qt::TestEventList::EXISTS"   , XS_QTestEventList_exists, __FILE__);
+    newXS(" Qt::TestEventList::FETCH"    , XS_QTestEventList_at, __FILE__);
+    newXS(" Qt::TestEventList::FETCHSIZE", XS_QTestEventList_size, __FILE__);
+    newXS(" Qt::TestEventList::STORE"    , XS_QTestEventList_store, __FILE__);
+    newXS(" Qt::TestEventList::STORESIZE", XS_QTestEventList_storesize, __FILE__);
+    newXS(" Qt::TestEventList::CLEAR"    , XS_QTestEventList_clear, __FILE__);
+    newXS(" Qt::TestEventList::PUSH"     , XS_QTestEventList_push, __FILE__);
+    newXS(" Qt::TestEventList::POP"      , XS_QTestEventList_pop, __FILE__);
+    newXS(" Qt::TestEventList::SHIFT"    , XS_QTestEventList_shift, __FILE__);
+    newXS(" Qt::TestEventList::UNSHIFT"  , XS_QTestEventList_unshift, __FILE__);
+    newXS(" Qt::TestEventList::SPLICE"   , XS_QTestEventList_splice, __FILE__);
+    newXS("Qt::TestEventList::_overload::op_equality", XS_QTestEventList__overload_op_equality, __FILE__);
