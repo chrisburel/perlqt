@@ -1887,7 +1887,7 @@ sub toString {
     return ${$_[0]};
 }
 
-package Qt::XmlStreamAttributes
+package Qt::XmlStreamAttributes;
 
 sub EXTEND {
 }

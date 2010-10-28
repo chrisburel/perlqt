@@ -14,6 +14,7 @@ set(CUSTOM_PERL_SITE_ARCH_DIR ${PERL_SITE_ARCH_DIR} CACHE DIR "Custom installati
 
 add_subdirectory(qtcore)
 
+macro_optional_add_bindings(QT_QT3SUPPORT_FOUND    "Qt3Support"    qt3support)
 macro_optional_add_bindings(QT_QTDBUS_FOUND        "QtDBus"        qtdbus)
 macro_optional_add_bindings(QT_QTDECLARATIVE_FOUND "QtDeclarative" qtdeclarative)
 macro_optional_add_bindings(QT_QTGUI_FOUND         "QtGui"         qtgui)
