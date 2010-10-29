@@ -73,7 +73,7 @@ sub NEW
         my $frame = {
             pixmap => $pixmap,
             shape => Qt::PainterPath(),
-            boundingRect => $pixmap->rect()
+            boundingRect => Qt::RectF($pixmap->rect())
         };
         push @{this->{frames}}, $frame;
     }
@@ -106,7 +106,7 @@ sub shape
     my $f = frames()->[currentFrame];
     if ($f->{shape}->isEmpty()) {
         my $path = Qt::PainterPath();
-        $path->addRegion($f->{pixmap}->createHeuristicMask());
+        $path->addRegion(Qt::Region($f->{pixmap}->createHeuristicMask()));
         $f->{shape} = $path;
     }
     return $f->{shape};

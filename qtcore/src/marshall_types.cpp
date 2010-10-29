@@ -496,6 +496,31 @@ namespace PerlQt4 {
                                    "undefined value", r.type().name() );
                 }
             }
+            else {
+                smokeperl_object* o = sv_obj_info(r.var());
+                if ( ( !o || !o->ptr ) && !(r.type().flags() & Smoke::tf_ptr) ) {
+                    croak( "Expected return of type %s, but got an undefined value",
+                        r.type().smoke()->classes[r.type().classId()].className
+                    );
+                }
+                Smoke::ModuleIndex type( o->smoke, o->classId );
+                Smoke::ModuleIndex baseType;
+                Smoke::Class returnType = r.type().smoke()->classes[r.type().classId()];
+                if ( returnType.external ) {
+                    const char* returnCxxClassname = returnType.className;
+                    baseType = Smoke::classMap[returnCxxClassname];
+                }
+                else {
+                    baseType = Smoke::ModuleIndex( r.type().smoke(), r.type().classId() );
+                }
+
+                if (!Smoke::isDerivedFrom( type, baseType )) {
+                    croak( "Expected return of type %s, but got type %s",
+                        r.type().smoke()->classes[r.type().classId()].className,
+                        o->smoke->classes[o->classId].className
+                    );
+                }
+            }
         }
         PUTBACK;
         FREETMPS;

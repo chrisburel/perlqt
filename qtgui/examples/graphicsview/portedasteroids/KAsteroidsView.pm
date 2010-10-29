@@ -23,7 +23,8 @@ use QtCore4::slots
     hideShield => [];
 
 use Qt::GlobalSpace qw(qrand);
-use POSIX;
+use POSIX qw( RAND_MAX );
+use List::MoreUtils qw(first_index);
 
 use constant {
     MAX_POWER_LEVEL => 1000,
@@ -32,7 +33,7 @@ use constant {
 
 use AnimatedPixmapItem;
 use Sprites;
-use KMissle;
+use KMissile;
 use KBit;
 use KExhaust;
 use KPowerup;
@@ -310,12 +311,6 @@ sub NEW {
     this->{exhaust} = [];
     this->{animation} = [];
 
-    #rocks->setAutoDelete( 1 );
-    #missiles->setAutoDelete( 1 );
-    #bits->setAutoDelete( 1 );
-    #powerups->setAutoDelete( 1 );
-    #exhaust->setAutoDelete( 1 );
-
     my $pm = Qt::Pixmap( IMG_BACKGROUND );
     field->setBackgroundBrush( Qt::Brush( $pm ) );
 
@@ -354,11 +349,19 @@ sub reset
     if ( !initialized ) {
         return;
     }
-    #rocks->clear();
-    #missiles->clear();
-    #bits->clear();
-    #powerups->clear();
-    #exhaust->clear();
+    map { $_->scene->removeItem($_) }
+    grep { defined }
+        @{rocks()},
+        @{missiles()},
+        @{bits()},
+        @{powerups()},
+        @{exhaust()};
+
+    @{rocks()} = ();
+    @{missiles()} = ();
+    @{bits()} = ();
+    @{powerups()} = ();
+    @{exhaust()} = ();
 
     this->{shotsFired} = 0;
     this->{shotsHit} = 0;
@@ -555,7 +558,7 @@ sub addRocks
             }
         }
         $rock->show();
-        ##rocks->append( rock );
+        push @{rocks()}, $rock;
     }
 }
 
@@ -611,6 +614,9 @@ sub resizeEvent
 
 sub timerEvent
 {
+    # XXX why is this necessary?
+    field->update();
+
     field->advance();
 
     # move rocks forward
@@ -625,25 +631,27 @@ sub timerEvent
     processMissiles();
 
     # these are generated when a ship explodes
-    #for ( KBit *bit = bits->first(); bit; bit = bits->next() )
-    foreach my $it ( 0..$#{bits() } )
+    for( my $it = 0; $it < @{bits()};  )
     {
         my $bit = bits()->[$it];
         if ( $bit->expired() )
         {
+            $bit->scene()->removeItem($bit);
             splice @{bits()}, $it, 1;
         }
         else
         {
             $bit->growOlder();
             $bit->setFrame( ( $bit->frame()+1 ) % $bit->frameCount() );
+            ++$it;
         }
     }
 
-    #for ( KExhaust *e = exhaust->first(); e; e = exhaust->next() )
-    foreach my $it ( 0..$#{exhaust() } ) {
-        splice @{exhaust()}, $it, 1;
+    foreach my $it ( 0..$#{exhaust()} ) {
+        my $e = exhaust()->[$it];
+        $e->scene()->removeItem($e);
     }
+    @{exhaust()} = ();
 
     # move / rotate ship.
     # check for collision with a rock.
@@ -784,8 +792,11 @@ sub processRockHit
     elsif ( $hit->type() == Sprites::ID_ROCK_SMALL ) {
         emit rockHit( 2 );
     }
-    rocks->removeRef( $hit );
-    if ( rocks->count() == 0 ) {
+
+    $hit->scene()->removeItem($hit);
+    splice @{rocks()}, (first_index{$hit==$_} @{rocks()}), 1;
+
+    if ( scalar @{rocks()} == 0 ) {
         emit rocksRemoved();
     }
 }
@@ -826,13 +837,14 @@ sub processMissiles
     # if a missile has hit a rock, remove missile and break rock into smaller
     # rocks or remove completely.
 
-    foreach my $it ( 0..$#{missiles()} )
+    for( my $it = 0; $it < @{missiles()}; )
     {
         $missile = missiles()->[$it];
         $missile->growOlder();
 
         if ( $missile->expired() )
         {
+            $missile->scene()->removeItem($missile);
             splice @{missiles()}, $it, 1;
             next;
         }
@@ -840,7 +852,6 @@ sub processMissiles
         wrapSprite( $missile );
 
         my $hits = $missile->collidingItems(Qt::IntersectsItemBoundingRect());
-        #for ( hit = hits->begin(); hit != hits->end(); ++hit )
         foreach my $hit ( @{$hits} )
         {
             if ( $hit->type() >= Sprites::ID_ROCK_LARGE &&
@@ -852,6 +863,7 @@ sub processMissiles
                 last;
             }
         }
+        ++$it;
     }
 }
 
@@ -1095,16 +1107,14 @@ sub processPowerups
         # destroy it
 
         my $pup;
-        #Q3PtrListIterator<KPowerup> it( powerups );
-
-        #for( ; it->current(); ++it )
-        foreach my $it ( 0..@{powerups()} )
+        for( my $it = 0; $it < @{powerups()}; )
         {
             $pup = powerups()->[$it];
             $pup->growOlder();
 
             if( $pup->expired() )
             {
+                $pup->scene()->removeItem($pup);
                 splice @{powerups()}, $it, 1;
                 next;
             }
@@ -1143,21 +1153,28 @@ sub processPowerups
                         }
                     }
 
+                    $pup->scene()->removeItem($pup);
                     splice @{powerups()}, $it, 1;
                     this->{vitalsChanged} = 1;
+                    next;
                 }
                 elsif ( $it2 == shield )
                 {
+                    $pup->scene()->removeItem($pup);
                     splice @{powerups()}, $it, 1;
+                    next;
                 }
                 elsif ( $it2->type() == Sprites::ID_MISSILE )
                 {
                     if ( can_destroy_powerups )
                     {
+                        $pup->scene()->removeItem($pup);
                         splice @{powerups()}, $it, 1;
+                        next;
                     }
                 }
             }
+            ++$it;
         }
     }         # -- if( powerups->isEmpty() )
 }

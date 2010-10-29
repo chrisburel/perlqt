@@ -551,11 +551,11 @@ sub slotShipKilled
     if ( shipsRemain )
     {
         this->{waitShip} = 1;
-        view->showText( this->tr( 'Ship Destroyed. Press L to launch.'), Qt::yellow() );
+        view->showText( this->tr( 'Ship Destroyed. Press L to launch.'), Qt::Color(Qt::yellow()) );
     }
     else
     {
-        view->showText( this->tr('Game Over!'), Qt::red() );
+        view->showText( this->tr('Game Over!'), Qt::Color(Qt::red()) );
         view->endGame();
         doStats();
 #        highscore->addEntry( score, level, showHiscores );
@@ -607,7 +607,7 @@ sub doStats
       #.arg(view->shots() - view->hits())
       #.arg(r);
 
-    view->showText( 'Game Over.   Press N for a game.', Qt::yellow(), 0 );
+    view->showText( 'Game Over.   Press N for a game.', Qt::Color(Qt::yellow()), 0 );
 }
 
 sub slotUpdateVitals

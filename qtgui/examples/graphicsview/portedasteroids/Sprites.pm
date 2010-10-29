@@ -28,7 +28,7 @@ use constant {
 
 1;
 
-package KMissle;
+package KMissile;
 
 use strict;
 use warnings;

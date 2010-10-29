@@ -394,8 +394,7 @@ void marshall_basetype(Marshall* m) {
                     Smoke::Class returnClass = m->smoke()->classes[returnCId];
                     Smoke::ModuleIndex returnMId;
                     if ( returnClass.external ) {
-                        const char* returnCxxClassname = m->smoke()->classes[returnCId].className;
-                        returnMId = Smoke::classMap[returnCxxClassname];
+                        returnMId = Smoke::classMap[returnClass.className];
                     }
                     else {
                         returnMId = Smoke::ModuleIndex( m->smoke(), returnCId );
