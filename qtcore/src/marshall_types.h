@@ -217,7 +217,7 @@ protected:
 
 class Q_DECL_EXPORT EmitSignal : public Marshall {
 public:
-    EmitSignal(QObject *obj, int id, int items, QList<MocArgument*> args, SV** sp, SV* retval);
+    EmitSignal(QObject *obj, const QMetaObject *meta, int id, int items, QList<MocArgument*> args, SV** sp, SV* retval);
     Marshall::Action action();
     const MocArgument& arg();
     SmokeType type();
@@ -238,6 +238,7 @@ protected:
     int _items;
     SV** _sp;
     QObject *_obj;
+    const QMetaObject *_meta;
     int _id;
     SV* _retval;
 };

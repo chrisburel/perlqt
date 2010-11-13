@@ -70,5 +70,120 @@ XSLoader::load('Qt3Support4', $VERSION);
 
 Qt3Support4::_internal::init();
 
+sub Qt3::ListViewItem::ON_DESTROY {
+    package Qt::_internal;
+    my $parent = Qt::this()->listView();
+    if( $parent )
+    {
+        ${ $parent->{"hidden children"} } { sv_to_ptr(Qt::this()) } = Qt::this();
+        Qt::this()->{"has been hidden"} = 1;
+        # setAllocated( Qt::this(), 0 );
+        return 1
+    }
+    # setAllocated( Qt::this(), 1 );
+    return 0
+}
+
+sub Qt3::IconViewItem::ON_DESTROY
+{
+    package Qt::_internal;
+    my $parent = Qt::this()->iconView;
+    if( $parent )
+    {
+        ${ $parent->{"hidden children"} } { sv_to_ptr(Qt::this()) } = Qt::this();
+        Qt::this()->{"has been hidden"} = 1;
+        # setAllocated( Qt::this(), 0 );
+        return 1
+    }
+    # setAllocated( Qt::this(), 1 );
+    return 0
+}
+
+sub Qt3::ListBoxItem::ON_DESTROY
+{
+    package Qt::_internal;
+    my $parent = Qt::this()->listBox();
+    if( $parent )
+    {
+        ${ $parent->{"hidden children"} } { sv_to_ptr(Qt::this()) } = Qt::this();
+        Qt::this()->{"has been hidden"} = 1;
+        # setAllocated( Qt::this(), 0 );
+        return 1
+    }
+    # setAllocated( Qt::this(), 1 );
+    return 0
+}
+
+sub Qt3::TableItem::ON_DESTROY
+{
+    package Qt::_internal;
+    my $parent = Qt::this()->table;
+    if( $parent )
+    {
+        ${ $parent->{"hidden children"} } { sv_to_ptr(Qt::this()) } = Qt::this();
+        Qt::this()->{"has been hidden"} = 1;
+        # setAllocated( Qt::this(), 0 );
+        return 1
+    }
+    # setAllocated( Qt::this(), 1 );
+    return 0
+}
+
+sub Qt3::LayoutItem::ON_DESTROY
+{
+    package Qt::_internal;
+    my $parent = Qt::this()->widget() || Qt::this()->layout();
+    if( $parent )
+    {
+        ${ $parent->{"hidden children"} } { sv_to_ptr(Qt::this()) } = Qt::this();
+    }
+    else # a SpacerItem...
+    {
+        # XXX check this
+        # push @PersistentObjects, Qt::this();
+    }
+    Qt::this()->{"has been hidden"} = 1;
+    # setAllocated( Qt::this(), 0 );
+    return 1
+}
+
+sub Qt3::Layout::ON_DESTROY
+{
+    package Qt::_internal;
+    my $parent = Qt::this()->mainWidget() || Qt::this()->parent();
+    if( $parent )
+    {
+        ${ $parent->{"hidden children"} } { sv_to_ptr(Qt::this()) } = Qt::this();
+        Qt::this()->{"has been hidden"} = 1;
+        return 1
+    }
+    return 0
+}
+
+sub Qt3::StyleSheetItem::ON_DESTROY
+{
+    package Qt::_internal;
+    my $parent = Qt::this()->styleSheet();
+    if( $parent )
+    {
+        ${ $parent->{"hidden children"} } { sv_to_ptr(Qt::this()) } = Qt::this();
+        Qt::this()->{"has been hidden"} = 1;
+        # setAllocated( Qt::this(), 0 );
+        return 1
+    }
+    # setAllocated( Qt::this(), 1 );
+    return 0
+}
+
+sub Qt3::SqlCursor::ON_DESTROY
+{
+    package Qt::_internal;
+    # XXX Check this
+    #push @PersistentObjects, Qt::this();
+    Qt::this()->{"has been hidden"} = 1;
+    # setAllocated( Qt::this(), 0 );
+    return 1
+}
+
 1;
 

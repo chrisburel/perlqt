@@ -710,6 +710,8 @@ namespace PerlQt4 {
         if ( count > 0 && _args[0]->argType != xmoc_void ) {
             SlotReturnValue r(_a, POPs, _args);
         }
+        FREETMPS;
+        LEAVE;
     }
 
     void InvokeSlot::next() {
@@ -744,8 +746,8 @@ namespace PerlQt4 {
 
     //------------------------------------------------
 
-    EmitSignal::EmitSignal(QObject *obj, int id, int items, QList<MocArgument*> args, SV** sp, SV* retval) :
-      _args(args), _cur(-1), _called(false), _items(items), _obj(obj), _id(id), _retval(retval) {
+    EmitSignal::EmitSignal(QObject *obj, const QMetaObject *meta, int id, int items, QList<MocArgument*> args, SV** sp, SV* retval) :
+      _args(args), _cur(-1), _called(false), _items(items), _obj(obj), _meta(meta), _id(id), _retval(retval) {
         _sp = sp;
         _stack = new Smoke::StackItem[_items];
     }
@@ -790,7 +792,7 @@ namespace PerlQt4 {
         o[0] = &ptr;
         prepareReturnValue(o);
 
-        _obj->metaObject()->activate(_obj, _id, o);
+        _meta->activate(_obj, _id, o);
     }
 
     void EmitSignal::unsupported() {

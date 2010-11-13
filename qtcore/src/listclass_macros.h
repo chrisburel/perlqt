@@ -45,7 +45,7 @@ void XS_Vector_at( pTHX_ CV* cv)
         retval[0].s_voidp = (void*)vector->at(index);
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-             if( typeId.index = smoke->idType(ItemSTR) ) {
+             if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                  typeId.smoke = smoke;
                  break;
              }
@@ -81,7 +81,7 @@ void XS_ValueVector_at( pTHX_ CV* cv)
         retval[0].s_voidp = (void*)&vector->at(index);
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-             if( typeId.index = smoke->idType(ItemSTR) ) {
+             if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                  typeId.smoke = smoke;
                  break;
              }
@@ -259,7 +259,7 @@ void XS_ValueVector_delete( pTHX_ CV* cv)
 
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-             if( typeId.index = smoke->idType(ItemSTR) ) {
+             if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                  typeId.smoke = smoke;
                  break;
              }
@@ -321,7 +321,7 @@ void XS_Vector_push( pTHX_ CV* cv)
 
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-            if( typeId.index = smoke->idType(ItemSTR) ) {
+            if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                 typeId.smoke = smoke;
                 break;
             }
@@ -357,7 +357,7 @@ void XS_ValueVector_push( pTHX_ CV* cv)
 
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-            if( typeId.index = smoke->idType(ItemSTR) ) {
+            if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                 typeId.smoke = smoke;
                 break;
             }
@@ -398,7 +398,7 @@ void XS_ValueVector_pop( pTHX_ CV* cv)
 
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-             if( typeId.index = smoke->idType(ItemSTR) ) {
+             if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                  typeId.smoke = smoke;
                  break;
              }
@@ -437,7 +437,7 @@ void XS_Vector_shift( pTHX_ CV* cv)
         retval[0].s_voidp = vector->first();
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-             if( typeId.index = smoke->idType(ItemSTR) ) {
+             if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                  typeId.smoke = smoke;
                  break;
              }
@@ -476,7 +476,7 @@ void XS_ValueVector_shift( pTHX_ CV* cv)
         retval[0].s_voidp = (void*)new Item(vector->first());
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-             if( typeId.index = smoke->idType(ItemSTR) ) {
+             if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                  typeId.smoke = smoke;
                  break;
              }
@@ -518,7 +518,7 @@ void XS_Vector_unshift( pTHX_ CV* cv)
 
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-            if( typeId.index = smoke->idType(ItemSTR) ) {
+            if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                 typeId.smoke = smoke;
                 break;
             }
@@ -554,7 +554,7 @@ void XS_ValueVector_unshift( pTHX_ CV* cv)
 
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-            if( typeId.index = smoke->idType(ItemSTR) ) {
+            if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                 typeId.smoke = smoke;
                 break;
             }
@@ -618,7 +618,7 @@ void XS_ValueVector_splice( pTHX_ CV* cv)
 
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-            if( typeId.index = smoke->idType(ItemSTR) ) {
+            if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                 typeId.smoke = smoke;
                 break;
             }
@@ -701,7 +701,7 @@ void XS_List_splice( pTHX_ CV* cv)
 
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-            if( typeId.index = smoke->idType(ItemSTR) ) {
+            if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                 typeId.smoke = smoke;
                 break;
             }
@@ -773,7 +773,7 @@ void XS_ValueList_splice( pTHX_ CV* cv)
 
         Smoke::ModuleIndex typeId;
         foreach( Smoke* smoke, smokeList ) {
-            if( typeId.index = smoke->idType(ItemSTR) ) {
+            if( ( typeId.index = smoke->idType(ItemSTR) ) ) {
                 typeId.smoke = smoke;
                 break;
             }

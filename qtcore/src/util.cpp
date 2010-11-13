@@ -1062,6 +1062,7 @@ XS(XS_find_qobject_children) {
         SPAGAIN;
         metaobjectSV = POPs;
         PUTBACK;
+        LEAVE;
         // metaobjectSV is now mortal.  Don't FREETMPS.
     }
     else {
@@ -1983,6 +1984,7 @@ XS(XS_AUTOLOAD) {
             for (int i=0; i<count; i++)
                 ST(i) = ST(i+1);
         PUTBACK;
+        LEAVE;
 
         // Clean up
         if(withObject){
@@ -2396,7 +2398,7 @@ XS(XS_signal){
     // should be out of bounds.  But it doesn't matter, since the signal won't
     // do anything with those.
     // retval: Will (at some point, maybe) get populated with the return value from the signal.
-    PerlQt4::EmitSignal signal(qobj, index, items, args, SP - items + 1, retval);
+    PerlQt4::EmitSignal signal(qobj, metaobject, index, items, args, SP - items + 1, retval);
     signal.next();
 
     // TODO: Handle signal return value
