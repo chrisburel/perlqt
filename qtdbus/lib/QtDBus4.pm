@@ -2,7 +2,7 @@
 #                          QtDBus4.pm  -  QtDBus perl client lib
 #                             -------------------
 #    begin                : 07-26-2010
-#    copyright            : (C) 2009 by Chris Burel
+#    copyright            : (C) 2010 by Chris Burel
 #    email                : chrisburel@gmail.com
 # ***************************************************************************
 

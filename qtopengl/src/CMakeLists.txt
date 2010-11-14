@@ -11,9 +11,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtOpenGL4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build QtOpenGL4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtOpenGL4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(qtopengl4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/QtOpenGL4.c
@@ -21,14 +23,13 @@ set(qtopengl4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtOpenGL4)
-add_library(qtopengl4 MODULE ${qtopengl4_LIBRARY_SRC})
+add_library(perl_qtopengl4 MODULE ${qtopengl4_LIBRARY_SRC})
 
-target_link_libraries(qtopengl4
-    ${QT_QTOPENGL_LIBRARY} 
+target_link_libraries(perl_qtopengl4
     smokeqtopengl
     perlqtcore4)
 
-set_target_properties(qtopengl4 PROPERTIES OUTPUT_NAME "QtOpenGL4")
-set_target_properties(qtopengl4 PROPERTIES PREFIX "")
+set_target_properties(perl_qtopengl4 PROPERTIES OUTPUT_NAME "QtOpenGL4")
+set_target_properties(perl_qtopengl4 PROPERTIES PREFIX "")
 
-install(TARGETS qtopengl4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtOpenGL4/)
+install(TARGETS perl_qtopengl4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtOpenGL4/)

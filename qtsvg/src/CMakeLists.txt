@@ -11,9 +11,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtSvg4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build QtSvg4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtSvg4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(qtsvg4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/QtSvg4.c
@@ -21,14 +23,13 @@ set(qtsvg4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtSvg4)
-add_library(qtsvg4 MODULE ${qtsvg4_LIBRARY_SRC})
+add_library(perl_qtsvg4 MODULE ${qtsvg4_LIBRARY_SRC})
 
-target_link_libraries(qtsvg4
-    ${QT_QTSVG_LIBRARY} 
+target_link_libraries(perl_qtsvg4
     smokeqtsvg
     perlqtcore4)
 
-set_target_properties(qtsvg4 PROPERTIES OUTPUT_NAME "QtSvg4")
-set_target_properties(qtsvg4 PROPERTIES PREFIX "")
+set_target_properties(perl_qtsvg4 PROPERTIES OUTPUT_NAME "QtSvg4")
+set_target_properties(perl_qtsvg4 PROPERTIES PREFIX "")
 
-install(TARGETS qtsvg4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtSvg4/)
+install(TARGETS perl_qtsvg4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtSvg4/)

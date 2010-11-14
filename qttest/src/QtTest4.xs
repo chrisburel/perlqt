@@ -50,7 +50,7 @@ resolve_classname_qttest(smokeperl_object * o)
 
 extern TypeHandler QtTest4_handlers[];
 
-static PerlQt4::Binding bindingtest;
+static PerlQt4::Binding bindingqttest;
 
 DEF_LISTCLASS_FUNCTIONS(QSignalSpy, QList<QVariant>, QVariantList, Qt::SignalSpy)
 DEF_QTESTEVENTLIST_FUNCTIONS(QTestEventList, QTestEvent, QTestEvent, Qt::TestEventList)
@@ -71,6 +71,19 @@ getClassList()
     OUTPUT:
         RETVAL
 
+SV*
+getEnumList()
+    CODE:
+        AV *av = newAV();
+        for(int i = 1; i < qttest_Smoke->numTypes; i++) {
+            Smoke::Type curType = qttest_Smoke->types[i];
+            if( (curType.flags & Smoke::tf_elem) == Smoke::t_enum )
+                av_push(av, newSVpv(curType.name, 0));
+        }
+        RETVAL = newRV_noinc((SV*)av);
+    OUTPUT:
+        RETVAL
+
 MODULE = QtTest4            PACKAGE = QtTest4
 
 PROTOTYPES: ENABLE
@@ -79,9 +92,9 @@ BOOT:
     init_qttest_Smoke();
     smokeList << qttest_Smoke;
 
-    bindingtest = PerlQt4::Binding(qttest_Smoke);
+    bindingqttest = PerlQt4::Binding(qttest_Smoke);
 
-    PerlQt4Module module = { "PerlQtTest4", resolve_classname_qttest, 0, &bindingtest  };
+    PerlQt4Module module = { "PerlQtTest4", resolve_classname_qttest, 0, &bindingqttest  };
     perlqt_modules[qttest_Smoke] = module;
 
     install_handlers(QtTest4_handlers);

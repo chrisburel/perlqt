@@ -1,9 +1,9 @@
 /***************************************************************************
-                          qttesthandlers.cpp  -  QtTest specific marshallers
+                          qttest4handlers.cpp  -  QtTest specific marshallers
                              -------------------
-    begin                : 29-10-2008
-    copyright            : (C) 2008 by Richard Dale
-    email                : richard.j.dale@gmail.com
+    begin                : 07-12-2009
+    copyright            : (C) 2010 Chris Burel
+    email                : chrisburel@gmail.com
  ***************************************************************************/
 
 /***************************************************************************
@@ -32,5 +32,5 @@ DEF_VALUELIST_MARSHALLER( QTestAccessibilityEventList, QList<QTestAccessibilityE
 
 TypeHandler QtTest4_handlers[] = {
     { "QList<QTestAccessibilityEvent>", marshall_QTestAccessibilityEventList },
-    { 0, 0 }
+    { 0, 0 } //end of list
 };

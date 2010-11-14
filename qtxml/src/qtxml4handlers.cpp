@@ -27,5 +27,5 @@ extern "C" {
 #include <marshall_macros.h>
 
 TypeHandler QtXml4_handlers[] = {
-    { 0, 0 }
+    { 0, 0 } //end of list
 };

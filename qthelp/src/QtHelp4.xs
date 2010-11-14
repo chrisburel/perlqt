@@ -17,9 +17,6 @@
 
 #include <QHash>
 #include <QList>
-#include <QtDebug>
-
-#include <iostream>
 
 // Perl headers
 extern "C" {
@@ -33,12 +30,8 @@ extern "C" {
 
 #include <smokeperl.h>
 #include <handlers.h>
-#include "util.h"
 
 extern QList<Smoke*> smokeList;
-
-extern Q_DECL_EXPORT Smoke* qtcore_Smoke;
-extern Q_DECL_EXPORT Smoke* qthelp_Smoke;
 
 const char*
 resolve_classname_qthelp(smokeperl_object * o)

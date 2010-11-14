@@ -11,9 +11,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtDBus4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build QtDBus4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtDBus4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(qtdbus4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/QtDBus4.c
@@ -21,14 +23,13 @@ set(qtdbus4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtDBus4)
-add_library(perlqtdbus4 MODULE ${qtdbus4_LIBRARY_SRC})
+add_library(perl_qtdbus4 MODULE ${qtdbus4_LIBRARY_SRC})
 
-target_link_libraries(perlqtdbus4
-    ${QT_QTDBUS_LIBRARY} 
+target_link_libraries(perl_qtdbus4
     smokeqtdbus
     perlqtcore4)
 
-set_target_properties(perlqtdbus4 PROPERTIES OUTPUT_NAME "QtDBus4")
-set_target_properties(perlqtdbus4 PROPERTIES PREFIX "")
+set_target_properties(perl_qtdbus4 PROPERTIES OUTPUT_NAME "QtDBus4")
+set_target_properties(perl_qtdbus4 PROPERTIES PREFIX "")
 
-install(TARGETS perlqtdbus4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtDBus4/)
+install(TARGETS perl_qtdbus4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtDBus4/)

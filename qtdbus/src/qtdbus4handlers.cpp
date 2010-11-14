@@ -142,5 +142,5 @@ TypeHandler QtDBus4_handlers[] = {
 #if QT_VERSION >= 0x40200
     { "QDBusReply<QStringList>", marshall_QDBusReplyQStringList },
 #endif
-    { 0, 0 },
+    { 0, 0 } //end of list
 };

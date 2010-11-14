@@ -11,9 +11,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtUiTools4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build QtUiTools4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtUiTools4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(qtuitools4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/QtUiTools4.c
@@ -21,14 +23,13 @@ set(qtuitools4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtUiTools4)
-add_library(qtuitools4 MODULE ${qtuitools4_LIBRARY_SRC})
+add_library(perl_qtuitools4 MODULE ${qtuitools4_LIBRARY_SRC})
 
-target_link_libraries(qtuitools4
-    ${QT_QTUITOOLS_LIBRARY} 
+target_link_libraries(perl_qtuitools4
     smokeqtuitools
     perlqtcore4)
 
-set_target_properties(qtuitools4 PROPERTIES OUTPUT_NAME "QtUiTools4")
-set_target_properties(qtuitools4 PROPERTIES PREFIX "")
+set_target_properties(perl_qtuitools4 PROPERTIES OUTPUT_NAME "QtUiTools4")
+set_target_properties(perl_qtuitools4 PROPERTIES PREFIX "")
 
-install(TARGETS qtuitools4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtUiTools4/)
+install(TARGETS perl_qtuitools4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtUiTools4/)

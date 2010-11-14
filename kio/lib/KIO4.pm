@@ -26,17 +26,14 @@ sub init {
     foreach my $c ( @{getClassList()} ) {
         KIO4::_internal->init_class($c);
     }
+    foreach my $e ( @{getEnumList()} ) {
+        KIO4::_internal->init_enum($e);
+    }
 }
 
 sub normalize_classname {
     my ( $self, $cxxClassName ) = @_;
-
-    if( $cxxClassName =~ m/^K/ ) {
-        $cxxClassName =~ s/^K(?=[A-Z])/KDE::/;
-    }
-    else {
-        $cxxClassName = $self->SUPER::normalize_classname( $cxxClassName );
-    }
+    $cxxClassName = $self->SUPER::normalize_classname( $cxxClassName );
     return $cxxClassName;
 }
 
@@ -55,4 +52,3 @@ XSLoader::load('KIO4', $VERSION);
 KIO4::_internal::init();
 
 1;
-

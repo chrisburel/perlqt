@@ -2,7 +2,7 @@
 #                          QtXml4.pm  -  QtXml perl client lib
 #                             -------------------
 #    begin                : 06-19-2010
-#    copyright            : (C) 2009 by Chris Burel
+#    copyright            : (C) 2010 by Chris Burel
 #    email                : chrisburel@gmail.com
 # ***************************************************************************
 
@@ -25,6 +25,9 @@ use base qw(Qt::_internal);
 sub init {
     foreach my $c ( @{getClassList()} ) {
         QtXml4::_internal->init_class($c);
+    }
+    foreach my $e ( @{getEnumList()} ) {
+        QtXml4::_internal->init_enum($e);
     }
 }
 
@@ -49,4 +52,3 @@ XSLoader::load('QtXml4', $VERSION);
 QtXml4::_internal::init();
 
 1;
-

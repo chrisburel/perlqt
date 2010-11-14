@@ -17,9 +17,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtCore4.c
 add_definitions( -DDEBUG )
 
 # Make sure we build QtCore4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtCore4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(perlqtcore_LIBRARY_SRCS
     binding.cpp
@@ -48,4 +50,4 @@ target_link_libraries(perlqtcore4
 set_target_properties(perlqtcore4 PROPERTIES OUTPUT_NAME "QtCore4")
 set_target_properties(perlqtcore4 PROPERTIES PREFIX "")
 
-install(TARGETS perlqtcore4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtCore4 )
+install(TARGETS perlqtcore4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtCore4/)

@@ -1,5 +1,5 @@
 #***************************************************************************
-#                          SopranoCerver.pm  -  SopranoCerver perl client lib
+#                          SopranoServer.pm  -  SopranoServer perl client lib
 #                             -------------------
 #    begin                : 11-14-2010
 #    copyright            : (C) 2010 by Chris Burel
@@ -15,7 +15,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-package SopranoCerver::_internal;
+package SopranoServer::_internal;
 
 use strict;
 use warnings;
@@ -24,10 +24,10 @@ use base qw(Qt::_internal);
 
 sub init {
     foreach my $c ( @{getClassList()} ) {
-        SopranoCerver::_internal->init_class($c);
+        SopranoServer::_internal->init_class($c);
     }
     foreach my $e ( @{getEnumList()} ) {
-        SopranoCerver::_internal->init_enum($e);
+        SopranoServer::_internal->init_enum($e);
     }
 }
 
@@ -37,7 +37,7 @@ sub normalize_classname {
     return $cxxClassName;
 }
 
-package SopranoCerver;
+package SopranoServer;
 
 use strict;
 use warnings;
@@ -47,8 +47,8 @@ require XSLoader;
 
 our $VERSION = '0.01';
 
-XSLoader::load('SopranoCerver', $VERSION);
+XSLoader::load('SopranoServer', $VERSION);
 
-SopranoCerver::_internal::init();
+SopranoServer::_internal::init();
 
 1;

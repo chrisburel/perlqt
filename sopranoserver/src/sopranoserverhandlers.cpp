@@ -1,5 +1,5 @@
 /***************************************************************************
-                          sopranoserverhandlers.cpp  -  SopranoCerver specific marshallers
+                          sopranoserverhandlers.cpp  -  SopranoServer specific marshallers
                              -------------------
     begin                : 11-14-2010
     copyright            : (C) 2010 Chris Burel
@@ -26,6 +26,6 @@ extern "C" {
 #include <smokeperl.h>
 #include <marshall_macros.h>
 
-TypeHandler SopranoCerver_handlers[] = {
+TypeHandler SopranoServer_handlers[] = {
     { 0, 0 } //end of list
 };

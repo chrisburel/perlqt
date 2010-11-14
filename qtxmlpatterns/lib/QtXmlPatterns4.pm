@@ -2,7 +2,7 @@
 #                          QtXmlPatterns4.pm  -  QtXmlPatterns perl client lib
 #                             -------------------
 #    begin                : 06-19-2010
-#    copyright            : (C) 2009 by Chris Burel
+#    copyright            : (C) 2010 by Chris Burel
 #    email                : chrisburel@gmail.com
 # ***************************************************************************
 
@@ -52,4 +52,3 @@ XSLoader::load('QtXmlPatterns4', $VERSION);
 QtXmlPatterns4::_internal::init();
 
 1;
-

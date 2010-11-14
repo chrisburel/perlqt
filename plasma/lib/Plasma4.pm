@@ -2,7 +2,7 @@
 #                          Plasma4.pm  -  Plasma perl client lib
 #                             -------------------
 #    begin                : 04-02-2010
-#    copyright            : (C) 2009 by Chris Burel
+#    copyright            : (C) 2010 by Chris Burel
 #    email                : chrisburel@gmail.com
 # ***************************************************************************
 
@@ -26,6 +26,9 @@ use base qw(KDEUi4::_internal);
 sub init {
     foreach my $c ( @{getClassList()} ) {
         Plasma4::_internal->init_class($c);
+    }
+    foreach my $e ( @{getEnumList()} ) {
+        Plasma4::_internal->init_enum($e);
     }
 }
 

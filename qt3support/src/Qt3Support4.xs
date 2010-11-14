@@ -17,9 +17,6 @@
 
 #include <QHash>
 #include <QList>
-#include <QtDebug>
-
-#include <iostream>
 
 // Perl headers
 extern "C" {

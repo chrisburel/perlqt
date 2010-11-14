@@ -2,7 +2,7 @@
 #                          QtSql4.pm  -  QtSql perl client lib
 #                             -------------------
 #    begin                : 06-19-2010
-#    copyright            : (C) 2009 by Chris Burel
+#    copyright            : (C) 2010 by Chris Burel
 #    email                : chrisburel@gmail.com
 # ***************************************************************************
 
@@ -52,4 +52,3 @@ XSLoader::load('QtSql4', $VERSION);
 QtSql4::_internal::init();
 
 1;
-

@@ -24,14 +24,13 @@ set(qtnetwork4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtNetwork4)
-add_library(qtnetwork4 MODULE ${qtnetwork4_LIBRARY_SRC})
+add_library(perl_qtnetwork4 MODULE ${qtnetwork4_LIBRARY_SRC})
 
-target_link_libraries(qtnetwork4
-    ${QT_QTNETWORK_LIBRARY} 
+target_link_libraries(perl_qtnetwork4
     smokeqtnetwork
     perlqtcore4)
 
-set_target_properties(qtnetwork4 PROPERTIES OUTPUT_NAME "QtNetwork4")
-set_target_properties(qtnetwork4 PROPERTIES PREFIX "")
+set_target_properties(perl_qtnetwork4 PROPERTIES OUTPUT_NAME "QtNetwork4")
+set_target_properties(perl_qtnetwork4 PROPERTIES PREFIX "")
 
-install(TARGETS qtnetwork4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtNetwork4/)
+install(TARGETS perl_qtnetwork4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtNetwork4/)

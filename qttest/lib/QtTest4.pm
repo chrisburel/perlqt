@@ -20,13 +20,15 @@ package QtTest4::_internal;
 use strict;
 use warnings;
 use QtCore4;
-
 use base qw(Qt::_internal);
 
 sub init {
     @Qt::_internal::vectorTypes{qw(Qt::SignalSpy Qt::TestEventList)} = undef;
     foreach my $c ( @{getClassList()} ) {
         QtTest4::_internal->init_class($c);
+    }
+    foreach my $e ( @{getEnumList()} ) {
+        QtTest4::_internal->init_enum($e);
     }
 }
 

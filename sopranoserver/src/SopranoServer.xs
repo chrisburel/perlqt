@@ -1,5 +1,5 @@
 /***************************************************************************
-                          SopranoCerver.xs  -  SopranoCerver perl extension
+                          SopranoServer.xs  -  SopranoServer perl extension
                              -------------------
     begin                : 11-14-2010
     copyright            : (C) 2010 by Chris Burel
@@ -40,11 +40,11 @@ resolve_classname_sopranoserver(smokeperl_object * o)
     return perlqt_modules[o->smoke].binding->className(o->classId);
 }
 
-extern TypeHandler SopranoCerver_handlers[];
+extern TypeHandler SopranoServer_handlers[];
 
 static PerlQt4::Binding bindingsopranoserver;
 
-MODULE = SopranoCerver            PACKAGE = SopranoCerver::_internal
+MODULE = SopranoServer            PACKAGE = SopranoServer::_internal
 
 PROTOTYPES: DISABLE
 
@@ -73,7 +73,7 @@ getEnumList()
     OUTPUT:
         RETVAL
 
-MODULE = SopranoCerver            PACKAGE = SopranoCerver
+MODULE = SopranoServer            PACKAGE = SopranoServer
 
 PROTOTYPES: ENABLE
 
@@ -83,7 +83,7 @@ BOOT:
 
     bindingsopranoserver = PerlQt4::Binding(sopranoserver_Smoke);
 
-    PerlQt4Module module = { "PerlSopranoCerver", resolve_classname_sopranoserver, 0, &bindingsopranoserver  };
+    PerlQt4Module module = { "PerlSopranoServer", resolve_classname_sopranoserver, 0, &bindingsopranoserver  };
     perlqt_modules[sopranoserver_Smoke] = module;
 
-    install_handlers(SopranoCerver_handlers);
+    install_handlers(SopranoServer_handlers);

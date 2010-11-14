@@ -16,7 +16,7 @@ set ( perlqtui_SRCS
     painting/fontsampler/mainwindowbase.ui             painting/fontsampler/Ui_MainWindowBase.pm
     painting/svggenerator/window.ui                    painting/svggenerator/Ui_Window.pm
     widgets/stylesheet/mainwindow.ui                   widgets/stylesheet/Ui_MainWindow.pm
-    widgets/stylesheet/stylesheeteditor.ui             widgets/stylesheet/Ui_StylesheetEditor.pm
+    widgets/stylesheet/stylesheeteditor.ui             widgets/stylesheet/Ui_StyleSheetEditor.pm
     widgets/validators/validators.ui                   widgets/validators/Ui_ValidatorsForm.pm
     xmlpatterns/qobjectxmlmodel/forms/mainwindow.ui    xmlpatterns/qobjectxmlmodel/Ui_MainWindow.pm
 )

@@ -11,9 +11,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtDeclarative4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build QtDeclarative4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtDeclarative4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(qtdeclarative4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/QtDeclarative4.c
@@ -21,14 +23,13 @@ set(qtdeclarative4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtDeclarative4)
-add_library(qtdeclarative4 MODULE ${qtdeclarative4_LIBRARY_SRC})
+add_library(perl_qtdeclarative4 MODULE ${qtdeclarative4_LIBRARY_SRC})
 
-target_link_libraries(qtdeclarative4
-    ${QT_QTDECLARATIVE_LIBRARY} 
+target_link_libraries(perl_qtdeclarative4
     smokeqtdeclarative
     perlqtcore4)
 
-set_target_properties(qtdeclarative4 PROPERTIES OUTPUT_NAME "QtDeclarative4")
-set_target_properties(qtdeclarative4 PROPERTIES PREFIX "")
+set_target_properties(perl_qtdeclarative4 PROPERTIES OUTPUT_NAME "QtDeclarative4")
+set_target_properties(perl_qtdeclarative4 PROPERTIES PREFIX "")
 
-install(TARGETS qtdeclarative4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtDeclarative4/)
+install(TARGETS perl_qtdeclarative4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtDeclarative4/)

@@ -12,9 +12,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/KIO4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build KIO4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/KIO4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(kio4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/KIO4.c
@@ -22,20 +24,13 @@ set(kio4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/KIO4)
-add_library(kio4 MODULE ${kio4_LIBRARY_SRC})
+add_library(perl_kio4 MODULE ${kio4_LIBRARY_SRC})
 
-target_link_libraries(kio4
-    ${QT_QTNETWORK_LIBRARY} 
-    ${QT_QTSQL_LIBRARY} 
-    ${QT_QTOPENGL_LIBRARY} 
-    ${QT_QTXML_LIBRARY} 
-    ${QT_QTSVG_LIBRARY} 
-    ${KDE4_KDECORE_LIBS}
-    ${KDE4_KIO_LIBS}
+target_link_libraries(perl_kio4
     smokekio
     perlqtcore4)
 
-set_target_properties(kio4 PROPERTIES OUTPUT_NAME "KIO4")
-set_target_properties(kio4 PROPERTIES PREFIX "")
+set_target_properties(perl_kio4 PROPERTIES OUTPUT_NAME "KIO4")
+set_target_properties(perl_kio4 PROPERTIES PREFIX "")
 
-install(TARGETS kio4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/KIO4/)
+install(TARGETS perl_kio4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/KIO4/)

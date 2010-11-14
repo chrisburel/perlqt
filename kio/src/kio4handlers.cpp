@@ -10,7 +10,7 @@
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either veqtruby_project_template.rbrsion 2 of the License, or     *
+ *   the Free Software Foundation; either vesion 2 of the License, or     *
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
@@ -32,5 +32,5 @@ extern "C" {
 
 TypeHandler KIO4_handlers[] = {
     //{ "QList<QTestAccessibilityEvent>", marshall_QTestAccessibilityEventList },
-    { 0, 0 }
+    { 0, 0 } //end of list
 };

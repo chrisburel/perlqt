@@ -2,7 +2,7 @@
                           QtSql4.xs  -  QtSql perl extension
                              -------------------
     begin                : 06-19-2010
-    copyright            : (C) 2009 by Chris Burel
+    copyright            : (C) 2010 by Chris Burel
     email                : chrisburel@gmail.com
  ***************************************************************************/
 
@@ -17,10 +17,6 @@
 
 #include <QHash>
 #include <QList>
-#include <QtDebug>
-#include <QSqlTableModel>
-
-#include <iostream>
 
 // Perl headers
 extern "C" {
@@ -34,7 +30,6 @@ extern "C" {
 
 #include <smokeperl.h>
 #include <handlers.h>
-#include <util.h>
 
 extern QList<Smoke*> smokeList;
 

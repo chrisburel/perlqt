@@ -2,7 +2,7 @@
                           QtGui4.xs  -  QtGui perl extension
                              -------------------
     begin                : 03-29-2010
-    copyright            : (C) 2009 by Chris Burel
+    copyright            : (C) 2010 by Chris Burel
     email                : chrisburel@gmail.com
  ***************************************************************************/
 
@@ -17,7 +17,6 @@
 
 #include <QHash>
 #include <QList>
-#include <QtDebug>
 #include <QPolygonF>
 #include <QPointF>
 #include <QVector>
@@ -28,8 +27,6 @@
 #include <QtGui/QProxyModel>
 #include <QtGui/QStandardItemModel>
 #include <QtGui/QStringListModel>
-
-#include <iostream>
 
 // Perl headers
 extern "C" {

@@ -11,9 +11,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtWebKit4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build QtWebKit4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtWebKit4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(qtwebkit4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/QtWebKit4.c
@@ -21,14 +23,13 @@ set(qtwebkit4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtWebKit4)
-add_library(qtwebkit4 MODULE ${qtwebkit4_LIBRARY_SRC})
+add_library(perl_qtwebkit4 MODULE ${qtwebkit4_LIBRARY_SRC})
 
-target_link_libraries(qtwebkit4
-    ${QT_QTWEBKIT_LIBRARY} 
+target_link_libraries(perl_qtwebkit4
     smokeqtwebkit
     perlqtcore4)
 
-set_target_properties(qtwebkit4 PROPERTIES OUTPUT_NAME "QtWebKit4")
-set_target_properties(qtwebkit4 PROPERTIES PREFIX "")
+set_target_properties(perl_qtwebkit4 PROPERTIES OUTPUT_NAME "QtWebKit4")
+set_target_properties(perl_qtwebkit4 PROPERTIES PREFIX "")
 
-install(TARGETS qtwebkit4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtWebKit4/)
+install(TARGETS perl_qtwebkit4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtWebKit4/)
