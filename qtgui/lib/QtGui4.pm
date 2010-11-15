@@ -2,7 +2,7 @@
 #                          QtGui4.pm  -  QtGui perl client lib
 #                             -------------------
 #    begin                : 03-29-2010
-#    copyright            : (C) 2009 by Chris Burel
+#    copyright            : (C) 2010 by Chris Burel
 #    email                : chrisburel@gmail.com
 # ***************************************************************************
 
@@ -22,8 +22,11 @@ use warnings;
 
 use QtCore4;
 use base qw(Qt::_internal);
+use Devel::Peek qw( SvREFCNT_inc );
 
 sub init {
+    @Qt::_internal::vectorTypes{qw(Qt::Polygon Qt::PolygonF Qt::ItemSelection)}
+        = undef;
     foreach my $c ( @{getClassList()} ) {
         QtGui4::_internal->init_class($c);
     }
@@ -71,5 +74,41 @@ sub Qt::GraphicsWidget::ON_DESTROY {
 sub Qt::GraphicsObject::ON_DESTROY {
     Qt::GraphicsItem::ON_DESTROY();
 }
+
+sub Qt::UndoCommand::ON_DESTROY {
+    Devel::Peek::SvREFCNT_inc( Qt::this() );
+    # XXX is there a better solution here?
+    return 1;
+}
+
+package Qt::PolygonF;
+
+sub EXTEND {
+}
+
+package Qt::Polygon;
+
+sub EXTEND {
+}
+
+package Qt::ItemSelection;
+
+sub EXTEND {
+}
+
+package Qt::PolygonF::_overload;
+
+use overload
+    '==' => \&op_equality;
+
+package Qt::Polygon::_overload;
+
+use overload
+    '==' => \&op_equality;
+
+package Qt::ItemSelection::_overload;
+
+use overload
+    '==' => \&op_equality;
 
 1;

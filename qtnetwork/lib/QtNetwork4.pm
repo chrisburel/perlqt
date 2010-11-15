@@ -52,4 +52,3 @@ XSLoader::load('QtNetwork4', $VERSION);
 QtNetwork4::_internal::init();
 
 1;
-

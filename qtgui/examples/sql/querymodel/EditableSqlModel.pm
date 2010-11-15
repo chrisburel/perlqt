@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtSql4;
 use QtCore4::isa qw( Qt::SqlQueryModel );
 
 sub NEW
@@ -73,8 +74,8 @@ sub setLastName
     my ($personId, $lastName) = @_;
     my $query = Qt::SqlQuery();
     $query->prepare('update person set lastname = ? where id = ?');
-    $query->addBindValue($lastName);
-    $query->addBindValue($personId);
+    $query->addBindValue(Qt::Variant(Qt::String($lastName)));
+    $query->addBindValue(Qt::Variant(Qt::String($personId)));
     return $query->exec();
 }
 

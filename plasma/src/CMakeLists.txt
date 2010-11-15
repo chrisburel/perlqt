@@ -12,9 +12,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Plasma4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build Plasma4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/Plasma4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(plasma4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/Plasma4.c
@@ -22,19 +24,13 @@ set(plasma4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/Plasma4)
-add_library(plasma4 MODULE ${plasma4_LIBRARY_SRC})
+add_library(perl_plasma4 MODULE ${plasma4_LIBRARY_SRC})
 
-target_link_libraries(plasma4
-    ${QT_QTNETWORK_LIBRARY} 
-    ${QT_QTSQL_LIBRARY} 
-    ${QT_QTOPENGL_LIBRARY} 
-    ${QT_QTXML_LIBRARY} 
-    ${QT_QTSVG_LIBRARY} 
-    ${KDE4_PLASMA_LIBS}
+target_link_libraries(perl_plasma4
     smokeplasma
     perlqtcore4)
 
-set_target_properties(plasma4 PROPERTIES OUTPUT_NAME "Plasma4")
-set_target_properties(plasma4 PROPERTIES PREFIX "")
+set_target_properties(perl_plasma4 PROPERTIES OUTPUT_NAME "Plasma4")
+set_target_properties(perl_plasma4 PROPERTIES PREFIX "")
 
-install(TARGETS plasma4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/Plasma4/)
+install(TARGETS perl_plasma4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/Plasma4/)

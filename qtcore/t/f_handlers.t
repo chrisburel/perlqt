@@ -1,10 +1,11 @@
-use Test::More tests => 31;
+use Test::More tests => 34;
 
 use strict;
 use warnings;
 use Devel::Peek;
 use QtCore4;
 use QtGui4;
+use QtNetwork4;
 
 my $app = Qt::Application( \@ARGV );
 
@@ -81,6 +82,14 @@ my $app = Qt::Application( \@ARGV );
 }
 
 {
+    # Test unsigned int * marshalling
+    my $option = Qt::StyleOption();
+    my $state = Qt::Style::State_On() | Qt::Style::State_HasFocus();
+    $option->setState( $state );
+    is( $option->state(), ${$state}, 'unsigned int *' );
+}
+
+{
     # Test char and uchar marshalling
     my $char = Qt::Char( Qt::Int(87) );
     is ( $char->toAscii(), 87, 'signed char' );
@@ -133,6 +142,14 @@ my $app = Qt::Application( \@ARGV );
 }
 
 {
+    # Test ushort marshalling
+    my $tcpSocket = Qt::TcpSocket(undef);
+    my $port = 29031;
+    $tcpSocket->setPeerPort($port);
+    is( $tcpSocket->peerPort(), $port, 'unsigned short' );
+}
+
+{
     # Test length of QByteArray::data
     my $buf = Qt::Buffer();
     $buf->open( Qt::Buffer::ReadWrite() );
@@ -174,6 +191,15 @@ my $app = Qt::Application( \@ARGV );
 }
 
 {
+    # Test QIntList
+    my $w = Qt::ColumnView();
+    $w->setModel(Qt::DirModel());
+    my $widths = [237];
+    $w->setColumnWidths( $widths );
+    is_deeply( $w->columnWidths, $widths, 'marshall_QIntList' );
+}
+
+{
     # Test ambiguous list call
     my $strings = [ qw( The quick brown fox jumped over the lazy dog ) ];
     my $var = Qt::Variant( $strings );
@@ -183,9 +209,9 @@ my $app = Qt::Application( \@ARGV );
 
 {
     # Test marshall_ValueListItem ToSV
-    my $shortcut1 = Qt::KeySequence( Qt::Key_Enter() );
-    my $shortcut2 = Qt::KeySequence( Qt::Key_Tab() );
-    my $shortcut3 = Qt::KeySequence( Qt::Key_Space() );
+    my $shortcut1 = Qt::KeySequence( 'Enter' );
+    my $shortcut2 = Qt::KeySequence( 'Tab' );
+    my $shortcut3 = Qt::KeySequence( 'Space' );
     my $shortcuts = [ $shortcut1, $shortcut2, $shortcut3 ];
     my $action = Qt::Action( 'Foobar', undef );
 

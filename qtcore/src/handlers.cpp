@@ -103,6 +103,10 @@ void invoke_dtor(smokeperl_object* o) {
             Smoke::Method& m = o->smoke->methods[o->smoke->methodMaps[method].method];
             Smoke::ClassFn fn = o->smoke->classes[m.classId].classFn;
             Smoke::StackItem i[1];
+#ifdef DEBUG
+            if( do_debug && (do_debug & qtdb_gc) )
+                fprintf( stderr, "Deleting (%s*)%p\n", o->smoke->classes[o->classId].className, o->ptr );
+#endif
             (*fn)(m.method, o->ptr, i);
         }
         delete [] methodName;
@@ -176,11 +180,23 @@ void *construct_copy(smokeperl_object *o) {
     args[1].s_voidp = o->ptr;
     Smoke::ClassFn fn = o->smoke->classes[o->classId].classFn;
     (*fn)(o->smoke->methods[ccMeth].method, 0, args);
+    // Assign the new object's binding
+    args[1].s_voidp = perlqt_modules[o->smoke].binding;
+    (*fn)(0, args[0].s_voidp, args);
+
+    if( do_debug && (do_debug & qtdb_gc) )
+        fprintf( stderr, "Copied (%s*)%p to (%s*)%p\n",
+            o->smoke->classes[o->classId].className,
+            o->ptr,
+            o->smoke->classes[o->classId].className,
+            args[0].s_voidp
+        );
+
     return args[0].s_voidp;
 }
 
 template <class T>
-static void marshall_it(Marshall* m) {
+void marshall_it(Marshall* m) {
     switch( m->action() ) {
         case Marshall::FromSV:
             marshall_from_perl<T>( m );
@@ -196,6 +212,8 @@ static void marshall_it(Marshall* m) {
     }
 }
 
+template Q_DECL_EXPORT void marshall_it<unsigned int *>(Marshall* m);
+
 QString* qstringFromPerlString( SV* perlstring ) {
     // Finally found how 'in_constructor' is being used
     // PerlQt3 has this bizness:
@@ -210,13 +228,26 @@ QString* qstringFromPerlString( SV* perlstring ) {
     else if( !SvOK( perlstring ) )
         return new QString();
 
+    switch( SvTYPE(perlstring) ) {
+        case SVt_PVAV:
+        case SVt_PVHV:
+        case SVt_PVCV:
+        case SVt_PVGV:
+            croak( "Request to convert non scalar type to a string\n" );
+            break;
+        default:
+            break; // no error
+    }
     COP *cop = cxstack[cxstack_ix].blk_oldcop;
+    STRLEN len;
+    char* buf = SvPV(perlstring, len);
     if ( SvUTF8( perlstring ) )
-        return new QString(QString::fromUtf8(SvPV_nolen(perlstring)));
+        return new QString(QString::fromUtf8(buf, len));
     else if ( cop->op_private & HINT_LOCALE )
-        return new QString(QString::fromLocal8Bit(SvPV_nolen(perlstring)));
+        return new QString(QString::fromLocal8Bit(buf, len));
+
     else
-        return new QString(QString::fromLatin1(SvPV_nolen(perlstring)));
+        return new QString(QString::fromLatin1(buf, len));
 }
 
 QByteArray* qbytearrayFromPerlString( SV* perlstring ) {
@@ -229,13 +260,13 @@ SV* perlstringFromQString( QString * s ) {
     SV *retval = newSV(0);
     COP *cop = cxstack[cxstack_ix].blk_oldcop;
     if ( !(cop->op_private & HINT_BYTES ) ) {
-        sv_setpv( retval, (const char *)s->toUtf8() );
+        sv_setpvn( retval, s->toUtf8().constData(), s->toUtf8().length() );
         SvUTF8_on( retval );
     }
     else if ( cop->op_private & HINT_LOCALE )
-        sv_setpv( retval, (const char *)s->toLocal8Bit() );
+        sv_setpvn( retval, s->toLocal8Bit().constData(), s->toLocal8Bit().length() );
     else
-        sv_setpv( retval, (const char *)s->toLatin1() );
+        sv_setpvn( retval, s->toLatin1().constData(), s->toLatin1().length() );
 
     return retval;
 }
@@ -356,29 +387,42 @@ void marshall_basetype(Marshall* m) {
                     // Get return value
                     void* cxxptr = m->item().s_voidp;
 
-                    // See if we already made a perl object for this pointer
-                    SV* var = getPointerObject(cxxptr);
-                    if (var) {
-                        SvSetMagicSV(m->var(), var);
-                        break;
-                    }
-
                     // The return type may be a class that is defined in a
                     // different smoke object.  So we need to find out which
                     // smoke object to put into the resulting perl object.
                     Smoke::Index returnCId = m->type().classId();
-                    const char* returnCxxClassname = m->smoke()->classes[returnCId].className;
-                    Smoke* returnSmoke =
-                        Smoke::classMap[returnCxxClassname].smoke;
-                    // Now translate the classId to that smoke;
-                    returnCId = returnSmoke->idClass(returnCxxClassname).index;
+                    Smoke::Class returnClass = m->smoke()->classes[returnCId];
+                    Smoke::ModuleIndex returnMId;
+                    if ( returnClass.external ) {
+                        returnMId = Smoke::classMap[returnClass.className];
+                    }
+                    else {
+                        returnMId = Smoke::ModuleIndex( m->smoke(), returnCId );
+                    }
+
+                    // See if we already made a perl object for this pointer
+                    SV* var = getPointerObject(cxxptr);
+                    if (var) {
+                        // We've found something in the pointer map that
+                        // matches.  Let's make sure that object is still
+                        // valid.  This shouldn't be necessary, but it seems
+                        // that some things bypass the Binding::deleted code.
+                        smokeperl_object* o = sv_obj_info(var);
+                        if ( Smoke::isDerivedFrom( o->smoke, o->classId, returnMId.smoke, returnMId.index ) ) {
+                            SvSetMagicSV(m->var(), var);
+                            break;
+                        }
+                        else {
+                            unmapPointer( o, o->classId, 0 );
+                        }
+                    }
 
                     // We have a pointer to something that we didn't create.
                     // We don't own this memory, so we don't want to delete it.
                     // The smokeperl_object contains all the info we need to
                     // know about this object
                     smokeperl_object* o = alloc_smokeperl_object(
-                        false, returnSmoke, returnCId, cxxptr );
+                        false, returnMId.smoke, returnMId.index, cxxptr );
 
                     // Try to create a copy (using the copy constructor) if
                     // it's a const ref
@@ -467,9 +511,10 @@ void marshall_QString(Marshall* m) {
         case Marshall::FromSV: {
             SV* sv = m->var();
             QString* mystr = 0;
-            if( SvROK(sv) ) {
-                sv = SvRV(sv);
-            }
+
+            if( SvROK( sv ) )
+                sv = SvRV( sv );
+
             // Don't check for SvPOK.  Calling SvPV_nolen will stringify the
             // sv, which is what we want for numbers.
             mystr = qstringFromPerlString( sv );
@@ -477,8 +522,7 @@ void marshall_QString(Marshall* m) {
             m->item().s_voidp = (void*)mystr;
             m->next();
 
-            if (!m->type().isConst() && sv != &PL_sv_undef && !SvREADONLY(sv) &&
-              mystr != 0 && !mystr->isNull()) {
+            if (!m->type().isConst() && !SvREADONLY(sv) && mystr != 0) {
                 sv_setsv( sv, perlstringFromQString(mystr) );
             }
 
@@ -787,7 +831,6 @@ void marshall_QListCharStar(Marshall *m) {
 }
 
 void marshall_QListInt(Marshall *m) {
-    UNTESTED_HANDLER("marshall_QListInt");
     switch(m->action()) {
         case Marshall::FromSV: {
             SV *listref = m->var();
@@ -1384,6 +1427,91 @@ void marshall_QMapQStringQString(Marshall *m) {
                 STRLEN keylen = it.key().size();
                 SV *val = perlstringFromQString((QString*) &(it.value()));
                 hv_store( hv, SvPV_nolen(key), keylen, val, 0 );
+            }
+
+            sv_setsv(m->var(), sv);
+            m->next();
+
+            if(m->cleanup())
+                delete map;
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
+    }
+}
+
+void marshall_QMapQStringQUrl(Marshall *m) {
+    switch(m->action()) {
+        case Marshall::FromSV: {
+            SV *hashref = m->var();
+            if( !SvROK(hashref) && (SvTYPE(SvRV(hashref)) != SVt_PVHV) ) {
+                m->item().s_voidp = 0;
+                break;
+            }
+
+            HV *hash = (HV*)SvRV(hashref);
+            QMap<QString,QUrl> * map = new QMap<QString,QUrl>;
+
+            char* key;
+            SV* value;
+            I32* keylen = new I32;
+            while( ( value = hv_iternextsv( hash, &key, keylen ) ) ) {
+                smokeperl_object *o = sv_obj_info(value);
+                if (!o || !o->ptr || o->classId != o->smoke->findClass("QVariant").index) {
+                    continue;
+                    // If the value isn't a Qt::Variant, then try and construct
+                    // a Qt::Variant from it
+                    // TODO: I have no idea how to do this.
+                    /*
+                    value = rb_funcall(qvariant_class, rb_intern("fromValue"), 1, value);
+                    if (value == Qnil) {
+                        continue;
+                    }
+                    o = value_obj_info(value);
+                    */
+                }
+
+                (*map)[QString(key)] = (QUrl)*(QUrl*)o->ptr;
+            }
+            delete keylen;
+
+            m->item().s_voidp = map;
+            m->next();
+
+            if(m->cleanup())
+                delete map;
+        }
+        break;
+        case Marshall::ToSV: {
+            QMap<QString,QUrl> *map = (QMap<QString,QUrl>*)m->item().s_voidp;
+            if(!map) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
+
+            HV *hv = newHV();
+            SV *sv = newRV_noinc( (SV*)hv );
+
+            QMap<QString,QUrl>::Iterator it;
+            for (it = map->begin(); it != map->end(); ++it) {
+                void *p = new QUrl(it.value());
+                SV *obj = getPointerObject(p);
+
+                if ( !obj || !SvOK(obj) ) {
+                    Smoke::ModuleIndex returnMId = Smoke::classMap["QUrl"];
+                    smokeperl_object * o = alloc_smokeperl_object(
+                        true, 
+                        returnMId.smoke,
+                        returnMId.index,
+                        p );
+                    obj = set_obj_info(" Qt::Url", o);
+                }
+
+                SV *key = perlstringFromQString((QString*)&(it.key()));
+                STRLEN keylen = it.key().size();
+                hv_store( hv, SvPV_nolen(key), keylen, obj, 0 );
             }
 
             sv_setsv(m->var(), sv);
@@ -2197,6 +2325,7 @@ Q_DECL_EXPORT TypeHandler Qt4_handlers[] = {
     { "QMap<int,QVariant>&", marshall_QMapIntQVariant },
     { "QMap<QString,QString>", marshall_QMapQStringQString },
     { "QMap<QString,QString>&", marshall_QMapQStringQString },
+    { "QMap<QString,QUrl>", marshall_QMapQStringQUrl },
     { "QMap<QString,QVariant>", marshall_QMapQStringQVariant },
     { "QMap<QString,QVariant>&", marshall_QMapQStringQVariant },
     { "QVariantMap", marshall_QMapQStringQVariant },

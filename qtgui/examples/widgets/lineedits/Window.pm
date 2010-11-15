@@ -204,7 +204,7 @@ sub echoChanged {
 sub validatorChanged {
     my ($index) = @_;
     if ( $index == 0 ) {
-        this->validatorLineEdit->setValidator(0);
+        this->validatorLineEdit->setValidator(undef);
     }
     elsif ( $index == 1 ) {
         this->validatorLineEdit->setValidator(Qt::IntValidator(

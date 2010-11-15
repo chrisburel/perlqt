@@ -9,6 +9,7 @@
 #include "smokehelp.h" // for SmokeType and SmokeClass
 #include "handlers.h" // for getMarshallType
 #include "QtCore4.h" // for extern sv_this
+#include "util.h" // for caller()
 
 extern Smoke* qtcore_Smoke;
 
@@ -212,6 +213,7 @@ namespace PerlQt4 {
 
     MethodReturnValueBase::MethodReturnValueBase(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack) :
       _smoke(smoke), _methodIndex(methodIndex), _stack(stack) {
+        _type = SmokeType(_smoke, method().ret);
     }
 
     const Smoke::Method &MethodReturnValueBase::method() {
@@ -227,7 +229,7 @@ namespace PerlQt4 {
     }
 
     SmokeType MethodReturnValueBase::type() {
-        return SmokeType(_smoke, method().ret);
+        return _type;
     }
 
     void MethodReturnValueBase::next() {
@@ -238,10 +240,13 @@ namespace PerlQt4 {
     }
 
     void MethodReturnValueBase::unsupported() {
-        croak("Cannot handle '%s' as return-type of %s::%s",
+        COP* callercop = caller(0);
+        croak("Cannot handle '%s' as return-type of %s::%s at %s line %lu\n",
             type().name(),
             _smoke->className(method().classId),
-            _smoke->methodNames[method().name]);
+            _smoke->methodNames[method().name],
+            GvNAME(CopFILEGV(callercop))+2,
+            CopLINE(callercop));
     }
 
     SV* MethodReturnValueBase::var() {
@@ -267,6 +272,14 @@ namespace PerlQt4 {
       MethodReturnValueBase(smoke, methodIndex, stack)  {
         _retval = newSV(0);
         Marshall::HandlerFn fn = getMarshallFn(type());
+        (*fn)(this);
+    }
+
+    MethodReturnValue::MethodReturnValue(Smoke *smoke, Smoke::Stack stack, SmokeType type) :
+      MethodReturnValueBase(smoke, 0, stack) {
+        _retval = newSV(0);
+        _type = type;
+        Marshall::HandlerFn fn = getMarshallFn(this->type());
         (*fn)(this);
     }
 
@@ -388,10 +401,14 @@ namespace PerlQt4 {
     }
 
     void MethodCallBase::unsupported() {
-        croak("Cannot handle '%s' as argument of virtual method %s::%s",
-                type().name(),
-                _smoke->className(method().classId),
-                _smoke->methodNames[method().name]);
+        COP* callercop = caller(0);
+        croak("Cannot handle '%s' as argument of virtual method %s::%s"
+            "at %s line %lu\n",
+            type().name(),
+            _smoke->className(method().classId),
+            _smoke->methodNames[method().name],
+            GvNAME(CopFILEGV(callercop))+2,
+            CopLINE(callercop));
     }
 
     const char* MethodCallBase::classname() {
@@ -474,8 +491,34 @@ namespace PerlQt4 {
                         break;
                     case 'u':
                     case 'U':
-                        croak( "Expected return value of type %s, but got an "
-                               "undefined value", r.type().name() );
+                        if ( !r.type().flags() & Smoke::tf_ptr )
+                            croak( "Expected return value of type %s, but got an "
+                                   "undefined value", r.type().name() );
+                }
+            }
+            else {
+                smokeperl_object* o = sv_obj_info(r.var());
+                if ( ( !o || !o->ptr ) && !(r.type().flags() & Smoke::tf_ptr) ) {
+                    croak( "Expected return of type %s, but got an undefined value",
+                        r.type().smoke()->classes[r.type().classId()].className
+                    );
+                }
+                Smoke::ModuleIndex type( o->smoke, o->classId );
+                Smoke::ModuleIndex baseType;
+                Smoke::Class returnType = r.type().smoke()->classes[r.type().classId()];
+                if ( returnType.external ) {
+                    const char* returnCxxClassname = returnType.className;
+                    baseType = Smoke::classMap[returnCxxClassname];
+                }
+                else {
+                    baseType = Smoke::ModuleIndex( r.type().smoke(), r.type().classId() );
+                }
+
+                if (!Smoke::isDerivedFrom( type, baseType )) {
+                    croak( "Expected return of type %s, but got type %s",
+                        r.type().smoke()->classes[r.type().classId()].className,
+                        o->smoke->classes[o->classId].className
+                    );
                 }
             }
         }
@@ -493,6 +536,15 @@ namespace PerlQt4 {
 
     MethodCall::MethodCall(Smoke *smoke, Smoke::Index method, smokeperl_object *call_this, SV **sp, int items):
       MethodCallBase(smoke,method), _this(call_this), _sp(sp), _items(items) {
+        if ( !(this->method().flags & (Smoke::mf_static|Smoke::mf_ctor)) && _this->ptr == 0 ) {
+            COP* callercop = caller(0);
+            croak( "%s::%s(): Non-static method called with no \"this\" value "
+                "at %s line %lu\n",
+                _smoke->className(this->method().classId),
+                _smoke->methodNames[this->method().name],
+                GvNAME(CopFILEGV(callercop))+2,
+                CopLINE(callercop) );
+        }
         _stack = new Smoke::StackItem[items + 1];
         _args = _smoke->argumentList + _smoke->methods[_method].args;
         _retval = newSV(0);
@@ -524,6 +576,50 @@ namespace PerlQt4 {
         return MethodCallBase::classname();
     }
 
+    //------------------------------------------------
+
+    MarshallSingleArg::MarshallSingleArg(Smoke *smoke, SV* sv, SmokeType type) :
+      MethodCallBase(smoke, 0) {
+        _type = type;
+        _sv = sv;
+        _stack = new Smoke::StackItem[1];
+        Marshall::HandlerFn fn = getMarshallFn(this->type());
+        _cur = 0;
+        (*fn)(this);
+    }
+
+    MarshallSingleArg::~MarshallSingleArg() {
+        delete[] _stack;
+    }
+
+    // We're passing an SV from perl to c++
+    Marshall::Action MarshallSingleArg::action() {
+        return Marshall::FromSV;
+    }
+
+    SmokeType MarshallSingleArg::type() {
+        return this->_type;
+    }
+
+    SV *MarshallSingleArg::var() {
+        return _sv;
+    }
+
+    int MarshallSingleArg::items() {
+        return 1;
+    }
+
+    bool MarshallSingleArg::cleanup() {
+        return false;
+    }
+
+    const char *MarshallSingleArg::classname() {
+        return 0;
+    }
+
+    Smoke::StackItem &MarshallSingleArg::item() {
+        return _stack[0];
+    }
     //------------------------------------------------
 
     // The steps are:
@@ -614,6 +710,8 @@ namespace PerlQt4 {
         if ( count > 0 && _args[0]->argType != xmoc_void ) {
             SlotReturnValue r(_a, POPs, _args);
         }
+        FREETMPS;
+        LEAVE;
     }
 
     void InvokeSlot::next() {
@@ -630,8 +728,12 @@ namespace PerlQt4 {
     }
 
     void InvokeSlot::unsupported() {
-        croak("Cannot handle '%s' as argument of slot call",
-              type().name() );
+        COP* callercop = caller(0);
+        croak("Cannot handle '%s' as argument of slot call"
+            "at %s line %lu\n",
+            type().name(),
+            GvNAME(CopFILEGV(callercop))+2,
+            CopLINE(callercop));
     }
 
     bool InvokeSlot::cleanup() {
@@ -644,8 +746,8 @@ namespace PerlQt4 {
 
     //------------------------------------------------
 
-    EmitSignal::EmitSignal(QObject *obj, int id, int items, QList<MocArgument*> args, SV** sp, SV* retval) :
-      _args(args), _cur(-1), _called(false), _items(items), _obj(obj), _id(id), _retval(retval) {
+    EmitSignal::EmitSignal(QObject *obj, const QMetaObject *meta, int id, int items, QList<MocArgument*> args, SV** sp, SV* retval) :
+      _args(args), _cur(-1), _called(false), _items(items), _obj(obj), _meta(meta), _id(id), _retval(retval) {
         _sp = sp;
         _stack = new Smoke::StackItem[_items];
     }
@@ -690,7 +792,7 @@ namespace PerlQt4 {
         o[0] = &ptr;
         prepareReturnValue(o);
 
-        _obj->metaObject()->activate(_obj, _id, o);
+        _meta->activate(_obj, _id, o);
     }
 
     void EmitSignal::unsupported() {

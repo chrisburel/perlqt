@@ -255,7 +255,6 @@ sub setColor {
 sub setFont {
     my $ok;
     my $fontLabel = this->{fontLabel};
-    $DB::single=1;
     my $font = Qt::FontDialog::getFont($ok, Qt::Font(Qt::String($fontLabel->text())), this);
     if ($ok) {
         $fontLabel->setText($font->key());

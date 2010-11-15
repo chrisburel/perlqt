@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtSql4;
 
 # [0]
 use QtCore4::isa qw( Qt::Dialog );

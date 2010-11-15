@@ -33,6 +33,8 @@ extern "C" {
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
 
+Q_DECL_EXPORT COP* caller(I32 count);
+
 Q_DECL_EXPORT smokeperl_object * alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr);
 SV* alloc_perl_moduleindex( int smokeIndex, Smoke::Index classOrMethIndex );
 
@@ -51,12 +53,11 @@ QList<MocArgument*> getMocArguments(Smoke* smoke, const char * typeName,
   QList<QByteArray> methodTypes);
 Q_DECL_EXPORT SV* getPointerObject(void* ptr);
 
-int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke *baseSmoke, Smoke::Index baseId, int count);
 int isDerivedFromByName(const char *className, const char *baseClassName, int count);
-int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke::Index baseId,
-  int cnt);
-int isDerivedFrom(Smoke *smoke, const char *className,
-  const char *baseClassName, int cnt);
+int isDerivedFrom(smokeperl_object *o, const char *baseClassName);
+int isDerivedFrom(Smoke *smoke, const char *className, const char *baseClassName, int cnt);
+int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke *baseSmoke, Smoke::Index baseId, int count);
+int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke::Index baseId, int cnt);
 
 void mapPointer(SV *obj, smokeperl_object *o, HV *hv, Smoke::Index classId,
   void *lastptr);
@@ -74,11 +75,13 @@ void unmapPointer(smokeperl_object* o, Smoke::Index classId, void* lastptr);
 XS(XS_qobject_qt_metacast);
 XS(XS_find_qobject_children);
 
+XS(XS_q_register_resource_data);
+XS(XS_q_unregister_resource_data);
+
 XS(XS_qabstract_item_model_rowcount);
 XS(XS_qabstract_item_model_columncount);
 XS(XS_qabstract_item_model_data);
 XS(XS_qabstract_item_model_setdata);
-XS(XS_qabstract_item_model_flags);
 XS(XS_qabstract_item_model_insertrows);
 XS(XS_qabstract_item_model_insertcolumns);
 XS(XS_qabstract_item_model_removerows);

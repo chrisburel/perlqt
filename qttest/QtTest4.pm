@@ -21,7 +21,7 @@ use strict;
 use warnings;
 use QtCore4;
 
-use base qw(Qt::_internal);
+use base qw(Qt4::_internal);
 
 sub init {
     foreach my $c ( @{getClassList()} ) {
@@ -31,7 +31,7 @@ sub init {
 
 sub normalize_classname {
     my $cxxClassName = $_[1];
-    $cxxClassName =~ s/^Q(?=[A-Z])/Qt::/;
+    $cxxClassName =~ s/^Q(?=[A-Z])/Qt4::/;
     return $cxxClassName;
 }
 

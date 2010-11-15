@@ -35,7 +35,7 @@ sub NEW
 sub focusChanged
 {
     my $now = $_[1];
-    if (defined this->{m_widgetInfo}->{$now}) {
+    if (defined $now && defined this->{m_widgetInfo}->{$now}) {
         this->{m_ui}->helpLabel->setText(sprintf this->tr('Information about %s:'), this->{m_widgetInfo}->{$now});
         my @lst = split ' ', this->{m_widgetInfo}->{$now};
         this->{m_ui}->helpBrowser->showHelpForKeyword($lst[-1]);

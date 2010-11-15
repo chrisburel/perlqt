@@ -1,6 +1,6 @@
 package MyApp;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 
 use QtCore4;
 use QtGui4;
@@ -11,7 +11,8 @@ use QtCore4::slots
         slot => ['int','int'];
 use QtCore4::signals
         signal => ['int','int'],
-        signalFromSlot => ['int','int'];
+        signalFromSlot => ['int','int'],
+        signalWithBadArg => ['int'];
 
 sub NEW {
     shift->SUPER::NEW(@_);
@@ -27,10 +28,14 @@ sub NEW {
 
     # 2) Emit a signal to a slot that will emit another signal
     emit signal( 5, 4 );
+
+    # 3) Emit a signal, but missing an argument.  Should fail.
+    eval{ emit signalWithBadArg() };
+    like( $@, qr/Wrong number of arguments in signal call/, 'Missing arguments in signal' );
 }
 
 sub foo {
-    ok( 1, 'Qt4 signal to custom slot' );
+    pass( 'Qt4 signal to custom slot' );
 }     
 
 sub slotToSignal {

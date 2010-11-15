@@ -5,7 +5,6 @@ use warnings;
 
 use QtCore4;
 use QtGui4;
-#use Qt::debug qw(all);
 use MainWindow;
 
 sub main {

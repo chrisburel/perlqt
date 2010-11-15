@@ -129,10 +129,16 @@ sub submitContact
     }
     if (this->{currentMode} == AddingMode) {
         
-        if (!defined this->{contacts}->{$name}) {
+        if (!exists this->{contacts}->{$name}) {
+            my $order = this->{order};
+            ++$order if grep { this->{contacts}->{$_}->{order} == $order } keys %{this->{contacts}};
+            my @toInc = grep { this->{contacts}->{$_}->{order} >= $order } keys %{this->{contacts}};
+            map{ this->{contacts}->{$_}->{order}++ } @toInc;
+
             this->{contacts}->{$name}->{address} = $address;
-            this->{contacts}->{$name}->{order} = this->{order};
-            this->{order}++;
+            this->{contacts}->{$name}->{order} = $order;
+
+            this->{order} = $order + 1;
 
             Qt::MessageBox::information(this, this->tr('Add Successful'),
                 sprintf this->tr('\'%s\' has been added to your address book.'), $name);
@@ -143,7 +149,7 @@ sub submitContact
     } elsif (this->{currentMode} == EditingMode) {
         
         if (this->{oldName} ne $name) {
-            if (!defined this->{contacts}->{$name}) {
+            if (!exists this->{contacts}->{$name}) {
                 Qt::MessageBox::information(this, this->tr('Edit Successful'),
                     sprintf this->tr('\'%s\' has been edited in your address book.'), this->{oldName});
                 this->{contacts}->{$name}->{address} = $address;
@@ -172,7 +178,7 @@ sub removeContact
     my $name = this->{nameLine}->text();
     my $address = this->{addressText}->toPlainText();
 
-    if (defined this->{contacts}->{$name}) {
+    if (exists this->{contacts}->{$name}) {
 
         my $button = Qt::MessageBox::question(this,
             this->tr('Confirm Remove'),
@@ -182,7 +188,16 @@ sub removeContact
         if ($button == Qt::MessageBox::Yes()) {
             
             this->previous();
+            my $order = this->{contacts}->{$name}->{order};
             delete this->{contacts}->{$name};
+            my @toDec = grep { this->{contacts}->{$_}->{order} >= $order } keys %{this->{contacts}};
+            map{ this->{contacts}->{$_}->{order}-- } @toDec;
+            if ( this->{order} == 0 ) {
+                this->{order} = scalar keys %{this->{contacts}} - 1;
+            }
+            else {
+                --(this->{order});
+            }
 
             Qt::MessageBox::information(this, this->tr('Remove Successful'),
                 sprintf this->tr('\'%s\' has been removed from your address book.'), $name);
@@ -233,7 +248,7 @@ sub findContact {
     if (this->{dialog}->exec() == Qt::Dialog::Accepted()) {
         my $contactName = this->{dialog}->getFindText();
 
-        if (defined this->{contacts}->{$contactName}) {
+        if (exists this->{contacts}->{$contactName}) {
             this->{nameLine}->setText($contactName);
             this->{addressText}->setText(this->{contacts}->{$contactName}->{address});
         } else {

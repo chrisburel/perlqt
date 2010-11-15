@@ -34,12 +34,17 @@ extern "C" {
 #include "QtCore4.h"
 #include "binding.h"
 #include "smokeperl.h"
+#include "util.h"
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
+
+extern bool qRegisterResourceData(int, const unsigned char *, const unsigned char *, const unsigned char *);
+extern bool qUnregisterResourceData(int, const unsigned char *, const unsigned char *, const unsigned char *);
 
 // Standard smoke variables
 extern Q_DECL_EXPORT Smoke* qtcore_Smoke;
 extern Q_DECL_EXPORT QList<Smoke*> smokeList;
+extern Q_DECL_EXPORT QList<QString> arrayTypes;
 
 PerlQt4::Binding binding;
 QHash<Smoke*, PerlQt4Module> perlqt_modules;
@@ -53,6 +58,70 @@ Q_DECL_EXPORT int do_debug = 0;
 // There's a comment in QtRuby about possible memory leaks with these.
 // Method caches, to avoid expensive lookups
 QHash<QByteArray, Smoke::ModuleIndex *> methcache;
+
+// These 2 functions, S_dopoptosub_at and caller() were copied from pp_ctl.c in
+// Perl 5.10.1.  They may not work with all perl versions.  It makes
+// determining the caller much easier. caller() is PP(pp_caller).
+#define dopoptosub_at		S_dopoptosub_at
+STATIC I32
+S_dopoptosub_at(const PERL_CONTEXT *cxstk, I32 startingblock)
+{
+    dVAR;
+    I32 i;
+
+    for (i = startingblock; i >= 0; i--) {
+        register const PERL_CONTEXT * const cx = &cxstk[i];
+        switch (CxTYPE(cx)) {
+            default:
+                continue;
+            case CXt_EVAL:
+            case CXt_SUB:
+            case CXt_FORMAT:
+                DEBUG_l( Perl_deb(aTHX_ "(Found sub #%ld)\n", (long)i));
+                return i;
+        }
+    }
+    return i;
+}
+
+Q_DECL_EXPORT COP* caller(I32 count)
+{
+    register I32 cxix = dopoptosub_at(cxstack, cxstack_ix);
+    register const PERL_CONTEXT *cx;
+    register const PERL_CONTEXT *ccstack = cxstack;
+    const PERL_SI *top_si = PL_curstackinfo;
+
+    for (;;) {
+        /* we may be in a higher stacklevel, so dig down deeper */
+        while (cxix < 0 && top_si->si_type != PERLSI_MAIN) {
+            top_si = top_si->si_prev;
+            ccstack = top_si->si_cxstack;
+            cxix = dopoptosub_at(ccstack, top_si->si_cxix);
+        }
+        if (cxix < 0) {
+            return 0;
+        }
+        /* caller() should not report the automatic calls to &DB::sub */
+        if (PL_DBsub && GvCV(PL_DBsub) && cxix >= 0 &&
+                ccstack[cxix].blk_sub.cv == GvCV(PL_DBsub))
+            count++;
+        if (!count--)
+            break;
+        cxix = dopoptosub_at(ccstack, cxix - 1);
+    }
+
+    cx = &ccstack[cxix];
+    if (CxTYPE(cx) == CXt_SUB || CxTYPE(cx) == CXt_FORMAT) {
+        const I32 dbcxix = dopoptosub_at(ccstack, cxix - 1);
+	/* We expect that ccstack[dbcxix] is CXt_SUB, anyway, the
+	   field below is defined for any cx. */
+	/* caller() should not report the automatic calls to &DB::sub */
+	if (PL_DBsub && GvCV(PL_DBsub) && dbcxix >= 0 && ccstack[dbcxix].blk_sub.cv == GvCV(PL_DBsub))
+	    cx = &ccstack[dbcxix];
+    }
+
+    return cx->blk_oldcop;
+}
 
 Q_DECL_EXPORT smokeperl_object * 
 alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr) {
@@ -381,7 +450,7 @@ int isDerivedFrom(Smoke *smoke, const char *className, const char *baseClassName
     return isDerivedFrom(smoke, idClass, idBase, cnt);
 }
 
-int isDerivedFrom( smokeperl_object *o, const char *baseClassName ) {
+Q_DECL_EXPORT int isDerivedFrom( smokeperl_object *o, const char *baseClassName ) {
     Smoke::Index idClass = o->classId;
     Smoke::Index idBase = o->smoke->idClass(baseClassName).index;
     return isDerivedFrom(o->smoke, idClass, idBase, 0);
@@ -813,21 +882,26 @@ const char* resolve_classname_qt( smokeperl_object* o ) {
 
 Q_DECL_EXPORT SV* set_obj_info(const char * className, smokeperl_object * o) {
     // The hash
-    HV* hv = newHV();
+    SV* obj;
+    SV* var;
+    if( arrayTypes.contains( className ) ) {
+        obj = (SV*)newAV();
+        var = newRV_noinc((SV*)obj);
+        hv_magic((AV*)obj, var, PERL_MAGIC_tied);
+    }
+    else {
+        obj = (SV*)newHV();
+        var = newRV_noinc((SV*)obj);
+    }
+
     // The hash reference to return
-    SV* var = newRV_noinc((SV*)hv);
 
     // Bless the sv to that package.
     sv_bless( var, gv_stashpv(className, TRUE) );
 
     // For this, we need a magic wand.  This is what actually
     // stores 'o' into our hash.
-    sv_magic((SV*)hv, 0, '~', (char*)o, sizeof(*o));
-
-    // Associate our vtbl_smoke with our sv, so that
-    // smokeperl_free is called for us when the sv's refcount goes to 0
-    MAGIC* mg = mg_find((SV*)hv, '~');
-    mg->mg_virtual = &vtbl_smoke;
+    sv_magicext((SV*)obj, 0, '~', &vtbl_smoke, (char*)o, sizeof(*o));
 
     // We're done with our local var
     return var;
@@ -988,6 +1062,7 @@ XS(XS_find_qobject_children) {
         SPAGAIN;
         metaobjectSV = POPs;
         PUTBACK;
+        LEAVE;
         // metaobjectSV is now mortal.  Don't FREETMPS.
     }
     else {
@@ -1003,6 +1078,56 @@ XS(XS_find_qobject_children) {
     SV* result = newRV_noinc((SV*)list);
     ST(0) = result;
     XSRETURN(1);
+}
+
+XS(XS_q_register_resource_data)
+{
+    dXSARGS;
+    if ( items != 4 ) {
+        croak( "Usage: Qt::qRegisterResourceData( $version, $tree_value, $name_value, $data_value" );
+    }
+
+    SV* tree_value = ST(1);
+    SV* name_value = ST(2);
+    SV* data_value = ST(3);
+	const unsigned char * tree = (const unsigned char *) malloc(SvLEN(tree_value));
+	memcpy((void *) tree, (const void *) SvPV_nolen(tree_value), SvLEN(tree_value));
+
+	const unsigned char * name = (const unsigned char *) malloc(SvLEN(name_value));
+	memcpy((void *) name, (const void *) SvPV_nolen(name_value), SvLEN(name_value));
+
+	const unsigned char * data = (const unsigned char *) malloc(SvLEN(data_value));
+	memcpy((void *) data, (const void *) SvPV_nolen(data_value), SvLEN(data_value));
+
+	if ( qRegisterResourceData(SvIV(ST(0)), tree, name, data) )
+        XSRETURN_YES;
+    else
+        XSRETURN_NO;
+}
+
+XS(XS_q_unregister_resource_data)
+{
+    dXSARGS;
+    if ( items != 4 ) {
+        croak( "Usage: Qt::qUnregisterResourceData( $version, $tree_value, $name_value, $data_value" );
+    }
+
+    SV* tree_value = ST(1);
+    SV* name_value = ST(2);
+    SV* data_value = ST(3);
+	const unsigned char * tree = (const unsigned char *) malloc(SvLEN(tree_value));
+	memcpy((void *) tree, (const void *) SvPV_nolen(tree_value), SvLEN(tree_value));
+
+	const unsigned char * name = (const unsigned char *) malloc(SvLEN(name_value));
+	memcpy((void *) name, (const void *) SvPV_nolen(name_value), SvLEN(name_value));
+
+	const unsigned char * data = (const unsigned char *) malloc(SvLEN(data_value));
+	memcpy((void *) data, (const void *) SvPV_nolen(data_value), SvLEN(data_value));
+
+	if ( qUnregisterResourceData(SvIV(ST(0)), tree, name, data) )
+        XSRETURN_YES;
+    else
+        XSRETURN_NO;
 }
 
 XS(XS_qabstract_item_model_rowcount) {
@@ -1157,7 +1282,7 @@ XS(XS_qabstract_item_model_setdata) {
         }
 	}
     else if ( items == 4 ) {
-        SV* dataRole = ST(2);
+        SV* dataRole = ST(3);
         if(SvROK(dataRole))
             dataRole = SvRV(dataRole);
         if ( model->setData( *modelIndex, *variant, SvIV(dataRole) ) ) {
@@ -1167,29 +1292,6 @@ XS(XS_qabstract_item_model_setdata) {
             XSRETURN_NO;
         }
     }
-}
-
-XS(XS_qabstract_item_model_flags) {
-    dXSARGS;
-    smokeperl_object *o = sv_obj_info(ST(0));
-    if(!o)
-        croak( "%s", "Qt::AbstractItemModel::flags called on a non-Qt4"
-            " object");
-    if(isDerivedFrom(o, "QAbstractItemModel") == -1)
-        croak( "%s", "Qt::AbstractItemModel::flags called on a"
-            " non-AbstractItemModel object");
-	QAbstractItemModel * model = (QAbstractItemModel *) o->ptr;
-
-    smokeperl_object * mi = sv_obj_info(ST(1));
-    if(!mi)
-        croak( "%s", "1st argument to Qt::AbstractItemModel::flags is"
-            " not a Qt4 object");
-    if(isDerivedFrom(mi, "QModelIndex") == -1)
-        croak( "%s", "1st argument to Qt::AbstractItemModel::flags is"
-            " not a Qt::ModelIndex" );
-	const QModelIndex * modelIndex = (const QModelIndex *) mi->ptr;
-
-	XSRETURN_IV((IV)model->flags(*modelIndex));
 }
 
 XS(XS_qabstract_item_model_insertrows) {
@@ -1357,23 +1459,22 @@ XS(XS_qabstract_item_model_removecolumns) {
 	croak("%s", "Invalid argument list to Qt::AbstractItemModel::removeColumns");
 }
 
-//qabstractitemmodel_createindex(int argc, VALUE * argv, VALUE self)
 XS(XS_qabstractitemmodel_createindex) {
     dXSARGS;
     if (items == 2 || items == 3) {
         smokeperl_object* o = sv_obj_info(sv_this);
         if (!o)
             croak( "%s", "Qt::AbstractItemModel::createIndex must be called as a method on a Qt::AbstractItemModel object, eg. $model->createIndex" );
-        Smoke::ModuleIndex nameId = o->smoke->idMethodName("createIndex$$$");
-        Smoke::ModuleIndex meth = o->smoke->findMethod(qtcore_Smoke->findClass("QAbstractItemModel"), nameId);
+        Smoke::ModuleIndex nameId = qtcore_Smoke->idMethodName("createIndex$$$");
+        Smoke::ModuleIndex meth = qtcore_Smoke->findMethod(qtcore_Smoke->findClass("QAbstractItemModel"), nameId);
         Smoke::Index i = meth.smoke->methodMaps[meth.index].method;
         i = -i;		// turn into ambiguousMethodList index
-        while (o->smoke->ambiguousMethodList[i] != 0) {
-            if ( qstrcmp( o->smoke->types[o->smoke->argumentList[o->smoke->methods[o->smoke->ambiguousMethodList[i]].args + 2]].name,
+        while (meth.smoke->ambiguousMethodList[i] != 0) {
+            if ( qstrcmp( meth.smoke->types[meth.smoke->argumentList[meth.smoke->methods[meth.smoke->ambiguousMethodList[i]].args + 2]].name,
                         "void*" ) == 0 )
             {
-                Smoke::Method &m = o->smoke->methods[o->smoke->ambiguousMethodList[i]];
-                Smoke::ClassFn fn = o->smoke->classes[m.classId].classFn;
+                Smoke::Method &m = meth.smoke->methods[meth.smoke->ambiguousMethodList[i]];
+                Smoke::ClassFn fn = meth.smoke->classes[m.classId].classFn;
                 Smoke::StackItem stack[4];
                 stack[1].s_int = SvIV(ST(0));
                 stack[2].s_int = SvIV(ST(1));
@@ -1389,7 +1490,7 @@ XS(XS_qabstractitemmodel_createindex) {
                     // that.  So to the user it is transparent.
                     if ( !SvROK( ST(2) ) ) {
                         croak( "%s", "Must provide a reference as 3rd argument "
-                            "to At::AbstractItemModel::createIndex" );
+                            "to Qt::AbstractItemModel::createIndex" );
                     }
                     SV* refval = SvRV( ST(2) );
 
@@ -1401,8 +1502,8 @@ XS(XS_qabstractitemmodel_createindex) {
                 (*fn)(m.method, o->ptr, stack);
                 smokeperl_object* result = alloc_smokeperl_object(
                     true, 
-                    o->smoke, 
-                    o->smoke->idClass("QModelIndex").index, 
+                    qtcore_Smoke,
+                    qtcore_Smoke->idClass("QModelIndex").index, 
                     stack[0].s_voidp
                 );
 
@@ -1452,7 +1553,8 @@ XS(XS_qbytearray_data) {
     }
 
     QByteArray * bytes = (QByteArray *) o->ptr;
-    ST(0) = sv_2mortal( newSVpvn( bytes->data(), bytes->size() ) );
+    ST(0) = sv_2mortal( perlstringFromQByteArray(bytes) );
+
     XSRETURN(1);
 }
 
@@ -1882,6 +1984,7 @@ XS(XS_AUTOLOAD) {
             for (int i=0; i<count; i++)
                 ST(i) = ST(i+1);
         PUTBACK;
+        LEAVE;
 
         // Clean up
         if(withObject){
@@ -2266,6 +2369,22 @@ XS(XS_signal){
 		XSRETURN_UNDEF;
 	}
     QMetaMethod method = metaobject->method(index);
+    if ( method.parameterTypes().size() != items ) {
+        // Incorrect arguments
+        COP* callercop = caller(2);
+        croak( "Wrong number of arguments in signal call %s::%s\n" 
+            "Got     : %s(%s)\n"
+            "Expected: %s\n"
+            "called at %s line %lu\n",
+            HvNAME( GvSTASH(gv) ),
+            GvNAME(gv),
+            GvNAME(gv),
+            SvPV_nolen(sv_2mortal(catArguments(SP - items + 1, items ))),
+            method.signature(),
+            GvNAME(CopFILEGV(callercop))+2,
+            CopLINE(callercop));
+    }
+
     QList<MocArgument*> args = getMocArguments(o->smoke, method.typeName(), method.parameterTypes());
 
     SV* retval = sv_2mortal(newSV(0));
@@ -2279,7 +2398,7 @@ XS(XS_signal){
     // should be out of bounds.  But it doesn't matter, since the signal won't
     // do anything with those.
     // retval: Will (at some point, maybe) get populated with the return value from the signal.
-    PerlQt4::EmitSignal signal(qobj, index, items, args, SP - items + 1, retval);
+    PerlQt4::EmitSignal signal(qobj, metaobject, index, items, args, SP - items + 1, retval);
     signal.next();
 
     // TODO: Handle signal return value
@@ -2291,3 +2410,4 @@ XS(XS_this) {
     ST(0) = sv_this;
     XSRETURN(1);
 }
+

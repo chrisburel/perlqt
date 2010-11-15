@@ -11,24 +11,26 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtNetwork4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build QtNetwork4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtNetwork4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(qtnetwork4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/QtNetwork4.c
     qtnetwork4handlers.cpp
+    xsfunctions.cpp
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtNetwork4)
-add_library(qtnetwork4 MODULE ${qtnetwork4_LIBRARY_SRC})
+add_library(perl_qtnetwork4 MODULE ${qtnetwork4_LIBRARY_SRC})
 
-target_link_libraries(qtnetwork4
-    ${QT_QTNETWORK_LIBRARY} 
+target_link_libraries(perl_qtnetwork4
     smokeqtnetwork
     perlqtcore4)
 
-set_target_properties(qtnetwork4 PROPERTIES OUTPUT_NAME "QtNetwork4")
-set_target_properties(qtnetwork4 PROPERTIES PREFIX "")
+set_target_properties(perl_qtnetwork4 PROPERTIES OUTPUT_NAME "QtNetwork4")
+set_target_properties(perl_qtnetwork4 PROPERTIES PREFIX "")
 
-install(TARGETS qtnetwork4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtNetwork4/)
+install(TARGETS perl_qtnetwork4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtNetwork4/)

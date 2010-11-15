@@ -45,7 +45,6 @@ void marshall_from_perl<int*>(Marshall* m) {
         sv_setiv( sv, 0 );
     }
 
-    // This gives us a pointer to the int stored in the perl var.
     int *i = new int(SvIV(sv));
     m->item().s_voidp = i;
     m->next();
@@ -97,7 +96,6 @@ void marshall_from_perl<unsigned int *>(Marshall *m) {
 }
 template <>
 void marshall_to_perl<unsigned int *>(Marshall *m) {
-    UNTESTED_HANDLER("marshall_to_perl<unsigned int *>");
     unsigned int *ip = (unsigned int*) m->item().s_voidp;
     SV *sv = m->var();
     if (ip == 0) {
@@ -126,7 +124,6 @@ void marshall_from_perl<short*>(Marshall* m) {
         sv_setiv( sv, 0 );
     }
 
-    // This gives us a poshorter to the short stored in the perl var.
     short *i = new short(SvIV(sv));
     m->item().s_voidp = i;
     m->next();
@@ -167,7 +164,6 @@ void marshall_from_perl<unsigned short*>(Marshall* m) {
         sv_setiv( sv, 0 );
     }
 
-    // This gives us a pounsigned shorter to the unsigned short stored in the perl var.
     unsigned short *i = new unsigned short(SvIV(sv));
     m->item().s_voidp = i;
     m->next();

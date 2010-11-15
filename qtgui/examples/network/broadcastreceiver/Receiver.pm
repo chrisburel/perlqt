@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtNetwork4;
 use QtCore4::isa qw( Qt::Dialog );
 use QtCore4::slots
     processPendingDatagrams => [];
@@ -55,11 +56,11 @@ sub processPendingDatagrams
 {
 # [2]
     while (this->udpSocket->hasPendingDatagrams()) {
-        my $datagram = Qt::ByteArray();
-        $datagram->resize(this->udpSocket->pendingDatagramSize());
-        this->udpSocket->readDatagram($datagram->data(), $datagram->size());
-        this->statusLabel->setText(sprintf this->tr('Received datagram: \'%s\''),
-                             $datagram->data());
+        my $datagram = '';
+        my $datagramSize = this->udpSocket->pendingDatagramSize();
+        this->udpSocket()->readDatagram(\$datagram, $datagramSize);
+        this->statusLabel->setText(sprintf this->tr('Received datagram: "%s"'),
+                             $datagram);
     }
 # [2]
 }

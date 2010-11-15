@@ -2,7 +2,7 @@
                           QtNetwork4.xs  -  QtNetwork perl extension
                              -------------------
     begin                : 06-19-2010
-    copyright            : (C) 2009 by Chris Burel
+    copyright            : (C) 2010 by Chris Burel
     email                : chrisburel@gmail.com
  ***************************************************************************/
 
@@ -17,9 +17,6 @@
 
 #include <QHash>
 #include <QList>
-#include <QtDebug>
-
-#include <iostream>
 
 // Perl headers
 extern "C" {
@@ -33,8 +30,10 @@ extern "C" {
 
 #include <smokeperl.h>
 #include <handlers.h>
+#include "xsfunctions.h"
 
 extern QList<Smoke*> smokeList;
+extern SV* sv_this;
 
 const char*
 resolve_classname_qtnetwork(smokeperl_object * o)
@@ -89,3 +88,4 @@ BOOT:
     perlqt_modules[qtnetwork_Smoke] = module;
 
     install_handlers(QtNetwork4_handlers);
+    newXS(" Qt::UdpSocket::readDatagram", XS_qudpsocket_readdatagram, __FILE__);

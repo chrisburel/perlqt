@@ -28,6 +28,9 @@ sub init {
     foreach my $c ( @{getClassList()} ) {
         KDEUi4::_internal->init_class($c);
     }
+    foreach my $e ( @{getEnumList()} ) {
+        KDEUi4::_internal->init_enum($e);
+    }
 }
 
 sub KDE::Application::NEW {

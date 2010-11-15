@@ -35,6 +35,12 @@ sub tr {
     return Qt::qApp()->translate( $context, @_ );
 }
 
+sub getPointer {
+    my ( $self ) = @_;
+    $self = Qt::this() if !defined $self;
+    return Qt::_internal::sv_to_ptr( $self );
+}
+
 package Qt::base::_overload;
 use strict;
 
@@ -407,6 +413,7 @@ use overload
     '^'  => 'Qt::enum::_overload::op_xor',
     '|'  => 'Qt::enum::_overload::op_or',
     '&'  => 'Qt::enum::_overload::op_and',
+    '~'  => 'Qt::enum::_overload::op_unarynegate',
     '--' => 'Qt::enum::_overload::op_decrement',
     '++' => 'Qt::enum::_overload::op_increment',
     'neg'=> 'Qt::enum::_overload::op_negate';
@@ -629,6 +636,10 @@ sub op_and {
     }
 }
 
+sub op_unarynegate {
+    return bless( \(~${$_[0]}), ref $_[0] );
+}
+
 sub op_decrement {
     return --${$_[0]};
 }
@@ -648,8 +659,120 @@ use warnings;
 
 our @EXPORT_OK;
 
-unless(exists $::INC{'QtCore4/GlobalSpace.pm'}) {
-    $::INC{'QtCore4/GlobalSpace.pm'} = $::INC{'QtCore4.pm'};
+push @EXPORT_OK, qw(
+LicensedActiveQt
+LicensedCore
+LicensedDBus
+LicensedDeclarative
+LicensedGui
+LicensedHelp
+LicensedMultimedia
+LicensedNetwork
+LicensedOpenGL
+LicensedOpenVG
+LicensedQt3Support
+LicensedQt3SupportLight
+LicensedScript
+LicensedScriptTools
+LicensedSql
+LicensedSvg
+LicensedTest
+LicensedXml
+LicensedXmlPatterns
+qAcos
+qAddPostRoutine
+qAppName
+qAsin
+qAtan
+qAtan2
+qbswap_helper
+qCeil
+qChecksum
+Q_COMPLEX_TYPE
+qCompress
+qCos
+qCritical
+qDebug
+Q_DUMMY_TYPE
+qExp
+qFabs
+qFastCos
+qFastSin
+qFlagLocation
+qFloor
+qFree
+qFreeAligned
+qFuzzyCompare
+qFuzzyIsNull
+qgetenv
+qHash
+qInf
+qInstallMsgHandler
+qIntCast
+qIsFinite
+qIsInf
+qIsNaN
+qIsNull
+qLn
+qMalloc
+qMallocAligned
+qMemCopy
+qMemSet
+Q_MOVABLE_TYPE
+qPow
+Q_PRIMITIVE_TYPE
+qputenv
+qQNaN
+qrand
+qRealloc
+qReallocAligned
+qRegisterStaticPluginInstanceFunction
+qRemovePostRoutine
+qRound
+qRound64
+qSetFieldWidth
+qSetPadChar
+qSetRealNumberPrecision
+qSharedBuild
+qSin
+qSNaN
+qSqrt
+qsrand
+Q_STATIC_TYPE
+qstrcmp
+qstrcpy
+qstrdup
+qstricmp
+qStringComparisonHelper
+qstrlen
+qstrncmp
+qstrncpy
+qstrnicmp
+qstrnlen
+qTan
+qt_assert
+qt_assert_x
+qt_check_pointer
+QtCriticalMsg
+QtDebugMsg
+qt_error_string
+QtFatalMsg
+qt_message_output
+qt_noop
+qt_qFindChild_helper
+qt_qFindChildren_helper
+QtSystemMsg
+qtTrId
+QtWarningMsg
+qUncompress
+qvariant_cast_helper
+qVersion
+qvsnprintf
+qWarning
+);
+
+unless(exists $::INC{'Qt/GlobalSpace.pm'}) {
+    $::INC{'Qt/GlobalSpace.pm'} = $::INC{'QtCore4.pm'};
 }
 
 sub import {
@@ -673,6 +796,7 @@ package Qt::_internal;
 use strict;
 use warnings;
 use Scalar::Util qw( blessed );
+use List::MoreUtils qw( any );
 
 # These 2 hashes provide lookups from a perl package name to a smoke
 # classid, and vice versa
@@ -686,6 +810,8 @@ our %classId2package;
 our %pointer_map;
 
 our %customClasses;
+
+our %vectorTypes;
 
 my %arrayTypes = (
     'const QList<QVariant>&' => {
@@ -747,7 +873,7 @@ sub argmatch {
         my $typeName = getTypeNameOfArg( $smokeId, $methodId, $argNum );
         #ints and bools
         if ( $argType eq 'i' ) {
-            if( $typeName =~ m/^(?:bool|(?:(?:un)?signed )?(?:int|long)|uint)[*&]?$/ ) {
+            if( $typeName =~ m/^(?:bool|(?:(?:un)?signed )?(?:int|(?:long )?long)|uint)[*&]?$/ ) {
                 $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
         }
@@ -760,7 +886,7 @@ sub argmatch {
         # enums
         elsif ( $argType eq 'e' ) {
             my $refName = ref $args->[$argNum];
-            if( $typeName =~ m/^$refName[s]?$/ ) {
+            if( $typeName =~ m/^(?:QFlags<)?$refName[s]?[>]?$/ ) {
                 $match{$methodIdIdx} = [0,[$smokeId,$methodId]];
             }
         }
@@ -880,9 +1006,11 @@ sub argmatch {
         else {
             # Optional const, some words, optional & or *.  Note ?: does not
             # make a backreference, (\w*) is the only thing actually captured.
+            my $isConst = ($typeName =~ m/const/);
             $typeName =~ s/^(?:const\s+)?(\w*)[&*]?$/$1/g;
             my $isa = classIsa( $argType, $typeName );
             if ( $isa != -1 ) {
+                ++$isa if $isConst;
                 $match{$methodIdIdx} = [-$isa, [$smokeId,$methodId]];
             }
         }
@@ -926,6 +1054,21 @@ sub dumpCandidates {
     return @methods;
 }
 
+sub uniqMethods {
+    my ($methodIds, $numArgs) = @_;
+    my %hash;
+    foreach my $moduleId ( reverse @{$methodIds} ) {
+        my $smokeId = $moduleId->[0];
+        my $methodId = $moduleId->[1];
+        my $sig = join ',', map{
+            my $str = getTypeNameOfArg( $smokeId, $methodId, $_ );
+            $str =~ s/^const //;
+            $str =~ s/[*&]$//;
+            $str} ( 0..$numArgs-1 );
+        $hash{$sig} = $moduleId;
+    }
+    return values %hash;
+}
 
 # Args: @_: the args to the method being called
 #       $classname: the c++ class being called
@@ -974,6 +1117,8 @@ sub getSmokeMethodId {
             }
         }
 
+        @methodIds = uniqMethods( \@methodIds, scalar @_ );
+
         # If we still have more than 1 match, use the first one.
         if ( @methodIds > 1 ) {
             # Keep in sync with debug.pm's $channel{ambiguous} value
@@ -986,12 +1131,12 @@ sub getSmokeMethodId {
                     ++$stackDepth;
                     @caller = caller($stackDepth);
                 }
-                my $msg = "--- Ambiguous method ${classname}::$methodname" .
-                    ' called at ' . $caller[1] .
-                    ' line ' . $caller[2] . "\n";
+                my $msg = "--- Ambiguous method ${classname}::$methodname\n";
                 $msg .= "Candidates are:\n\t";
                 $msg .= join "\n\t", dumpCandidates( $classname, $methodname, \@methodIds );
-                $msg .= "\nChoosing first one...\n";
+                $msg .= "\nChoosing first one... " .
+                    ' at ' . $caller[1] .
+                    ' line ' . $caller[2] . "\n";
                 warn $msg;
             }
             @methodIds = $methodIds[0];
@@ -1014,13 +1159,13 @@ sub getSmokeMethodId {
             }
             my $errStr = '--- Arguments for method call ' .
                 "$classname\::$methodname did not match C++ method ".
-                "signature," .
-                ' called at ' . $caller[1] .
-                ' line ' . $caller[2] . "\n";
+                "signature\n";
             $errStr .= "Method call was:\n\t";
             $errStr .= "$classname\::$methodname( " . dumpArgs(@_) . " )\n";
             $errStr .= "C++ signature is:\n\t";
-            $errStr .= (dumpCandidates( $classname, $methodname, \@methodIds ))[0] . "\n";
+            $errStr .= (dumpCandidates( $classname, $methodname, \@methodIds ))[0] . "\n" .
+                ' at ' . $caller[1] .
+                ' line ' . $caller[2] . "\n";
             @methodIds = ();
             print STDERR $errStr and die;
         }
@@ -1040,7 +1185,7 @@ sub getSmokeMethodId {
         }
         else {
             my $noMethodFound = reportNoMethodFound( $classname, $methodname, @_ );
-            $noMethodFound .= "'use QtCore4::debug qw(ambiguous)' for more information.";
+            $noMethodFound .= "'use QtCore4::debug qw(ambiguous)' for more information.\n";
             die $noMethodFound;
         }
     }
@@ -1148,7 +1293,11 @@ sub init_class {
     @{arrayByName($perlClassName.'::ISA')} = @isa;
 
     # Define overloaded operators
-    @{arrayByName(" $perlClassName\::ISA")} = ('Qt::base::_overload');
+    if ( exists $vectorTypes{$perlClassName} ) {
+        push @{arrayByName(" $perlClassName\::ISA")}, "$perlClassName\::_overload";
+        setIsArrayType( " $perlClassName" );
+    }
+    push @{arrayByName(" $perlClassName\::ISA")}, 'Qt::base::_overload';
 
     foreach my $sp ('', ' ') {
         my $where = $sp . $perlClassName;
@@ -1177,6 +1326,8 @@ sub init_class {
         # Adds $perlClassName to the front of @_
         $perlClassName->new(@_);
     }) unless(defined &{$perlClassName});
+
+    Qt::_internal::installSub( " ${perlClassName}::isa", \&Qt::_internal::isa );
 }
 
 sub permateMungedMethods {
@@ -1194,11 +1345,16 @@ sub reportAlternativeMethods {
     my $methodIds = shift;
     # @_ now equals the original argument array of the method call
     my $stackDepth = ( $methodname eq $classname ) ? 5 : 3;
+    my @caller = caller($stackDepth);
+    while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/QtCore4\/isa\.pm/ ) {
+        ++$stackDepth;
+        @caller = caller($stackDepth);
+    }
     my $errStr = '--- Arguments for method call ' .
         "$classname\::$methodname did not match any known C++ method ".
         "signature," .
-        ' called at ' . (caller($stackDepth))[1] .
-        ' line ' . (caller($stackDepth))[2] . "\n";
+        ' called at ' . $caller[1] .
+        ' line ' . $caller[2] . "\n";
     $errStr .= "Method call was:\n\t";
     $errStr .= "$classname\::$methodname( " . dumpArgs(@_) . " )\n";
     $errStr .= "Possible candidates:\n\t";
@@ -1244,6 +1400,7 @@ sub init_enum {
 # Returns: none
 # Desc: sets up each class
 sub init {
+    $Qt::_internal::vectorTypes{'Qt::XmlStreamAttributes'} = undef;
     my $classes = getClassList();
     Qt::_internal->init_class($_) for(@$classes);
 
@@ -1322,7 +1479,7 @@ sub makeMetaData {
             push @$data, $MethodScriptable | $MethodSignal | $AccessPublic; # flags
         }
         else {
-            push @$data, $MethodSignal | $AccessProtected; # flags
+            push @$data, $MethodSignal | $AccessPrivate; # flags
         }
     }
 
@@ -1344,7 +1501,7 @@ sub makeMetaData {
             push @$data, $nullposition; #return type, void
         }
         push @$data, $nullposition; #tag
-        push @$data, $MethodSlot | $AccessPublic; # flags
+        push @$data, $MethodSlot | $AccessPrivate; # flags
     }
 
     push @$data, 0; #eod
@@ -1700,6 +1857,46 @@ sub Uchar {
 
 1;
 
+package Qt::String;
+
+use strict;
+use warnings;
+
+use overload
+    '""' => 'Qt::String::toString';
+
+sub arg {
+    my $string = shift;
+    my @fields = @_;
+
+    my $stringRef = ${$string};
+
+    my $escapeNum = 1;
+    while ( $escapeNum < 99 && $stringRef !~ m/%$escapeNum/ ) {
+        ++$escapeNum;
+    }
+    while ( @fields ) {
+        my $field = shift @fields;
+        ${$string} =~ s/%$escapeNum/$field/;
+        ++$escapeNum;
+    }
+    return $string;
+}
+
+sub toString {
+    return ${$_[0]};
+}
+
+package Qt::XmlStreamAttributes;
+
+sub EXTEND {
+}
+
+package Qt::XmlStreamAttributes::_overload;
+
+use overload
+    '==' => \&op_equality;
+
 =pod
 
 =head1 NAME
@@ -1709,6 +1906,7 @@ QtCore4 - Perl bindings for the QtCore version 4 library
 =head1 SYNOPSIS
 
   use QtCore4;
+  use QtGui4;
   my $app = Qt::Application(\@ARGV);
   my $button = Qt::PushButton( 'Hello, World!', undef);
   $button->show();
@@ -1831,6 +2029,20 @@ The following is a list of Perl-specific implementation details, broken up by
 class.
 
 =over
+
+=item Global methods to all classes
+
+=item getPointer
+
+This method is used to retrieve an object's numeric memory location.  It is
+defined in the Qt::base class, which all Qt objects inherit.
+
+Currently, none of the classes that provided by this binding implement a method
+called getPointer().  But if one did, calling $object->getPointer() would not
+end up calling this method.  To force this method to be called, you can call
+$object->Qt::base::getPointer().
+
+=back
 
 =item Qt::Object
 

@@ -104,10 +104,15 @@ sub submitContact
             this->tr('Please enter a name and address.'));
     }
 
-    if (!defined this->{contacts}->{$name}) {
+    if (!exists this->{contacts}->{$name}) {
+        my $order = this->{order};
+        ++$order if grep { this->{contacts}->{$_}->{order} == $order } keys %{this->{contacts}};
+        my @toInc = grep { this->{contacts}->{$_}->{order} >= $order } keys %{this->{contacts}};
+        map{ this->{contacts}->{$_}->{order}++ } @toInc;
         this->{contacts}->{$name}->{address} = $address;
-        this->{contacts}->{$name}->{order} = this->{order};
-        ++this->{order};
+        this->{contacts}->{$name}->{order} = $order;
+
+        this->{order} = $order + 1;
         Qt::MessageBox::information(this, this->tr('Add Successful'),
             sprintf this->tr('\'%s\' has been added to your address book.'), $name);
     } else {

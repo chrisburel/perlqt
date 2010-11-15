@@ -71,7 +71,6 @@ unsigned short perl_to_primitive<unsigned short>(SV *sv) {
 }
 template <>
 SV *primitive_to_perl<unsigned short>(unsigned short sv) {
-    UNTESTED_HANDLER("primitive_to_perl<unsigned short>");
     return newSViv((unsigned short) sv);
 }
 

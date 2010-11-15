@@ -39,6 +39,7 @@ protected:
     Smoke::Index _methodIndex;
     Smoke::Stack _stack;
     SV *_retval;
+    SmokeType _type;
 };
 
 class Q_DECL_EXPORT VirtualMethodReturnValue : public MethodReturnValueBase {
@@ -50,6 +51,7 @@ public:
 class Q_DECL_EXPORT MethodReturnValue : public MethodReturnValueBase {
 public:
     MethodReturnValue(Smoke *smoke, Smoke::Index meth, Smoke::Stack stack);
+    MethodReturnValue(Smoke *smoke, Smoke::Stack stack, SmokeType type);
     Marshall::Action action();
 };
 
@@ -163,6 +165,28 @@ private:
     const char *classname();
 };
 
+class Q_DECL_EXPORT MarshallSingleArg : public MethodCallBase {
+public:
+    MarshallSingleArg(Smoke *smoke, SV* sv, SmokeType type);
+    ~MarshallSingleArg();
+    Marshall::Action action();
+    SV *var();
+
+    void callMethod() {}
+
+    int items(); // What's this?
+    bool cleanup();
+
+    SmokeType type();
+    Smoke::StackItem &item();
+
+private:
+    SV *_sv;
+    SV *_retval;
+    SmokeType _type;
+    const char *classname();
+};
+
 class Q_DECL_EXPORT InvokeSlot : public Marshall {
 public:
     InvokeSlot(SV* call_this, char* methodname, QList<MocArgument*> args, void** a);
@@ -193,7 +217,7 @@ protected:
 
 class Q_DECL_EXPORT EmitSignal : public Marshall {
 public:
-    EmitSignal(QObject *obj, int id, int items, QList<MocArgument*> args, SV** sp, SV* retval);
+    EmitSignal(QObject *obj, const QMetaObject *meta, int id, int items, QList<MocArgument*> args, SV** sp, SV* retval);
     Marshall::Action action();
     const MocArgument& arg();
     SmokeType type();
@@ -214,6 +238,7 @@ protected:
     int _items;
     SV** _sp;
     QObject *_obj;
+    const QMetaObject *_meta;
     int _id;
     SV* _retval;
 };

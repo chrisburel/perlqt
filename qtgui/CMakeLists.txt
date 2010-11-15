@@ -1,2 +1,6 @@
 add_subdirectory( src )
 add_subdirectory( lib )
+if( KDE4_BUILD_TESTS )
+    add_subdirectory( examples )
+    add_subdirectory( t )
+endif( KDE4_BUILD_TESTS )

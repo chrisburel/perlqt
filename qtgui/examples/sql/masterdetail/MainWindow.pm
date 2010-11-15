@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtSql4;
+use QtXml4;
 use QtCore4::isa qw( Qt::MainWindow );
 use QtCore4::slots
     about => [],
@@ -373,7 +375,7 @@ sub indexOfArtist
 
     foreach my $i (0..$artistModel->rowCount()-1) {
         my $record = $artistModel->record($i);
-        if ($record->value('artist') eq $artist) {
+        if ($record->value('artist')->toString() eq $artist) {
             return $artistModel->index($i, 1);
         }
     }

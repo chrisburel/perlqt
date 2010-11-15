@@ -12,9 +12,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/KDEUi4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 # Make sure we build KDEUi4.c as c++ code
-set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
+set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/KDEUi4.c 
+    PROPERTIES LANGUAGE CXX
+)
 
-set(CMAKE_C_FLAGS ${PERL_CXX_FLAGS})
+set( CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS} )
 
 set(kdeui4_LIBRARY_SRC
     ${CMAKE_CURRENT_BINARY_DIR}/KDEUi4.c
@@ -25,20 +27,14 @@ set(factory_SRCS
     kperlpluginfactory.cpp)
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/KDEUi4)
-add_library(kdeui4 MODULE ${kdeui4_LIBRARY_SRC})
+add_library(perl_kdeui4 MODULE ${kdeui4_LIBRARY_SRC})
 
-target_link_libraries(kdeui4
-    ${QT_QTNETWORK_LIBRARY} 
-    ${QT_QTSQL_LIBRARY} 
-    ${QT_QTOPENGL_LIBRARY} 
-    ${QT_QTXML_LIBRARY} 
-    ${QT_QTSVG_LIBRARY} 
-    ${KDE4_KDECORE_LIBS}
+target_link_libraries(perl_kdeui4
     smokekdeui
     perlqtcore4)
 
-set_target_properties(kdeui4 PROPERTIES OUTPUT_NAME "KDEUi4")
-set_target_properties(kdeui4 PROPERTIES PREFIX "")
+set_target_properties(perl_kdeui4 PROPERTIES OUTPUT_NAME "KDEUi4")
+set_target_properties(perl_kdeui4 PROPERTIES PREFIX "")
 
 kde4_add_plugin(kperlpluginfactory ${factory_SRCS})
 set_target_properties(kperlpluginfactory PROPERTIES 
@@ -50,5 +46,5 @@ target_link_libraries(kperlpluginfactory
     ${PERL_LIBS}
     )
 
-install(TARGETS kdeui4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/KDEUi4/)
+install(TARGETS perl_kdeui4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/KDEUi4/)
 install(TARGETS kperlpluginfactory DESTINATION ${PLUGIN_INSTALL_DIR})

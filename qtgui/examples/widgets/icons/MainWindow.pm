@@ -16,7 +16,6 @@ use QtCore4::slots
     changeIcon => [],
     addImages => [],
     removeAllImages => [];
-#use Qt::debug qw(all);
 
 use IconPreviewArea;
 use ImageDelegate;

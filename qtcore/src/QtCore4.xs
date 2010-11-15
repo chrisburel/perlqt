@@ -2,6 +2,8 @@
 //perl stuff below
 #include "util.h"
 
+#include <QXmlStreamAttributes>
+
 // Perl headers
 extern "C" {
 #include "EXTERN.h"
@@ -17,6 +19,7 @@ extern "C" {
 #include "smokeperl.h"
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
+#include "listclass_macros.h"
 
 extern PerlQt4::Binding binding;
 extern Q_DECL_EXPORT Smoke* qtcore_Smoke;
@@ -24,6 +27,9 @@ extern "C" void init_qtcore_Smoke();
 extern Q_DECL_EXPORT QHash<Smoke*, PerlQt4Module> perlqt_modules;
 extern SV* sv_qapp;
 QList<Smoke*> smokeList;
+QList<QString> arrayTypes;
+
+DEF_VECTORCLASS_FUNCTIONS(QXmlStreamAttributes, QXmlStreamAttribute, Qt::XmlStreamAttributes);
 
 MODULE = Qt                 PACKAGE = Qt::_internal
 
@@ -48,50 +54,53 @@ findMethod( classname, methodname )
         char* classname
         char* methodname
     PPCODE:
-        Smoke::ModuleIndex mi;
+        QList<Smoke::ModuleIndex> milist;
         if ( strcmp( classname, "QGlobalSpace" ) == 0 ) {
             // All modules put their global functions in "QGlobalSpace".  So we
             // have to use each smoke object to look for this method.
             for (int i = 0; i < smokeList.size(); ++i) {
-                mi = smokeList.at(i)->findMethod(classname, methodname);
+                Smoke::ModuleIndex mi = smokeList.at(i)->findMethod(classname, methodname);
                 if( mi.smoke ) {
-                    break;
+                    // Found a result, add it to the return
+                    milist.append(mi);
                 }
             }
         }
         else {
             // qtcore_Smoke will be able to find any method not in QGlobalSpace
-            mi = qtcore_Smoke->findMethod(classname, methodname);
+            milist.append( qtcore_Smoke->findMethod(classname, methodname) );
         }
-        if ( !mi.index ) {
-            // empty list
-        }
-        else if ( mi.index  > 0 ) {
-            int smokeId = smokeList.indexOf(mi.smoke);
-            if ( smokeId == -1 ) {
-                croak( "Method \"%s::%s\" called, which is defined in the smoke"
-                    "module \"%s\", which has not been loaded\n", classname,
-                    methodname, mi.smoke->moduleName() );
+        foreach (Smoke::ModuleIndex mi, milist) {
+            if ( !mi.index ) {
+                // empty list
             }
-            Smoke::Index methodId = mi.smoke->methodMaps[mi.index].method;
-            if ( !methodId ) {
-                croak( "Corrupt method %s::%s", classname, methodname );
-            }
-            else if ( methodId > 0 ) {     // single match
-                XPUSHs( sv_2mortal(alloc_perl_moduleindex(smokeId, methodId)) );
-            }
-            else {                  // multiple match
-                // trun into ambiguousMethodList index
-                methodId = -methodId;
+            else if ( mi.index  > 0 ) {
+                int smokeId = smokeList.indexOf(mi.smoke);
+                if ( smokeId == -1 ) {
+                    croak( "Method \"%s::%s\" called, which is defined in the smoke"
+                        "module \"%s\", which has not been loaded\n", classname,
+                        methodname, mi.smoke->moduleName() );
+                }
+                Smoke::Index methodId = mi.smoke->methodMaps[mi.index].method;
+                if ( !methodId ) {
+                    croak( "Corrupt method %s::%s", classname, methodname );
+                }
+                else if ( methodId > 0 ) {     // single match
+                    XPUSHs( sv_2mortal(alloc_perl_moduleindex(smokeId, methodId)) );
+                }
+                else {                  // multiple match
+                    // trun into ambiguousMethodList index
+                    methodId = -methodId;
 
-                // Put all ambiguous method possibilities onto the stack
-                while( mi.smoke->ambiguousMethodList[methodId] ) {
-                    XPUSHs( 
-                        sv_2mortal(
-                            alloc_perl_moduleindex(smokeId, (IV)mi.smoke->ambiguousMethodList[methodId])
-                        )
-                    );
-                    ++methodId;
+                    // Put all ambiguous method possibilities onto the stack
+                    while( mi.smoke->ambiguousMethodList[methodId] ) {
+                        XPUSHs( 
+                            sv_2mortal(
+                                alloc_perl_moduleindex(smokeId, (IV)mi.smoke->ambiguousMethodList[methodId])
+                            )
+                        );
+                        ++methodId;
+                    }
                 }
             }
         }
@@ -381,6 +390,25 @@ void*
 sv_to_ptr(sv)
     SV* sv
 
+void
+sv_obj_info(sv)
+        SV* sv
+    PPCODE:
+        smokeperl_object* o = sv_obj_info(sv);
+        if( !o || !o->ptr )
+            XSRETURN_UNDEF;
+        XPUSHs(sv_2mortal(newSViv(o->allocated ? 1 : 0)));
+        XPUSHs(sv_2mortal(newSVpv(o->smoke->classes[o->classId].className, strlen(o->smoke->classes[o->classId].className))));
+        XPUSHs(sv_2mortal(newSVpv(o->smoke->moduleName(), strlen(o->smoke->moduleName()))));
+        XPUSHs(sv_2mortal(newSVpvf("0x%x", (IV)o->ptr)));
+
+void
+setIsArrayType(typeName)
+        const char* typeName
+    CODE:
+        arrayTypes.append(typeName);
+
+
 MODULE = Qt                 PACKAGE = Qt
 
 PROTOTYPES: ENABLE
@@ -433,6 +461,8 @@ BOOT:
     newXS(" Qt::Object::findChildren", XS_find_qobject_children, __FILE__);
     newXS("Qt::Object::findChildren", XS_find_qobject_children, __FILE__);
     newXS("Qt::Object::qobject_cast", XS_qobject_qt_metacast, __FILE__);
+    newXS("Qt::qRegisterResourceData", XS_q_register_resource_data, __FILE__);
+    newXS("Qt::qUnregisterResourceData", XS_q_unregister_resource_data, __FILE__);
     newXS(" Qt::AbstractItemModel::columnCount", XS_qabstract_item_model_columncount, __FILE__);
     newXS(" Qt::AbstractItemModel::data", XS_qabstract_item_model_data, __FILE__);
     newXS(" Qt::AbstractItemModel::insertColumns", XS_qabstract_item_model_insertcolumns, __FILE__);
@@ -450,6 +480,21 @@ BOOT:
     newXS(" Qt::Buffer::read", XS_qiodevice_read, __FILE__);
     newXS(" Qt::TcpSocket::read", XS_qiodevice_read, __FILE__);
     newXS(" Qt::TcpServer::read", XS_qiodevice_read, __FILE__);
+
+    newXS(" Qt::XmlStreamAttributes::EXISTS"   , XS_QXmlStreamAttributes_exists, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::FETCH"    , XS_QXmlStreamAttributes_at, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::FETCHSIZE", XS_QXmlStreamAttributes_size, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::STORE"    , XS_QXmlStreamAttributes_store, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::STORESIZE", XS_QXmlStreamAttributes_storesize, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::DELETE"   , XS_QXmlStreamAttributes_delete, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::CLEAR"    , XS_QXmlStreamAttributes_clear, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::PUSH"     , XS_QXmlStreamAttributes_push, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::POP"      , XS_QXmlStreamAttributes_pop, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::SHIFT"    , XS_QXmlStreamAttributes_shift, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::UNSHIFT"  , XS_QXmlStreamAttributes_unshift, __FILE__);
+    newXS(" Qt::XmlStreamAttributes::SPLICE"   , XS_QXmlStreamAttributes_splice, __FILE__);
+    newXS("Qt::XmlStreamAttributes::_overload::op_equality", XS_QXmlStreamAttributes__overload_op_equality, __FILE__);
+
 
     sv_this = newSV(0);
     sv_qapp = newSV(0);

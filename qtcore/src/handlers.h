@@ -1,6 +1,10 @@
 #ifndef HANDLERS_H
 #define HANDLERS_H
 
+
+class QString;
+class QByteArray;
+
 extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
@@ -11,8 +15,6 @@ extern "C" {
 #include "marshall.h"
 #include "smokehelp.h"
 #include "smokeperl.h"
-
-//#define Q_DECL_EXPORT __attribute__ ((visibility("default")))
 
 struct TypeHandler {
     const char* name;
@@ -27,7 +29,7 @@ void invoke_dtor(smokeperl_object* o);
 // destroyed
 extern struct mgvtbl vtbl_smoke;
 
-template <class T> static void marshall_it(Marshall* m);
+template <class T> void marshall_it(Marshall* m);
 
 Q_DECL_EXPORT void *construct_copy(smokeperl_object *o);
 void marshall_basetype(Marshall* m);
@@ -35,6 +37,11 @@ void marshall_QString(Marshall* m);
 void marshall_QStringList(Marshall* m);
 void marshall_unknown(Marshall *m);
 void marshall_void(Marshall* m);
+
+QString* qstringFromPerlString( SV* perlstring );
+QByteArray* qbytearrayFromPerlString( SV* perlstring );
+SV* perlstringFromQString( QString * s );
+SV* perlstringFromQByteArray( QByteArray * s );
 
 extern HV* type_handlers;
 extern TypeHandler Qt4_handlers[];

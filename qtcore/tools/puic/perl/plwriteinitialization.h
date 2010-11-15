@@ -212,7 +212,7 @@ private:
     void initializeQ3SqlDataBrowser(DomWidget *w);
 
     QString findDeclaration(const QString &name);
-    DomWidget *findWidget(const QString &widgetClass);
+    DomWidget *findWidget(const QLatin1String &widgetClass);
     DomImage *findImage(const QString &name) const;
 
     bool isValidObject(const QString &name) const;

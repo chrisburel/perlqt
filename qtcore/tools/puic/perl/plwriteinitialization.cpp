@@ -486,26 +486,22 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     acceptWidget(node->elementWidget());
 
-    /*
     for (int i=0; i<m_buddies.size(); ++i) {
         const Buddy &b = m_buddies.at(i);
         QString name(b.objName);
-        name.replace("@", "");
-        QString buddyName(b.buddy);
-        buddyName.replace("@", "");
+        QString buddyName = toPerlIdentifier(b.buddy);
 
-        if (!m_registeredWidgets.contains(name) && !m_registeredWidgets.contains(name)) {
-            fprintf(stderr, "'@%s' isn't a valid widget\n", name.toLatin1().data());
+        if (!m_registeredWidgets.contains(name)) {
+            fprintf(stderr, "'%s' isn't a valid widget\n", name.toLatin1().data());
             continue;
-        } else if (!m_registeredWidgets.contains(b.buddy) && !m_registeredWidgets.contains(buddyName)) {
-            fprintf(stderr, "'@%s' isn't a valid widget\n", buddyName.toLatin1().data());
+        } else if (!m_registeredWidgets.contains(buddyName)) {
+            fprintf(stderr, "'%s' isn't a valid widget\n", buddyName.toLatin1().data());
             continue;
         }
 
-        m_output << m_option.indent << "@" << name << ".buddy = @" << buddyName << "\n";
+        m_output << m_option.indent << name << "->setBuddy( " << buddyName << " );\n";
     }
 
-    */
     if (node->elementTabStops())
         acceptTabStops(node->elementTabStops());
 
@@ -521,7 +517,7 @@ void WriteInitialization::acceptUI(DomUI *node)
         m_output << "\n" << m_delayedInitialization << "\n";
 
     if (m_option.autoConnection)
-        m_output << "\n" << m_option.indent << "Qt::MetaObject->connectSlotsByName( " << m_mainWidget << " );\n";
+        m_output << "\n" << m_option.indent << "Qt::MetaObject::connectSlotsByName( " << m_mainWidget << " );\n";
     //m_output << "\n" << m_option.indent << "return bless {}, \"shift\";\n";
 
     m_output << m_option.indent << "return $self;\n";
@@ -553,13 +549,16 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     const QString className = node->attributeClass();
     QString varNameNoSigil = m_driver->findOrInsertWidget(node);
     QString varName = toPerlIdentifier(varNameNoSigil);
+    QString varNameGetter = "$self->" + varNameNoSigil + "()";
     m_registeredWidgets.insert(varName, node); // register the current widget
 
     //varName = varName.mid(0, 1).toLower() + varName.mid(1);
 
-    QString parentWidget, parentClass;
+    QString parentWidget, parentWidgetNoSigil, parentClass;
     if (m_widgetChain.top()) {
-        parentWidget = toPerlIdentifier(m_driver->findOrInsertWidget(m_widgetChain.top()));
+        parentWidgetNoSigil = m_driver->findOrInsertWidget(m_widgetChain.top());
+        parentWidget = toPerlIdentifier( parentWidgetNoSigil );
+
         //parentWidget = parentWidget.mid(0, 1).toLower() + parentWidget.mid(1);
         parentClass = m_widgetChain.top()->attributeClass();
     }
@@ -718,12 +717,12 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
         m_output << m_option.indent << parentWidget << "->addItem( " << varName << icon << ", " << trCall(label) << " );\n";
 
-        m_refreshOut << m_option.indent << parentWidget << "->setItemText( "
-                   << parentWidget << "->indexOf( " << varName << "), " << trCall(label) << " );\n";
+        m_refreshOut << m_option.indent << "$self->" << parentWidgetNoSigil << "()->setItemText( "
+                   << "$self->" << parentWidgetNoSigil << "()->indexOf( " << varNameGetter << "), " << trCall(label) << " );\n";
 
         if (DomProperty *ptoolTip = attributes.value(QLatin1String("toolTip"))) {
-            m_refreshOut << m_option.indent << parentWidget << "->setItemToolTip( "
-                       << parentWidget << "->indexOf( " << varName << "), " << trCall(ptoolTip->elementString()) << " );\n";
+            m_refreshOut << m_option.indent << "$self->" << parentWidgetNoSigil << "()->setItemToolTip( "
+                       << "$self->" << parentWidgetNoSigil << "()->indexOf( " << varNameGetter << "), " << trCall(ptoolTip->elementString()) << " );\n";
         }
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QTabWidget"))) {
         QString icon;
@@ -734,17 +733,17 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
         m_output << m_option.indent << parentWidget << "->addTab( " << varName << icon << ", " << trCall(title) << " );\n";
 
-        m_refreshOut << m_option.indent << parentWidget << "->setTabText( "
-                   << parentWidget << "->indexOf( " << varName << "), " << trCall(title) << " );\n";
+        m_refreshOut << m_option.indent << "$self->" << parentWidgetNoSigil << "()->setTabText( "
+                   << "$self->" << parentWidgetNoSigil << "()->indexOf( " << varNameGetter << "), " << trCall(title) << " );\n";
 
         if (const DomProperty *ptoolTip = attributes.value(QLatin1String("toolTip"))) {
-            m_refreshOut << m_option.indent << parentWidget << "->setTabToolTip( "
-                       << parentWidget << "->indexOf( " << varName << "), " << trCall(ptoolTip->elementString()) << " );\n";
+            m_refreshOut << m_option.indent << "$self->" << parentWidgetNoSigil << "()->setTabToolTip( "
+                       << "$self->" << parentWidgetNoSigil << "()->indexOf( " << varNameGetter << "), " << trCall(ptoolTip->elementString()) << " );\n";
         }
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("Q3Wizard"))) {
         m_output << m_option.indent << parentWidget << "->addPage( " << varName << ", " << trCall(title) << " );\n";
 
-        m_refreshOut << m_option.indent << parentWidget << "->setTitle( "
+        m_refreshOut << m_option.indent << "$self->" << parentWidgetNoSigil << "()->setTitle( "
                    << varName << ", " << trCall(title) << " );\n";
 
     }
@@ -754,7 +753,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     const QStringList zOrder = node->elementZOrder();
     for (int i = 0; i < zOrder.size(); ++i) {
-        const QString name = zOrder.at(i);
+        const QString name = toPerlIdentifier(zOrder.at(i));
 
         if (!m_registeredWidgets.contains(name)) {
             fprintf(stderr, "'%s' isn't a valid widget\n", name.toLatin1().data());
@@ -1530,11 +1529,12 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
     }
 
     // insert with new name
-    const QString iconName = m_driver->unique(QLatin1String("icon"));
+    const QString iconNameNoSigil = m_driver->unique(QLatin1String("icon"));
+    const QString iconName = toPerlIdentifier(iconNameNoSigil);
     m_iconPropertiesNameMap.insert(IconHandle(i), iconName);
     if (isIconFormat44(i)) {
         const QString pixmap = QLatin1String("Qt::Pixmap");
-        m_output << m_option.indent << iconName << " = Qt::Icon\n";
+        m_output << m_option.indent << "my " << iconName << " = Qt::Icon\n";
         if (i->hasElementNormalOff())
             m_output << m_option.indent << iconName << "->addPixmap(" << pixCall(pixmap, i->elementNormalOff()->text()) << ", Qt::Icon::Normal(), Qt::Icon::Off() );\n";
         if (i->hasElementNormalOn())
@@ -1552,7 +1552,7 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
         if (i->hasElementSelectedOn())
             m_output << m_option.indent << iconName << "->addPixmap(" << pixCall(pixmap, i->elementSelectedOn()->text()) << ", Qt::Icon::Selected(), Qt::Icon::On() );\n";
     } else { // pre-4.4 legacy
-        m_output <<  m_option.indent << iconName << " = " << pixCall(QLatin1String("Qt::Icon"), i->text())<< "\n";
+        m_output <<  m_option.indent << "my " << iconName << " = " << pixCall(QLatin1String("Qt::Icon"), i->text())<< ";\n";
     }
     return iconName;
 }
@@ -1708,7 +1708,7 @@ void WriteInitialization::acceptTabStops(DomTabStops *tabStops)
 
     const QStringList l = tabStops->elementTabStop();
     for (int i=0; i<l.size(); ++i) {
-        QString name = l.at(i);
+        QString name = toPerlIdentifier(l.at(i));
 
         if (!m_registeredWidgets.contains(name)) {
             fprintf(stderr, "'%s' isn't a valid widget\n", name.toLatin1().data());
@@ -1722,7 +1722,7 @@ void WriteInitialization::acceptTabStops(DomTabStops *tabStops)
             continue;
         }
 
-        m_output << m_option.indent << "Qt::Widget.setTabOrder( $" << lastName << ", $" << name << ")\n";
+        m_output << m_option.indent << "Qt::Widget::setTabOrder( " << lastName << ", " << name << " );\n";
 
         lastName = name;
     }
@@ -2450,7 +2450,7 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
     if (sender.isEmpty() || receiver.isEmpty())
         return;
 
-    m_output << m_option.indent << "Qt::Object->connect("
+    m_output << m_option.indent << "Qt::Object::connect("
         << sender
         << ", "
         << "SIGNAL '" << connection->elementSignal() << "' "
@@ -2466,7 +2466,7 @@ DomImage *WriteInitialization::findImage(const QString &name) const
     return m_registeredImages.value(name);
 }
 
-DomWidget *WriteInitialization::findWidget(const QString &widgetClass)
+DomWidget *WriteInitialization::findWidget(const QLatin1String &widgetClass)
 {
     for (int i = m_widgetChain.count() - 1; i >= 0; --i) {
         DomWidget *widget = m_widgetChain.at(i);

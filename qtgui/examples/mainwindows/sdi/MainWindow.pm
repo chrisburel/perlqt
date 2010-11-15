@@ -14,6 +14,8 @@ use QtCore4::slots
     documentWasModified => [];
 use MainWindow;
 
+my %WINDOWS;
+
 sub textEdit() {
     return this->{textEdit};
 }
@@ -106,6 +108,9 @@ sub NEW
 sub closeEvent
 {
     my ($event) = @_;
+
+    delete $WINDOWS{this->Qt::base::getPointer()};
+
     if (this->maybeSave()) {
         this->writeSettings();
         $event->accept();
@@ -119,6 +124,8 @@ sub newFile
     my $other = MainWindow();
     $other->move(this->x() + 40, this->y() + 40);
     $other->show();
+
+    $WINDOWS{$other->Qt::base::getPointer()} = $other;
 }
 
 sub open
@@ -183,7 +190,7 @@ sub documentWasModified
 
 sub init
 {
-    this->setAttribute(Qt::WA_DeleteOnClose());
+    #this->setAttribute(Qt::WA_DeleteOnClose());
 
     this->{isUntitled} = 1;
 

@@ -18,6 +18,7 @@ set(puic4_bin_SRCS
    perl/plwriteicondeclaration.cpp 
    perl/plwriteiconinitialization.cpp 
    perl/plwriteinitialization.cpp 
+   perl/plwriteincludes.cpp
    main.cpp )
 
 add_executable(puic4_bin ${puic4_bin_SRCS})

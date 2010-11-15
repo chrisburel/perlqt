@@ -2,7 +2,7 @@
                           QtXml4.xs  -  QtXml perl extension
                              -------------------
     begin                : 06-19-2010
-    copyright            : (C) 2009 by Chris Burel
+    copyright            : (C) 2010 by Chris Burel
     email                : chrisburel@gmail.com
  ***************************************************************************/
 
@@ -17,9 +17,6 @@
 
 #include <QHash>
 #include <QList>
-#include <QtDebug>
-
-#include <iostream>
 
 // Perl headers
 extern "C" {
@@ -59,6 +56,19 @@ getClassList()
                 av_push(classList, newSVpv(qtxml_Smoke->classes[i].className, 0));
         }
         RETVAL = newRV_noinc((SV*)classList);
+    OUTPUT:
+        RETVAL
+
+SV*
+getEnumList()
+    CODE:
+        AV *av = newAV();
+        for(int i = 1; i < qtxml_Smoke->numTypes; i++) {
+            Smoke::Type curType = qtxml_Smoke->types[i];
+            if( (curType.flags & Smoke::tf_elem) == Smoke::t_enum )
+                av_push(av, newSVpv(curType.name, 0));
+        }
+        RETVAL = newRV_noinc((SV*)av);
     OUTPUT:
         RETVAL
 
