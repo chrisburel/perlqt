@@ -63,7 +63,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_DBUS_EXPORT QDBusIntrospection
+class Q_DECL_EXPORT QDBusIntrospection
 {
 public:
     // forward declarations
