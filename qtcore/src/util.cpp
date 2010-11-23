@@ -394,7 +394,8 @@ Q_DECL_EXPORT SV* getPointerObject(void* ptr) {
     }
     // Corrupt entry, not sure how this would happen
     if(!SvOK(*svp)){
-        hv_delete(hv, key, len, G_DISCARD);
+        if(SvREFCNT(*svp) != 0)
+            hv_delete(hv, key, len, G_DISCARD);
         SvREFCNT_dec(keysv);
         return 0;
     }
@@ -2350,6 +2351,7 @@ XS(XS_signal){
     // signature to send to indexOfMethod, but makes it impossible to make 2
     // signals with the same name but different signatures (arguments).
     int index = -1;
+    QMetaMethod method;
     for (index = metaobject->methodCount() - 1; index > -1; --index) {
 		if (metaobject->method(index).methodType() == QMetaMethod::Signal) {
 			QString name(metaobject->method(index).signature());
@@ -2360,7 +2362,10 @@ XS(XS_signal){
 			name.replace(*rx, "");
 
 			if (name == signalname) {
-				break;
+                method = metaobject->method(index);
+                if ( method.parameterTypes().size() == items ) {
+                    break;
+                }
 			}
 		}
     }
@@ -2368,7 +2373,7 @@ XS(XS_signal){
 	if (index == -1) {
 		XSRETURN_UNDEF;
 	}
-    QMetaMethod method = metaobject->method(index);
+    // Have to check this twice to account for signal name overloading
     if ( method.parameterTypes().size() != items ) {
         // Incorrect arguments
         COP* callercop = caller(2);

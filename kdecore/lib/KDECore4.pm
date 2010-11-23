@@ -23,8 +23,14 @@ use QtCore4;
 use base qw(Qt::_internal);
 
 sub init {
+    $Qt::_internal::arrayTypes{'const KUrl::List&'} = {
+        value => [ 'KDE::Url']
+    };
     foreach my $c ( @{getClassList()} ) {
         KDECore4::_internal->init_class($c);
+    }
+    foreach my $e ( @{getEnumList()} ) {
+        KDECore4::_internal->init_enum($e);
     }
 }
 

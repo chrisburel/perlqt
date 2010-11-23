@@ -2,10 +2,9 @@ package MainWindow;
 
 use strict;
 use warnings;
-use blib;
 
 use KDEUi4;
-use Qt4::isa qw( KDE::XmlGuiWindow );
+use QtCore4::isa qw( KDE::XmlGuiWindow );
 
 sub NEW {
     my ( $class ) = @_;

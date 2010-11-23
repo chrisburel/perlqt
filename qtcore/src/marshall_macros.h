@@ -80,7 +80,10 @@ void marshall_ItemList(Marshall *m) {
     
                 for(int i = 0; i < cpplist->size(); ++i ) {
                     SV *obj = getPointerObject( (void *) cpplist->at(i) );
-                    av_push(list, obj);
+                    if( obj )
+                        av_push(list, obj);
+                    else
+                        av_push(list, &PL_sv_undef);
                 }
             }
 

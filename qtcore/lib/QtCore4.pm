@@ -813,7 +813,7 @@ our %customClasses;
 
 our %vectorTypes;
 
-my %arrayTypes = (
+our %arrayTypes = (
     'const QList<QVariant>&' => {
         value => [ 'QVariant' ]
     },
@@ -822,7 +822,7 @@ my %arrayTypes = (
     },
 );
 
-my %hashTypes = (
+our %hashTypes = (
     'const QHash<QString,QVariant>&' => {
         keys => [ 's', 'Qt::String' ],
         values => [ 'QVariant' ]

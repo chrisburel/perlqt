@@ -3,15 +3,18 @@ package PlasmaAppletPerlHelloPlasmoid;
 use strict;
 use warnings;
 
+use lib '/home/cburel/perlqtinstall/';
+use lib '/home/cburel/perlqtinstall/auto/';
+
 use KDEUi4;
 use Plasma4;
-use Qt4::isa qw( Plasma::Applet );
+use QtCore4::isa qw( Plasma::Applet );
 
 my $foo;
 
 sub NEW {
     my ( $class, $parent, $args ) = @_;
-    $args = [map{ Qt4::Variant( $_ ) } @$args]; 
+    $args = [map{ Qt::Variant( $_ ) } @$args]; 
     $class->SUPER::NEW( $parent, $args );
     $foo->{bar} = this;
 
@@ -25,8 +28,8 @@ sub NEW {
 
 sub paintInterface {
     my ( $p, $option, $contentsRect ) = @_;
-    $p->setRenderHint(Qt4::Painter::SmoothPixmapTransform());
-    $p->setRenderHint(Qt4::Painter::Antialiasing());
+    $p->setRenderHint(Qt::Painter::SmoothPixmapTransform());
+    $p->setRenderHint(Qt::Painter::Antialiasing());
  
     # Now we draw the applet, starting with our svg
     this->{m_svg}->resize($contentsRect->width(), $contentsRect->height());
@@ -35,9 +38,9 @@ sub paintInterface {
     # We place the icon and text
     $p->drawPixmap(7, 0, this->{m_icon}->pixmap($contentsRect->width(),$contentsRect->width()-14));
     $p->save();
-    $p->setPen(Qt4::white());
+    $p->setPen(Qt::white());
     $p->drawText($contentsRect,
-                Qt4::AlignBottom() | Qt4::AlignHCenter(),
+                Qt::AlignBottom() | Qt::AlignHCenter(),
                 "Hello Plasmoid!");
     $p->restore();
 

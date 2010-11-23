@@ -38,6 +38,7 @@ extern "C" {
 #include "XSUB.h"
 }
 
+
 // Copy these to avoid linking directly to the bindings
 struct smokeperl_object {
     bool allocated;
@@ -164,15 +165,11 @@ QObject *KPerlPluginFactory::create(const char *iface, QWidget *parentWidget, QO
         my_perl = perl_alloc();
         perl_construct(my_perl);
 
-        // Build argc and argv to pass to perl.  Supply a -I to add the applet's
-        // path to @INC.
-        int argc = 4;
-        QByteArray includepath( "-I" );
-        includepath.append( QFile::encodeName(program.path()).data() );
+        // Build argc and argv to pass to perl.
+        int argc = 2;
         char *argv[] = {
             "kperlpluginfactory",
-            includepath.data(),
-            "-e", "0" };
+            "-e0" };
 
         perl_parse(my_perl, xs_init, argc, argv, (char **)NULL);
 
@@ -180,13 +177,19 @@ QObject *KPerlPluginFactory::create(const char *iface, QWidget *parentWidget, QO
         // embedded perl.  This will be used during virtual method calls, to
         // put G_EVAL on the call to perl to prevent perl from dying and
         // killing the process that is loading the perl plugin.
-        sv_setsv( get_sv("Qt4::_internal::isEmbedded", TRUE), &PL_sv_yes );
+        sv_setsv( get_sv("Qt::_internal::isEmbedded", TRUE), &PL_sv_yes );
     }
-    PERL_SET_CONTEXT(PL_curinterp);
+    PERL_SET_CONTEXT(my_perl);
+
+    // Tell Perl where to look for modules
+    QByteArray includepath( "use lib '" );
+    includepath.append( QFile::encodeName(program.path()).data() );
+    includepath.append( "';" );
+    eval_pv( includepath.data(), TRUE );
 
     // Load the specified module in an eval to trap the error
     QString moduleName = program.baseName().replace(QRegExp("\\.pm$"), "").toLatin1();
-    QString requireModule = QString( "eval{ require %1 }" )
+    QString requireModule = QString( "require %1" )
         .arg( moduleName );
     eval_pv( requireModule.toLatin1().data(), TRUE );
     bool badStatus = show_exception_message();
@@ -194,7 +197,7 @@ QObject *KPerlPluginFactory::create(const char *iface, QWidget *parentWidget, QO
         return 0;
     }
     // Now run ModuleName->import
-    QString importModule = QString( "eval{ %1->import }" )
+    QString importModule = QString( "%1->import" )
         .arg( moduleName );
     eval_pv( importModule.toLatin1().data(), TRUE );
     badStatus = show_exception_message();

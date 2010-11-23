@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use QtCore4;
 use KDEUi4;
-use Qt4::isa qw( KDE::XmlGuiWindow );
-use Qt4::GlobalSpace qw( i18n );
+use QtCore4::isa qw( KDE::XmlGuiWindow );
+use Qt::GlobalSpace qw( i18n );
 
 sub NEW
 {
@@ -22,8 +22,8 @@ sub setupActions
     my $clearAction = KDE::Action(this);
     $clearAction->setText(i18n('&Clear'));
     $clearAction->setIcon(KDE::Icon('document-new'));
-    $clearAction->setShortcut(Qt4::KeySequence('Ctrl+W'));
-    this->actionCollection()->addAction(Qt4::String('clear'), $clearAction);
+    $clearAction->setShortcut(Qt::KeySequence('Ctrl+W'));
+    this->actionCollection()->addAction(Qt::String('clear'), $clearAction);
     this->connect($clearAction, SIGNAL 'triggered(bool)',
             this->{textArea}, SLOT 'clear()');
 

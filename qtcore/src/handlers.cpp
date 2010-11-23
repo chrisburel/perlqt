@@ -368,11 +368,18 @@ void marshall_basetype(Marshall* m) {
                         // double free.
                     }
 
-                    const Smoke::Class& c = m->smoke()->classes[m->type().classId()];
+                    Smoke::ModuleIndex fromClass;
+                    fromClass.smoke = o->smoke;
+                    fromClass.index = o->classId;
+
+                    Smoke::ModuleIndex toClass;
+                    toClass.smoke = m->smoke();
+                    toClass.index = m->type().classId();
+
                     ptr = o->smoke->cast(
                         ptr,
-                        o->classId,
-                        o->smoke->idClass(c.className).index
+                        fromClass,
+                        toClass
                     );
 
                     m->item().s_voidp = ptr;
@@ -408,12 +415,14 @@ void marshall_basetype(Marshall* m) {
                         // valid.  This shouldn't be necessary, but it seems
                         // that some things bypass the Binding::deleted code.
                         smokeperl_object* o = sv_obj_info(var);
-                        if ( Smoke::isDerivedFrom( o->smoke, o->classId, returnMId.smoke, returnMId.index ) ) {
-                            SvSetMagicSV(m->var(), var);
-                            break;
-                        }
-                        else {
-                            unmapPointer( o, o->classId, 0 );
+                        if( o && o->ptr ) {
+                            if ( Smoke::isDerivedFrom( o->smoke, o->classId, returnMId.smoke, returnMId.index ) ) {
+                                SvSetMagicSV(m->var(), var);
+                                break;
+                            }
+                            else {
+                                unmapPointer( o, o->classId, 0 );
+                            }
                         }
                     }
 

@@ -23,19 +23,23 @@ package Clock;
 use strict;
 use warnings;
 
+use lib '/home/cburel/perlqtinstall/';
+use lib '/home/cburel/perlqtinstall/auto/';
+
 use QtCore4;
 use KDEUi4;
 use Plasma4;
-use Qt4::isa qw( ClockApplet );
+use QtCore4::isa qw( ClockApplet );
 use KDECore4 qw( i18n );
-use List::Util qw( max );
+use List::Util qw( min max );
 
 use ClockApplet;
 use Ui_ClockConfig;
 
-use Qt4::slots
+use QtCore4::slots
     dataUpdated => ['const QString &', 'const Plasma::DataEngine::Data &'],
     clockConfigAccepted => [],
+    clockConfigChanged => [],
     repaintNeeded => [],
     moveSecondHand => [];
 
@@ -49,7 +53,7 @@ my $keepme;
 
 sub NEW {
     my ($class, $parent, $args) = @_;
-    $args = [map{ Qt4::Variant( $_ ) } @$args];
+    $args = [map{ Qt::Variant( Qt::String($_) ) } @$args];
     $class->SUPER::NEW( $parent, $args );
     $keepme->{please} = this;
     
@@ -58,9 +62,9 @@ sub NEW {
     this->{m_showingTimezone} = 0;
     this->{m_tzFrame} = 0;
     this->{m_repaintCache} = RepaintAll;
-    this->{m_faceCache} = Qt4::Pixmap();
-    this->{m_handsCache} = Qt4::Pixmap();
-    this->{m_glassCache} = Qt4::Pixmap();
+    this->{m_faceCache} = Qt::Pixmap();
+    this->{m_handsCache} = Qt::Pixmap();
+    this->{m_glassCache} = Qt::Pixmap();
     this->{m_secondHandUpdateTimer} = 0;
     this->{m_animateSeconds} = 0;
     KDE::Global::locale()->insertCatalog('libplasmaclock');
@@ -86,41 +90,54 @@ sub NEW {
 sub init
 {
     this->SUPER::init();
+    this->{m_oldTimezone} = this->currentTimezone();
+    this->configChanged();
+}
 
+sub connectToEngine
+{
+    this->{m_lastTimeSeen} = Qt::Time();
+
+    my $timeEngine = this->dataEngine('time');
+    $timeEngine->disconnectSource(this->{m_oldTimezone}, this);
+    this->{m_oldTimezone} = currentTimezone();
+
+    if (this->{m_showSecondHand}) {
+        $timeEngine->connectSource(currentTimezone(), this, 500);
+    } else {
+        $timeEngine->connectSource(currentTimezone(), this, 6000, Plasma::AlignToMinute());
+    }
+}
+
+sub clockConfigChanged
+{
     my $cg = this->config();
-    this->{m_showSecondHand} = $cg->readEntry(Qt4::String('showSecondHand'), Qt4::String(''));
-    this->{m_showTimezoneString} = $cg->readEntry(Qt4::String('showTimezoneString'), Qt4::String(''));
+    this->{m_showSecondHand} = $cg->readEntry(Qt::String('showSecondHand'), Qt::String('0'));
+    this->{m_showTimezoneString} = $cg->readEntry(Qt::String('showTimezoneString'), Qt::String('0'));
     this->{m_showingTimezone} = this->{m_showTimezoneString};
-    this->{m_fancyHands} = $cg->readEntry(Qt4::String('fancyHands'), Qt4::String(''));
-    this->setCurrentTimezone($cg->readEntry(Qt4::String('timezone'), Qt4::String(this->localTimezone())));
+    this->{m_fancyHands} = $cg->readEntry(Qt::String('fancyHands'), Qt::String('0'));
+    this->setCurrentTimezone($cg->readEntry(Qt::String('timezone'), Qt::String(this->localTimezone())));
 
     if (this->{m_showSecondHand}) {
         #We don't need to cache the applet if it update every seconds
-        this->setCacheMode(Qt4::GraphicsItem::NoCache());
+        this->setCacheMode(Qt::GraphicsItem::NoCache());
     } else {
-        this->setCacheMode(Qt4::GraphicsItem::DeviceCoordinateCache());
+        this->setCacheMode(Qt::GraphicsItem::DeviceCoordinateCache());
     }
 
     this->connectToEngine();
     this->invalidateCache();
 }
 
-sub connectToEngine
-{
-    this->{m_lastTimeSeen} = Qt4::Time();
-
-    my $timeEngine = this->dataEngine('time');
-    if (this->{m_showSecondHand}) {
-        $timeEngine->connectSource(this->currentTimezone(), this, 500);
-    } else {
-        $timeEngine->connectSource(this->currentTimezone(), this, 6000, Plasma::AlignToMinute());
-    }
-}
-
 sub constraintsEvent
 {
     my ($constraints) = @_;
-    this->SUPER::constraintsEvent($constraints);
+
+    # There's a semi bug with using this->SUPER, when the super class is a perl
+    # class.  Doing so causes the wrong number of arguments to be passed to the
+    # called subroutine (because 'this' gets placed on the front of @_, which
+    # is not how PerlQt is designed to work).
+    ClockApplet::constraintsEvent($constraints);
 
     if ($constraints & Plasma::SizeConstraint()) {
         this->invalidateCache();
@@ -141,7 +158,7 @@ sub shape
         return Plasma::Applet::shape();
     }
 
-    my $path = Qt4::PainterPath();
+    my $path = Qt::PainterPath();
     # we adjust by 2px all around to allow for smoothing the jaggies
     # if the ellipse is too small, we'll get a nastily jagged edge around the clock
     $path->addEllipse(this->boundingRect()->adjusted(-2, -2, 2, 2));
@@ -166,6 +183,7 @@ sub dataUpdated
     if (Plasma::ToolTipManager::self()->isVisible(this)) {
         this->updateTipContent();
     }
+    updateClockApplet();
 
     if (this->{m_secondHandUpdateTimer}) {
         this->{m_secondHandUpdateTimer}->stop();
@@ -182,7 +200,7 @@ sub createClockConfigurationInterface
 {
     my ($parent) = @_;
     #TODO: Make the size settable
-    my $widget = Qt4::Widget();
+    my $widget = Qt::Widget();
     this->{ui} = Ui_ClockConfig->setupUi($widget);
     $parent->addPage($widget, i18n('Appearance'), 'view-media-visualization');
 
@@ -199,13 +217,13 @@ sub clockConfigAccepted
 
     if (this->{m_showSecondHand}) {
         #We don't need to cache the applet if it update every seconds
-        this->setCacheMode(Qt4::GraphicsItem::NoCache());
+        this->setCacheMode(Qt::GraphicsItem::NoCache());
     } else {
-        this->setCacheMode(Qt4::GraphicsItem::DeviceCoordinateCache());
+        this->setCacheMode(Qt::GraphicsItem::DeviceCoordinateCache());
     }
 
-    $cg->writeEntry('showSecondHand', this->{m_showSecondHand});
-    $cg->writeEntry('showTimezoneString', this->{m_showTimezoneString});
+    $cg->writeEntry(Qt::String('showSecondHand'), Qt::String(this->{m_showSecondHand}));
+    $cg->writeEntry(Qt::String('showTimezoneString'), Qt::String(this->{m_showTimezoneString}));
     this->update();
 
     this->dataEngine('time')->disconnectSource(this->currentTimezone(), this);
@@ -227,7 +245,7 @@ sub changeEngineTimezone
         $timeEngine->connectSource($newTimezone, this, 6000, Plasma::AlignToMinute());
     }
 
-    if (this->{m_showingTimezone} != (this->{m_showTimezoneString} || this->shouldDisplayTimezone())) {
+    if (this->{m_showingTimezone} ne (this->{m_showTimezoneString} || this->shouldDisplayTimezone())) {
         this->{m_showingTimezone} = !(this->{m_showingTimezone});
         this->constraintsEvent(Plasma::SizeConstraint());
     }
@@ -254,7 +272,7 @@ sub drawHand
     # - the _horizontal_ position of the hands does not matter
     # - the _shadow_ elements should have the same vertical position as their _hand_ element counterpart
 
-    my $elementRect = Qt4::RectF();
+    my $elementRect = Qt::RectF();
     my $name = $handName . 'HandShadow';
     if (this->{m_theme}->hasElement($name)) {
         $p->save();
@@ -263,12 +281,12 @@ sub drawHand
         if( $rect->height() < ${KDE::IconLoader::SizeEnormous()} ) {
             $elementRect->setWidth( $elementRect->width() * 2.5 );
         }
-        my $offset = Qt4::Point(2, 3);
+        my $offset = Qt::Point(2, 3);
 
         $p->translate($rect->x() + ($rect->width() / 2) + $offset->x(), $rect->y() + ($rect->height() / 2) + $offset->y());
         $p->rotate($rotation);
         $p->translate(-$elementRect->width()/2, $elementRect->y()-$verticalTranslation);
-        this->{m_theme}->paint($p, Qt4::RectF(Qt4::PointF(0, 0), $elementRect->size()), $name);
+        this->{m_theme}->paint($p, Qt::RectF(Qt::PointF(0, 0), $elementRect->size()), $name);
 
         $p->restore();
     }
@@ -284,7 +302,7 @@ sub drawHand
     $p->translate($rect->x() + $rect->width()/2, $rect->y() + $rect->height()/2);
     $p->rotate($rotation);
     $p->translate(-$elementRect->width()/2, $elementRect->y()-$verticalTranslation);
-    this->{m_theme}->paint($p, Qt4::RectF(Qt4::PointF(0, 0), $elementRect->size()), $name);
+    this->{m_theme}->paint($p, Qt::RectF(Qt::PointF(0, 0), $elementRect->size()), $name);
 
     $p->restore();
 }
@@ -292,7 +310,7 @@ sub drawHand
 sub paintInterface
 {
     my ($p, $option, $rect) = @_;
-    $rect = Qt4::RectF( $rect );
+    $rect = Qt::RectF( $rect );
 
     # compute hand angles
     my $minutes = 6.0 * this->{m_time}->minute() - 180;
@@ -305,14 +323,14 @@ sub paintInterface
 
         if (this->{m_fancyHands}) {
             if (!defined this->{m_secondHandUpdateTimer}) {
-                this->{m_secondHandUpdateTimer} = Qt4::Timer(this);
+                this->{m_secondHandUpdateTimer} = Qt::Timer(this);
                 this->connect(this->{m_secondHandUpdateTimer}, SIGNAL 'timeout()', this, SLOT 'moveSecondHand()');
             }
 
             if (this->{m_animateSeconds} && !this->{m_secondHandUpdateTimer}->isActive()) {
                 #kDebug() << 'starting second hand movement';
                 this->{m_secondHandUpdateTimer}->start(50);
-                this->{m_animationStart} = Qt4::Time::currentTime()->msec();
+                this->{m_animationStart} = Qt::Time::currentTime()->msec();
             } else {
                 my $runTime = 500;
                 my $m = 1; # Mass
@@ -322,7 +340,7 @@ sub paintInterface
                 my $gamma = $b / (2 * $m); # Dampening constant
                 my $omega0 = sqrt($k / $m);
                 my $omega1 = sqrt($omega0 * $omega0 - $gamma * $gamma);
-                my $elapsed = Qt4::Time::currentTime()->msec() - this->{m_animationStart};
+                my $elapsed = Qt::Time::currentTime()->msec() - this->{m_animationStart};
                 my $t = (4 * $PI) * ($elapsed / $runTime);
                 my $val = 1 + exp(-$gamma * $t) * -cos($omega1 * $t);
 
@@ -335,10 +353,10 @@ sub paintInterface
             }
         } else {
             if (!this->{m_secondHandUpdateTimer}) {
-                this->{m_secondHandUpdateTimer} = Qt4::Timer(this);
+                this->{m_secondHandUpdateTimer} = Qt::Timer(this);
                 this->connect(this->{m_secondHandUpdateTimer}, SIGNAL 'timeout()', this, SLOT 'moveSecondHand()');
             }
-            
+
             if (this->{m_animationStart} != $seconds && !this->{m_secondHandUpdateTimer}->isActive()) {
                 this->{m_secondHandUpdateTimer}->start(50);
                 this->{m_animationStart} = $seconds; #we don't want to have a second animation if there is a external update (wallpaper etc).
@@ -354,20 +372,20 @@ sub paintInterface
     }
 
     # paint face and glass cache
-    my $faceRect = Qt4::RectF(this->{m_faceCache}->rect());
+    my $faceRect = Qt::RectF(this->{m_faceCache}->rect());
     if (this->{m_repaintCache} == RepaintAll) {
-        this->{m_faceCache}->fill(Qt4::Color(Qt4::transparent()));
-        this->{m_glassCache}->fill(Qt4::Color(Qt4::transparent()));
+        this->{m_faceCache}->fill(Qt::Color(Qt::transparent()));
+        this->{m_glassCache}->fill(Qt::Color(Qt::transparent()));
 
-        my $facePainter = Qt4::Painter(this->{m_faceCache});
-        my $glassPainter = Qt4::Painter(this->{m_glassCache});
-        $facePainter->setRenderHint(Qt4::Painter::SmoothPixmapTransform());
-        $glassPainter->setRenderHint(Qt4::Painter::SmoothPixmapTransform());
+        my $facePainter = Qt::Painter(this->{m_faceCache});
+        my $glassPainter = Qt::Painter(this->{m_glassCache});
+        $facePainter->setRenderHint(Qt::Painter::SmoothPixmapTransform());
+        $glassPainter->setRenderHint(Qt::Painter::SmoothPixmapTransform());
 
         this->{m_theme}->paint($facePainter, $faceRect, 'ClockFace');
 
         $glassPainter->save();
-        my $elementRect = Qt4::RectF(Qt4::PointF(0, 0), Qt4::SizeF(this->{m_theme}->elementSize('HandCenterScrew')));
+        my $elementRect = Qt::RectF(Qt::PointF(0, 0), Qt::SizeF(this->{m_theme}->elementSize('HandCenterScrew')));
         $glassPainter->translate($faceRect->width() / 2 - $elementRect->width() / 2, $faceRect->height() / 2 - $elementRect->height() / 2);
         this->{m_theme}->paint($glassPainter, $elementRect, 'HandCenterScrew');
         $glassPainter->restore();
@@ -382,11 +400,11 @@ sub paintInterface
 
     # paint hour and minute hands cache
     if (this->{m_repaintCache} == RepaintHands || this->{m_repaintCache} == RepaintAll) {
-        this->{m_handsCache}->fill(Qt4::Color(Qt4::transparent()));
+        this->{m_handsCache}->fill(Qt::Color(Qt::transparent()));
 
-        my $handsPainter = Qt4::Painter(this->{m_handsCache});
+        my $handsPainter = Qt::Painter(this->{m_handsCache});
         $handsPainter->drawPixmap($faceRect, this->{m_faceCache}, $faceRect);
-        $handsPainter->setRenderHint(Qt4::Painter::SmoothPixmapTransform());
+        $handsPainter->setRenderHint(Qt::Painter::SmoothPixmapTransform());
 
         this->drawHand($handsPainter, $faceRect, this->{m_verticalTranslation}, $hours, 'Hour');
         this->drawHand($handsPainter, $faceRect, this->{m_verticalTranslation}, $minutes, 'Minute');
@@ -399,7 +417,7 @@ sub paintInterface
     # paint caches and second hand
     # We're going to modify this copy of the rect, so make a copy of it.  Just
     # saying $targetRect = $faceRect won't copy it.
-    my $targetRect = Qt4::RectF( $faceRect );
+    my $targetRect = Qt::RectF( $faceRect );
     if ($targetRect->width() < $rect->width()) {
         $targetRect->moveLeft(($rect->width() - $targetRect->width()) / 2);
     }
@@ -407,7 +425,7 @@ sub paintInterface
 
     $p->drawPixmap($targetRect, this->{m_handsCache}, $faceRect);
     if (this->{m_showSecondHand}) {
-        $p->setRenderHint(Qt4::Painter::SmoothPixmapTransform());
+        $p->setRenderHint(Qt::Painter::SmoothPixmapTransform());
         this->drawHand($p, $targetRect, this->{m_verticalTranslation}, $seconds, 'Second');
     }
     $p->drawPixmap($targetRect, this->{m_glassCache}, $faceRect);
@@ -417,25 +435,36 @@ sub paintInterface
         my $time = this->prettyTimezone();
 
         if ($time) {
-            my $textRect = this->tzRect();
-            this->tzFrame()->paintFrame($p, Qt4::RectF($textRect), Qt4::RectF(Qt4::Point(0, 0), $textRect->size()));
+            my $textRect = this->tzRect($time);
+            this->tzFrame()->paintFrame($p, Qt::RectF($textRect), Qt::RectF(Qt::Point(0, 0), Qt::SizeF($textRect->size())));
+
+            my ($left, $top, $right, $bottom);
+            this->tzFrame()->getMargins($left, $top, $right, $bottom);
 
             $p->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor()));
             $p->setFont(Plasma::Theme::defaultTheme()->font(Plasma::Theme::DefaultFont()));
-            $p->drawText($textRect, Qt4::AlignCenter(), $time);
+            $p->drawText($textRect->adjusted($left, 0, -$right, 0), Qt::AlignCenter(), $time);
         }
     }
 }
 
 sub tzRect
 {
+    my ($text) = @_;
     my $rect = this->contentsRect()->toRect();
+
     my $font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DefaultFont());
-    my $fm = Qt4::FontMetrics($font);
+    my $fontMetrics = Qt::FontMetrics($font);
+
     my ( $left, $top, $right, $bottom ) = (0, 0, 0, 0);
     this->tzFrame()->getMargins($left, $top, $right, $bottom);
-    my $height = $top + $bottom + $fm->height();
-    return Qt4::Rect(0, $rect->bottom() - $height, $rect->width(), $height);
+
+    my $width = $left + $right + $fontMetrics->width($text) + $fontMetrics->averageCharWidth() * 2;
+    my $height = $top + $bottom + $fontMetrics->height();
+    $width = min($width, $rect->width());
+    $height = min($height, $rect->height());
+
+    return Qt::Rect(($rect->width() - $width) / 2, $rect->bottom() - $height, $width, $height);
 }
 
 sub tzFrame
@@ -455,21 +484,21 @@ sub invalidateCache
     my $pixmapSize = this->contentsRect()->size()->toSize();
 
     if (this->{m_showingTimezone}) {
-        my $tzArea = this->tzRect();
+        my $tzArea = this->tzRect(this->prettyTimezone());
         $pixmapSize->setHeight(max(10, $pixmapSize->height() - $tzArea->height()));
-        this->tzFrame()->resizeFrame(Qt4::SizeF($tzArea->size()));
+        this->tzFrame()->resizeFrame(Qt::SizeF($tzArea->size()));
     }
 
     $pixmapSize->setWidth($pixmapSize->height());
-    this->{m_faceCache} = Qt4::Pixmap($pixmapSize);
-    this->{m_handsCache} = Qt4::Pixmap($pixmapSize);
-    this->{m_glassCache} = Qt4::Pixmap($pixmapSize);
+    this->{m_faceCache} = Qt::Pixmap($pixmapSize);
+    this->{m_handsCache} = Qt::Pixmap($pixmapSize);
+    this->{m_glassCache} = Qt::Pixmap($pixmapSize);
 
-    this->{m_faceCache}->fill(Qt4::Color(Qt4::transparent()));
-    this->{m_glassCache}->fill(Qt4::Color(Qt4::transparent()));
-    this->{m_handsCache}->fill(Qt4::Color(Qt4::transparent()));
+    this->{m_faceCache}->fill(Qt::Color(Qt::transparent()));
+    this->{m_glassCache}->fill(Qt::Color(Qt::transparent()));
+    this->{m_handsCache}->fill(Qt::Color(Qt::transparent()));
 
-    this->{m_theme}->resize(Qt4::SizeF($pixmapSize));
+    this->{m_theme}->resize(Qt::SizeF($pixmapSize));
 }
 
 1;
