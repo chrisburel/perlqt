@@ -7,6 +7,36 @@ if (NOT PERL_FOUND OR NOT PERL_LIBRARY)
     return()
 endif (NOT PERL_FOUND OR NOT PERL_LIBRARY)
 
+macro_optional_find_package(QScintilla)
+macro_log_feature(QSCINTILLA_FOUND "QScintilla2" "QScintilla2 libraries" "http://www.riverbankcomputing.co.uk/software/qscintilla/intro" FALSE "" "Needed to compile QScintilla2 bindings")
+
+macro_optional_find_package(QImageBlitz)
+macro_log_feature(QIMAGEBLITZ_FOUND "QImageBlitz" "QImageBlitz library" "http://www.kde.org" FALSE "" "Needed to compile QImageBlitz bindings")
+
+macro_optional_find_package(Phonon)
+macro_log_feature(PHONON_FOUND "Phonon" "Phonon multimedia framework" "http://www.kde.org" FALSE "" "Needed to compile Phonon bindings")
+
+macro_optional_find_package(Soprano)
+macro_log_feature(SOPRANO_FOUND "Soprano" "Soprano libraries" "http://soprano.sourceforge.net" FALSE "" "Needed to compile Soprano bindings")
+
+macro_optional_find_package(Nepomuk)
+macro_log_feature(NEPOMUK_FOUND "Nepomuk" "Nepomuk libraries" "http://www.kde.org" FALSE "" "Needed to compile Nepomuk bindings")
+
+macro_optional_find_package(KdepimLibs)
+macro_log_feature(KDEPIMLIBS_FOUND "kdepimlibs" "KDE PIM libraries" "http://www.kde.org" FALSE "" "Needed to compile Akonadi bindings")
+
+macro_optional_find_package(Akonadi)
+macro_log_feature(AKONADI_FOUND "Akonadi" "Akonadi libraries" "http://www.kde.org" FALSE "" "Needed to compile Akonadi bindings")
+
+macro_optional_find_package(Okular)
+macro_log_feature(OKULAR_FOUND "Okular" "Okular libraries" "http://www.kde.org" FALSE "" "Needed to compile Okular bindings")
+
+macro_optional_find_package(LibAttica)
+macro_log_feature(LIBATTICA_FOUND "libattica" "LibAttica" "http://www.kde.org" FALSE "" "Needed to compile libattica bindings")
+
+macro_optional_find_package(Qwt5)
+macro_log_feature(Qwt5_Qt4_FOUND "Qwt5 for Qt4" "Qwt5 libraries for Qt4" "http://qwt.sourceforge.net" FALSE "" "Needed to compile Qwt5 bindings")
+
 add_definitions(-DDEBUG)
 
 include (FindPerlMore)
@@ -66,6 +96,9 @@ macro_optional_add_bindings(LIBATTICA_FOUND "Attica" attica)
 macro_optional_add_bindings(Nepomuk_FOUND "Nepomuk" nepomuk nepomukquery)
 
 macro_optional_add_bindings(OKULAR_FOUND "Okular" okular)
+
+find_library(KATEINTERFACES_LIBRARY kateinterfaces HINTS ${KDE4_LIB_DIR})
+find_path(KATE_INCLUDE_DIR kate/plugin.h HINTS ${KDE4_INCLUDE_DIR})
 
 macro_optional_add_bindings(KATE_INCLUDE_DIR "Kate" kate)
 
