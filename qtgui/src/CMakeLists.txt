@@ -1,6 +1,6 @@
 include_directories(
     ${CMAKE_SOURCE_DIR}/perl/qtcore/src
-    ${CMAKE_SOURCE_DIR}/smoke
+    ${CMAKE_SOURCE_DIR}/generator
     ${PERL_INCLUDE_PATH}
     ${QT_INCLUDES} )
 
