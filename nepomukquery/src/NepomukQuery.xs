@@ -26,7 +26,7 @@ extern "C" {
 #include "ppport.h"
 }
 
-#include <smoke/nepomukquery_smoke.h>
+#include <smoke/kde/nepomukquery_smoke.h>
 
 #include <smokeperl.h>
 #include <handlers.h>

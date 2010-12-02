@@ -26,7 +26,7 @@ extern "C" {
 #include "ppport.h"
 }
 
-#include <smoke/plasma_smoke.h>
+#include <smoke/kde/plasma_smoke.h>
 
 #include <smokeperl.h>
 #include <handlers.h>

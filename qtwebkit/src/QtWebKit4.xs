@@ -26,7 +26,7 @@ extern "C" {
 #include "ppport.h"
 }
 
-#include <smoke/qtwebkit_smoke.h>
+#include <smoke/qt/qtwebkit_smoke.h>
 
 #include <smokeperl.h>
 #include <handlers.h>

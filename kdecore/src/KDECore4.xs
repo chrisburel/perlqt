@@ -29,7 +29,7 @@ extern "C" {
 #include "ppport.h"
 }
 
-#include <smoke/kdecore_smoke.h>
+#include <smoke/kde/kdecore_smoke.h>
 
 #include <smokeperl.h>
 #include <handlers.h>

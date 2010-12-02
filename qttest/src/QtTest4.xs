@@ -32,7 +32,7 @@ extern "C" {
 #include "ppport.h"
 }
 
-#include <smoke/qttest_smoke.h>
+#include <smoke/qt/qttest_smoke.h>
 
 #include <smokeperl.h>
 #include <handlers.h>

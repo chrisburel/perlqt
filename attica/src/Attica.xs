@@ -26,7 +26,7 @@ extern "C" {
 #include "ppport.h"
 }
 
-#include <smoke/attica_smoke.h>
+#include <smoke/kde/attica_smoke.h>
 
 #include <smokeperl.h>
 #include <handlers.h>

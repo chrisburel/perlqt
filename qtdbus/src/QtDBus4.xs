@@ -26,7 +26,7 @@ extern "C" {
 #include "ppport.h"
 }
 
-#include <smoke/qtdbus_smoke.h>
+#include <smoke/qt/qtdbus_smoke.h>
 
 #include <smokeperl.h>
 #include <handlers.h>

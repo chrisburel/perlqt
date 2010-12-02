@@ -26,7 +26,7 @@ extern "C" {
 #include "ppport.h"
 }
 
-#include <smoke/knewstuff2_smoke.h>
+#include <smoke/kde/knewstuff2_smoke.h>
 
 #include <smokeperl.h>
 #include <handlers.h>
