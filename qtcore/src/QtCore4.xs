@@ -480,6 +480,8 @@ BOOT:
     newXS(" Qt::Buffer::read", XS_qiodevice_read, __FILE__);
     newXS(" Qt::TcpSocket::read", XS_qiodevice_read, __FILE__);
     newXS(" Qt::TcpServer::read", XS_qiodevice_read, __FILE__);
+    newXS(" Qt::File::read", XS_qiodevice_read, __FILE__);
+    newXS(" Qt::DataStream::readRawData", XS_qdatastream_readrawdata, __FILE__);
 
     newXS(" Qt::XmlStreamAttributes::EXISTS"   , XS_QXmlStreamAttributes_exists, __FILE__);
     newXS(" Qt::XmlStreamAttributes::FETCH"    , XS_QXmlStreamAttributes_at, __FILE__);

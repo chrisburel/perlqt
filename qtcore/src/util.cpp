@@ -1612,6 +1612,43 @@ XS(XS_qiodevice_read) {
     }
 }
 
+XS(XS_qdatastream_readrawdata) {
+    dXSARGS;
+    if (items != 3) {
+        croak( "%s", "Invalid argument list to Qt::DataStream::readRawData()" );
+    }
+
+    smokeperl_object *o = sv_obj_info(ST(0));
+
+    if (!o) {
+        croak( "Qt::DataStream::read() called on a non-Qt object" );
+    }
+    if(isDerivedFrom(o, "QDataStream") == -1) {
+        croak( "%s", "Qt::DataStream::read() called on a"
+            " non-DataStream object");
+    }
+
+    QDataStream * stream = (QDataStream *) o->smoke->cast(
+        o->ptr,
+        o->classId,
+        o->smoke->idClass("QDataStream").index
+    );
+
+    if ( !SvROK(ST(1)) ) {
+        croak( "%s", "Error: First argument to Qt::DataStream::readRawData(char*, uint) should be a scalar reference" );
+    }
+    uint maxSize = SvIV( ST(2) );
+    char* data = new char[maxSize];
+    int bytesRead = stream->readRawData( data, maxSize );
+
+    sv_setsv( SvRV(ST(1)), newSVpvn( data, bytesRead ) );
+
+    // Return the QDataStream that's already at ST(0)
+    delete[] data;
+    ST(0) = sv_2mortal( newSViv( bytesRead ) );
+    XSRETURN(1);
+}
+
 // TODO: Find a better place to put these.
 Q_DECLARE_METATYPE(HV*)
 Q_DECLARE_METATYPE(AV*)

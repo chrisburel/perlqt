@@ -93,6 +93,7 @@ XS(XS_qmodelindex_internalpointer);
 XS(XS_qbytearray_data);
 
 XS(XS_qiodevice_read);
+XS(XS_qdatastream_readrawdata);
 
 XS(XS_qvariant_value);
 XS(XS_qvariant_from_value);
