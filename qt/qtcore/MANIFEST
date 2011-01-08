@@ -384,7 +384,6 @@ examples/widgets/groupbox/Window.pm
 examples/widgets/groupbox/groupbox.pl
 examples/widgets/icons/IconPreviewArea.pm
 examples/widgets/icons/IconSizeSpinBox.pm
-examples/widgets/icons/IconSizeSpinbox.pm
 examples/widgets/icons/ImageDelegate.pm
 examples/widgets/icons/MainWindow.pm
 examples/widgets/icons/icons.pl
