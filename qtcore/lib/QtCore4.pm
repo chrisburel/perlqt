@@ -1414,7 +1414,6 @@ sub makeMetaData {
     my $meta = hashByName($classname . '::META');
 
     my $classinfos = $meta->{classinfos};
-    my $dbus = $meta->{dbus};
     my $signals = $meta->{signals};
     my $slots = $meta->{slots};
 
@@ -1475,7 +1474,7 @@ sub makeMetaData {
         push @$data, $nullposition; #parameter names
         push @$data, $nullposition; #return type, void
         push @$data, $nullposition; #tag
-        if ( $dbus ) {
+        if ( $signal->{public} ) {
             push @$data, $MethodScriptable | $MethodSignal | $AccessPublic; # flags
         }
         else {
@@ -1501,7 +1500,12 @@ sub makeMetaData {
             push @$data, $nullposition; #return type, void
         }
         push @$data, $nullposition; #tag
-        push @$data, $MethodSlot | $AccessPrivate; # flags
+        if ( $slot->{public} ) {
+            push @$data, $MethodScriptable | $MethodSlot | $AccessPublic; # flags
+        }
+        else {
+            push @$data, $MethodSlot | $AccessPrivate; # flags
+        }
     }
 
     push @$data, 0; #eod

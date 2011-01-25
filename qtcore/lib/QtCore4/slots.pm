@@ -9,6 +9,7 @@ use strict;
 use warnings;
 use Carp;
 use QtCore4;
+use Scalar::Util qw(looks_like_number);
 
 our $VERSION = 0.60;
 
@@ -28,6 +29,12 @@ sub import {
     } unless defined &{ "${caller}::metaObject" };
 
     Qt::_internal::installqt_metacall( $caller ) unless defined &{$caller."::qt_metacall"};
+
+    my $public = grep { $slots[$_*2] eq 'public' &&
+        looks_like_number( $slots[$_*2+1] ) &&
+        $slots[$_*2+1] > 0
+    } 0..$#slots/2;
+
     for ( my $i = 0; $i < @slots; $i += 2 ) {
         my $fullslotname = $slots[$i];
         my $slotargs = $slots[$i+1];
@@ -48,6 +55,7 @@ sub import {
             name => $slotname,
             signature => $signature,
             returnType => $returnType,
+            public => $public,
         };
 
         push @{$meta->{slots}}, $slot;

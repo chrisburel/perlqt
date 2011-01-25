@@ -32,11 +32,13 @@ use QtCore4::classinfo
     '';
 
 use QtCore4::slots # METHODS
+    'public' => 1,
     'accelerate' => [],
     'decelerate' => [],
     'turnLeft' => [],
     'turnRight' => [];
 use QtCore4::signals # SIGNALS
+    'public' => 1,
     'crashed' => [];
 
 #

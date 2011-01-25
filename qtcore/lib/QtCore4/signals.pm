@@ -9,6 +9,7 @@ use strict;
 use warnings;
 use Carp;
 use QtCore4;
+use Scalar::Util qw(looks_like_number);
 
 our $VERSION = 0.60;
 
@@ -30,6 +31,11 @@ sub import {
     # This makes any call to the signal name call XS_SIGNAL
     Qt::_internal::installqt_metacall( $caller ) unless defined &{$caller."::qt_metacall"};
 
+    my $public = grep { $signals[$_*2] eq 'public' &&
+        looks_like_number( $signals[$_*2+1] ) &&
+        $signals[$_*2+1] > 0
+    } 0..$#signals/2;
+
     for ( my $i = 0; $i < @signals; $i += 2 ) {
         my $signalname = $signals[$i];
         my $signalargs = $signals[$i+1];
@@ -44,6 +50,7 @@ sub import {
         my $signal = {
             name => $signalname,
             signature => $signature,
+            public => $public,
         };
 
         push @{$meta->{signals}}, $signal;

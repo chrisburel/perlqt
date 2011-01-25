@@ -10,6 +10,7 @@ use QtGui4;
 use QtDBus4;
 use QtCore4::isa qw( Qt::Object );
 use QtCore4::slots
+    public => 1,
     'QString ping' => ['QString'];
 
 sub NEW {

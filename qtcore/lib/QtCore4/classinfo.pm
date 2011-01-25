@@ -27,8 +27,6 @@ sub import {
 
     Qt::_internal::installqt_metacall( $caller ) unless defined &{$caller."::qt_metacall"};
 
-    $meta->{dbus} = undef;
-
     foreach my $key ( keys %classinfos ) {
         my $value = $classinfos{$key};
 
@@ -37,10 +35,6 @@ sub import {
         };
 
         push @{$meta->{classinfos}}, $classinfo;
-
-        # This affects the way the meta methods are defined.  If $meta->{dbus}
-        # is true, the methods get declared public.
-        $meta->{dbus} = 1 if $key eq 'D-Bus Interface';
     }
 }
 
