@@ -302,16 +302,7 @@ namespace PerlQt4 {
 		if (t == "QDBusVariant") {
 			*reinterpret_cast<QDBusVariant*>(o[0]) = *(QDBusVariant*) _stack[0].s_class;
 		} else {
-            // Save any address in zeroth element of the arrary of 'void*'s
-            // passed to qt_metacall()
-			void * ptr = o[0];
 			smokeStackToQt4Stack(_stack, o, 0, 1, _replyType);
-            // Only if the zeroth element of the array of 'void*'s passed to
-            // qt_metacall() contains an address, is the return value of the
-            // slot needed.
-			if (ptr != 0) {
-				*(void**)ptr = *(void**)(o[0]);
-			}
 		}
     }
 
