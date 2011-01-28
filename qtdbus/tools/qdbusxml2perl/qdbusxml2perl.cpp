@@ -67,7 +67,8 @@
 
 #define ANNOTATION_NO_WAIT      "org.freedesktop.DBus.Method.NoReply"
 
-static QString globalClassName;
+static QString adaptorPackage;
+static QString proxyPackage;
 static QString parentClassName;
 static QString proxyFile;
 static QString adaptorFile;
@@ -85,13 +86,14 @@ static const char help[] =
     "\n"
     "Options:\n"
     "  -a <filename>    Write the adaptor code to <filename>\n"
-    "  -c <classname>   Use <classname> as the class name for the generated classes\n"
+    "  -A <package>     Use <package> as the package for the generated adaptor\n"
     "  -h               Show this information\n"
     "  -i <filename>    Add #include to the output\n"
     "  -l <classname>   When generating an adaptor, use <classname> as the parent class\n"
     "  -m               Generate #include \"filename.moc\" statements in the .cpp files\n"
     "  -N               Don't use namespaces\n"
     "  -p <filename>    Write the proxy code to <filename>\n"
+    "  -P <package>     Use <package> as the package for the generated proxy\n"
     "  -v               Be verbose.\n"
     "  -V               Show the program version and quit.\n"
     "\n"
@@ -155,14 +157,19 @@ static void parseCmdLine(QStringList args)
             c = arg.at(1).toLatin1();
         else if (arg == QLatin1String("--help"))
             c = 'h';
+        else if (arg == QLatin1String("--adaptorPackage"))
+            c = 'A';
+        else if (arg == QLatin1String("--proxyPackage"))
+            c = 'P';
+
 
         switch (c) {
         case 'a':
             adaptorFile = nextArg(args, i, 'a');
             break;
 
-        case 'c':
-            globalClassName = nextArg(args, i, 'c');
+        case 'A':
+            adaptorPackage = nextArg(args, i, 'A');
             break;
 
         case 'v':
@@ -196,6 +203,10 @@ static void parseCmdLine(QStringList args)
 
         case 'p':
             proxyFile = nextArg(args, i, 'p');
+            break;
+
+        case 'P':
+            proxyPackage = nextArg(args, i, 'P');
             break;
 
         default:
@@ -327,18 +338,21 @@ static QTextStream &writeHeader(QTextStream &ts, bool changesWillBeLost)
 enum ClassType { Proxy, Adaptor };
 static QString classNameForInterface(const QString &interface, ClassType classType)
 {
-    if (!globalClassName.isEmpty())
-        return globalClassName;
 
     QStringList parts = interface.split(QLatin1Char('.'));
 
     QString retval;
-    if (classType == Proxy)
+    if (classType == Proxy) {
+        if (!proxyPackage.isEmpty())
+            return proxyPackage;
         foreach (QString part, parts) {
             part[0] = part[0].toUpper();
             retval += part;
         }
+    }
     else {
+        if (!adaptorPackage.isEmpty())
+            return adaptorPackage;
         retval = parts.last();
         retval[0] = retval[0].toUpper();
     }
@@ -537,11 +551,13 @@ static void openFile(const QString &fileName, QFile &file)
 static void writeProxy(const QString &filename, const QDBusIntrospection::Interfaces &interfaces)
 {
     // open the file
-    QString headerName = header(filename);
+    QString headerName = pm(filename);
+    QString cppName = pm(filename);
+    QString perlName = pm(filename);
+
     QByteArray headerData;
     QTextStream hs(&headerData);
 
-    QString cppName = cpp(filename);
     QByteArray cppData;
     QTextStream cs(&cppData);
 
@@ -550,72 +566,44 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
     if (cppName != headerName)
         writeHeader(cs, false);
 
-    // include guards:
-    QString includeGuard;
-    if (!headerName.isEmpty() && headerName != QLatin1String("-")) {
-        includeGuard = headerName.toUpper().replace(QLatin1Char('.'), QLatin1Char('_'));
-        int pos = includeGuard.lastIndexOf(QLatin1Char('/'));
-        if (pos != -1)
-            includeGuard = includeGuard.mid(pos + 1);
-    } else {
-        includeGuard = QLatin1String("QDBUSXML2CPP_PROXY");
-    }
-    includeGuard = QString(QLatin1String("%1_%2"))
-                   .arg(includeGuard)
-                   .arg(QDateTime::currentDateTime().toTime_t());
-    hs << "#ifndef " << includeGuard << endl
-       << "#define " << includeGuard << endl
-       << endl;
-
     foreach (QString include, includes) {
-        hs << "#include \"" << include << "\"" << endl;
-        if (headerName.isEmpty())
-            cs << "#include \"" << include << "\"" << endl;
+        hs << "use " << include << ";" << endl;
     }
 
     hs << endl;
-
-    if (cppName != headerName) {
-        if (!headerName.isEmpty() && headerName != QLatin1String("-"))
-            cs << "#include \"" << headerName << "\"" << endl << endl;
-    }
 
     foreach (const QDBusIntrospection::Interface *interface, interfaces) {
         QString className = classNameForInterface(interface->name, Proxy);
 
         // comment:
-        hs << "/*" << endl
-           << " * Proxy class for interface " << interface->name << endl
-           << " */" << endl;
-        cs << "/*" << endl
-           << " * Implementation of interface class " << className << endl
-           << " */" << endl
+        hs << "#" << endl
+           << "# Proxy class for interface " << interface->name << endl
+           << "#" << endl;
+        cs << "#" << endl
+           << "# Implementation of interface class " << className << endl
+           << "#" << endl
            << endl;
 
         // class header:
-        hs << "class " << className << ": public QDBusAbstractInterface" << endl
-           << "{" << endl
-           << "    Q_OBJECT" << endl;
+        hs << "package " << className << ";" << endl;
+        hs << "use strict;" << endl;
+        hs << "use warnings;" << endl;
+        hs << "use QtCore4;" << endl;
+        hs << "use QtDBus4;" << endl;
+        hs << "use QtCore4::isa qw( Qt::DBusAbstractInterface )" << ";" << endl << endl;
 
         // the interface name
-        hs << "public:" << endl
-           << "    static inline const char *staticInterfaceName()" << endl
-           << "    { return \"" << interface->name << "\"; }" << endl
+        cs << "sub staticInterfaceName" << endl
+           << "{" << endl
+           << "    return \'" << interface->name << "\';" << endl
+           << "}" << endl
            << endl;
 
         // constructors/destructors:
-        hs << "public:" << endl
-           << "    " << className << "(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);" << endl
-           << endl
-           << "    ~" << className << "();" << endl
-           << endl;
-        cs << className << "::" << className << "(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent)" << endl
-           << "    : QDBusAbstractInterface(service, path, staticInterfaceName(), connection, parent)" << endl
+        cs << "sub NEW" << endl
            << "{" << endl
-           << "}" << endl
-           << endl
-           << className << "::~" << className << "()" << endl
-           << "{" << endl
+           << "    my ($class, $service, $path, $connection, $parent) = @_;" << endl
+           << "    $class->SUPER::NEW($service, $path, staticInterfaceName(), $connection, $parent);" << endl
            << "}" << endl
            << endl;
 
@@ -659,160 +647,132 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
         }
 
         // methods:
-        hs << "public Q_SLOTS: // METHODS" << endl;
-        foreach (const QDBusIntrospection::Method &method, interface->methods) {
-            bool isDeprecated = method.annotations.value(QLatin1String("org.freedesktop.DBus.Deprecated")) == QLatin1String("true");
-            bool isNoReply =
-                method.annotations.value(QLatin1String(ANNOTATION_NO_WAIT)) == QLatin1String("true");
-            if (isNoReply && !method.outputArgs.isEmpty()) {
-                fprintf(stderr, "warning: method %s in interface %s is marked 'no-reply' but has output arguments.\n",
-                        qPrintable(method.name), qPrintable(interface->name));
-                continue;
-            }
-
-            hs << "    inline "
-               << (isDeprecated ? "Q_DECL_DEPRECATED " : "");
-
-            if (isNoReply) {
-                hs << "Q_NOREPLY void ";
-            } else {
-                hs << "QDBusPendingReply<";
-                for (int i = 0; i < method.outputArgs.count(); ++i)
-                    hs << (i > 0 ? ", " : "")
-                       << templateArg(qtTypeName(method.outputArgs.at(i).type, method.annotations, i, "Out"));
-                hs << "> ";
-            }
-
-            hs << method.name << "(";
-
-            QStringList argNames = makeArgNames(method.inputArgs);
-            writeArgList(hs, argNames, method.annotations, method.inputArgs);
-
-            hs << ")" << endl
-               << "    {" << endl
-               << "        QList<QVariant> argumentList;" << endl;
-
-            if (!method.inputArgs.isEmpty()) {
-                hs << "        argumentList";
-                for (int argPos = 0; argPos < method.inputArgs.count(); ++argPos)
-                    hs << " << qVariantFromValue(" << argNames.at(argPos) << ')';
-                hs << ";" << endl;
-            }
-
-            if (isNoReply)
-                hs << "        callWithArgumentList(QDBus::NoBlock, "
-                   <<  "QLatin1String(\"" << method.name << "\"), argumentList);" << endl;
-            else
-                hs << "        return asyncCallWithArgumentList(QLatin1String(\""
-                   << method.name << "\"), argumentList);" << endl;
-
-            // close the function:
-            hs << "    }" << endl;
-
-            if (method.outputArgs.count() > 1) {
-                // generate the old-form QDBusReply methods with multiple incoming parameters
-                hs << "    inline "
-                   << (isDeprecated ? "Q_DECL_DEPRECATED " : "")
-                   << "QDBusReply<"
-                   << templateArg(qtTypeName(method.outputArgs.first().type, method.annotations, 0, "Out")) << "> ";
-                hs << method.name << "(";
-
-                QStringList argNames = makeArgNames(method.inputArgs, method.outputArgs);
-                writeArgList(hs, argNames, method.annotations, method.inputArgs, method.outputArgs);
-
-                hs << ")" << endl
-                   << "    {" << endl
-                   << "        QList<QVariant> argumentList;" << endl;
-
-                int argPos = 0;
-                if (!method.inputArgs.isEmpty()) {
-                    hs << "        argumentList";
-                    for (argPos = 0; argPos < method.inputArgs.count(); ++argPos)
-                        hs << " << qVariantFromValue(" << argNames.at(argPos) << ')';
-                    hs << ";" << endl;
+        if ( interface->methods.size() > 0 ) {
+            hs << "use QtCore4::slots # METHODS" << endl;
+            foreach (const QDBusIntrospection::Method &method, interface->methods) {
+                bool isDeprecated = method.annotations.value(QLatin1String("org.freedesktop.DBus.Deprecated")) == QLatin1String("true");
+                bool isNoReply =
+                    method.annotations.value(QLatin1String(ANNOTATION_NO_WAIT)) == QLatin1String("true");
+                if (isNoReply && !method.outputArgs.isEmpty()) {
+                    fprintf(stderr, "warning: method %s in interface %s is marked 'no-reply' but has output arguments.\n",
+                            qPrintable(method.name), qPrintable(interface->name));
+                    continue;
                 }
 
-                hs << "        QDBusMessage reply = callWithArgumentList(QDBus::Block, "
-                   <<  "QLatin1String(\"" << method.name << "\"), argumentList);" << endl;
+                hs << "    '";
+                if (!isNoReply) {
+                    hs << "QDBusPendingReply<";
+                    for (int i = 0; i < method.outputArgs.count(); ++i)
+                        hs << (i > 0 ? ", " : "")
+                           << templateArg(qtTypeName(method.outputArgs.at(i).type, method.annotations, i, "Out"));
+                    hs << "> ";
+                }
 
-                argPos++;
-                hs << "        if (reply.type() == QDBusMessage::ReplyMessage && reply.arguments().count() == "
-                   << method.outputArgs.count() << ") {" << endl;
+                hs << method.name << "' => [";
+                cs << "sub " << method.name << endl
+                   << "{" << endl;
 
-                // yes, starting from 1
-                for (int i = 1; i < method.outputArgs.count(); ++i)
-                    hs << "            " << argNames.at(argPos++) << " = qdbus_cast<"
-                       << templateArg(qtTypeName(method.outputArgs.at(i).type, method.annotations, i, "Out"))
-                       << ">(reply.arguments().at(" << i << "));" << endl;
-                hs << "        }" << endl
-                   << "        return reply;" << endl
-                   << "    }" << endl;
+                QStringList argNames = makeArgNames(method.inputArgs);
+
+
+                if ( argNames.size() > 0 )
+                   cs << "    my (";
+
+                writeArgTypesList(hs, argNames, method.annotations, method.inputArgs);
+                writeArgList(cs, argNames, method.annotations, method.inputArgs);
+
+                hs << "]," << endl;
+
+                if ( argNames.size() > 0 )
+                    cs << ") = @_;" << endl;
+
+                cs << "    my $argumentList = [];" << endl;
+
+                if (!method.inputArgs.isEmpty()) {
+                    cs << "    push @{$argumentList}";
+                    for (int argPos = 0; argPos < method.inputArgs.count(); ++argPos)
+                        cs << ", Qt::qVariantFromValue($" << argNames.at(argPos) << ')';
+                    cs << ";" << endl;
+                }
+
+                if (isNoReply)
+                    cs << "    callWithArgumentList(Qt::DBus::NoBlock(), "
+                       <<  "'" << method.name << "', $argumentList);" << endl;
+                else
+                    cs << "    return asyncCallWithArgumentList('"
+                       << method.name << "', $argumentList);" << endl;
+
+                // close the function:
+                cs << "}" << endl;
+
+                if (method.outputArgs.count() > 1) {
+                    // generate the old-form QDBusReply methods with multiple incoming parameters
+                    hs << "    inline "
+                       << (isDeprecated ? "Q_DECL_DEPRECATED " : "")
+                       << "QDBusReply<"
+                       << templateArg(qtTypeName(method.outputArgs.first().type, method.annotations, 0, "Out")) << "> ";
+                    hs << method.name << "(";
+
+                    QStringList argNames = makeArgNames(method.inputArgs, method.outputArgs);
+                    writeArgList(hs, argNames, method.annotations, method.inputArgs, method.outputArgs);
+
+                    hs << ")" << endl
+                       << "    {" << endl
+                       << "        QList<QVariant> argumentList;" << endl;
+
+                    int argPos = 0;
+                    if (!method.inputArgs.isEmpty()) {
+                        hs << "        argumentList";
+                        for (argPos = 0; argPos < method.inputArgs.count(); ++argPos)
+                            hs << " << qVariantFromValue(" << argNames.at(argPos) << ')';
+                        hs << ";" << endl;
+                    }
+
+                    hs << "        QDBusMessage reply = callWithArgumentList(QDBus::Block, "
+                       <<  "QLatin1String(\"" << method.name << "\"), argumentList);" << endl;
+
+                    argPos++;
+                    hs << "        if (reply.type() == QDBusMessage::ReplyMessage && reply.arguments().count() == "
+                       << method.outputArgs.count() << ") {" << endl;
+
+                    // yes, starting from 1
+                    for (int i = 1; i < method.outputArgs.count(); ++i)
+                        hs << "            " << argNames.at(argPos++) << " = qdbus_cast<"
+                           << templateArg(qtTypeName(method.outputArgs.at(i).type, method.annotations, i, "Out"))
+                           << ">(reply.arguments().at(" << i << "));" << endl;
+                    hs << "        }" << endl
+                       << "        return reply;" << endl
+                       << "    }" << endl;
+                }
+
             }
-
-            hs << endl;
+            hs << "    ;" << endl
+               << endl;
         }
 
-        hs << "Q_SIGNALS: // SIGNALS" << endl;
-        foreach (const QDBusIntrospection::Signal &signal, interface->signals_) {
-            hs << "    ";
-            if (signal.annotations.value(QLatin1String("org.freedesktop.DBus.Deprecated")) ==
-                QLatin1String("true"))
-                hs << "Q_DECL_DEPRECATED ";
+        if ( interface->signals_.size() > 0 ) {
+            hs << "use QtCore4::signals # SIGNALS" << endl;
+            foreach (const QDBusIntrospection::Signal &signal, interface->signals_) {
+                hs << "    ";
+                if (signal.annotations.value(QLatin1String("org.freedesktop.DBus.Deprecated")) ==
+                    QLatin1String("true"))
+                    hs << "Q_DECL_DEPRECATED ";
 
-            hs << "void " << signal.name << "(";
+                hs << signal.name << "(";
 
-            QStringList argNames = makeArgNames(signal.outputArgs);
-            writeArgList(hs, argNames, signal.annotations, signal.outputArgs);
+                QStringList argNames = makeArgNames(signal.outputArgs);
+                writeArgList(hs, argNames, signal.annotations, signal.outputArgs);
 
-            hs << ");" << endl; // finished for header
+                hs << ");" << endl; // finished for header
+            }
+            hs << "    ;" << endl
+               << endl;
         }
 
         // close the class:
-        hs << "};" << endl
+        cs << "1;" << endl
            << endl;
     }
-
-    if (!skipNamespaces) {
-        QStringList last;
-        QDBusIntrospection::Interfaces::ConstIterator it = interfaces.constBegin();
-        do
-        {
-            QStringList current;
-            QString name;
-            if (it != interfaces.constEnd()) {
-                current = it->constData()->name.split(QLatin1Char('.'));
-                name = current.takeLast();
-            }
-
-            int i = 0;
-            while (i < current.count() && i < last.count() && current.at(i) == last.at(i))
-                ++i;
-
-            // i parts matched
-            // close last.arguments().count() - i namespaces:
-            for (int j = i; j < last.count(); ++j)
-                hs << QString((last.count() - j - 1 + i) * 2, QLatin1Char(' ')) << "}" << endl;
-
-            // open current.arguments().count() - i namespaces
-            for (int j = i; j < current.count(); ++j)
-                hs << QString(j * 2, QLatin1Char(' ')) << "namespace " << current.at(j) << " {" << endl;
-
-            // add this class:
-            if (!name.isEmpty()) {
-                hs << QString(current.count() * 2, QLatin1Char(' '))
-                   << "typedef ::" << classNameForInterface(it->constData()->name, Proxy)
-                   << " " << name << ";" << endl;
-            }
-
-            if (it == interfaces.constEnd())
-                break;
-            ++it;
-            last = current;
-        } while (true);
-    }
-
-    // close the include guard
-    hs << "#endif" << endl;
 
     QString mocName = moc(filename);
     if (includeMocs && !mocName.isEmpty())
@@ -823,16 +783,9 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
     hs.flush();
 
     QFile file;
-    openFile(headerName, file);
+    openFile(perlName, file);
     file.write(headerData);
-
-    if (headerName == cppName) {
-        file.write(cppData);
-    } else {
-        QFile cppFile;
-        openFile(cppName, cppFile);
-        cppFile.write(cppData);
-    }
+    file.write(cppData);
 }
 
 static void writeAdaptor(const QString &filename, const QDBusIntrospection::Interfaces &interfaces)
@@ -945,138 +898,133 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
         }
         */
 
-        if ( interface->methods.size() > 0 )
-            hs << "use QtCore4::slots # METHODS" << endl;
-        const QDBusIntrospection::Method &lastMethod = (interface->methods.end()-1).value();
-        foreach (const QDBusIntrospection::Method &method, interface->methods) {
-            bool isNoReply =
-                method.annotations.value(QLatin1String(ANNOTATION_NO_WAIT)) == QLatin1String("true");
-            if (isNoReply && !method.outputArgs.isEmpty()) {
-                fprintf(stderr, "warning: method %s in interface %s is marked 'no-reply' but has output arguments.\n",
-                        qPrintable(method.name), qPrintable(interface->name));
-                continue;
-            }
-
-            hs << "    '";
-            //if (method.annotations.value(QLatin1String("org.freedesktop.DBus.Deprecated")) ==
-                //QLatin1String("true"))
-                //hs << "Q_DECL_DEPRECATED ";
-
-            QByteArray returnType;
-            if (isNoReply) {
-                cs << "sub ";
-            } else if (method.outputArgs.isEmpty()) {
-                cs << "sub ";
-            } else {
-                returnType = qtTypeName(method.outputArgs.first().type, method.annotations, 0, "Out");
-                hs << returnType << " ";
-                cs << returnType << " ";
-            }
-
-            QString name = method.name;
-            hs << name << "' => [";
-            cs << name << endl
-               << "{" << endl;
-
-            QStringList argNames = makeArgNames(method.inputArgs, method.outputArgs);
-
-            if ( argNames.size() > 0 )
-               cs << "    my (";
-
-            writeArgTypesList(hs, argNames, method.annotations, method.inputArgs, method.outputArgs);
-            writeArgList(cs, argNames, method.annotations, method.inputArgs, method.outputArgs);
-
-            if ( method == lastMethod )
-                hs << "];" << endl;
-            else
-                hs << "]," << endl; // finished for header
-
-            if ( argNames.size() > 0 )
-                cs << ") = @_;" << endl;
-
-            cs << "    # handle method call " << interface->name << "." << method.name << endl;
-
-            // make the call
-            bool usingInvokeMethod = false;
-            if (parentClassName.isEmpty() && method.inputArgs.count() <= 10
-                && method.outputArgs.count() <= 1)
-                usingInvokeMethod = true;
-
-            if ( 0 ) {
-            /* Can't use invokeMethod() since we can't create QGenericArguments
-            if (usingInvokeMethod) {
-                // we are using QMetaObject::invokeMethod
-                if (!returnType.isEmpty())
-                    cs << "    " << returnType << " " << argNames.at(method.inputArgs.count())
-                       << ";" << endl;
-
-                static const char invoke[] = "    Qt::MetaObject::invokeMethod(this->parent(), '";
-                cs << invoke << name << "'";
-
-                if (!method.outputArgs.isEmpty())
-                    cs << ", Q_RETURN_ARG("
-                       << qtTypeName(method.outputArgs.at(0).type, method.annotations,
-                                     0, "Out")
-                       << ", "
-                       << argNames.at(method.inputArgs.count())
-                       << ")";
-
-                for (int i = 0; i < method.inputArgs.count(); ++i)
-                    cs << ", " << "$" << argNames.at(i);
-
-                cs << ");" << endl;
-
-                if (!returnType.isEmpty())
-                    cs << "    return $" << argNames.at(method.inputArgs.count()) << ";" << endl;
-                    */
-            } else {
-                //if (parentClassName.isEmpty())
-                    //cs << "    //";
-                //else
-                    cs << "    ";
-
-                if (!method.outputArgs.isEmpty())
-                    cs << "return ";
-
-                cs << "this->{data}->";
-                cs << name << "(";
-
-                int argPos = 0;
-                bool first = true;
-                for (int i = 0; i < method.inputArgs.count(); ++i) {
-                    cs << (first ? "" : ", ") << argNames.at(argPos++);
-                    first = false;
-                }
-                ++argPos;           // skip retval, if any
-                for (int i = 1; i < method.outputArgs.count(); ++i) {
-                    cs << (first ? "" : ", ") << argNames.at(argPos++);
-                    first = false;
+        if ( interface->methods.size() > 0 ) {
+            hs << "use QtCore4::slots # METHODS" << endl
+               << "    public => 1," << endl;
+            foreach (const QDBusIntrospection::Method &method, interface->methods) {
+                bool isNoReply =
+                    method.annotations.value(QLatin1String(ANNOTATION_NO_WAIT)) == QLatin1String("true");
+                if (isNoReply && !method.outputArgs.isEmpty()) {
+                    fprintf(stderr, "warning: method %s in interface %s is marked 'no-reply' but has output arguments.\n",
+                            qPrintable(method.name), qPrintable(interface->name));
+                    continue;
                 }
 
-                cs << ");" << endl;
+                hs << "    '";
+                //if (method.annotations.value(QLatin1String("org.freedesktop.DBus.Deprecated")) ==
+                    //QLatin1String("true"))
+                    //hs << "Q_DECL_DEPRECATED ";
+
+                QByteArray returnType;
+                cs << "sub ";
+                if (!isNoReply && !method.outputArgs.isEmpty()) {
+                    returnType = qtTypeName(method.outputArgs.first().type, method.annotations, 0, "Out");
+                    hs << returnType << " ";
+                }
+
+                QString name = method.name;
+                hs << name << "' => [";
+                cs << name << endl
+                   << "{" << endl;
+
+                QStringList argNames = makeArgNames(method.inputArgs, method.outputArgs);
+
+                if ( argNames.size() > 0 )
+                   cs << "    my (";
+
+                writeArgTypesList(hs, argNames, method.annotations, method.inputArgs, method.outputArgs);
+                writeArgList(cs, argNames, method.annotations, method.inputArgs, method.outputArgs);
+
+                hs << "]," << endl;
+
+                if ( argNames.size() > 0 )
+                    cs << ") = @_;" << endl;
+
+                cs << "    # handle method call " << interface->name << "." << method.name << endl;
+
+                // make the call
+                bool usingInvokeMethod = false;
+                if (parentClassName.isEmpty() && method.inputArgs.count() <= 10
+                    && method.outputArgs.count() <= 1)
+                    usingInvokeMethod = true;
+
+                if ( 0 ) {
+                /* Can't use invokeMethod() since we can't create QGenericArguments
+                if (usingInvokeMethod) {
+                    // we are using QMetaObject::invokeMethod
+                    if (!returnType.isEmpty())
+                        cs << "    " << returnType << " " << argNames.at(method.inputArgs.count())
+                           << ";" << endl;
+
+                    static const char invoke[] = "    Qt::MetaObject::invokeMethod(this->parent(), '";
+                    cs << invoke << name << "'";
+
+                    if (!method.outputArgs.isEmpty())
+                        cs << ", Q_RETURN_ARG("
+                           << qtTypeName(method.outputArgs.at(0).type, method.annotations,
+                                         0, "Out")
+                           << ", "
+                           << argNames.at(method.inputArgs.count())
+                           << ")";
+
+                    for (int i = 0; i < method.inputArgs.count(); ++i)
+                        cs << ", " << "$" << argNames.at(i);
+
+                    cs << ");" << endl;
+
+                    if (!returnType.isEmpty())
+                        cs << "    return $" << argNames.at(method.inputArgs.count()) << ";" << endl;
+                }
+                        */
+                } else {
+                    //if (parentClassName.isEmpty())
+                        //cs << "    //";
+                    //else
+                        cs << "    ";
+
+                    if (!method.outputArgs.isEmpty())
+                        cs << "return ";
+
+                    cs << "this->{data}->";
+                    cs << name << "(";
+
+                    int argPos = 0;
+                    bool first = true;
+                    for (int i = 0; i < method.inputArgs.count(); ++i) {
+                        cs << (first ? "" : ", ") << "$" << argNames.at(argPos++);
+                        first = false;
+                    }
+                    ++argPos;           // skip retval, if any
+                    for (int i = 1; i < method.outputArgs.count(); ++i) {
+                        cs << (first ? "" : ", ") << argNames.at(argPos++);
+                        first = false;
+                    }
+
+                    cs << ");" << endl;
+                }
+                cs << "}" << endl
+                   << endl;
             }
-            cs << "}" << endl
-               << endl;
+            hs << "    ;" << endl;
         }
 
-        if ( interface->signals_.size() > 0 )
-            hs << "use QtCore4::signals # SIGNALS" << endl;
-        const QDBusIntrospection::Signal &lastSignal = (interface->signals_.end()-1).value();
-        foreach (const QDBusIntrospection::Signal &signal, interface->signals_) {
-            hs << "    '";
-            //if (signal.annotations.value(QLatin1String("org.freedesktop.DBus.Deprecated")) ==
-                //QLatin1String("true"))
-                //hs << "Q_DECL_DEPRECATED ";
+        if ( interface->signals_.size() > 0 ) {
+            hs << "use QtCore4::signals # SIGNALS" << endl
+               << "    public => 1," << endl;
+            foreach (const QDBusIntrospection::Signal &signal, interface->signals_) {
+                hs << "    '";
+                //if (signal.annotations.value(QLatin1String("org.freedesktop.DBus.Deprecated")) ==
+                    //QLatin1String("true"))
+                    //hs << "Q_DECL_DEPRECATED ";
 
-            hs << signal.name << "' => [";
+                hs << signal.name << "' => [";
 
-            QStringList argNames = makeArgNames(signal.outputArgs);
-            writeArgTypesList(hs, argNames, signal.annotations, signal.outputArgs);
+                QStringList argNames = makeArgNames(signal.outputArgs);
+                writeArgTypesList(hs, argNames, signal.annotations, signal.outputArgs);
 
-            if ( signal == lastSignal )
-                hs << "];" << endl;
-            else
-                hs << "]," << endl; // finished for header
+                hs << "]," << endl;
+            }
+            hs << "    ;" << endl;
         }
 
         hs << endl;
