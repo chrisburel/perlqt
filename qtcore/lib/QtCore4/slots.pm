@@ -30,14 +30,26 @@ sub import {
 
     Qt::_internal::installqt_metacall( $caller ) unless defined &{$caller."::qt_metacall"};
 
-    my $public = grep { $slots[$_*2] eq 'public' &&
-        looks_like_number( $slots[$_*2+1] ) &&
-        $slots[$_*2+1] > 0
-    } 0..$#slots/2;
+    my $public = 1;
+
+    my %publicprivate;
+    @publicprivate{qw(public private)} = undef;
 
     for ( my $i = 0; $i < @slots; $i += 2 ) {
         my $fullslotname = $slots[$i];
         my $slotargs = $slots[$i+1];
+
+        if ( exists $publicprivate{$fullslotname} &&
+            looks_like_number( $slotargs ) &&
+            $slotargs > 0 ) {
+            if ( $fullslotname eq 'public' ) {
+                $public = 1;
+            }
+            else {
+                $public = 0;
+            }
+            next;
+        }
 
         # Determine the slot return type, if there is one
         my @returnParts = split / +/, $fullslotname;
