@@ -34,7 +34,6 @@ GetOptions(
     '--with-qt-dir:s' => \$userQtDir,
     '--with-qt-inc-dir:s' => \$userQtIncDir,
     '--with-qt-lib-dir:s' => \$userQtLibDir,
-    '--build-debug' => sub {push(@flags, '-DDEBUG')},
 );
 
 if( $userSmokeDir ) {
@@ -48,11 +47,16 @@ if( $userQtDir ) {
 
 # The bindings should be compiled with the flags for libsmokeqt and qt4
 push(@flags,
-  '-std=gnu++98',
-  '-Wall',
-  '-xc++',
-  '-I.',
+    '-std=gnu++98',
+    '-Wall',
+    '-xc++',
+    '-I.',
 );
+
+# I thought it'd be cool to be able to build the bindings without any runtime
+# debugging compiled in.  But that turned out to not really be a good idea, as
+# that information is useful in a lot of situations.
+push(@flags, '-DPERLQTDEBUG');
 
 # If the user specified a specific path for Qt or Smoke, make sure that's in
 # the include path
@@ -70,32 +74,32 @@ foreach my $path ( $userSmokeLibDir, $userQtLibDir ) {
 # QtGui depends on QtCore, so both libraries will be loaded
 my $flags = `pkg-config --cflags QtGui QtCore QtXml`;
 if (defined($flags) && length($flags)) {
-  push(@flags, split(' ', $flags));
-  # If pkg-config got the cflags, we can assume libs will work too
-  push(@libs, split(' ', `pkg-config --libs QtGui QtCore QtXml`));
+    push(@flags, split(' ', $flags));
+    # If pkg-config got the cflags, we can assume libs will work too
+    push(@libs, split(' ', `pkg-config --libs QtGui QtCore QtXml`));
 }
 else {
-  # If pkg-config couldn't find it, try qmake
-  #$flags = `qmake`;
-  #if (defined($flags) && length($flags)) {
-  #}
-  #else {
+    # If pkg-config couldn't find it, try qmake
+    #$flags = `qmake`;
+    #if (defined($flags) && length($flags)) {
+    #}
+    #else {
     print STDERR 'Could not find SmokeQt4, QtCore and QtGui automatically; ' .
-      "using some defaults.\n";
+        "using some defaults.\n";
     print STDERR "To override this behaviour, see INSTALLING\n";
 
     # Some sane defaults
     push(@flags,
-      '-DQT_SHARED',
-      '-I/usr/include/qt4',
-      '-I/usr/include/qt4/QtCore',
-      '-I/usr/include/qt4/QtGui',
+        '-DQT_SHARED',
+        '-I/usr/include/qt4',
+        '-I/usr/include/qt4/QtCore',
+        '-I/usr/include/qt4/QtGui',
     );
     push(@libs,
-      '-lQtGui',
-      '-lQtCore',
+        '-lQtGui',
+        '-lQtCore',
     );
-  #}
+#}
 }
 
 # Try to load Alien::QtSmoke to find the location of the smoke library
@@ -112,67 +116,67 @@ if ( !$@ ) {
 }
 else {
     warn "Module Alien::QtSmoke not found.  We'll try to use the system" .
-    " installed libsmokeqt (if it exists).";
-    push(@libs, '-lsmokeqt');
+        " installed libsmokeqt (if it exists).";
+    push(@libs, '-lsmokeqtcore');
 }
 
 my $builder = QtBuilder->new(
-  module_name           => 'Qt4',
-  license               => 'gpl',
-  dist_author           => 'Chris Burel <chrisburel@gmail.com>',
-  dist_version_from     => 'lib/Qt4.pm',
-  dynamic_config        => 1,
-  create_readme         => 1,
-  recursive_test_files  => 1,
-  sign                  => 1,
-  create_packlist       => 1,
+    module_name           => 'QtCore4',
+    license               => 'gpl',
+    dist_author           => 'Chris Burel <chrisburel@gmail.com>',
+    dist_version_from     => 'lib/QtCore4.pm',
+    dynamic_config        => 1,
+    create_readme         => 1,
+    recursive_test_files  => 1,
+    sign                  => 1,
+    create_packlist       => 1,
 
-  # Maintain compatibility with ExtUtils::MakeMaker installations
-  create_makefile_pl    => 'passthrough',
+    # Maintain compatibility with ExtUtils::MakeMaker installations
+    create_makefile_pl    => 'passthrough',
 
-  # Location of our special C and XS source files
-  c_source => 'src',
-  xs_files => {
-    'src/Qt4.xs' => 'lib/Qt4.xs'
-  },
-
-  extra_compiler_flags  => \@flags,
-  extra_linker_flags    => \@libs,
-
-  requires => {
-    'perl'                  => 5.006,
-
-    # Pragmatic and special modules
-    'Carp'                  => 1.04,
-    'version'               => 0,
-    'warnings'              => 0,
-    'strict'                => 0,
-  },
-  build_requires => {
-    # For the XS build process
-    'ExtUtils::CBuilder'    => 0,
-    'ExtUtils::ParseXS'     => 0,
-  },
-  recommends => {
-    'Alien::QtSmoke'        => '4.3.3',
-  },
-  conflicts => {
-  },
-
-  add_to_cleanup => [ 'Qt-*' ],
-  script_files => [],
-
-  meta_merge => {
-    resources => {
-      # Custom resources (must begin with an uppercase letter)
-      Ratings      => 'http://cpanratings.perl.org/d/Qt',
-
-      # Official keys (homepage, license, bugtracker)
-      repository   => 'http://perlqt4.googlecode.com/svn/trunk/PerlQt4/perl/',
-      bugtracker   => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Qt',
-      license      => 'http://www.opensource.org/licenses/gpl-2.0.php',
+    # Location of our special C and XS source files
+    c_source => 'src',
+    xs_files => {
+        'src/QtCore4.xs' => 'lib/QtCore4.xs'
     },
-  },
+
+    extra_compiler_flags  => \@flags,
+    extra_linker_flags    => \@libs,
+
+    requires => {
+        'perl'                  => 5.006,
+
+        # Pragmatic and special modules
+        'Carp'                  => 1.04,
+        'version'               => 0,
+        'warnings'              => 0,
+        'strict'                => 0,
+    },
+    build_requires => {
+        # For the XS build process
+        'ExtUtils::CBuilder'    => 0,
+        'ExtUtils::ParseXS'     => 0,
+    },
+    recommends => {
+        'Alien::SmokeQt'        => '4.6.0',
+    },
+    conflicts => {
+    },
+
+    add_to_cleanup => [ 'Qt-*' ],
+    script_files => [],
+
+    meta_merge => {
+        resources => {
+            # Custom resources (must begin with an uppercase letter)
+            Ratings      => 'http://cpanratings.perl.org/d/Qt',
+
+            # Official keys (homepage, license, bugtracker)
+            repository   => 'http://perlqt4.googlecode.com/svn/trunk/PerlQt4/perl/',
+            bugtracker   => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Qt',
+            license      => 'http://www.opensource.org/licenses/gpl-2.0.php',
+        },
+    },
 );
 
 $builder->create_build_script();
