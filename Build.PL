@@ -45,12 +45,11 @@ if( $userQtDir ) {
     $userQtLibDir = "$userQtDir/lib" if !$userQtLibDir;
 }
 
-# The bindings should be compiled with the flags for libsmokeqt and qt4
+# The bindings should be compiled with the flags for libsmokeqtcore and qt4
 push(@flags,
     '-std=gnu++98',
     '-Wall',
     '-xc++',
-    '-I.',
 );
 
 # I thought it'd be cool to be able to build the bindings without any runtime
@@ -108,15 +107,15 @@ if ( !$@ ) {
     # load successful
     push(@flags, '-I' . Alien::QtSmoke->include());
 
-    # Add an rpath to the .so to make sure it can find libsmokeqt after install
+    # Add an rpath to the .so to make sure it can find libsmokeqtcore after install
     push(@libs, '-Wl,--rpath,' . Alien::QtSmoke->lib());
 
     push(@libs, '-L' . Alien::QtSmoke->lib());
-    push(@libs, '-lsmokeqt');
+    push(@libs, '-lsmokeqtcore');
 }
 else {
     warn "Module Alien::QtSmoke not found.  We'll try to use the system" .
-        " installed libsmokeqt (if it exists).";
+        " installed libsmokeqtcore (if it exists).";
     push(@libs, '-lsmokeqtcore');
 }
 
@@ -124,7 +123,7 @@ my $builder = QtBuilder->new(
     module_name           => 'QtCore4',
     license               => 'gpl',
     dist_author           => 'Chris Burel <chrisburel@gmail.com>',
-    dist_version_from     => 'lib/QtCore4.pm',
+    dist_version_from     => 'qtcore/lib/QtCore4.pm',
     dynamic_config        => 1,
     create_readme         => 1,
     recursive_test_files  => 1,
@@ -135,9 +134,9 @@ my $builder = QtBuilder->new(
     create_makefile_pl    => 'passthrough',
 
     # Location of our special C and XS source files
-    c_source => 'src',
+    c_source => 'qtcore/src',
     xs_files => {
-        'src/QtCore4.xs' => 'lib/QtCore4.xs'
+        'qtcore/src/QtCore4.xs' => 'qtcore/lib/QtCore4.xs'
     },
 
     extra_compiler_flags  => \@flags,

@@ -19,11 +19,11 @@ sub ACTION_puic {
     my $p = $self->{properties};
     local $p->{extra_compiler_flags} = [
         @{$self->extra_compiler_flags},
-        '-Itools/puic',
-        '-Itools/puic/perl',
+        '-Iqtcore/tools/puic',
+        '-Iqtcore/tools/puic/perl',
     ];
     my @objects;
-    my $files = $self->_find_file_by_type('cpp',  'tools/puic');
+    my $files = $self->_find_file_by_type('cpp',  'qtcore/tools/puic');
     foreach my $file (keys %$files) {
         push(@objects, $self->compile_c($file));
     }
