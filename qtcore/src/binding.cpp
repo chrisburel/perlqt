@@ -58,7 +58,7 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
 
     // Didn't find one
     if(!o) {
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
         if(!PL_dirty && (do_debug && (do_debug & qtdb_virtual) && (do_debug & qtdb_verbose)))// If not in global destruction
             fprintf(stderr, "Cannot find object for virtual method\n");
 #endif
@@ -70,7 +70,7 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
         return false;
     }
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
     if( do_debug && (do_debug & qtdb_virtual) && (do_debug & qtdb_verbose)){
         Smoke::Method methodobj = o->smoke->methods[method];
         fprintf( stderr, "Looking for virtual method override for %p->%s::%s()\n",
@@ -115,7 +115,7 @@ bool Binding::callMethod(Smoke::Index method, void *ptr, Smoke::Stack args, bool
     }
 
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
     if( do_debug && ( do_debug & qtdb_virtual ) ) {
         fprintf(stderr, "In Virtual override for %s, called from %s %s\n", methodname, srcpackage, srcmethod);
     }

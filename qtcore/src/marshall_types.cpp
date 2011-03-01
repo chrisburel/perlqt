@@ -679,7 +679,7 @@ namespace PerlQt4 {
             return;
         }
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
         if(do_debug && (do_debug & qtdb_slots)) {
             fprintf( stderr, "In slot call %s::%s\n", HvNAME(stash), _methodname );
             if(do_debug & qtdb_verbose) {

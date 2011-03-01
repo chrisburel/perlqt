@@ -38,7 +38,7 @@ Q_DECL_EXPORT COP* caller(I32 count);
 Q_DECL_EXPORT smokeperl_object * alloc_smokeperl_object(bool allocated, Smoke * smoke, int classId, void * ptr);
 SV* alloc_perl_moduleindex( int smokeIndex, Smoke::Index classOrMethIndex );
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
 void catRV( SV *r, SV *sv );
 void catSV( SV *r, SV *sv );
 void catAV( SV *r, AV *av );

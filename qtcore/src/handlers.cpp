@@ -103,7 +103,7 @@ void invoke_dtor(smokeperl_object* o) {
             Smoke::Method& m = o->smoke->methods[o->smoke->methodMaps[method].method];
             Smoke::ClassFn fn = o->smoke->classes[m.classId].classFn;
             Smoke::StackItem i[1];
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
             if( do_debug && (do_debug & qtdb_gc) )
                 fprintf( stderr, "Deleting (%s*)%p\n", o->smoke->classes[o->classId].className, o->ptr );
 #endif

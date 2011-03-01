@@ -141,7 +141,7 @@ SV* alloc_perl_moduleindex( int smokeIndex, Smoke::Index classOrMethIndex ) {
     return sv;
 }
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
 void catRV( SV *r, SV *sv );
 void catSV( SV *r, SV *sv );
 void catAV( SV *r, AV *av );
@@ -518,7 +518,7 @@ SV* package_classId( const char *package ) {
     return (Smoke::Index) 0;
 }
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
 // Args: Smoke::Index id: a smoke method id to print
 // Returns: an SV* containing a formatted method signature string
 SV* prettyPrintMethod(Smoke::ModuleIndex id) {
@@ -1970,7 +1970,7 @@ XS(XS_AUTOLOAD) {
         withObject |= strcmp( super, "SUPER" ) == 0;
     }
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
     if( do_debug && ( do_debug & qtdb_autoload ) ) {
         fprintf(stderr, "In XS Autoload for %s::%s()", package, methodname);
         if((do_debug & qtdb_verbose) && withObject) {
@@ -2001,7 +2001,7 @@ XS(XS_AUTOLOAD) {
 
     if(gv) {
         // Found a perl method
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
         if(do_debug && (do_debug & qtdb_autoload))
             fprintf(stderr, "\t%s::%s found in Perl stash\n", package, methodname);
 #endif            
@@ -2084,7 +2084,7 @@ XS(XS_AUTOLOAD) {
             XSRETURN_YES;
         }
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
         // The following perl call seems to stomp on the package name, let's copy it
         char* packagecpy = new char[strlen(package)+1];
         strcpy( packagecpy, package );
@@ -2112,7 +2112,7 @@ XS(XS_AUTOLOAD) {
             PUTBACK;
         }
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
         if( do_debug && retval && (do_debug & qtdb_gc) )
             fprintf(stderr, "Increasing refcount in DESTROY for %s=%p (still has a parent)\n", packagecpy, o->ptr);
         delete[] packagecpy;
@@ -2236,7 +2236,7 @@ XS(XS_AUTOLOAD) {
             call_this = &nothis;
         }
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
         if(do_debug && (do_debug & qtdb_calls)) {
             fprintf(stderr, "Calling method\t%s\t%s\n", methodname, SvPV_nolen(sv_2mortal(prettyPrintMethod(mi))));
             if(do_debug & qtdb_verbose) {
@@ -2325,7 +2325,7 @@ XS(XS_qt_metacall){
         // This code gets called when a cxx signal is connected to a signal
         // defined in a perl package
         if (method.methodType() == QMetaMethod::Signal) {
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
             if(do_debug && (do_debug & qtdb_signals))
                 fprintf( stderr, "In signal for %s::%s\n", metaobject->className(), method.signature() );
 #endif
@@ -2369,7 +2369,7 @@ XS(XS_signal){
     // called.
     GV* gv = CvGV(cv);
     QLatin1String signalname( GvNAME(gv) );
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
     if(do_debug && (do_debug & qtdb_signals)){
         char* package = HvNAME( GvSTASH(gv) );
         fprintf( stderr, "In signal call %s::%s\n", package, GvNAME(gv) );

@@ -14,7 +14,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtCore4.c
 # I thought it'd be cool to be able to build the bindings without any runtime
 # debugging compiled in.  But that turned out to not really be a good idea, as
 # that information is useful in a lot of situations.
-add_definitions( -DDEBUG )
+add_definitions( -DPERLQTDEBUG )
 
 # Make sure we build QtCore4.c as c++ code
 set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtCore4.c 

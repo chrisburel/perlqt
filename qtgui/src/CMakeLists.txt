@@ -11,8 +11,6 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/QtGui4.c
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_definitions( -DDEBUG )
-
 # Make sure we build QtGui4.c as c++ code
 set_source_files_properties( ${CMAKE_CURRENT_BINARY_DIR}/QtGui4.c 
     PROPERTIES LANGUAGE CXX

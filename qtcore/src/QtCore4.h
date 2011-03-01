@@ -6,7 +6,7 @@
 
 //#define Q_DECL_EXPORT __attribute__ ((visibility("default")))
 
-#ifdef DEBUG
+#ifdef PERLQTDEBUG
 SV* catArguments(SV** sp, int n);
 SV* catCallerInfo( int count );
 #endif
