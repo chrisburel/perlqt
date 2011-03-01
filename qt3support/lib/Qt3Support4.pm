@@ -64,7 +64,7 @@ use QtSql4;
 
 require XSLoader;
 
-our $VERSION = '0.01';
+our $VERSION = '0.96';
 
 XSLoader::load('Qt3Support4', $VERSION);
 

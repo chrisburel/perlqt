@@ -1602,7 +1602,7 @@ use warnings;
 require Exporter;
 require XSLoader;
 
-our $VERSION = '0.60';
+our $VERSION = '0.96';
 
 our @EXPORT = qw( SIGNAL SLOT emit CAST qApp );
 
