@@ -60,7 +60,7 @@ push(@flags, '-DPERLQTDEBUG');
 # If the user specified a specific path for Qt or Smoke, make sure that's in
 # the include path
 foreach my $path ( $userSmokeIncDir, $userQtIncDir ) {
-    push(@flags, "-I$path") if $path;
+    push @flags, map( "-I$_", split m/ /, $path ) if $path;
 }
 
 # If the user specified a specific path for Qt or Smoke, make sure that's in
