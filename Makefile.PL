@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+
+use strict;
+use Config;
+
+my ($prefix, $archlib, $qmake);
+foreach my $arg (@ARGV) {
+    my $key = $arg;
+    my $value = $key;
+    $key =~ s/=.*//g;
+    $value =~ s/^[^=]*=//g;
+    if ($key eq 'PREFIX' or $key eq 'INSTALL_BASE') {
+        $prefix = $value;
+        $archlib = "$value/lib/perl5/".$Config{archname};
+    }
+    elsif ($key eq 'QMAKE') {
+        $qmake = $value;
+    }
+}
+
+my @args;
+push @args, '.';
+push @args, '-DCMAKE_BUILD_TYPE=Release';
+push @args, "-DCMAKE_INSTALL_PREFIX=$prefix" if $prefix;
+push @args, "-DQT_QMAKE_EXECUTABLE=$qmake" if $qmake;
+push @args, "-DCUSTOM_PERL_SITE_ARCH_DIR=$archlib" if $archlib;
+
+# Make sure we have a cmake executable
+my $cmake;
+foreach my $path ( split m/:/, $ENV{PATH} ) {
+    if ( -e "$path/cmake" ) {
+        $cmake = "$path/cmake";
+        last;
+    }
+}
+if ( !$cmake ) {
+    die 'You must have cmake installed to compile PerlQt4.';
+}
+
+exit system('cmake', @args);
