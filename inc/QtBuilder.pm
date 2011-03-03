@@ -45,7 +45,7 @@ my %MODULES = (
     qtgui         => {
         pcfile => 'QtGui',
         sofile => 'QtGui4',
-        libs => [qw(-lsmokeqtgui)],
+        libs => [qw(-lsmokeqtgui -lsmokeqtdbus -lsmokeqtnetwork)],
     },
     qthelp        => {
         pcfile => 'QtHelp',
@@ -147,6 +147,7 @@ sub import {
             push @libs, @{$MODULES{$modname}{libs}};
             if ($modname ne 'qtcore') {
                 push @libs, File::Spec->catdir(Cwd::cwd(), qw(blib arch auto QtCore4 QtCore4.so));
+                #push @libs, '/usr/lib/perl5/site_perl/5.10.0/i686-linux-thread-multi/auto/QtCore4/QtCore4.so';
                 $self->depends_on('qtcore');
             }
 

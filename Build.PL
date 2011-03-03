@@ -50,6 +50,7 @@ push(@flags,
     '-std=gnu++98',
     '-Wall',
     '-xc++',
+    '-g',
 );
 
 # I thought it'd be cool to be able to build the bindings without any runtime
