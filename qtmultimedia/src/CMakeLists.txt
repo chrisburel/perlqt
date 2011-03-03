@@ -22,7 +22,7 @@ set(qtmultimedia4_LIBRARY_SRC
     qtmultimedia4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtMultimedia4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtMultimedia4)
 add_library(perl_qtmultimedia4 MODULE ${qtmultimedia4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtmultimedia4

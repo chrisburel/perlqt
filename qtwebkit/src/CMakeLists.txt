@@ -22,7 +22,7 @@ set(qtwebkit4_LIBRARY_SRC
     qtwebkit4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtWebKit4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtWebKit4)
 add_library(perl_qtwebkit4 MODULE ${qtwebkit4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtwebkit4

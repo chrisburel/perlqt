@@ -22,7 +22,7 @@ set(qtuitools4_LIBRARY_SRC
     qtuitools4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtUiTools4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtUiTools4)
 add_library(perl_qtuitools4 MODULE ${qtuitools4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtuitools4

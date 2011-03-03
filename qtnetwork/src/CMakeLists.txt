@@ -24,7 +24,7 @@ set(qtnetwork4_LIBRARY_SRC
     xsfunctions.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtNetwork4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtNetwork4)
 add_library(perl_qtnetwork4 MODULE ${qtnetwork4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtnetwork4

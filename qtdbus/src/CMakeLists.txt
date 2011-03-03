@@ -22,7 +22,7 @@ set(qtdbus4_LIBRARY_SRC
     qtdbus4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtDBus4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtDBus4)
 add_library(perl_qtdbus4 MODULE ${qtdbus4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtdbus4

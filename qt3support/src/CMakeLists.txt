@@ -22,7 +22,7 @@ set(qt3support4_LIBRARY_SRC
     qt3support4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/Qt3Support4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/Qt3Support4)
 add_library(perl_qt3support4 MODULE ${qt3support4_LIBRARY_SRC})
 
 target_link_libraries(perl_qt3support4

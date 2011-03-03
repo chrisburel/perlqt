@@ -22,7 +22,7 @@ set(qwt_LIBRARY_SRC
     qwthandlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/Qwt)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/Qwt)
 add_library(perl_qwt MODULE ${qwt_LIBRARY_SRC})
 
 target_link_libraries(perl_qwt

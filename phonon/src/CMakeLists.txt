@@ -22,7 +22,7 @@ set(phonon_LIBRARY_SRC
     phononhandlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/Phonon)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/Phonon)
 add_library(perl_phonon MODULE ${phonon_LIBRARY_SRC})
 
 target_link_libraries(perl_phonon

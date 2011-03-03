@@ -22,7 +22,7 @@ set(qtdeclarative4_LIBRARY_SRC
     qtdeclarative4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtDeclarative4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtDeclarative4)
 add_library(perl_qtdeclarative4 MODULE ${qtdeclarative4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtdeclarative4

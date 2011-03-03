@@ -23,7 +23,7 @@ set(qttest4_LIBRARY_SRC
     qttest4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtTest4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtTest4)
 add_library(perl_qttest4 MODULE ${qttest4_LIBRARY_SRC})
 
 target_link_libraries(perl_qttest4

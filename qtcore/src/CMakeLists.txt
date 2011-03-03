@@ -31,7 +31,7 @@ set(perlqtcore_LIBRARY_SRCS
     ${CMAKE_CURRENT_BINARY_DIR}/QtCore4.c
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtCore4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtCore4)
 add_library(perlqtcore4 SHARED ${perlqtcore_LIBRARY_SRCS})
 
 target_link_libraries(perlqtcore4

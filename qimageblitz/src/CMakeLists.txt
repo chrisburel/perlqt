@@ -22,7 +22,7 @@ set(qimageblitz_LIBRARY_SRC
     qimageblitzhandlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QImageBlitz)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QImageBlitz)
 add_library(perl_qimageblitz MODULE ${qimageblitz_LIBRARY_SRC})
 
 target_link_libraries(perl_qimageblitz

@@ -22,7 +22,7 @@ set(qtsql4_LIBRARY_SRC
     qtsql4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtSql4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtSql4)
 add_library(perl_qtsql4 MODULE ${qtsql4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtsql4

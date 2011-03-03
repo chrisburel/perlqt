@@ -22,7 +22,7 @@ set(qtscript4_LIBRARY_SRC
     qtscript4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/perl/blib/arch/auto/QtScript4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtScript4)
 add_library(perl_qtscript4 MODULE ${qtscript4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtscript4
