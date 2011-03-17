@@ -3,15 +3,16 @@
 use strict;
 use Config;
 
-my ($prefix, $archlib, $qmake);
+my ($prefix, $archlib, $qmake) = ($Config{prefix}, $Config{sitearch});
 foreach my $arg (@ARGV) {
     my $key = $arg;
     my $value = $key;
     $key =~ s/=.*//g;
     $value =~ s/^[^=]*=//g;
     if ($key eq 'PREFIX' or $key eq 'INSTALL_BASE') {
+        $archlib =~ s/^$prefix//g;
         $prefix = $value;
-        $archlib = "$value/lib/perl5/".$Config{archname};
+        $archlib = "$prefix/$archlib";
     }
     elsif ($key eq 'QMAKE') {
         $qmake = $value;
@@ -24,6 +25,10 @@ push @args, '-DCMAKE_BUILD_TYPE=Release';
 push @args, "-DCMAKE_INSTALL_PREFIX=$prefix" if $prefix;
 push @args, "-DQT_QMAKE_EXECUTABLE=$qmake" if $qmake;
 push @args, "-DCUSTOM_PERL_SITE_ARCH_DIR=$archlib" if $archlib;
+
+if ( eval "require Alien::SmokeQt" ) {
+    push @args, "-DCMAKE_MODULE_PATH=".Alien::SmokeQt->prefix()."/share/smoke/cmake";
+}
 
 # Make sure we have a cmake executable
 my $cmake;
