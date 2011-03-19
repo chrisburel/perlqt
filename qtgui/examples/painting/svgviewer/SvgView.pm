@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use QtCore4;
 use QtGui4;
+use QtSvg4;
 use QtCore4::isa qw( Qt::GraphicsView );
 use QtCore4::slots
     setHighQualityAntialiasing => ['bool'],
