@@ -11,6 +11,7 @@ use QtTest4 qw( QVERIFY );
 use MainWindow;
 use QtCore4::isa qw(Qt::Object);
 use QtCore4::slots
+    private => 1,
     initTestCase => [];
 use Test::More;
 

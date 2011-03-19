@@ -13,6 +13,7 @@ use lib '../fortuneclient';
 use Client;
 use QtCore4::isa qw(Qt::Object);
 use QtCore4::slots
+    private => 1,
     initTestCase => [],
     getFortune =>[];
 use Test::More;

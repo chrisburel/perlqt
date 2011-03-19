@@ -13,6 +13,7 @@ use lib '../broadcastreceiver';
 use Receiver;
 use QtCore4::isa qw(Qt::Object);
 use QtCore4::slots
+    private => 1,
     initTestCase => [],
     getBroadcast =>[];
 use Test::More;

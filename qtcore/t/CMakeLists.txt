@@ -1,5 +1,3 @@
-enable_testing()
-set(prove_args -I../../blib/lib -I../../blib/arch)
 add_test(perlqt_qtcore4_load           prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/a_loading.t)
 add_test(perlqt_qtcore4_qapp              prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/c_qapp.t)
 add_test(perlqt_qtcore4_sigslot           prove ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/d_sigslot.t)

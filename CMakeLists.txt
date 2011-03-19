@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 2.6)
 
 project(PerlQt)
 
+enable_testing()
+set(ENABLE_GUI_TESTS OFF CACHE BOOL "Run GUI tests in the \"test\" target")
+set(USE_BUILD_DIR_FOR_TESTS OFF CACHE BOOL "Use to toggle between using the build dir or the install dir for tests.")
+if ( USE_BUILD_DIR_FOR_TESTS )
+    set(prove_args -I${CMAKE_BINARY_DIR}/blib/lib -I${CMAKE_BINARY_DIR}/blib/arch)
+endif ( USE_BUILD_DIR_FOR_TESTS )
+
 find_package(Perl REQUIRED)
 find_package(PerlLibs REQUIRED)
 find_package(Qt4 REQUIRED)
