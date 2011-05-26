@@ -23,7 +23,7 @@ set(phonon_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/Phonon)
-add_library(perl_phonon MODULE ${phonon_LIBRARY_SRC})
+add_library(perl_phonon SHARED ${phonon_LIBRARY_SRC})
 
 target_link_libraries(perl_phonon
     ${SMOKE_PHONON_LIBRARY}

@@ -23,7 +23,7 @@ set(qtmultimedia4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtMultimedia4)
-add_library(perl_qtmultimedia4 MODULE ${qtmultimedia4_LIBRARY_SRC})
+add_library(perl_qtmultimedia4 SHARED ${qtmultimedia4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtmultimedia4
     ${SMOKE_QTMULTIMEDIA_LIBRARY}

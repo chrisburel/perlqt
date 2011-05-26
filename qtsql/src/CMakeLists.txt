@@ -23,7 +23,7 @@ set(qtsql4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtSql4)
-add_library(perl_qtsql4 MODULE ${qtsql4_LIBRARY_SRC})
+add_library(perl_qtsql4 SHARED ${qtsql4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtsql4
     ${SMOKE_QTSQL_LIBRARY}

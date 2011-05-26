@@ -23,7 +23,7 @@ set(qsci_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/Qsci)
-add_library(perl_qsci MODULE ${qsci_LIBRARY_SRC})
+add_library(perl_qsci SHARED ${qsci_LIBRARY_SRC})
 
 target_link_libraries(perl_qsci
     ${SMOKE_QSCI_LIBRARY}

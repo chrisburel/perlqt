@@ -23,7 +23,7 @@ set(qthelp4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtHelp4)
-add_library(perl_qthelp4 MODULE ${qthelp4_LIBRARY_SRC})
+add_library(perl_qthelp4 SHARED ${qthelp4_LIBRARY_SRC})
 
 target_link_libraries(perl_qthelp4
     ${SMOKE_QTHELP_LIBRARY}

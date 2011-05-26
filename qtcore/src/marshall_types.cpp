@@ -1,7 +1,6 @@
 #include "QtCore/QHash"
 #include "QtCore/QMap"
 #include "QtCore/QVector"
-#include <QtDBus/QtDBus>
 
 #include "smoke.h"
 #include "marshall_types.h"
@@ -299,11 +298,7 @@ namespace PerlQt4 {
 		QByteArray t(type().name());
 		t.replace("const ", "");
 		t.replace("&", "");
-		if (t == "QDBusVariant") {
-			*reinterpret_cast<QDBusVariant*>(o[0]) = *(QDBusVariant*) _stack[0].s_class;
-		} else {
-			smokeStackToQt4Stack(_stack, o, 0, 1, _replyType);
-		}
+        smokeStackToQt4Stack(_stack, o, 0, 1, _replyType);
     }
 
     Smoke::StackItem &SlotReturnValue::item() {

@@ -38,13 +38,11 @@ target_link_libraries(perlqtcore4
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
-    ${QT_QTDBUS_LIBRARY}
     ${PERL_LIBRARY}
     ${SMOKE_BASE_LIBRARY}
     ${SMOKE_QTCORE_LIBRARY}
     ${SMOKE_QTGUI_LIBRARY}
     ${SMOKE_QTNETWORK_LIBRARY}
-    ${SMOKE_QTDBUS_LIBRARY}
     ${PERL_LIBS})
 
 set_target_properties(perlqtcore4 PROPERTIES OUTPUT_NAME "QtCore4")

@@ -23,7 +23,7 @@ set(qtscript4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtScript4)
-add_library(perl_qtscript4 MODULE ${qtscript4_LIBRARY_SRC})
+add_library(perl_qtscript4 SHARED ${qtscript4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtscript4
     ${SMOKE_QTSCRIPT_LIBRARY}

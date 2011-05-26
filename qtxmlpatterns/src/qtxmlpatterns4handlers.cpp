@@ -15,6 +15,8 @@
  *                                                                         *
  ***************************************************************************/
 
+#include <QtCore/QHash>
+
 #include <QtCore/QVector>
 #include <QtXmlPatterns/QXmlNodeModelIndex>
 

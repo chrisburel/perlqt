@@ -23,7 +23,7 @@ set(qtxmlpatterns4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtXmlPatterns4)
-add_library(perl_qtxmlpatterns4 MODULE ${qtxmlpatterns4_LIBRARY_SRC})
+add_library(perl_qtxmlpatterns4 SHARED ${qtxmlpatterns4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtxmlpatterns4
     ${SMOKE_QTXMLPATTERNS_LIBRARY}

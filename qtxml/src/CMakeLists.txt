@@ -23,7 +23,7 @@ set(qtxml4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtXml4)
-add_library(perl_qtxml4 MODULE ${qtxml4_LIBRARY_SRC})
+add_library(perl_qtxml4 SHARED ${qtxml4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtxml4
     ${SMOKE_QTXML_LIBRARY}

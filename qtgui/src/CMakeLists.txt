@@ -24,7 +24,7 @@ set(qtgui4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtGui4)
-add_library(perl_qtgui4 MODULE ${qtgui4_LIBRARY_SRC})
+add_library(perl_qtgui4 SHARED ${qtgui4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtgui4
     ${SMOKE_QTGUI_LIBRARY}

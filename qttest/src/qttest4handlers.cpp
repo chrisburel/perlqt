@@ -15,6 +15,8 @@
  *                                                                         *
  ***************************************************************************/
 
+#include <QtCore/QHash>
+
 #include <QtTest/qtestaccessible.h>
 
 // Perl headers

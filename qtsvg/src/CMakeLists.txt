@@ -23,7 +23,7 @@ set(qtsvg4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtSvg4)
-add_library(perl_qtsvg4 MODULE ${qtsvg4_LIBRARY_SRC})
+add_library(perl_qtsvg4 SHARED ${qtsvg4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtsvg4
     ${SMOKE_QTSVG_LIBRARY}

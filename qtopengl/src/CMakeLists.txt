@@ -23,7 +23,7 @@ set(qtopengl4_LIBRARY_SRC
 )
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtOpenGL4)
-add_library(perl_qtopengl4 MODULE ${qtopengl4_LIBRARY_SRC})
+add_library(perl_qtopengl4 SHARED ${qtopengl4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtopengl4
     ${SMOKE_QTOPENGL_LIBRARY}
