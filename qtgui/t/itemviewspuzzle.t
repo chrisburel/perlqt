@@ -28,15 +28,52 @@ sub solve {
     my $puzzle = $window->{puzzleWidget};
     foreach my $row ( 0..$model->rowCount(Qt::ModelIndex())-1 ) {
         foreach my $column ( 0..$model->columnCount(Qt::ModelIndex())-1 ) {
+            my $delay = 10;
             my $index = $model->index( $row, $column, Qt::ModelIndex() );
+            my $mimeData = $model->mimeData( [$index] );
             $view->scrollTo($index);
+            qApp->processEvents();
+            Qt::Test::qSleep( $delay );
             my $destRowCol = $model->data( $index, Qt::UserRole() + 1 )->value;
-            my $srcPos = $view->rectForIndex( $index )->center();
-            my $destPos = Qt::Rect( $destRowCol->x*80, $destRowCol->y*80, 80, 80)->center();
+            my $srcPos = $view->viewport()->mapToGlobal($view->rectForIndex( $index )->center());
+            my $destPos = $puzzle->mapToGlobal(Qt::Rect( $destRowCol->x*80, $destRowCol->y*80, 80, 80)->center());
 
-            # If QTest allowed us to make drag events, we could actually solve the puzzle.
-            Qt::Test::mousePress( $view->viewport(), Qt::LeftButton(), Qt::NoModifier(), $srcPos, 10 );
-            Qt::Test::mouseRelease( $puzzle, Qt::LeftButton(), Qt::NoModifier(), $destPos, 10 );
+            my $numSteps = 10;
+            my $xstep = ($destPos->x() - $srcPos->x()) / $numSteps;
+            my $ystep = ($destPos->y() - $srcPos->y()) / $numSteps;
+
+            my $event = Qt::DragEnterEvent( $view->viewport()->mapFromGlobal($srcPos),
+                Qt::MoveAction(), $mimeData, Qt::LeftButton(), Qt::NoModifier() );
+            $view->viewport()->dragEnterEvent( $event );
+            qApp->processEvents();
+            Qt::Test::qSleep( $delay );
+
+            my $curPos = Qt::Point($srcPos);
+            my $widget = $view->viewport();
+            my $inPuzzle = 0;
+            foreach my $step (0..$numSteps - 1) {
+                $curPos->setX( $curPos->x() + $xstep );
+                $curPos->setY( $curPos->y() + $ystep );
+                if ( !$inPuzzle && $widget->mapFromGlobal($curPos)->x() > $widget->geometry()->width() ) {
+                    $inPuzzle = 1;
+                    $widget = $puzzle;
+                    $event = Qt::DragEnterEvent( $widget->mapFromGlobal($srcPos),
+                        Qt::MoveAction(), $mimeData, Qt::LeftButton(), Qt::NoModifier() );
+                    $widget->dragEnterEvent( $event );
+                    qApp->processEvents();
+                    Qt::Test::qSleep( $delay );
+                }
+                $event = Qt::DragMoveEvent( $widget->mapFromGlobal($curPos),
+                    Qt::MoveAction(), $mimeData, Qt::LeftButton(), Qt::NoModifier() );
+                $widget->dragMoveEvent( $event );
+                qApp->processEvents();
+                Qt::Test::qSleep( $delay );
+            }
+            $event = Qt::DropEvent( $puzzle->mapFromGlobal($curPos),
+                Qt::MoveAction(), $mimeData, Qt::LeftButton(), Qt::NoModifier() );
+            $puzzle->dropEvent($event);
+            qApp->processEvents();
+            Qt::Test::qSleep( $delay );
         }
     }
 }
@@ -48,6 +85,8 @@ sub initTestCase {
     Qt::Test::qWaitForWindowShown( $window );
     this->{window} = $window;
     pass( 'Window shown' );
+    $DB::single=1;
+    1;
 }
 
 package main;
