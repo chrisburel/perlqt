@@ -18,7 +18,6 @@
 #include <QHash>
 #include <QList>
 #include <QSignalSpy>
-#include <qtest_gui.h>
 #include <QTestEventList>
 #include <QVariant>
 
