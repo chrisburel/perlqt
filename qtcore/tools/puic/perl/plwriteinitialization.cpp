@@ -2189,16 +2189,18 @@ void WriteInitialization::initializeTreeWidgetItems(const QString &className, co
 
 void WriteInitialization::initializeTableWidget(DomWidget *w)
 {
-    QString varName = toPerlIdentifier(m_driver->findOrInsertWidget(w));
+    QString varNameNoSigil = m_driver->findOrInsertWidget(w);
+    QString varName = toPerlIdentifier(varNameNoSigil);
     QString className = w->attributeClass();
 
     // columns
     QList<DomColumn *> columns = w->elementColumn();
 
+    m_refreshOut << m_option.indent << "my " << varName << " = $self->" << varNameNoSigil << "();\n";
     if (columns.size() != 0) {
-        m_refreshOut << m_option.indent << "if " << varName << ".columnCount < " << columns.size() << "\n"
-            << m_option.indent << m_option.indent << varName << ".columnCount = " << columns.size() << "\n"
-            << m_option.indent << "end\n";
+        m_refreshOut << m_option.indent << "if ( " << varName << "->columnCount < " << columns.size() << " ) {\n"
+            << m_option.indent << m_option.indent << varName << "->setColumnCount(" << columns.size() << ");\n"
+            << m_option.indent << "}\n";
     }
 
     for (int i = 0; i < columns.size(); ++i) {
@@ -2208,10 +2210,10 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
         DomProperty *text = properties.value(QLatin1String("text"));
         DomProperty *icon = properties.value(QLatin1String("icon"));
         if (text || icon) {
-            QString itemName = m_driver->unique(QLatin1String("__colItem"));
+            QString itemName = toPerlIdentifier(m_driver->unique(QLatin1String("__colItem")));
             m_refreshOut << "\n";
             m_refreshOut << m_option.indent 
-                           << itemName << " = Qt::TableWidgetItem.new\n";
+                           << "my " << itemName << " = Qt::TableWidgetItem();\n";
 
             if (text && text->attributeName() == QLatin1String("text"))
                 m_refreshOut << m_option.indent << itemName << "->setText( "
@@ -2220,7 +2222,7 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
             if (icon && icon->attributeName() == QLatin1String("icon"))
                 m_refreshOut << m_option.indent << itemName << "->setIcon( "
                            << pixCall(icon) << " );\n";
-            m_refreshOut << m_option.indent << varName << ".setHorizontalHeaderItem( "
+            m_refreshOut << m_option.indent << varName << "->setHorizontalHeaderItem( "
                            << i << ", " << itemName << " );\n";
         }
     }
@@ -2229,9 +2231,9 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
     QList<DomRow *> rows = w->elementRow();
 
     if (rows.size() != 0) {
-        m_refreshOut << m_option.indent << "if " << varName << ".rowCount < " << rows.size() << "\n"
-            << m_option.indent << m_option.indent << varName << ".rowCount = " << rows.size() << "\n"
-            << m_option.indent << "end\n";
+        m_refreshOut << m_option.indent << "if ( " << varName << "->rowCount() < " << rows.size() << " ) {\n"
+            << m_option.indent << m_option.indent << varName << "->setRowCount(" << rows.size() << ");\n"
+            << m_option.indent << "}\n";
     }
 
     for (int i = 0; i < rows.size(); ++i) {
@@ -2241,10 +2243,10 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
         DomProperty *text = properties.value(QLatin1String("text"));
         DomProperty *icon = properties.value(QLatin1String("icon"));
         if (text || icon) {
-            QString itemName = m_driver->unique(QLatin1String("__rowItem"));
+            QString itemName = toPerlIdentifier(m_driver->unique(QLatin1String("__rowItem")));
             m_refreshOut << "\n";
             m_refreshOut << m_option.indent
-                           << itemName << " = Qt::TableWidgetItem();\n";
+                           << "my " << itemName << " = Qt::TableWidgetItem();\n";
 
             if (text && text->attributeName() == QLatin1String("text"))
                 m_refreshOut << m_option.indent << itemName << "->setText( "
@@ -2267,10 +2269,10 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
             DomProperty *text = properties.value(QLatin1String("text"));
             DomProperty *icon = properties.value(QLatin1String("icon"));
             if (text || icon) {
-                QString itemName = m_driver->unique(QLatin1String("__item"));
+                QString itemName = toPerlIdentifier(m_driver->unique(QLatin1String("__item")));
                 m_refreshOut << "\n";
                 m_refreshOut << m_option.indent
-                    << itemName << " = Qt::TableWidgetItem();\n";
+                    << "my " << itemName << " = Qt::TableWidgetItem();\n";
 
                 if (text && text->attributeName() == QLatin1String("text"))
                     m_refreshOut << m_option.indent << itemName << "->setText( "
