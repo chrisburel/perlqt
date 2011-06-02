@@ -1,9 +1,9 @@
 PerlQt version 0.96
 ===================
 
-For simple install instructions, see the README file.
+For simple installation instructions, see the README file.
 
-This module uses cmake for it's build system.  If you don't have it, you can
+This module uses cmake for its build system.  If you don't have it, you can
 download the most recent version at
 http://www.cmake.org/cmake/resources/software.html
 
@@ -16,14 +16,16 @@ Makefile.PL builds an in-source-tree build.  It's a lot easier to get a clean
 source tree if you use an out-of-source build, as described below.
 
 === CMake ===
-First, I recommend building the module in it's own directory.  Type:
+First, I recommend building the module in its own directory.  Type:
     mkdir build
     cd build
 
 cmake provides a nice 'GUI'ish interface to view compile time options.  To view
-this, type:
+this, type either:
+    cmake-gui ..
+
+Or if it's not available:
     ccmake ..
-    c
 
 Once that finishes, exit with 'q', and type:
     cmake ..
