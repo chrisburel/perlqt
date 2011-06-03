@@ -45,8 +45,11 @@ target_link_libraries(perlqtcore4
     ${SMOKE_QTNETWORK_LIBRARY}
     ${PERL_LIBS})
 
-set_target_properties(perlqtcore4 PROPERTIES OUTPUT_NAME "QtCore4")
-set_target_properties(perlqtcore4 PROPERTIES PREFIX "")
+set_target_properties(perlqtcore4 PROPERTIES
+    OUTPUT_NAME "QtCore4"
+    PREFIX ""
+    INSTALL_NAME_DIR ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtCore4/
+)
 
 install(TARGETS perlqtcore4 EXPORT PerlQtExport DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtCore4/)
 install(FILES binding.h handlers.h listclass_macros.h marshall_basetypes.h marshall_complex.h

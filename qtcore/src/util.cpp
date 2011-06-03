@@ -2390,7 +2390,6 @@ XS(XS_signal){
     int index = -1;
     QMetaMethod method;
     bool methodFound = false;
-    fprintf(stderr, "\nstarting index: %d\n",  method.methodIndex());
     for (index = metaobject->methodCount() - 1; index > -1; --index) {
 		if (metaobject->method(index).methodType() == QMetaMethod::Signal) {
 			QString name(metaobject->method(index).signature());
