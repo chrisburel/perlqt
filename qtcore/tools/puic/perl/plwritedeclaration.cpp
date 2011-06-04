@@ -102,64 +102,23 @@ void WriteDeclaration::acceptUI(DomUI *node)
         m_output << m_option.indent << "@" << connection << "Connection = Qt::SqlDatabase.new\n";
     }
 
+    if (node->elementImages()) {
+        WriteIconDeclaration(m_uic).acceptUI(node);
+
+        m_output << "use constant unknown_ID => "
+            << node->elementImages()->elementImage().size() << ";\n\n";
+    }
+
     TreeWalker::acceptWidget(node->elementWidget());
 
     m_output << "\n";
 
     WriteInitialization(m_uic).acceptUI(node);
 
-/*
     if (node->elementImages()) {
-        WriteIconDeclaration(m_uic).acceptUI(node);
-
-        m_output << m_option.indent << m_option.indent << "unknown_ID = "
-            << node->elementImages()->elementImage().size() << "\n"
-            << m_option.indent << "\n";
-
         WriteIconInitialization(m_uic).acceptUI(node);
     }
 
-    m_output << "end\n\n";
-
-    it.toBack();
-    while (it.hasPrevious()) {
-        QString ns = it.previous();
-        if (ns.isEmpty())
-            continue;
-    }
-
-    if (namespaceList.count())
-        m_output << "\n";
-
-    if (m_option.generateNamespace && !m_option.prefix.isEmpty()) {
-        namespaceList.append(QLatin1String("Ui"));
-
-        QListIterator<QString> it(namespaceList);
-        while (it.hasNext()) {
-            QString ns = it.next();
-            if (ns.isEmpty())
-                continue;
-
-            m_output << "module " << ns.mid(0, 1).toUpper() << ns.mid(1) << "\n";
-        }
-
-        m_output << m_option.indent << "class "  << className << " < " << m_option.prefix << className << "\n";
-        m_output << m_option.indent << "end\n";
-
-        it.toBack();
-        while (it.hasPrevious()) {
-            QString ns = it.previous();
-            if (ns.isEmpty())
-                continue;
-
-            m_output << "end  # module " << ns << "\n";
-        }
-
-        if (namespaceList.count())
-            m_output << "\n";
-    }
-
-*/
     m_output << "1;";
 }
 

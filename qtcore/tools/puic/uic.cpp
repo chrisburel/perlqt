@@ -139,8 +139,12 @@ void Uic::writeCopyrightHeader(DomUI *ui)
 {
     QString comment = ui->elementComment();
     if ( this->option().generator == Option::PerlGenerator ) {
+        comment.insert( 0, "# " );
+        comment.replace( QRegExp("\n"), "\n# " );
         if (comment.size())
-            out << "/*\n" << comment << "\n*/\n\n";
+            out << "###############################################################################\n"
+                << comment
+                << "\n###############################################################################\n\n";
 
             out << "#################################################################################\n";
             out << "## Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";

@@ -70,24 +70,21 @@ void WriteIconInitialization::acceptUI(DomUI *node)
 
     QString className = node->elementClass() + option.postfix;
 
-    output << option.indent << "def self.icon(id)\n";
+    output << "sub icon {\n";
+    output << option.indent << "my ($id) = @_;\n";
 
     WriteIconData(uic).acceptUI(node);
 
-    output << option.indent << option.indent << "case id\n";
-
     TreeWalker::acceptUI(node);
 
-    output << option.indent << option.indent << "else\n";
-    output << option.indent << option.indent << option.indent << "return Qt::Pixmap.new\n";
+    output << option.indent << "return Qt::Pixmap();\n";
 
-    output << option.indent << option.indent << "end\n"
-           << option.indent << "end\n\n";
+    output << "}\n\n";
 }
 
 QString WriteIconInitialization::iconFromDataFunction()
 {
-    return QLatin1String("qt_get_icon");
+    return QLatin1String("$self->icon");
 }
 
 void WriteIconInitialization::acceptImages(DomImages *images)
@@ -103,19 +100,21 @@ void WriteIconInitialization::acceptImage(DomImage *image)
 
     QString imageId = image->attributeName() + QLatin1String("_ID");
     QString imageData = image->attributeName() + QLatin1String("_data");
-    QString ind = option.indent + option.indent;
+    QString ind = option.indent;
 
-    output << ind << "when " << imageId << "\n";
+    output << ind << "if( $id == " << imageId << " ) {\n";
 
     if (fmt == QLatin1String("XPM.GZ")) {
-        output << option.indent << option.indent << option.indent << "return " << "Qt::Pixmap.new(" << imageData << ")\n";
+        output << option.indent << option.indent << "return " << "Qt::Pixmap(@" << imageData << ");\n";
+        output << option.indent << "}\n";
     } else {
-        output << option.indent << option.indent << option.indent << 
-                " img = Qt::Image.new\n";
-        output << option.indent << option.indent << option.indent << "img.loadFromData(" << imageData << ", " << 
-                "imageData.length, " << fixString(fmt, ind) << ")\n";
-        output << option.indent << option.indent << option.indent << 
-                "return Qt::Pixmap.fromImage(img)\n";
+        output << option.indent << option.indent << 
+                "my $img = Qt::Image();\n";
+        output << option.indent << option.indent << "$img->loadFromData(" << imageData << ", " << 
+                "$imageData->length, " << fixString(fmt, ind) << ");\n";
+        output << option.indent << option.indent << 
+                "return Qt::Pixmap->fromImage($img)\n";
+        output << option.indent << "}\n";
     }
 }
 

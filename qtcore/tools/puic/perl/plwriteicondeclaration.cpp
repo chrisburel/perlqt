@@ -78,7 +78,7 @@ void WriteIconDeclaration::acceptImage(DomImage *image)
     driver->insertPixmap(name);
 	QString imageId = name;
 	imageId.replace("image", "");
-    output << option.indent << option.indent << name << "_ID = " << imageId << "\n";
+    output << "use constant " << name << "_ID => " << imageId << ";\n";
 }
 
 } // namespace Perl

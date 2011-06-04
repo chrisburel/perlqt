@@ -137,7 +137,7 @@ void WriteIconData::writeImage(QTextStream &output, const QString &indent, DomIm
         int a = 0;
         int column = 0;
         bool inQuote = false;
-        output << indent << indent << indent << img << " = [" << endl;
+        output << indent << "my @" << img << " = (" << endl;
         while (baunzip[a] != '\"')
             a++;
         // For perl we need to ignore the '};\n' at the end of the data.
@@ -155,9 +155,9 @@ void WriteIconData::writeImage(QTextStream &output, const QString &indent, DomIm
                 column = 1;
             }
         }
-        output << "]" << endl;
+        output << ");" << endl;
     } else {
-        output << indent << indent << indent << img << " = [\n";
+        output << indent << "my @" << img << " = (\n";
         output << indent;
         int a ;
         for (a = 0; a < (int) (data.length()/2)-1; a++) {
@@ -168,7 +168,7 @@ void WriteIconData::writeImage(QTextStream &output, const QString &indent, DomIm
                 output << " ";
         }
         output << "0x" << QString(data[2*a]) << QString(data[2*a+1]) << "\n";
-        output << "]\n\n";
+        output << ");\n\n";
     }
 }
 

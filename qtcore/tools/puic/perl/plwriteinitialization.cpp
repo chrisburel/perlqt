@@ -548,11 +548,11 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     m_layoutMarginType = m_widgetChain.count() == 1 ? TopLevelMargin : ChildMargin;
     const QString className = node->attributeClass();
     QString varNameNoSigil = m_driver->findOrInsertWidget(node);
+    varNameNoSigil = varNameNoSigil.mid(0, 1).toLower() + varNameNoSigil.mid(1);
     QString varName = toPerlIdentifier(varNameNoSigil);
-    QString varNameGetter = "$self->" + varNameNoSigil + "()";
+    QString varNameGetter = "$self->{" + varNameNoSigil + "}";
     m_registeredWidgets.insert(varName, node); // register the current widget
 
-    //varName = varName.mid(0, 1).toLower() + varName.mid(1);
 
     QString parentWidget, parentWidgetNoSigil, parentClass;
     if (m_widgetChain.top()) {
@@ -717,12 +717,12 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
         m_output << m_option.indent << parentWidget << "->addItem( " << varName << icon << ", " << trCall(label) << " );\n";
 
-        m_refreshOut << m_option.indent << "$self->" << parentWidgetNoSigil << "()->setItemText( "
-                   << "$self->" << parentWidgetNoSigil << "()->indexOf( " << varNameGetter << "), " << trCall(label) << " );\n";
+        m_refreshOut << m_option.indent << "$self->{" << parentWidgetNoSigil << "}->setItemText( "
+                   << "$self->{" << parentWidgetNoSigil << "}->indexOf( " << varNameGetter << "), " << trCall(label) << " );\n";
 
         if (DomProperty *ptoolTip = attributes.value(QLatin1String("toolTip"))) {
-            m_refreshOut << m_option.indent << "$self->" << parentWidgetNoSigil << "()->setItemToolTip( "
-                       << "$self->" << parentWidgetNoSigil << "()->indexOf( " << varNameGetter << "), " << trCall(ptoolTip->elementString()) << " );\n";
+            m_refreshOut << m_option.indent << "$self->{" << parentWidgetNoSigil << "}->setItemToolTip( "
+                       << "$self->{" << parentWidgetNoSigil << "}->indexOf( " << varNameGetter << "), " << trCall(ptoolTip->elementString()) << " );\n";
         }
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QTabWidget"))) {
         QString icon;
@@ -733,17 +733,17 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
         m_output << m_option.indent << parentWidget << "->addTab( " << varName << icon << ", " << trCall(title) << " );\n";
 
-        m_refreshOut << m_option.indent << "$self->" << parentWidgetNoSigil << "()->setTabText( "
-                   << "$self->" << parentWidgetNoSigil << "()->indexOf( " << varNameGetter << "), " << trCall(title) << " );\n";
+        m_refreshOut << m_option.indent << "$self->{" << parentWidgetNoSigil << "}->setTabText( "
+                   << "$self->{" << parentWidgetNoSigil << "}->indexOf( " << varNameGetter << "), " << trCall(title) << " );\n";
 
         if (const DomProperty *ptoolTip = attributes.value(QLatin1String("toolTip"))) {
-            m_refreshOut << m_option.indent << "$self->" << parentWidgetNoSigil << "()->setTabToolTip( "
-                       << "$self->" << parentWidgetNoSigil << "()->indexOf( " << varNameGetter << "), " << trCall(ptoolTip->elementString()) << " );\n";
+            m_refreshOut << m_option.indent << "$self->{" << parentWidgetNoSigil << "}->setTabToolTip( "
+                       << "$self->{" << parentWidgetNoSigil << "}->indexOf( " << varNameGetter << "), " << trCall(ptoolTip->elementString()) << " );\n";
         }
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("Q3Wizard"))) {
         m_output << m_option.indent << parentWidget << "->addPage( " << varName << ", " << trCall(title) << " );\n";
 
-        m_refreshOut << m_option.indent << "$self->" << parentWidgetNoSigil << "()->setTitle( "
+        m_refreshOut << m_option.indent << "$self->{" << parentWidgetNoSigil << "}->setTitle( "
                    << varName << ", " << trCall(title) << " );\n";
 
     }
@@ -813,12 +813,12 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     m_output << m_option.indent << "$self->{" << varNameNoSigil << "} = " << varName << ";\n";
 
     if (isGroupBox) {
-        const QString tempName = m_driver->unique(QLatin1String("boxlayout"));
+        const QString tempName = toPerlIdentifier(m_driver->unique(QLatin1String("boxlayout")));
         QString widget = m_driver->findOrInsertWidget(m_widgetChain.top());
         widget = widget.mid(0, 1).toLower() + widget.mid(1);
         widget.prepend("$");
       
-        m_output << m_option.indent << "" << tempName << " = " <<
+        m_output << m_option.indent << "my " << tempName << " = " <<
                     widget << "->layout();\n";
         m_output << m_option.indent << "if ( " << tempName << " ) {\n";
         m_output << m_option.indent << "    " << tempName << "->addLayout( " << varName << " );\n";
@@ -927,7 +927,7 @@ void WriteInitialization::acceptLayoutItem(DomLayoutItem *node)
         if (layout->attributeClass() == QLatin1String("QFormLayout")) {
             methodPrefix = QLatin1String("set");
             const int row = node->attributeRow();
-            const QString role = node->attributeColumn() == 0 ? QLatin1String("Qt::FormLayout::LabelRole") : QLatin1String("Qt::FormLayout::FieldRole");
+            const QString role = node->attributeColumn() == 0 ? QLatin1String("Qt::FormLayout::LabelRole()") : QLatin1String("Qt::FormLayout::FieldRole()");
             addArgs = QString::fromLatin1("%1, %2, %3").arg(row).arg(role).arg(itemName);
         } else {
             addArgs = itemName;
@@ -955,18 +955,17 @@ void WriteInitialization::acceptLayoutItem(DomLayoutItem *node)
 
 void WriteInitialization::acceptActionGroup(DomActionGroup *node)
 {
-    QString actionName = toPerlIdentifier(m_driver->findOrInsertActionGroup(node));
+    QString actionNameNoSigil = m_driver->findOrInsertActionGroup(node);
+    actionNameNoSigil = actionNameNoSigil.mid(0, 1).toLower() + actionNameNoSigil.mid(1);
+    QString actionName = toPerlIdentifier(actionNameNoSigil);
 
-    QString varName = m_driver->findOrInsertWidget(m_widgetChain.top());
-    varName = varName.mid(0, 1).toLower() + varName.mid(1);
-    if (m_widgetChain.count() > 2) {
-        varName.prepend("$");
-    }
+    QString varName = toPerlIdentifier(m_driver->findOrInsertWidget(m_widgetChain.top()));
 
     if (m_actionGroupChain.top())
         varName = m_driver->findOrInsertActionGroup(m_actionGroupChain.top());
 
-    m_output << m_option.indent << actionName << " = Qt::ActionGroup( " << varName << " );\n";
+    m_output << m_option.indent << "my " << actionName << " = Qt::ActionGroup( " << varName << " );\n";
+    m_output << m_option.indent << "$self->{" << actionNameNoSigil << "} = " << actionName << ";\n";
     writeProperties(actionName, QLatin1String("QActionGroup"), node->elementProperty());
 
     m_actionGroupChain.push(node);
@@ -1388,8 +1387,8 @@ void WriteInitialization::writeProperties(const QString &varName,
                 // has 2 arguments, $self and the object to which the ui
                 // belongs.  If this is an operation on the 2nd argument, use
                 // $varName.  Otherwise, it's a member of the ui implementation
-                // file, so use $self->varName().
-                varNewName = "$self->" + varNewName.mid(1) + "()";
+                // file, so use $self->{varName}.
+                varNewName = "$self->{" + varNewName.mid(1, 2).toLower() + varNewName.mid(3) + "}";
             }
 
             o << m_option.indent << varNewName << setFunction << propertyValue;
@@ -1534,7 +1533,7 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
     m_iconPropertiesNameMap.insert(IconHandle(i), iconName);
     if (isIconFormat44(i)) {
         const QString pixmap = QLatin1String("Qt::Pixmap");
-        m_output << m_option.indent << "my " << iconName << " = Qt::Icon\n";
+        m_output << m_option.indent << "my " << iconName << " = Qt::Icon();\n";
         if (i->hasElementNormalOff())
             m_output << m_option.indent << iconName << "->addPixmap(" << pixCall(pixmap, i->elementNormalOff()->text()) << ", Qt::Icon::Normal(), Qt::Icon::Off() );\n";
         if (i->hasElementNormalOn())
@@ -1552,7 +1551,7 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
         if (i->hasElementSelectedOn())
             m_output << m_option.indent << iconName << "->addPixmap(" << pixCall(pixmap, i->elementSelectedOn()->text()) << ", Qt::Icon::Selected(), Qt::Icon::On() );\n";
     } else { // pre-4.4 legacy
-        m_output <<  m_option.indent << "my " << iconName << " = " << pixCall(QLatin1String("Qt::Icon"), i->text())<< ";\n";
+        m_output <<  m_option.indent << "my " << iconName << " = " << "Qt::Icon(" << pixCall(QLatin1String("Qt::Icon"), i->text()) << ");\n";
     }
     return iconName;
 }
@@ -1581,10 +1580,10 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
     for (int i=0; i<colors.size(); ++i) {
         DomColor *color = colors.at(i);
 
-        m_output << m_option.indent << paletteName << ".setColor(" << group
+        m_output << m_option.indent << paletteName << "->setColor(" << group
             << ", " << i 
             << ", " << domColor2QString(color)
-            << ")\n";
+            << ");\n";
     }
 
     // new format
@@ -2011,7 +2010,7 @@ void WriteInitialization::initializeComboBox(DomWidget *w)
     }
 
     if (noIcons) {
-        m_refreshOut << m_option.indent << "$self->" << varNameNoSigil << "()->insertItems(0, [" ;
+        m_refreshOut << m_option.indent << "$self->{" << varNameNoSigil << "}->insertItems(0, [" ;
         for (int i = 0; i < list.size(); ++i) {
             m_refreshOut << list.at(i);
             if (i != (list.size() - 1)) {
@@ -2030,13 +2029,13 @@ void WriteInitialization::initializeComboBox(DomWidget *w)
             if (icon)
                 iconValue = iconCall(icon);
 
-            m_output << m_option.indent << varName << ".addItem(";
+            m_output << m_option.indent << varName << "->addItem(";
             if (icon)
                 m_output << iconValue << ", ";
             m_output << "\"\");\n";
 
             if (!toString(text->elementString()).isEmpty())
-                m_refreshOut << m_option.indent << varName << ".setItemText(" << i << ", " << trCall(text->elementString()) << ");\n";
+                m_refreshOut << m_option.indent << "$self->{" << varNameNoSigil << "}->setItemText(" << i << ", " << trCall(text->elementString()) << ");\n";
         }
         m_refreshOut << "\n";
     }
@@ -2050,8 +2049,8 @@ QString WriteInitialization::disableSorting(DomWidget *w, const QString &varName
         tempName = toPerlIdentifier(m_driver->unique(QLatin1String("__sortingEnabled")));
         m_refreshOut << "\n";
         m_refreshOut << m_option.indent << "my " << tempName
-            << " = " << "$self->" << varName << "()->isSortingEnabled();\n";
-        m_refreshOut << m_option.indent << "$self->" << varName << "()->setSortingEnabled( 0 );\n";
+            << " = " << "$self->{" << varName << "}->isSortingEnabled();\n";
+        m_refreshOut << m_option.indent << "$self->{" << varName << "}->setSortingEnabled( 0 );\n";
     }
     return tempName;
 }
@@ -2060,7 +2059,7 @@ void WriteInitialization::enableSorting(DomWidget *w, const QString &varName, co
 {
     if (!w->elementItem().isEmpty()) {
         m_refreshOut << "\n";
-        m_refreshOut << m_option.indent << "$self->" << varName << "()->setSortingEnabled( " << tempName << " );\n";
+        m_refreshOut << m_option.indent << "$self->{" << varName << "}->setSortingEnabled( " << tempName << " );\n";
     }
 }
 
@@ -2095,7 +2094,7 @@ void WriteInitialization::initializeListWidget(DomWidget *w)
         }
 
         if (!toString(text->elementString()).isEmpty()) {
-            m_refreshOut << m_option.indent << "$self->" << varNameNoSigil << "()->item(" << i << ")->setText( " << trCall(text->elementString()) << " );\n";
+            m_refreshOut << m_option.indent << "$self->{" << varNameNoSigil << "}->item(" << i << ")->setText( " << trCall(text->elementString()) << " );\n";
         }
     }
     enableSorting(w, varNameNoSigil, tempName);
@@ -2118,7 +2117,7 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
 
         if (!toString(text->elementString()).isEmpty()) {
             const QString txt = trCall(text->elementString());
-            m_refreshOut << m_option.indent << "$self->" << varNameNoSigil << "()->headerItem()->setText(" << i << ", " << txt << ");\n";
+            m_refreshOut << m_option.indent << "$self->{" << varNameNoSigil << "}->headerItem()->setText(" << i << ", " << txt << ");\n";
         }
 
         if (icon) {
@@ -2196,7 +2195,7 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
     // columns
     QList<DomColumn *> columns = w->elementColumn();
 
-    m_refreshOut << m_option.indent << "my " << varName << " = $self->" << varNameNoSigil << "();\n";
+    m_refreshOut << m_option.indent << "my " << varName << " = $self->{" << varNameNoSigil << "};\n";
     if (columns.size() != 0) {
         m_refreshOut << m_option.indent << "if ( " << varName << "->columnCount < " << columns.size() << " ) {\n"
             << m_option.indent << m_option.indent << varName << "->setColumnCount(" << columns.size() << ");\n"

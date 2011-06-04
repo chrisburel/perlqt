@@ -81,11 +81,6 @@ inline QString fixString(const QString &str, const QString &indent)
                 cursegment += QLatin1Char(cbyte);
             }
         }
-
-        if (cursegment.length() > 1024) {
-            result << cursegment;
-            cursegment.clear();
-        }
     }
 
     if (!cursegment.isEmpty())
