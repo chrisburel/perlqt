@@ -84,7 +84,7 @@ macro_optional_add_bindings(SMOKE_PHONON_FOUND "Phonon" phonon)
 
 macro_optional_add_bindings(QSCINTILLA_FOUND "QScintilla" qsci)
 
-macro_optional_add_bindings(SMOKE_Qwt5_Qt4_FOUND "Qwt" qwt)
+macro_optional_add_bindings(Qwt5_Qt4_FOUND "Qwt" qwt)
 
 macro_optional_add_bindings(SMOKE_QIMAGEBLITZ_FOUND "QImageBlitz" qimageblitz)
 
