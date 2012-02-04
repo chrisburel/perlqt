@@ -26,7 +26,7 @@ extern Q_DECL_EXPORT Smoke* qtcore_Smoke;
 extern "C" void init_qtcore_Smoke();
 extern Q_DECL_EXPORT QHash<Smoke*, PerlQt4Module> perlqt_modules;
 extern SV* sv_qapp;
-QList<Smoke*> smokeList;
+Q_DECL_EXPORT QList<Smoke*> smokeList;
 QList<QString> arrayTypes;
 
 DEF_VECTORCLASS_FUNCTIONS(QXmlStreamAttributes, QXmlStreamAttribute, Qt::XmlStreamAttributes);
@@ -430,7 +430,16 @@ qApp()
     OUTPUT:
         RETVAL
 
-MODULE = QtCore4            PACKAGE = QtCore4
+MODULE = PerlQtCore4            PACKAGE = PerlQtCore4
+
+#// The build system with cmake and mingw relies on the visibility being set for
+#// a dll to export that symbol.  So we need to redefine XSPROTO so that we can
+#// export the boot method.
+
+#ifdef WIN32
+#undef XSPROTO
+#define XSPROTO(name) void Q_DECL_EXPORT name(pTHX_ CV* cv)
+#endif
 
 BOOT:
     /* same as -DUSE_SAFE_PUTENV in compile. prevents a "free from wrong
@@ -449,7 +458,7 @@ BOOT:
     smokeList << qtcore_Smoke;
 
     binding = PerlQt4::Binding(qtcore_Smoke);
-    PerlQt4Module module = { "PerlQtCore4", resolve_classname_qt, 0, &binding };
+    PerlQt4Module module = { "QtCore4", resolve_classname_qt, 0, &binding };
     perlqt_modules[qtcore_Smoke] = module;
 
     install_handlers(Qt4_handlers);

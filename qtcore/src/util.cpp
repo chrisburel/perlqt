@@ -1559,6 +1559,12 @@ XS(XS_qbytearray_data) {
     XSRETURN(1);
 }
 
+#if defined(Q_OS_WIN32)
+// screw you PerlLIO_read, PerlProc_signal
+#undef read
+#undef signal
+#endif
+
 XS(XS_qiodevice_read) {
     dXSARGS;
     if (items < 2 || items > 3) {

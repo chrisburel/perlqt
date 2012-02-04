@@ -1,4 +1,5 @@
 #include <QObject>
+#include <QHash>
 #include <QRegExp>
 
 #include "marshall_types.h"

@@ -19,6 +19,8 @@
 #include <QList>
 #include <QPolygonF>
 #include <QPointF>
+#include <QMetaObject>
+#include <QMetaMethod>
 #include <QVector>
 #include <QtGui/QAbstractProxyModel>
 #include <QtGui/QSortFilterProxyModel>
@@ -43,7 +45,7 @@ extern "C" {
 #include <util.h>
 #include <listclass_macros.h>
 
-extern QList<Smoke*> smokeList;
+extern Q_DECL_IMPORT QList<Smoke*> smokeList;
 extern SV* sv_this;
 
 const char*
@@ -91,7 +93,15 @@ getEnumList()
     OUTPUT:
         RETVAL
 
-MODULE = QtGui4            PACKAGE = QtGui4
+#// The build system with cmake and mingw relies on the visibility being set for
+#// a dll to export that symbol.  So we need to redefine XSPROTO so that we can
+#// export the boot method.
+#ifdef WIN32
+#undef XSPROTO
+#define XSPROTO(name) void Q_DECL_EXPORT name(pTHX_ CV* cv)
+#endif
+
+MODULE = PerlQtGui4            PACKAGE = PerlQtGui4
 
 PROTOTYPES: ENABLE
 

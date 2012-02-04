@@ -31,7 +31,7 @@ set(perlqtcore_LIBRARY_SRCS
     ${CMAKE_CURRENT_BINARY_DIR}/QtCore4.c
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtCore4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtCore4)
 add_library(perlqtcore4 SHARED ${perlqtcore_LIBRARY_SRCS})
 
 target_link_libraries(perlqtcore4
@@ -46,12 +46,12 @@ target_link_libraries(perlqtcore4
     ${PERL_LIBS})
 
 set_target_properties(perlqtcore4 PROPERTIES
-    OUTPUT_NAME "QtCore4"
+    OUTPUT_NAME "PerlQtCore4"
     PREFIX ""
-    INSTALL_NAME_DIR ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtCore4/
+    INSTALL_NAME_DIR ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtCore4/
 )
 
-install(TARGETS perlqtcore4 EXPORT PerlQtExport DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtCore4/)
+install(TARGETS perlqtcore4 EXPORT PerlQtExport DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtCore4/)
 install(FILES binding.h handlers.h listclass_macros.h marshall_basetypes.h marshall_complex.h
               marshall.h marshall_macros.h marshall_primitives.h marshall_types.h perlqt.h ppport.h
               QtCore4.h smokehelp.h smokeperl.h util.h

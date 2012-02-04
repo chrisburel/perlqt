@@ -1606,7 +1606,7 @@ our $VERSION = '0.96';
 
 our @EXPORT = qw( SIGNAL SLOT emit CAST qApp );
 
-XSLoader::load('QtCore4', $VERSION);
+XSLoader::load('PerlQtCore4', $VERSION);
 
 Qt::_internal::init();
 

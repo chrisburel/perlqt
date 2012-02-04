@@ -224,10 +224,10 @@ SV *primitive_to_perl<int*>(int* sv) {
 }
 
 //-----------------------------------------------------------------------------
-#if defined(Q_OS_WIN32)
 template <>
-static WId perl_to_primitive<WId>(SV *sv) {
+WId perl_to_primitive<WId>(SV *sv) {
     UNTESTED_HANDLER("perl_to_primitive<WId>");
+#if defined(Q_OS_WIN32)
     if ( !SvOK(sv) )
         return 0;
 #ifdef Q_WS_MAC32
@@ -238,7 +238,7 @@ static WId perl_to_primitive<WId>(SV *sv) {
 }
 
 template <>
-static SV *primitive_to_perl<WId>(WId sv) {
+SV *primitive_to_perl<WId>(WId sv) {
     UNTESTED_HANDLER("primitive_to_perl<WId>");
 #ifdef Q_WS_MAC32
     return newSViv((unsigned long) sv);
@@ -249,7 +249,7 @@ static SV *primitive_to_perl<WId>(WId sv) {
 
 //-----------------------------------------------------------------------------
 template <>
-static Q_PID perl_to_primitive<Q_PID>(SV *sv) {
+Q_PID perl_to_primitive<Q_PID>(SV *sv) {
     UNTESTED_HANDLER("perl_to_primitive<Q_PID>");
     if ( !SvOK(sv) )
         return 0;
@@ -257,7 +257,7 @@ static Q_PID perl_to_primitive<Q_PID>(SV *sv) {
     return (Q_PID) SvIV(sv);
 }
 template <>
-static SV *primitive_to_perl<Q_PID>(Q_PID sv) {
+SV *primitive_to_perl<Q_PID>(Q_PID sv) {
     UNTESTED_HANDLER("primitive_to_perl<Q_PID>");
     return newSViv((unsigned long) sv);
 }

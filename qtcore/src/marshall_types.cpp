@@ -1,6 +1,9 @@
-#include "QtCore/QHash"
-#include "QtCore/QMap"
-#include "QtCore/QVector"
+#include <QHash>
+#include <QMap>
+#include <QVector>
+#include <QMetaObject>
+#include <QMetaMethod>
+#include <QPalette>
 
 #include "smoke.h"
 #include "marshall_types.h"

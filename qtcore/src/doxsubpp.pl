@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use ExtUtils::MakeMaker;
+use IPC::Open2;
 
 my $perl = $ARGV[0];
 my $in   = $ARGV[1];
@@ -15,10 +16,22 @@ my $mm = ExtUtils::MakeMaker->new( {
 my $perl_include_path = $mm->{PERL_INC};
 my @xsubinfo = split "\n", $mm->tool_xsubpp();
 
-my $xsubppdir = (map{ my $foo = $_; $foo =~ s/XSUBPPDIR = //; $foo } grep{ m/^XSUBPPDIR =/ } @xsubinfo)[0];
+my ($xsubppdir) = map{ m/^XSUBPPDIR = (.*)/ } grep{ m/^XSUBPPDIR =/ } @xsubinfo;
 my $xsubpp = "$xsubppdir/xsubpp";
 
-my $xsubppargs = (map{ my $foo = $_; $foo =~ s/XSUBPPARGS = //; $foo } grep{ m/^XSUBPPARGS =/ } @xsubinfo)[0];
+my ($xsubppargs) = map{ m/^XSUBPPARGS = (.*)/ } grep{ m/^XSUBPPARGS =/ } @xsubinfo;
 
-my $cmd = "$perl $xsubpp $xsubppargs $in > $out";
-system $cmd;
+my @xsubppargs = split m/ /, $xsubppargs;
+
+my @cmd = ($perl, $xsubpp, @xsubppargs, $in);
+my $xsubpp_gencode = `@cmd`;
+my $status = $? >> 8;
+if ( $status != 0 ){
+    die "Unable to run xsubpp to generate .c code from .xs: $!\n";
+}
+
+open my $FH, '>', $out;
+print $FH $xsubpp_gencode;
+close $FH;
+
+exit 0;
