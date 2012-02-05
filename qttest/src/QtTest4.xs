@@ -20,6 +20,11 @@
 #include <QSignalSpy>
 #include <QTestEventList>
 #include <QVariant>
+#include <QPalette>
+#include <QMetaObject>
+#include <QMetaMethod>
+#include <QLinkedList>
+#include <QtTest>
 
 #include <iostream>
 

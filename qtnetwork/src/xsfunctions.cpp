@@ -1,5 +1,10 @@
 #include <QHostAddress>
 #include <QUdpSocket>
+#include <QPalette>
+#include <QMetaObject>
+#include <QMetaMethod>
+#include <QLinkedList>
+#include <QProcess>
 
 // Perl headers
 extern "C" {

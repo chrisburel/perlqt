@@ -16,6 +16,10 @@
  ***************************************************************************/
 
 #include <QtCore/QHash>
+#include <QPalette>
+#include <QMetaObject>
+#include <QMetaMethod>
+#include <QLinkedList>
 
 // Perl headers
 extern "C" {

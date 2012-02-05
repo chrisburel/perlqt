@@ -18,6 +18,10 @@
 #include <QHash>
 #include <QList>
 #include <QXmlNodeModelIndex>
+#include <QPalette>
+#include <QMetaObject>
+#include <QMetaMethod>
+#include <QLinkedList>
 
 // Perl headers
 extern "C" {
