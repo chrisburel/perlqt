@@ -22,14 +22,14 @@ set(qthelp4_LIBRARY_SRC
     qthelp4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtHelp4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtHelp4)
 add_library(perl_qthelp4 SHARED ${qthelp4_LIBRARY_SRC})
 
 target_link_libraries(perl_qthelp4
     ${SMOKE_QTHELP_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qthelp4 PROPERTIES OUTPUT_NAME "QtHelp4")
+set_target_properties(perl_qthelp4 PROPERTIES OUTPUT_NAME "PerlQtHelp4")
 set_target_properties(perl_qthelp4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qthelp4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtHelp4/)
+install(TARGETS perl_qthelp4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtHelp4/)

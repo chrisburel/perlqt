@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtHelp4', $VERSION);
+XSLoader::load('PerlQtHelp4', $VERSION);
 
 QtHelp4::_internal::init();
 

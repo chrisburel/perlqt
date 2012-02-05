@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtNetwork4', $VERSION);
+XSLoader::load('PerlQtNetwork4', $VERSION);
 
 QtNetwork4::_internal::init();
 

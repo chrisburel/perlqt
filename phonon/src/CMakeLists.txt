@@ -22,14 +22,14 @@ set(phonon_LIBRARY_SRC
     phononhandlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/Phonon)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlPhonon)
 add_library(perl_phonon SHARED ${phonon_LIBRARY_SRC})
 
 target_link_libraries(perl_phonon
     ${SMOKE_PHONON_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_phonon PROPERTIES OUTPUT_NAME "Phonon")
+set_target_properties(perl_phonon PROPERTIES OUTPUT_NAME "PerlPhonon")
 set_target_properties(perl_phonon PROPERTIES PREFIX "")
 
-install(TARGETS perl_phonon DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/Phonon/)
+install(TARGETS perl_phonon DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlPhonon/)

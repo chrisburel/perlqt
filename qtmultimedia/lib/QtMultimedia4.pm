@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtMultimedia4', $VERSION);
+XSLoader::load('PerlQtMultimedia4', $VERSION);
 
 QtMultimedia4::_internal::init();
 

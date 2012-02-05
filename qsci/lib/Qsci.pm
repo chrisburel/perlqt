@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('Qsci', $VERSION);
+XSLoader::load('PerlQsci', $VERSION);
 
 Qsci::_internal::init();
 

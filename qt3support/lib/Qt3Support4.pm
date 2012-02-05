@@ -66,7 +66,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('Qt3Support4', $VERSION);
+XSLoader::load('PerlQt3Support4', $VERSION);
 
 Qt3Support4::_internal::init();
 

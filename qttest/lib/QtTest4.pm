@@ -42,7 +42,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtTest4', $VERSION);
+XSLoader::load('PerlQtTest4', $VERSION);
 
 QtTest4::_internal::init();
 
