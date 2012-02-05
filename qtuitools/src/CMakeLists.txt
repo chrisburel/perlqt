@@ -22,14 +22,14 @@ set(qtuitools4_LIBRARY_SRC
     qtuitools4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtUiTools4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtUiTools4)
 add_library(perl_qtuitools4 SHARED ${qtuitools4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtuitools4
     ${SMOKE_QTUITOOLS_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtuitools4 PROPERTIES OUTPUT_NAME "QtUiTools4")
+set_target_properties(perl_qtuitools4 PROPERTIES OUTPUT_NAME "PerlQtUiTools4")
 set_target_properties(perl_qtuitools4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtuitools4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtUiTools4/)
+install(TARGETS perl_qtuitools4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtUiTools4/)

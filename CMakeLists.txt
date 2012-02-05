@@ -9,6 +9,12 @@ if ( USE_BUILD_DIR_FOR_TESTS )
     set(prove_args -I${CMAKE_BINARY_DIR}/blib/lib -I${CMAKE_BINARY_DIR}/blib/arch)
 endif ( USE_BUILD_DIR_FOR_TESTS )
 
+if(WIN32)
+    set(prove_cmd "prove.bat")
+else()
+    set(prove_cmd "prove")
+endif(WIN32)
+
 find_package(Perl REQUIRED)
 find_package(PerlLibs REQUIRED)
 find_package(Qt4 REQUIRED)

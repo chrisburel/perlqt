@@ -22,14 +22,14 @@ set(qwt_LIBRARY_SRC
     qwthandlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/Qwt)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQwt)
 add_library(perl_qwt SHARED ${qwt_LIBRARY_SRC})
 
 target_link_libraries(perl_qwt
     ${SMOKE_QWT_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qwt PROPERTIES OUTPUT_NAME "Qwt")
+set_target_properties(perl_qwt PROPERTIES OUTPUT_NAME "PerlQwt")
 set_target_properties(perl_qwt PROPERTIES PREFIX "")
 
-install(TARGETS perl_qwt DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/Qwt/)
+install(TARGETS perl_qwt DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQwt/)

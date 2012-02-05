@@ -93,8 +93,13 @@ my $app = Qt::Application( \@ARGV );
     # Test char and uchar marshalling
     my $char = Qt::Char( Qt::Int(87) );
     is ( $char->toAscii(), 87, 'signed char' );
-    $char = Qt::Char( Qt::Uchar('f') );
-    is ( $char->toAscii(), ord('f'), 'unsigned char' );
+    use QtCore4::debug qw(ambiguous);
+    if ( eval{$char = Qt::Char( Qt::Uchar('f') )} ) {
+        is ( $char->toAscii(), ord('f'), 'unsigned char' );
+    }
+    else {
+        fail( 'unsigned char' );
+    }
     $char = Qt::Char( 'f', 3 );
     is ( $char->row(), 3, 'unsigned char' );
     is ( $char->cell(), ord('f'), 'unsigned char' );

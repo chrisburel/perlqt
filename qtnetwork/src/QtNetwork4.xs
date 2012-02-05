@@ -74,9 +74,14 @@ getEnumList()
     OUTPUT:
         RETVAL
 
-MODULE = QtNetwork4            PACKAGE = QtNetwork4
+MODULE = PerlQtNetwork4            PACKAGE = PerlQtNetwork4
 
 PROTOTYPES: ENABLE
+
+#ifdef WIN32
+#undef XSPROTO
+#define XSPROTO(name) void Q_DECL_EXPORT name(pTHX_ CV* cv)
+#endif
 
 BOOT:
     init_qtnetwork_Smoke();

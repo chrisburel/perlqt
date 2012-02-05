@@ -22,14 +22,14 @@ set(qtsvg4_LIBRARY_SRC
     qtsvg4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtSvg4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtSvg4)
 add_library(perl_qtsvg4 SHARED ${qtsvg4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtsvg4
     ${SMOKE_QTSVG_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtsvg4 PROPERTIES OUTPUT_NAME "QtSvg4")
+set_target_properties(perl_qtsvg4 PROPERTIES OUTPUT_NAME "PerlQtSvg4")
 set_target_properties(perl_qtsvg4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtsvg4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtSvg4/)
+install(TARGETS perl_qtsvg4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtSvg4/)

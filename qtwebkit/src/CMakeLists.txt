@@ -22,14 +22,14 @@ set(qtwebkit4_LIBRARY_SRC
     qtwebkit4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtWebKit4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtWebKit4)
 add_library(perl_qtwebkit4 SHARED ${qtwebkit4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtwebkit4
     ${SMOKE_QTWEBKIT_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtwebkit4 PROPERTIES OUTPUT_NAME "QtWebKit4")
+set_target_properties(perl_qtwebkit4 PROPERTIES OUTPUT_NAME "PerlQtWebKit4")
 set_target_properties(perl_qtwebkit4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtwebkit4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtWebKit4/)
+install(TARGETS perl_qtwebkit4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtWebKit4/)

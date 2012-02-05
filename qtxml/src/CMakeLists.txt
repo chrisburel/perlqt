@@ -22,14 +22,14 @@ set(qtxml4_LIBRARY_SRC
     qtxml4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtXml4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtXml4)
 add_library(perl_qtxml4 SHARED ${qtxml4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtxml4
     ${SMOKE_QTXML_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtxml4 PROPERTIES OUTPUT_NAME "QtXml4")
+set_target_properties(perl_qtxml4 PROPERTIES OUTPUT_NAME "PerlQtXml4")
 set_target_properties(perl_qtxml4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtxml4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtXml4/)
+install(TARGETS perl_qtxml4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtXml4/)
