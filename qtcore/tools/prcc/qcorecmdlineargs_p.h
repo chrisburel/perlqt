@@ -147,7 +147,7 @@ static inline QStringList qCmdLineArgs(int argc, char *argv[])
 {
     Q_UNUSED(argc)
     Q_UNUSED(argv)
-    QString cmdLine = QString::fromWCharArray(GetCommandLine());
+    QString cmdLine = QString(GetCommandLine());
     return qWinCmdArgs(cmdLine);
 }
 
