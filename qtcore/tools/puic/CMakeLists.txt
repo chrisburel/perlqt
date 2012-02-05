@@ -23,7 +23,7 @@ set(puic4_bin_SRCS
 
 add_executable(puic4_bin ${puic4_bin_SRCS})
 set_target_properties(puic4_bin PROPERTIES OUTPUT_NAME puic4)
-set_target_properties(puic4_bin PROPERTIES COMPILE_FLAGS -DQT_UIC_RB_GENERATOR)
+set_target_properties(puic4_bin PROPERTIES COMPILE_FLAGS -DQT_UIC)
 
 target_link_libraries(puic4_bin  ${QT_QTCORE_LIBRARY} ${QT_QTXML_LIBRARY} )
 
