@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('PerlPhonon', $VERSION);
+XSLoader::load('Phonon', $VERSION);
 
 Phonon::_internal::init();
 

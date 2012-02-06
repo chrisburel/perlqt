@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('PerlQtOpenGL4', $VERSION);
+XSLoader::load('QtOpenGL4', $VERSION);
 
 QtOpenGL4::_internal::init();
 

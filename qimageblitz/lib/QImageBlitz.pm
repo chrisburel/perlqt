@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('PerlQImageBlitz', $VERSION);
+XSLoader::load('QImageBlitz', $VERSION);
 
 QImageBlitz::_internal::init();
 

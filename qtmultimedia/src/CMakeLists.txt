@@ -22,14 +22,14 @@ set(qtmultimedia4_LIBRARY_SRC
     qtmultimedia4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtMultimedia4)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtMultimedia4)
 add_library(perl_qtmultimedia4 SHARED ${qtmultimedia4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtmultimedia4
     ${SMOKE_QTMULTIMEDIA_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtmultimedia4 PROPERTIES OUTPUT_NAME "PerlQtMultimedia4")
+set_target_properties(perl_qtmultimedia4 PROPERTIES OUTPUT_NAME "QtMultimedia4")
 set_target_properties(perl_qtmultimedia4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtmultimedia4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtMultimedia4/)
+install(TARGETS perl_qtmultimedia4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtMultimedia4/)

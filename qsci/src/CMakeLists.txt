@@ -22,14 +22,14 @@ set(qsci_LIBRARY_SRC
     qscihandlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQsci)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/Qsci)
 add_library(perl_qsci SHARED ${qsci_LIBRARY_SRC})
 
 target_link_libraries(perl_qsci
     ${SMOKE_QSCI_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qsci PROPERTIES OUTPUT_NAME "PerlQsci")
+set_target_properties(perl_qsci PROPERTIES OUTPUT_NAME "Qsci")
 set_target_properties(perl_qsci PROPERTIES PREFIX "")
 
-install(TARGETS perl_qsci DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQsci/)
+install(TARGETS perl_qsci DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/Qsci/)

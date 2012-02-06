@@ -22,14 +22,14 @@ set(qimageblitz_LIBRARY_SRC
     qimageblitzhandlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQImageBlitz)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QImageBlitz)
 add_library(perl_qimageblitz SHARED ${qimageblitz_LIBRARY_SRC})
 
 target_link_libraries(perl_qimageblitz
     ${SMOKE_QIMAGEBLITZ_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qimageblitz PROPERTIES OUTPUT_NAME "PerlQImageBlitz")
+set_target_properties(perl_qimageblitz PROPERTIES OUTPUT_NAME "QImageBlitz")
 set_target_properties(perl_qimageblitz PROPERTIES PREFIX "")
 
-install(TARGETS perl_qimageblitz DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQImageBlitz/)
+install(TARGETS perl_qimageblitz DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QImageBlitz/)

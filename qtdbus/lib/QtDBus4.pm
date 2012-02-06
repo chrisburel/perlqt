@@ -49,7 +49,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('PerlQtDBus4', $VERSION);
+XSLoader::load('QtDBus4', $VERSION);
 
 QtDBus4::_internal::init();
 

@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('PerlQtXmlPatterns4', $VERSION);
+XSLoader::load('QtXmlPatterns4', $VERSION);
 
 QtXmlPatterns4::_internal::init();
 

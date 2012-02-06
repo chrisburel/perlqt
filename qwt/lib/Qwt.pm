@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('PerlQwt', $VERSION);
+XSLoader::load('Qwt', $VERSION);
 
 Qwt::_internal::init();
 
