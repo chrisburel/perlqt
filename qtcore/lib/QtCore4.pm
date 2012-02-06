@@ -1606,7 +1606,14 @@ our $VERSION = '0.96';
 
 our @EXPORT = qw( SIGNAL SLOT emit CAST qApp );
 
-XSLoader::load('PerlQtCore4', $VERSION);
+if ( $^O eq 'MSWin32' ) {
+    # On Windows, the Perl module .dll and the Qt .dll share the same name,
+    # "QtCore4.dll".  Because of this, just loading the Perl one will not cause
+    # the Qt one to load.  So we have to load it ourselves.
+    require Win32;
+    Win32::LoadLibrary('QtCore4.dll');
+}
+XSLoader::load('QtCore4', $VERSION);
 
 Qt::_internal::init();
 

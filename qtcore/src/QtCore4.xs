@@ -430,7 +430,7 @@ qApp()
     OUTPUT:
         RETVAL
 
-MODULE = PerlQtCore4            PACKAGE = PerlQtCore4
+MODULE = QtCore4            PACKAGE = QtCore4
 
 #// The build system with cmake and mingw relies on the visibility being set for
 #// a dll to export that symbol.  So we need to redefine XSPROTO so that we can
