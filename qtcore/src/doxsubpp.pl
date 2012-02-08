@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 use ExtUtils::MakeMaker;
-use IPC::Open2;
 
 my $perl = $ARGV[0];
 my $in   = $ARGV[1];

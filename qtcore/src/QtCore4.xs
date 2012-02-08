@@ -459,7 +459,7 @@ BOOT:
     smokeList << qtcore_Smoke;
 
     binding = PerlQt4::Binding(qtcore_Smoke);
-    PerlQt4Module module = { "QtCore4", resolve_classname_qt, 0, &binding };
+    PerlQt4Module module = { "PerlQtCore4", resolve_classname_qt, 0, &binding };
     perlqt_modules[qtcore_Smoke] = module;
 
     install_handlers(Qt4_handlers);
