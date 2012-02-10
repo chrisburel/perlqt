@@ -42,7 +42,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtTest4', $VERSION);
+QtCore4::loadModule('QtTest4', $VERSION);
 
 QtTest4::_internal::init();
 

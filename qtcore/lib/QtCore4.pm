@@ -1606,14 +1606,7 @@ our $VERSION = '0.96';
 
 our @EXPORT = qw( SIGNAL SLOT emit CAST qApp );
 
-if ( $^O eq 'MSWin32' ) {
-    # On Windows, the Perl module .dll and the Qt .dll share the same name,
-    # "QtCore4.dll".  Because of this, just loading the Perl one will not cause
-    # the Qt one to load.  So we have to load it ourselves.
-    require Win32;
-    Win32::LoadLibrary('QtCore4.dll');
-}
-XSLoader::load('QtCore4', $VERSION);
+QtCore4::loadModule(__PACKAGE__, $VERSION);
 
 Qt::_internal::init();
 
@@ -1638,6 +1631,15 @@ sub import { goto &Exporter::import }
 sub qApp {
     &Qt::qApp
 }
+
+sub loadModule {
+    my ($module, $version) = @_;
+    if ( $^O eq 'MSWin32' ) {
+        $module = 'Perl' . $module;
+    }
+    XSLoader::load($module, $version);
+}
+
 
 package Qt;
 

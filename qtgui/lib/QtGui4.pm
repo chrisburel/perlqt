@@ -45,7 +45,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('PerlQtGui4', $VERSION);
+QtCore4::loadModule('QtGui4', $VERSION);
 
 QtGui4::_internal::init();
 

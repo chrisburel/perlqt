@@ -99,9 +99,10 @@ getEnumList()
 #ifdef WIN32
 #undef XSPROTO
 #define XSPROTO(name) void Q_DECL_EXPORT name(pTHX_ CV* cv)
+#define boot_QtGui4 boot_PerlQtGui4
 #endif
 
-MODULE = PerlQtGui4            PACKAGE = PerlQtGui4
+MODULE = QtGui4            PACKAGE = QtGui4
 
 PROTOTYPES: ENABLE
 

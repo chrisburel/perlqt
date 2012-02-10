@@ -5,15 +5,6 @@ project(PerlQt)
 enable_testing()
 set(ENABLE_GUI_TESTS OFF CACHE BOOL "Run GUI tests in the \"test\" target")
 set(USE_BUILD_DIR_FOR_TESTS OFF CACHE BOOL "Use to toggle between using the build dir or the install dir for tests.")
-if ( USE_BUILD_DIR_FOR_TESTS )
-    set(prove_args -I${CMAKE_BINARY_DIR}/blib/lib -I${CMAKE_BINARY_DIR}/blib/arch)
-endif ( USE_BUILD_DIR_FOR_TESTS )
-
-if(WIN32)
-    set(prove_cmd "prove.bat")
-else()
-    set(prove_cmd "prove")
-endif(WIN32)
 
 find_package(Perl REQUIRED)
 find_package(PerlLibs REQUIRED)
@@ -28,6 +19,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${S
 include(MacroOptionalFindPackage)
 include(MacroOptionalAddBindings)
 include(MacroLogFeature)
+include(MacroProve)
 
 macro_optional_find_package(QScintilla)
 macro_log_feature(QSCINTILLA_FOUND "QScintilla2" "QScintilla2 libraries" "http://www.riverbankcomputing.co.uk/software/qscintilla/intro" FALSE "" "Needed to compile QScintilla2 bindings")
