@@ -1,2 +1,2 @@
 # Class tests
-add_test(perlqt_qimageblitz_load ${prove_args} ${prove_args} ${CMAKE_CURRENT_SOURCE_DIR}/a_loading.t)
+macro_prove(perlqt_qimageblitz_load ${CMAKE_CURRENT_SOURCE_DIR}/a_loading.t)
