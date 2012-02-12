@@ -13,8 +13,7 @@ sub NEW
     my ($class, $parent) = @_;
     $class->SUPER::NEW($parent);
 
-    my $collectionFile = Qt::LibraryInfo::location(Qt::LibraryInfo::ExamplesPath())
-        . '/help/contextsensitivehelp/doc/wateringmachine.qhc';
+    my $collectionFile = 'doc/wateringmachine.qhc';
 
     this->{m_helpEngine} = Qt::HelpEngineCore($collectionFile, this);
     if (!this->{m_helpEngine}->setupData()) {
