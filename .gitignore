@@ -2,3 +2,4 @@ Ui_*.pm
 *Resources.pm
 blib
 build
+*~
