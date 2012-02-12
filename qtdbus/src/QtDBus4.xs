@@ -17,6 +17,7 @@
 
 #include <QHash>
 #include <QList>
+#include <QDBusVariant>
 
 // Perl headers
 extern "C" {
@@ -37,6 +38,15 @@ const char*
 resolve_classname_qtdbus(smokeperl_object * o)
 {
     return perlqt_modules[o->smoke].binding->className(o->classId);
+}
+
+bool
+slot_returnvalue_dbus(Smoke::ModuleIndex classId, void** o, Smoke::Stack stack) {
+    if ( !strcmp(qtdbus_Smoke->classes[classId.index].className, "QDBusVariant") ) {
+        *reinterpret_cast<QDBusVariant*>(o[0]) = *(QDBusVariant*) stack[0].s_class;
+        return true;
+    }
+    return false;
 }
 
 extern TypeHandler QtDBus4_handlers[];
@@ -82,7 +92,7 @@ BOOT:
 
     bindingqtdbus = PerlQt4::Binding(qtdbus_Smoke);
 
-    PerlQt4Module module = { "PerlQtDBus4", resolve_classname_qtdbus, 0, &bindingqtdbus  };
+    PerlQt4Module module = { "PerlQtDBus4", resolve_classname_qtdbus, 0, &bindingqtdbus, slot_returnvalue_dbus  };
     perlqt_modules[qtdbus_Smoke] = module;
 
     install_handlers(QtDBus4_handlers);

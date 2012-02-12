@@ -294,14 +294,24 @@ namespace PerlQt4 {
 
     SlotReturnValue::SlotReturnValue(void ** o, SV * result, QList<MocArgument*> replyType) :
       _replyType(replyType), _result(result) {
-		_stack = new Smoke::StackItem[1];
-		Marshall::HandlerFn fn = getMarshallFn(type());
-		(*fn)(this);
-		
-		QByteArray t(type().name());
-		t.replace("const ", "");
-		t.replace("&", "");
-        smokeStackToQt4Stack(_stack, o, 0, 1, _replyType);
+        _stack = new Smoke::StackItem[1];
+        Marshall::HandlerFn fn = getMarshallFn(type());
+        (*fn)(this);
+
+        QByteArray t(type().name());
+        t.replace("const ", "");
+        t.replace("&", "");
+
+        if (perlqt_modules[smoke()].slot_returnvalue) {
+            Smoke::ModuleIndex classId = smoke()->idClass(t.constData(), true);
+            if (!perlqt_modules[smoke()].slot_returnvalue(classId, o, _stack)) {
+                // module did not handle this type, do the default
+                smokeStackToQt4Stack(_stack, o, 0, 1, _replyType);
+            }
+        }
+        else {
+            smokeStackToQt4Stack(_stack, o, 0, 1, _replyType);
+        }
     }
 
     Smoke::StackItem &SlotReturnValue::item() {

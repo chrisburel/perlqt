@@ -15,12 +15,14 @@ struct smokeperl_object {
 
 typedef const char* (*ResolveClassNameFn)(smokeperl_object * o);
 typedef void (*ClassCreatedFn)(const char* package, SV* module, SV* klass);
+typedef bool (*MarshallSlotReturnValueFn)(Smoke::ModuleIndex classId, void** o, Smoke::Stack stack);
 
 struct PerlQt4Module {
     const char *name;
     ResolveClassNameFn resolve_classname;
     ClassCreatedFn class_created;
     PerlQt4::Binding *binding;
+    MarshallSlotReturnValueFn slot_returnvalue;
 };
 
 extern Q_DECL_EXPORT QHash<Smoke*, PerlQt4Module> perlqt_modules;
