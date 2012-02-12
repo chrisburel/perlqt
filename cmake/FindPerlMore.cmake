@@ -38,7 +38,7 @@ IF(PERL_EXECUTABLE)
 	EXECUTE_PROCESS(COMMAND ${PERL_EXECUTABLE} -MConfig -MFile::Spec -e "print '-L' . File::Spec->catdir(\$Config{archlibexp}, 'CORE')"
    		OUTPUT_VARIABLE PERL_EXTRA_LIB_PATHS)
 
-	EXECUTE_PROCESS(COMMAND ${PERL_EXECUTABLE} -MConfig -e "print \$Config{libs}"
+	EXECUTE_PROCESS(COMMAND ${PERL_EXECUTABLE} -MConfig -e "print \$Config{perllibs}"
    		OUTPUT_VARIABLE PERL_LIBS)
 
 	FIND_PATH(PERL_INCLUDE_PATH 
