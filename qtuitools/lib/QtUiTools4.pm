@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtUiTools4', $VERSION);
+QtCore4::loadModule('QtUiTools4', $VERSION);
 
 QtUiTools4::_internal::init();
 

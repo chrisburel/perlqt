@@ -22,14 +22,20 @@ set(qtopengl4_LIBRARY_SRC
     qtopengl4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtOpenGL4)
+if(WIN32)
+    set(libraryName PerlQtOpenGL4)
+else()
+    set(libraryName QtOpenGL4)
+endif(WIN32)
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/${libraryName})
 add_library(perl_qtopengl4 SHARED ${qtopengl4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtopengl4
     ${SMOKE_QTOPENGL_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtopengl4 PROPERTIES OUTPUT_NAME "PerlQtOpenGL4")
+set_target_properties(perl_qtopengl4 PROPERTIES OUTPUT_NAME ${libraryName})
 set_target_properties(perl_qtopengl4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtopengl4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtOpenGL4/)
+install(TARGETS perl_qtopengl4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/${libraryName}/)

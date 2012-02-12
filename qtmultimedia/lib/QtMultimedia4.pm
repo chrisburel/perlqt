@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtMultimedia4', $VERSION);
+QtCore4::loadModule('QtMultimedia4', $VERSION);
 
 QtMultimedia4::_internal::init();
 

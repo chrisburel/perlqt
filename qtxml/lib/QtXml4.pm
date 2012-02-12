@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtXml4', $VERSION);
+QtCore4::loadModule('QtXml4', $VERSION);
 
 QtXml4::_internal::init();
 

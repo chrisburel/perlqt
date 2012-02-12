@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('Qwt', $VERSION);
+QtCore4::loadModule('Qwt', $VERSION);
 
 Qwt::_internal::init();
 

@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtWebKit4', $VERSION);
+QtCore4::loadModule('QtWebKit4', $VERSION);
 
 QtWebKit4::_internal::init();
 

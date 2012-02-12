@@ -205,6 +205,15 @@ getEnumList()
     OUTPUT:
         RETVAL
 
+#// The build system with cmake and mingw relies on the visibility being set for
+#// a dll to export that symbol.  So we need to redefine XSPROTO so that we can
+#// export the boot method.
+#ifdef WIN32
+#undef XSPROTO
+#define XSPROTO(name) void Q_DECL_EXPORT name(pTHX_ CV* cv)
+#define boot_QtXmlPatterns4 boot_PerlQtXmlPatterns4
+#endif
+
 MODULE = QtXmlPatterns4            PACKAGE = QtXmlPatterns4
 
 PROTOTYPES: ENABLE

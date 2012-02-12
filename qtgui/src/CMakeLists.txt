@@ -23,14 +23,20 @@ set(qtgui4_LIBRARY_SRC
     qtgui4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtGui4)
+if(WIN32)
+    set(libraryName PerlQtGui4)
+else()
+    set(libraryName QtGui4)
+endif(WIN32)
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/${libraryName})
 add_library(perl_qtgui4 SHARED ${qtgui4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtgui4
     ${SMOKE_QTGUI_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtgui4 PROPERTIES OUTPUT_NAME "PerlQtGui4")
+set_target_properties(perl_qtgui4 PROPERTIES OUTPUT_NAME ${libraryName})
 set_target_properties(perl_qtgui4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtgui4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtGui4/)
+install(TARGETS perl_qtgui4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/${libraryName}/)

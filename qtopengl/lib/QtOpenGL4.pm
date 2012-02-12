@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtOpenGL4', $VERSION);
+QtCore4::loadModule('QtOpenGL4', $VERSION);
 
 QtOpenGL4::_internal::init();
 

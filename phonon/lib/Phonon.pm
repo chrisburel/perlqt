@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('Phonon', $VERSION);
+QtCore4::loadModule('Phonon', $VERSION);
 
 Phonon::_internal::init();
 

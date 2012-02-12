@@ -22,14 +22,20 @@ set(qtdeclarative4_LIBRARY_SRC
     qtdeclarative4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/QtDeclarative4)
+if(WIN32)
+    set(libraryName PerlQtDeclarative4)
+else()
+    set(libraryName QtDeclarative4)
+endif(WIN32)
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/${libraryName})
 add_library(perl_qtdeclarative4 SHARED ${qtdeclarative4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtdeclarative4
     ${SMOKE_QTDECLARATIVE_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtdeclarative4 PROPERTIES OUTPUT_NAME "QtDeclarative4")
+set_target_properties(perl_qtdeclarative4 PROPERTIES OUTPUT_NAME ${libraryName})
 set_target_properties(perl_qtdeclarative4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtdeclarative4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/QtDeclarative4/)
+install(TARGETS perl_qtdeclarative4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/${libraryName}/)

@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtSql4', $VERSION);
+QtCore4::loadModule('QtSql4', $VERSION);
 
 QtSql4::_internal::init();
 

@@ -22,14 +22,20 @@ set(qt3support4_LIBRARY_SRC
     qt3support4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/Qt3Support4)
+if(WIN32)
+    set(libraryName PerlQt3Support4)
+else()
+    set(libraryName Qt3Support4)
+endif(WIN32)
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/${libraryName})
 add_library(perl_qt3support4 SHARED ${qt3support4_LIBRARY_SRC})
 
 target_link_libraries(perl_qt3support4
     ${SMOKE_QT3SUPPORT_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qt3support4 PROPERTIES OUTPUT_NAME "Qt3Support4")
+set_target_properties(perl_qt3support4 PROPERTIES OUTPUT_NAME ${libraryName})
 set_target_properties(perl_qt3support4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qt3support4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/Qt3Support4/)
+install(TARGETS perl_qt3support4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/${libraryName}/)

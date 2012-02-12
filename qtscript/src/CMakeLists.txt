@@ -22,14 +22,20 @@ set(qtscript4_LIBRARY_SRC
     qtscript4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtScript4)
+if(WIN32)
+    set(libraryName PerlQtScript4)
+else()
+    set(libraryName QtScript4)
+endif(WIN32)
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/${libraryName})
 add_library(perl_qtscript4 SHARED ${qtscript4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtscript4
     ${SMOKE_QTSCRIPT_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtscript4 PROPERTIES OUTPUT_NAME "PerlQtScript4")
+set_target_properties(perl_qtscript4 PROPERTIES OUTPUT_NAME ${libraryName})
 set_target_properties(perl_qtscript4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtscript4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtScript4/)
+install(TARGETS perl_qtscript4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/${libraryName}/)

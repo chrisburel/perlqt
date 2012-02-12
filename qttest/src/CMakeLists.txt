@@ -23,14 +23,20 @@ set(qttest4_LIBRARY_SRC
     qttest4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtTest4)
+if(WIN32)
+    set(libraryName PerlQtTest4)
+else()
+    set(libraryName QtTest4)
+endif(WIN32)
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/${libraryName})
 add_library(perl_qttest4 SHARED ${qttest4_LIBRARY_SRC})
 
 target_link_libraries(perl_qttest4
     ${SMOKE_QTTEST_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qttest4 PROPERTIES OUTPUT_NAME "PerlQtTest4")
+set_target_properties(perl_qttest4 PROPERTIES OUTPUT_NAME ${libraryName})
 set_target_properties(perl_qttest4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qttest4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtTest4/)
+install(TARGETS perl_qttest4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/${libraryName}/)

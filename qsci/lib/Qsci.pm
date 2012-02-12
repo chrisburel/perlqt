@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('Qsci', $VERSION);
+QtCore4::loadModule('Qsci', $VERSION);
 
 Qsci::_internal::init();
 

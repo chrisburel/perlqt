@@ -44,7 +44,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtSvg4', $VERSION);
+QtCore4::loadModule('QtSvg4', $VERSION);
 
 QtSvg4::_internal::init();
 

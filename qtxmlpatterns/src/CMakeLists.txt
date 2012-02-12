@@ -22,14 +22,20 @@ set(qtxmlpatterns4_LIBRARY_SRC
     qtxmlpatterns4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtXmlPatterns4)
+if(WIN32)
+    set(libraryName PerlQtXmlPatterns4)
+else()
+    set(libraryName QtXmlPatterns4)
+endif(WIN32)
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/${libraryName})
 add_library(perl_qtxmlpatterns4 SHARED ${qtxmlpatterns4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtxmlpatterns4
     ${SMOKE_QTXMLPATTERNS_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtxmlpatterns4 PROPERTIES OUTPUT_NAME "PerlQtXmlPatterns4")
+set_target_properties(perl_qtxmlpatterns4 PROPERTIES OUTPUT_NAME ${libraryName})
 set_target_properties(perl_qtxmlpatterns4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtxmlpatterns4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtXmlPatterns4/)
+install(TARGETS perl_qtxmlpatterns4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/${libraryName}/)

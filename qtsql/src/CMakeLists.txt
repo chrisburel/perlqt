@@ -22,14 +22,20 @@ set(qtsql4_LIBRARY_SRC
     qtsql4handlers.cpp
 )
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQtSql4)
+if(WIN32)
+    set(libraryName PerlQtSql4)
+else()
+    set(libraryName QtSql4)
+endif(WIN32)
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/${libraryName})
 add_library(perl_qtsql4 SHARED ${qtsql4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtsql4
     ${SMOKE_QTSQL_LIBRARY}
     perlqtcore4)
 
-set_target_properties(perl_qtsql4 PROPERTIES OUTPUT_NAME "PerlQtSql4")
+set_target_properties(perl_qtsql4 PROPERTIES OUTPUT_NAME ${libraryName})
 set_target_properties(perl_qtsql4 PROPERTIES PREFIX "")
 
-install(TARGETS perl_qtsql4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/PerlQtSql4/)
+install(TARGETS perl_qtsql4 DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/auto/${libraryName}/)

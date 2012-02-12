@@ -47,7 +47,7 @@ require XSLoader;
 
 our $VERSION = '0.96';
 
-XSLoader::load('QtDeclarative4', $VERSION);
+QtCore4::loadModule('QtDeclarative4', $VERSION);
 
 QtDeclarative4::_internal::init();
 
