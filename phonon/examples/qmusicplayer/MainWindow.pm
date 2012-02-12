@@ -127,7 +127,7 @@ sub stateChanged
 sub tick
 {
     my ($time) = @_;
-    my $displayTime = Qt::Time(0, (time / 60000) % 60, (time / 1000) % 60);
+    my $displayTime = Qt::Time(0, ($time / 60000) % 60, ($time / 1000) % 60);
 
     this->{timeLcd}->display($displayTime->toString('mm:ss'));
 }
