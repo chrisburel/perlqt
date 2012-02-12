@@ -55,6 +55,7 @@
 #include <QtNetwork/qsslcipher.h>
 #include <QtNetwork/qsslerror.h>
 #include <QtXml/qxmlstream.h>
+#include <QMultiMap>
 #endif
 
 #if QT_VERSION >= 0x040400
@@ -2172,6 +2173,46 @@ void marshall_voidP_array(Marshall *m) {
     }
 }
 
+#if QT_VERSION >= 0x40300
+void marshall_QMultiMapQStringQString(Marshall *m) {
+    switch(m->action()) {
+        case Marshall::ToSV: {
+            QMultiMap<QString,QString> *map = (QMultiMap<QString,QString>*)m->item().s_voidp;
+            if(!map) {
+                sv_setsv(m->var(), &PL_sv_undef);
+                break;
+            }
+
+            HV *hv = newHV();
+            SV *sv = newRV_noinc( (SV*)hv );
+
+            QMap<QString,QString>::Iterator it;
+            for (it = map->begin(); it != map->end(); ++it) {
+                SV *key = perlstringFromQString((QString*)&(it.key()));
+                STRLEN keylen = it.key().size();
+                QList<QString> values = map->values(it.key());
+                AV *val = newAV();
+                SV *valref = newRV_noinc( (SV*)val );
+                foreach ( QString entry, values ) {
+                    av_push(val, perlstringFromQString((QString*) &(it.value())));
+                }
+                hv_store( hv, SvPV_nolen(key), keylen, valref, 0 );
+            }
+
+            sv_setsv(m->var(), sv);
+            m->next();
+
+            if(m->cleanup())
+                delete map;
+        }
+        break;
+        default:
+            m->unsupported();
+        break;
+    }
+}
+#endif
+
 DEF_LIST_MARSHALLER( QAbstractButtonList, QList<QAbstractButton*>, QAbstractButton )
 DEF_LIST_MARSHALLER( QActionGroupList, QList<QActionGroup*>, QActionGroup )
 DEF_LIST_MARSHALLER( QActionList, QList<QAction*>, QAction )
@@ -2423,6 +2464,8 @@ Q_DECL_EXPORT TypeHandler Qt4_handlers[] = {
     { "QXmlStreamEntityDeclarations", marshall_QXmlStreamEntityDeclarations },
     { "QXmlStreamNamespaceDeclarations", marshall_QXmlStreamNamespaceDeclarations },
     { "QXmlStreamNotationDeclarations", marshall_QXmlStreamNotationDeclarations },
+    { "QMultiMap<QString,QString>", marshall_QMultiMapQStringQString },
+    { "QMultiMap<QString,QString>&", marshall_QMultiMapQStringQString },
 #endif
 #if QT_VERSION >= 0x040400
     { "QList<QNetworkCookie>", marshall_QNetworkCookieList },

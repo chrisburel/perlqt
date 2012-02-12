@@ -184,18 +184,18 @@ sub metaStateChanged
 
     my $metaData = this->{metaInformationResolver}->metaData();
 
-    my $title = $metaData->{TITLE};
+    my $title = $metaData->{TITLE}->[0];
     if ($title eq '') {
         $title = this->{metaInformationResolver}->currentSource()->fileName();
     }
 
-    my $titleItem = Qt::TableWidgetItem($title);
+    my $titleItem = Qt::TableWidgetItem(Qt::String($title));
     $titleItem->setFlags($titleItem->flags() ^ Qt::ItemIsEditable());
-    my $artistItem = Qt::TableWidgetItem($metaData->{ARTIST});
+    my $artistItem = Qt::TableWidgetItem(Qt::String($metaData->{ARTIST}->[0]));
     $artistItem->setFlags($artistItem->flags() ^ Qt::ItemIsEditable());
-    my $albumItem = Qt::TableWidgetItem($metaData->{ALBUM});
+    my $albumItem = Qt::TableWidgetItem(Qt::String($metaData->{ALBUM}->[0]));
     $albumItem->setFlags($albumItem->flags() ^ Qt::ItemIsEditable());
-    my $yearItem = Qt::TableWidgetItem($metaData->{DATE});
+    my $yearItem = Qt::TableWidgetItem(Qt::String($metaData->{DATE}->[0]));
     $yearItem->setFlags($yearItem->flags() ^ Qt::ItemIsEditable());
 
     my $currentRow = this->{musicTable}->rowCount();

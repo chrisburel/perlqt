@@ -224,10 +224,10 @@ SV *primitive_to_perl<int*>(int* sv) {
 }
 
 //-----------------------------------------------------------------------------
+#if defined(Q_OS_WIN32)
 template <>
 WId perl_to_primitive<WId>(SV *sv) {
     UNTESTED_HANDLER("perl_to_primitive<WId>");
-#if defined(Q_OS_WIN32)
     if ( !SvOK(sv) )
         return 0;
 #ifdef Q_WS_MAC32
