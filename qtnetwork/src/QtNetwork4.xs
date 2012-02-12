@@ -83,7 +83,7 @@ getEnumList()
 #define boot_QtNetwork4 boot_PerlQtNetwork4
 #endif
 
-MODULE = PerlQtNetwork4            PACKAGE = PerlQtNetwork4
+MODULE = QtNetwork4            PACKAGE = QtNetwork4
 
 PROTOTYPES: ENABLE
 
