@@ -1,6 +1,5 @@
 include_directories(
     ${CMAKE_SOURCE_DIR}/qtcore/src
-    ${CMAKE_SOURCE_DIR}/generator
     ${PERL_INCLUDE_PATH}
     ${QT_INCLUDES} )
 
