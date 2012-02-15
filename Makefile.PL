@@ -25,6 +25,13 @@ foreach my $arg (@ARGV) {
 my @args;
 push @args, '.';
 push @args, '-DCMAKE_BUILD_TYPE=Release';
+
+my $pathsearch = ":";
+my $cmakesearch = "cmake";
+if($^O =~ /win/i){
+    $pathsearch = ";";
+    $cmakesearch = "cmake.exe";
+}
 push @args, "-DCMAKE_INSTALL_PREFIX=$prefix" if $prefix;
 push @args, "-DQT_QMAKE_EXECUTABLE=$qmake" if $qmake;
 push @args, "-DCUSTOM_PERL_SITE_ARCH_DIR=$sitearch" if $sitearch;
@@ -37,9 +44,9 @@ if ( eval "require Alien::SmokeQt" ) {
 
 # Make sure we have a cmake executable
 my $cmake;
-foreach my $path ( split m/:/, $ENV{PATH} ) {
-    if ( -e "$path/cmake" ) {
-        $cmake = "$path/cmake";
+foreach my $path ( split m/$pathsearch/, $ENV{PATH} ) {
+    if ( -e "$path/".$cmakesearch ) {
+        $cmake = "$path/".$cmakesearch;
         last;
     }
 }
