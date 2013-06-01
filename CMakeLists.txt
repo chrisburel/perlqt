@@ -14,7 +14,7 @@ find_package(Smoke COMPONENTS QtCore QtGui QtNetwork Qt3Support QtDeclarative Qt
                               QtOpenGl QtScript QtSql QtSvg QtTest QtUiTools QtWebKit QtXml QtXmlPatterns
                               Phonon Qwt QSci QImageBlitz)
                               
-include_directories(${SMOKE_INCLUDE_DIR} ${QT_INCLUDES} ${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${SMOKE_INCLUDE_DIR} ${SMOKE_QTCORE_INCLUDE_DIR} ${QT_INCLUDES} ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${SMOKE_CMAKE_MODULE_DIR})
 include(MacroOptionalFindPackage)
 include(MacroOptionalAddBindings)
