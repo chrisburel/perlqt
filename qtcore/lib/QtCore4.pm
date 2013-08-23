@@ -1649,6 +1649,8 @@ package Qt;
 use strict;
 use warnings;
 
+use Scalar::Util;
+
 # Called in the DESTROY method for all QObjects to see if they still have a
 # parent, and avoid deleting them if they do.
 sub Qt::Object::ON_DESTROY {
@@ -1808,67 +1810,91 @@ Qt::_internal::installSub(' Qt::Variant::value', sub {
 });
 
 sub String {
-    my ($val) = @_;
-    if ( !$val ) {
-        $val = '';
+    if ( scalar @_ ) {
+        if ( Scalar::Util::readonly( $_[0] ) ) {
+            my $val = shift;
+            return bless \$val, 'Qt::String';
+        }
+        return bless \shift, 'Qt::String';
     }
-    return bless \$val, 'Qt::String';
+    return bless '', 'Qt::String';
 }
 
 sub CString {
-    my ($val) = @_;
-    if ( !$val ) {
-        $val = '';
+    if ( scalar @_ ) {
+        if ( Scalar::Util::readonly( $_[0] ) ) {
+            my $val = shift;
+            return bless \$val, 'Qt::CString';
+        }
+        return bless \shift, 'Qt::CString';
     }
-    return bless \$val, 'Qt::CString';
+    return bless '', 'Qt::CString';
 }
 
 sub Int {
-    my ($val) = @_;
-    if ( !$val ) {
-        $val = '';
+    if ( scalar @_ ) {
+        if ( Scalar::Util::readonly( $_[0] ) ) {
+            my $val = shift;
+            return bless \$val, 'Qt::Int';
+        }
+        return bless \shift, 'Qt::Int';
     }
-    return bless \$val, 'Qt::Int';
+    return bless '', 'Qt::Int';
 }
 
 sub Uint {
-    my ($val) = @_;
-    if ( !$val ) {
-        $val = '';
+    if ( scalar @_ ) {
+        if ( Scalar::Util::readonly( $_[0] ) ) {
+            my $val = shift;
+            return bless \$val, 'Qt::Uint';
+        }
+        return bless \shift, 'Qt::Uint';
     }
-    return bless \$val, 'Qt::Uint';
+    return bless '', 'Qt::Uint';
 }
 
 sub Bool {
-    my ($val) = @_;
-    if ( !$val ) {
-        $val = '';
+    if ( scalar @_ ) {
+        if ( Scalar::Util::readonly( $_[0] ) ) {
+            my $val = shift;
+            return bless \$val, 'Qt::Bool';
+        }
+        return bless \shift, 'Qt::Bool';
     }
-    return bless \$val, 'Qt::Bool';
+    return bless '', 'Qt::Bool';
 }
 
 sub Short {
-    my ($val) = @_;
-    if ( !$val ) {
-        $val = '';
+    if ( scalar @_ ) {
+        if ( Scalar::Util::readonly( $_[0] ) ) {
+            my $val = shift;
+            return bless \$val, 'Qt::Short';
+        }
+        return bless \shift, 'Qt::Short';
     }
-    return bless \$val, 'Qt::Short';
+    return bless '', 'Qt::Short';
 }
 
 sub Ushort {
-    my ($val) = @_;
-    if ( !$val ) {
-        $val = '';
+    if ( scalar @_ ) {
+        if ( Scalar::Util::readonly( $_[0] ) ) {
+            my $val = shift;
+            return bless \$val, 'Qt::Ushort';
+        }
+        return bless \shift, 'Qt::Ushort';
     }
-    return bless \$val, 'Qt::Ushort';
+    return bless '', 'Qt::Ushort';
 }
 
 sub Uchar {
-    my ($val) = @_;
-    if ( !$val ) {
-        $val = '';
+    if ( scalar @_ ) {
+        if ( Scalar::Util::readonly( $_[0] ) ) {
+            my $val = shift;
+            return bless \$val, 'Qt::Uchar';
+        }
+        return bless \shift, 'Qt::Uchar';
     }
-    return bless \$val, 'Qt::Uchar';
+    return bless '', 'Qt::Uchar';
 }
 
 1;
