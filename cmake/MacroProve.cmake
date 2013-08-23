@@ -1,5 +1,5 @@
 
-MACRO( MACRO_PROVE _testname _path)
+FUNCTION( MACRO_PROVE _testname _path)
 
     if(WIN32)
         set(prove_cmd "prove.bat")
@@ -20,4 +20,4 @@ MACRO( MACRO_PROVE _testname _path)
     endif(_workingdir)
 
     add_test(${_testname} ${prove_cmd} ${prove_args} ${escaped_path})
-ENDMACRO( MACRO_PROVE _testname _path )
+ENDFUNCTION( MACRO_PROVE _testname _path )

@@ -249,6 +249,8 @@ installautoload( package )
         char* autoload = new char[strlen(package) + 11];
         sprintf(autoload, "%s::_UTOLOAD", package);
         newXS(autoload, XS_AUTOLOAD, __FILE__);
+        sprintf(autoload, "%s::DESTROY", package);
+        newXS(autoload, XS_DESTROY, __FILE__);
         delete[] autoload;
 
 void

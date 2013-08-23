@@ -61,7 +61,6 @@ sub insertCompletion
         return;
     }
     my $tc = textCursor();
-    $DB::single=1;
     my $extra = length($completion) - length(c->completionPrefix());
     $tc->movePosition(Qt::TextCursor::Left());
     $tc->movePosition(Qt::TextCursor::EndOfWord());

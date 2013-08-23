@@ -4,7 +4,6 @@ package TestModel;
 
 use strict;
 use warnings;
-use blib;
 use QtCore4;
 use QtCore4::isa qw( Qt::AbstractItemModel );
 

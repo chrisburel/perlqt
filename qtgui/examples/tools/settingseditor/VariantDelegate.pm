@@ -197,7 +197,6 @@ sub setModelData
     }
 
     my $text = $lineEdit->text();
-    $DB::single=1;
     my $validator = $lineEdit->validator();
     if ($validator) {
         my $pos;

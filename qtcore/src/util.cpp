@@ -1939,6 +1939,109 @@ XS(XS_qvariant_from_value) {
     XSRETURN(1);
 }
 
+XS(XS_DESTROY) {
+    dXSARGS;
+    PERL_SET_CONTEXT(PL_curinterp);
+    char* package = HvNAME(SvSTASH(SvRV(ST(0))));
+    ++package;
+
+#ifdef PERLQTDEBUG
+    if( do_debug && ( do_debug & qtdb_autoload ) ) {
+        fprintf(stderr, "In XS DESTROY for %s", package);
+        if((do_debug & qtdb_verbose)) {
+            smokeperl_object *o = sv_obj_info(ST(0));
+            if(o)
+                fprintf(stderr, " - SV*: %p this: (%s)%p\n", ST(0), o->smoke->classes[o->classId].className, o->ptr);
+            else
+                fprintf(stderr, " - this: (unknown)(nil)\n");
+        }
+        else {
+            fprintf(stderr, "\n");
+        }
+    }
+#endif
+
+    // For anything we do here where withObject is true, sv_this should be set
+    // to the first argument on the stack, since that's where perl puts it.
+    // Wherever we return, be sure to restore sv_this.
+    SV* old_this = 0;
+    old_this = sv_this;
+    sv_this = newSVsv(ST(0));
+
+    smokeperl_object* o = sv_obj_info(sv_this);
+
+    // Check to see that o exists (has a smokeperl_object in sv_this), has
+    // a valid pointer, and (is allocated or has an entry in the pointer
+    // map).  If all of that's true, or we're in global destruction, we
+    // don't really care what happens.
+    if( PL_dirty ) {
+        // This block will be repeated a lot to clean stuff up.
+        // Restore sv_this
+        SvREFCNT_dec(sv_this);
+        sv_this = old_this;
+        XSRETURN_YES;
+    }
+    if( !(o && o->ptr && (o->allocated || getPointerObject(o->ptr))) ) {
+        // This block will be repeated a lot to clean stuff up.
+        // Restore sv_this
+        SvREFCNT_dec(sv_this);
+        sv_this = old_this;
+        XSRETURN_YES;
+    }
+
+    // Check to see if a delete of this object has been tried before, by
+    // seeing if the object's hash has the "has been hidden" key
+    static const char* key = "has been hidden";
+    U32 klen = 15;
+    SV** svp = 0;
+    if( SvROK(sv_this) && SvTYPE(SvRV(sv_this)) == SVt_PVHV ) {
+        HV* hv = (HV*)SvRV(sv_this);
+        svp = hv_fetch( hv, key, klen, 0);
+    }
+    if(svp) {
+        // Found "has been hidden", so don't do anything, just clean up 
+        // Restore sv_this
+        SvREFCNT_dec(sv_this);
+        sv_this = old_this;
+        XSRETURN_YES;
+    }
+
+#ifdef PERLQTDEBUG
+    // The following perl call seems to stomp on the package name, let's copy it
+    char* packagecpy = new char[strlen(package)+1];
+    strcpy( packagecpy, package );
+#endif
+
+    // Call the ON_DESTROY method, that stores a reference (increasing the
+    // refcnt) if necessary
+    HV* stash = gv_stashpv(package, TRUE);
+    GV* gv = gv_fetchmethod_autoload(stash, "ON_DESTROY", 0);
+    int retval = 0;
+    if( gv ) {
+        PUSHMARK(SP);
+        int count = call_sv((SV*)GvCV(gv), G_SCALAR|G_NOARGS);
+        SPAGAIN;
+        if (count != 1) {
+            // Restore sv_this
+            SvREFCNT_dec(sv_this);
+            sv_this = old_this;
+            croak( "Corrupt ON_DESTROY return value: Got %d value(s), expected 1\n", count );
+        }
+        retval = POPi;
+        PUTBACK;
+    }
+
+#ifdef PERLQTDEBUG
+    if( do_debug && retval && (do_debug & qtdb_gc) )
+        fprintf(stderr, "Increasing refcount in DESTROY for %s=%p (still has a parent)\n", packagecpy, o->ptr);
+    delete[] packagecpy;
+#endif
+
+    // Now clean up
+    SvREFCNT_dec(sv_this);
+    sv_this = old_this;
+}
+
 XS(XS_AUTOLOAD) {
     dXSARGS;
     PERL_SET_CONTEXT(PL_curinterp);
@@ -2045,95 +2148,12 @@ XS(XS_AUTOLOAD) {
         else
             XSRETURN(count);
     }
-    else if( !strcmp( methodname, "DESTROY" ) ) {
-        smokeperl_object* o = sv_obj_info(sv_this);
-
-        // Check to see that o exists (has a smokeperl_object in sv_this), has
-        // a valid pointer, and (is allocated or has an entry in the pointer
-        // map).  If all of that's true, or we're in global destruction, we
-        // don't really care what happens.
-        if( PL_dirty ) {
-            // This block will be repeated a lot to clean stuff up.
-            if( withObject ) {
-                // Restore sv_this
-                SvREFCNT_dec(sv_this);
-                sv_this = old_this;
-            }
-            XSRETURN_YES;
-        }
-        if( !(o && o->ptr && (o->allocated || getPointerObject(o->ptr))) ) {
-            // This block will be repeated a lot to clean stuff up.
-            if( withObject ) {
-                // Restore sv_this
-                SvREFCNT_dec(sv_this);
-                sv_this = old_this;
-            }
-            XSRETURN_YES;
-        }
-
-        // Check to see if a delete of this object has been tried before, by
-        // seeing if the object's hash has the "has been hidden" key
-        static const char* key = "has been hidden";
-        U32 klen = 15;
-        SV** svp = 0;
-        if( SvROK(sv_this) && SvTYPE(SvRV(sv_this)) == SVt_PVHV ) {
-            HV* hv = (HV*)SvRV(sv_this);
-            svp = hv_fetch( hv, key, klen, 0);
-        }
-        if(svp) {
-            // Found "has been hidden", so don't do anything, just clean up 
-            if( withObject ) {
-                // Restore sv_this
-                SvREFCNT_dec(sv_this);
-                sv_this = old_this;
-            }
-            XSRETURN_YES;
-        }
-
-#ifdef PERLQTDEBUG
-        // The following perl call seems to stomp on the package name, let's copy it
-        char* packagecpy = new char[strlen(package)+1];
-        strcpy( packagecpy, package );
-#endif
-
-        // Call the ON_DESTROY method, that stores a reference (increasing the
-        // refcnt) if necessary
-        if( !stash )
-            stash = gv_stashpv(package, TRUE);
-        gv = gv_fetchmethod_autoload(stash, "ON_DESTROY", 0);
-        int retval = 0;
-        if( gv ) {
-            PUSHMARK(SP);
-            int count = call_sv((SV*)GvCV(gv), G_SCALAR|G_NOARGS);
-            SPAGAIN;
-            if (count != 1) {
-                if( withObject ) {
-                    // Restore sv_this
-                    SvREFCNT_dec(sv_this);
-                    sv_this = old_this;
-                }
-                croak( "Corrupt ON_DESTROY return value: Got %d value(s), expected 1\n", count );
-            }
-            retval = POPi;
-            PUTBACK;
-        }
-
-#ifdef PERLQTDEBUG
-        if( do_debug && retval && (do_debug & qtdb_gc) )
-            fprintf(stderr, "Increasing refcount in DESTROY for %s=%p (still has a parent)\n", packagecpy, o->ptr);
-        delete[] packagecpy;
-#endif
-
-        // Now clean up
-        if( withObject ) {
-            SvREFCNT_dec(sv_this);
-            sv_this = old_this;
-        }
-    }
     else {
         // We're calling a c++ method
 
         // Get the classId (eventually converting SUPER to the right Qt4 class)
+        if (super && strcmp( super, "SUPER" ) == 0)
+            package[strlen(package)-7] = 0;
         SV* moduleIdRef = package_classId( package );
         Smoke::ModuleIndex mi;
 

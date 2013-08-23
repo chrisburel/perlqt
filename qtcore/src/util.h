@@ -98,6 +98,7 @@ XS(XS_qdatastream_readrawdata);
 XS(XS_qvariant_value);
 XS(XS_qvariant_from_value);
 
+XS(XS_DESTROY);
 XS(XS_AUTOLOAD);
 XS(XS_qt_metacall);
 XS(XS_signal);

@@ -30,7 +30,6 @@ sub NEW {
     emit signal( 5, 4 );
 
     # 3) Emit a signal, but missing an argument.  Should fail.
-    $DB::single=1;
     eval{ emit signalWithBadArg() };
     like( $@, qr/Wrong number of arguments in signal call/, 'Missing arguments in signal' );
 }

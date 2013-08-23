@@ -85,8 +85,6 @@ sub initTestCase {
     Qt::Test::qWaitForWindowShown( $window );
     this->{window} = $window;
     pass( 'Window shown' );
-    $DB::single=1;
-    1;
 }
 
 package main;

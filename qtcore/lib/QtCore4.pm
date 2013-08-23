@@ -1301,12 +1301,15 @@ sub init_class {
 
     foreach my $sp ('', ' ') {
         my $where = $sp . $perlClassName;
-        installautoload($where);
-        # Putting this in one package gives XS_AUTOLOAD one spot to look for
-        # the autoload variable
-        package Qt::AutoLoad;
-        my $autosub = \&{$where . '::_UTOLOAD'};
-        Qt::_internal::installSub( $where.'::AUTOLOAD', sub{&$autosub} );
+
+        if (!exists &{$where . '::AUTOLOAD'}) {
+            installautoload($where);
+            # Putting this in one package gives XS_AUTOLOAD one spot to look for
+            # the autoload variable
+            package Qt::AutoLoad;
+            my $autosub = \&{$where . '::_UTOLOAD'};
+            Qt::_internal::installSub( $where.'::AUTOLOAD', sub{&$autosub} );
+        }
     }
 
     installSub("$perlClassName\::NEW", sub {
@@ -1417,9 +1420,9 @@ sub makeMetaData {
     my $signals = $meta->{signals};
     my $slots = $meta->{slots};
 
-    @{$classinfos} = () if !defined @{$classinfos};
-    @{$signals} = () if !defined @{$signals};
-    @{$slots} = () if !defined @{$slots};
+    @{$classinfos} = () if !defined $classinfos;
+    @{$signals} = () if !defined $signals;
+    @{$slots} = () if !defined $slots;
 
     # Each entry in 'stringdata' corresponds to a string in the
     # qt_meta_stringdata_<classname> structure.
@@ -1805,67 +1808,67 @@ Qt::_internal::installSub(' Qt::Variant::value', sub {
 });
 
 sub String {
-    if ( @_ ) {
-        return bless \shift, 'Qt::String';
-    } else {
-        return bless '', 'Qt::String';
+    my ($val) = @_;
+    if ( !$val ) {
+        $val = '';
     }
+    return bless \$val, 'Qt::String';
 }
 
 sub CString {
-    if ( @_ ) {
-        return bless \shift, 'Qt::CString';
-    } else {
-        return bless '', 'Qt::CString';
+    my ($val) = @_;
+    if ( !$val ) {
+        $val = '';
     }
+    return bless \$val, 'Qt::CString';
 }
 
 sub Int {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Int';
-    } else {
-        return bless '', 'Qt::Int';
+    my ($val) = @_;
+    if ( !$val ) {
+        $val = '';
     }
+    return bless \$val, 'Qt::Int';
 }
 
 sub Uint {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Uint';
-    } else {
-        return bless '', 'Qt::Uint';
+    my ($val) = @_;
+    if ( !$val ) {
+        $val = '';
     }
+    return bless \$val, 'Qt::Uint';
 }
 
 sub Bool {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Bool';
-    } else {
-        return bless '', 'Qt::Bool';
+    my ($val) = @_;
+    if ( !$val ) {
+        $val = '';
     }
+    return bless \$val, 'Qt::Bool';
 }
 
 sub Short {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Short';
-    } else {
-        return bless '', 'Qt::Short';
+    my ($val) = @_;
+    if ( !$val ) {
+        $val = '';
     }
+    return bless \$val, 'Qt::Short';
 }
 
 sub Ushort {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Ushort';
-    } else {
-        return bless '', 'Qt::Ushort';
+    my ($val) = @_;
+    if ( !$val ) {
+        $val = '';
     }
+    return bless \$val, 'Qt::Ushort';
 }
 
 sub Uchar {
-    if ( @_ ) {
-        return bless \shift, 'Qt::Uchar';
-    } else {
-        return bless '', 'Qt::Uchar';
+    my ($val) = @_;
+    if ( !$val ) {
+        $val = '';
     }
+    return bless \$val, 'Qt::Uchar';
 }
 
 1;
