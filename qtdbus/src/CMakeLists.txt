@@ -26,7 +26,8 @@ add_library(perl_qtdbus4 SHARED ${qtdbus4_LIBRARY_SRC})
 
 target_link_libraries(perl_qtdbus4
     ${SMOKE_QTDBUS_LIBRARY}
-    perlqtcore4)
+    perlqtcore4
+    ${QT_QTDBUS_LIBRARY})
 
 set_target_properties(perl_qtdbus4 PROPERTIES OUTPUT_NAME "QtDBus4")
 set_target_properties(perl_qtdbus4 PROPERTIES PREFIX "")
