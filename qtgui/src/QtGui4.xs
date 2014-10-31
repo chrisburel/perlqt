@@ -102,6 +102,13 @@ getEnumList()
 #define boot_QtGui4 boot_PerlQtGui4
 #endif
 
+SV*
+SvREFCNT_inc(sv)
+        SV* sv
+    PPCODE:
+        RETVAL = SvREFCNT_inc(sv);
+        PUSHs(RETVAL);
+
 MODULE = QtGui4            PACKAGE = QtGui4
 
 PROTOTYPES: ENABLE
