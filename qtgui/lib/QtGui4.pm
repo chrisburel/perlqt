@@ -22,7 +22,6 @@ use warnings;
 
 use QtCore4;
 use base qw(Qt::_internal);
-use Devel::Peek qw( SvREFCNT_inc );
 
 sub init {
     @Qt::_internal::vectorTypes{qw(Qt::Polygon Qt::PolygonF Qt::ItemSelection)}
@@ -76,7 +75,7 @@ sub Qt::GraphicsObject::ON_DESTROY {
 }
 
 sub Qt::UndoCommand::ON_DESTROY {
-    Devel::Peek::SvREFCNT_inc( Qt::this() );
+    QtGui4::_internal->SvREFCNT_inc( Qt::this() );
     # XXX is there a better solution here?
     return 1;
 }
