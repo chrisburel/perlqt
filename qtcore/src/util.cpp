@@ -2047,7 +2047,7 @@ XS(XS_AUTOLOAD) {
     PERL_SET_CONTEXT(PL_curinterp);
     // Figure out which package and method is being called, based on the
     // autoload variable
-    SV* autoload = get_sv( "Qt::AutoLoad::AUTOLOAD", TRUE );
+    SV* autoload = sv_mortalcopy( get_sv( "Qt::AutoLoad::AUTOLOAD", TRUE ) );
     char* package = SvPV_nolen( autoload );
     char* methodname = 0;
     // Splits off the method name from the package
