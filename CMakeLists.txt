@@ -22,16 +22,16 @@ include(MacroLogFeature)
 include(MacroProve)
 
 macro_optional_find_package(QScintilla)
-macro_log_feature(QSCINTILLA_FOUND "QScintilla2" "QScintilla2 libraries" "http://www.riverbankcomputing.co.uk/software/qscintilla/intro" FALSE "" "Needed to compile QScintilla2 bindings")
+macro_log_feature(SMOKE_QSCI_FOUND "QScintilla2" "QScintilla2 libraries" "http://www.riverbankcomputing.co.uk/software/qscintilla/intro" FALSE "" "Needed to compile QScintilla2 bindings")
 
 macro_optional_find_package(QImageBlitz)
-macro_log_feature(QIMAGEBLITZ_FOUND "QImageBlitz" "QImageBlitz library" "http://www.kde.org" FALSE "" "Needed to compile QImageBlitz bindings")
+macro_log_feature(SMOKE_QIMAGEBLITZ_FOUND "QImageBlitz" "QImageBlitz library" "http://www.kde.org" FALSE "" "Needed to compile QImageBlitz bindings")
 
 macro_optional_find_package(Phonon)
-macro_log_feature(PHONON_FOUND "Phonon" "Phonon multimedia framework" "http://www.kde.org" FALSE "" "Needed to compile Phonon bindings")
+macro_log_feature(SMOKE_PHONON_FOUND "Phonon" "Phonon multimedia framework" "http://www.kde.org" FALSE "" "Needed to compile Phonon bindings")
 
 macro_optional_find_package(Qwt5)
-macro_log_feature(Qwt5_Qt4_FOUND "Qwt5 for Qt4" "Qwt5 libraries for Qt4" "http://qwt.sourceforge.net" FALSE "" "Needed to compile Qwt5 bindings")
+macro_log_feature(SMOKE_QWT_FOUND "Qwt5 for Qt4" "Qwt5 libraries for Qt4" "http://qwt.sourceforge.net" FALSE "" "Needed to compile Qwt5 bindings")
 
 add_definitions(-DDEBUG)
 
@@ -86,9 +86,9 @@ macro_optional_add_bindings(SMOKE_QTXMLPATTERNS_FOUND "QtXmlPatterns" qtxmlpatte
 
 macro_optional_add_bindings(SMOKE_PHONON_FOUND "Phonon" phonon)
 
-macro_optional_add_bindings(QSCINTILLA_FOUND "QScintilla" qsci)
+macro_optional_add_bindings(SMOKE_QCI_FOUND "QScintilla" qsci)
 
-macro_optional_add_bindings(Qwt5_Qt4_FOUND "Qwt" qwt)
+macro_optional_add_bindings(SMOKE_QWT_FOUND "Qwt" qwt)
 
 macro_optional_add_bindings(SMOKE_QIMAGEBLITZ_FOUND "QImageBlitz" qimageblitz)
 
