@@ -139,34 +139,34 @@ void Uic::writeCopyrightHeader(DomUI *ui)
 {
     QString comment = ui->elementComment();
     if ( this->option().generator == Option::PerlGenerator ) {
-        comment.insert( 0, "# " );
-        comment.replace( QRegExp("\n"), "\n# " );
-        if (comment.size())
-            out << "###############################################################################\n"
+        if (comment.size()) {
+            comment.insert( 0, "# " );
+            comment.replace( QRegExp("\n"), "\n# " );
+            out << "################################################################################\n"
                 << comment
-                << "\n###############################################################################\n\n";
+                << "\n################################################################################\n\n";
+            }
 
-            out << "#################################################################################\n";
-            out << "## Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
-            out << "##\n";
-            out << "## Created: " << QDateTime::currentDateTime().toString() << "\n";
-            out << "##      " << QString::fromLatin1("by: Qt User Interface Compiler version %1\n").arg(QLatin1String(QT_VERSION_STR));
-            out << "##\n";
-            out << "## WARNING! All changes made in this file will be lost when recompiling UI file!\n";
-            out << "################################################################################\n\n";
-    }
-    else {
+        out << "################################################################################\n";
+        out << "## Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
+        out << "##\n";
+        out << "## Created: " << QDateTime::currentDateTime().toString() << "\n";
+        out << "##      " << QString::fromLatin1("by: Qt User Interface Compiler version %1\n").arg(QLatin1String(QT_VERSION_STR));
+        out << "##\n";
+        out << "## WARNING! All changes made in this file will be lost when recompiling UI file!\n";
+        out << "################################################################################\n\n";
+    } else {
         if (comment.size())
             out << "/*\n" << comment << "\n*/\n\n";
 
-            out << "/********************************************************************************\n";
-            out << "** Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
-            out << "**\n";
-            out << "** Created: " << QDateTime::currentDateTime().toString() << "\n";
-            out << "**      " << QString::fromLatin1("by: Qt User Interface Compiler version %1\n").arg(QLatin1String(QT_VERSION_STR));
-            out << "**\n";
-            out << "** WARNING! All changes made in this file will be lost when recompiling UI file!\n";
-            out << "********************************************************************************/\n\n";
+        out << "/********************************************************************************\n";
+        out << "** Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
+        out << "**\n";
+        out << "** Created: " << QDateTime::currentDateTime().toString() << "\n";
+        out << "**      " << QString::fromLatin1("by: Qt User Interface Compiler version %1\n").arg(QLatin1String(QT_VERSION_STR));
+        out << "**\n";
+        out << "** WARNING! All changes made in this file will be lost when recompiling UI file!\n";
+        out << "********************************************************************************/\n\n";
     }
 }
 
@@ -385,28 +385,28 @@ bool Uic::plwrite(DomUI *ui)
 
     	if (option().useKDE) {
 			out << "\n\nsub main {" << endl;
-			out << option().indent << "my $about = KDE::AboutData(\"" << className.toLower() << "\", \"" << className << "\", KDE.ki18n(\"\"), \"0.1\")" << endl;
-			out << option().indent << "KDE::CmdLineArgs.init(\\@ARGV, $about)" << endl;
-			out << option().indent << "my $a = KDE::Application" << endl;
+			out << option().indent << "my $about = KDE::AboutData(\"" << className.toLower() << "\", \"" << className << "\", KDE.ki18n(\"\"), \"0.1\");" << endl;
+			out << option().indent << "KDE::CmdLineArgs.init(\\@ARGV, $about);" << endl;
+			out << option().indent << "my $a = KDE::Application;" << endl;
 			parentClass.replace(QRegExp("^Q"), "Qt::");
 			parentClass.replace(QRegExp("^K"), "KDE::");
-			out << option().indent << "my $w = " << parentClass << endl;
-			out << option().indent << option().prefix << className << "setupUi($w)" << endl;
-			out << option().indent << "$a->topWidget = $w" << endl;
-			out << option().indent << "$w->show()" << endl;
-			out << option().indent << "$a->exec()" << endl;
+			out << option().indent << "my $w = " << parentClass << ";" << endl;
+			out << option().indent << option().prefix << className << "setupUi($w);" << endl;
+			out << option().indent << "$a->topWidget = $w;" << endl;
+			out << option().indent << "$w->show();" << endl;
+			out << option().indent << "$a->exec();" << endl;
 			out << "}" << endl;
-			out << "exit main()" << endl;
+			out << "exit main();" << endl;
 		} else {
 			out << "\n\nsub main {" << endl;
-			out << option().indent << "my $a = Qt::Application(\\@ARGV)" << endl;
+			out << option().indent << "my $a = Qt::Application(\\@ARGV);" << endl;
 			parentClass.replace(QRegExp("^Q"), "Qt::");
-			out << option().indent << "my $w = " << parentClass << endl;
-			out << option().indent << "my $u = " << option().prefix << className << endl;
-			out << option().indent << "$w->show()" << endl;
-			out << option().indent << "$a->exec()" << endl;
+			out << option().indent << "my $w = " << parentClass << ";" << endl;
+			out << option().indent << "my $u = " << option().prefix << className << ";" << endl;
+			out << option().indent << "$w->show();" << endl;
+			out << option().indent << "$a->exec();" << endl;
 			out << "}" << endl;
-			out << "exit main()" << endl;
+			out << "exit main();" << endl;
 		}
     }
 
