@@ -1,14 +1,14 @@
-package QtCore4::slots;
+package QtCore5::slots;
 #
 # Proposed usage:
 #
-# use QtCore4::slots changeSomething => ['int'];
+# use QtCore5::slots changeSomething => ['int'];
 #
 
 use strict;
 use warnings;
 use Carp;
-use QtCore4;
+use QtCore5;
 use Scalar::Util qw(looks_like_number);
 
 our $VERSION = 0.60;
@@ -17,7 +17,7 @@ sub import {
     no strict 'refs';
     my $self = shift;
     croak "Odd number of arguments in slot declaration" if @_%2;
-    my $caller = $self eq 'QtCore4::slots' ? (caller)[0] : $self;
+    my $caller = $self eq 'QtCore5::slots' ? (caller)[0] : $self;
     my @slots = @_;
     my $meta = \%{ $caller . '::META' };
 

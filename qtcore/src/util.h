@@ -1,21 +1,11 @@
 #ifndef PERLQT_UTIL_H
 #define PERLQT_UTIL_H
-// Include Qt4 headers first, to avoid weirdness that the perl headers cause
-#include <QtCore/QHash>
-#include <QtCore/QList>
-#include <QtCore/QMetaMethod>
-#include <QtCore/QMetaObject>
-#include <QtCore/QRegExp>
-#include <QtGui/QPainter>
-#include <QtGui/QPaintEngine>
-#include <QtGui/QPalette>
-#include <QtGui/QIcon>
-#include <QtGui/QBitmap>
-#include <QtGui/QCursor>
-#include <QtGui/QSizePolicy>
-#include <QtGui/QKeySequence>
-#include <QtGui/QTextLength>
-#include <QtGui/QTextFormat>
+// Include Qt5 headers first, to avoid weirdness that the perl headers cause
+#include <QHash>
+#include <QList>
+#include <QMetaMethod>
+#include <QMetaObject>
+#include <QRegExp>
 
 // Perl headers
 extern "C" {
@@ -27,7 +17,7 @@ extern "C" {
 
 // Now my own headers
 #include "smoke.h"
-#include "QtCore4.h"
+#include "QtCore5.h"
 #include "binding.h"
 #include "smokeperl.h"
 #include "marshall_types.h" // Method call classes

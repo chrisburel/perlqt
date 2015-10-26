@@ -44,7 +44,7 @@ SV* perlstringFromQString( QString * s );
 SV* perlstringFromQByteArray( QByteArray * s );
 
 extern HV* type_handlers;
-extern TypeHandler Qt4_handlers[];
+extern TypeHandler Qt5_handlers[];
 Q_DECL_EXPORT void install_handlers(TypeHandler* h);
 
 Marshall::HandlerFn getMarshallFn(const SmokeType& type);

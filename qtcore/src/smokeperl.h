@@ -17,15 +17,15 @@ typedef const char* (*ResolveClassNameFn)(smokeperl_object * o);
 typedef void (*ClassCreatedFn)(const char* package, SV* module, SV* klass);
 typedef bool (*MarshallSlotReturnValueFn)(Smoke::ModuleIndex classId, void** o, Smoke::Stack stack);
 
-struct PerlQt4Module {
+struct PerlQt5Module {
     const char *name;
     ResolveClassNameFn resolve_classname;
     ClassCreatedFn class_created;
-    PerlQt4::Binding *binding;
+    PerlQt5::Binding *binding;
     MarshallSlotReturnValueFn slot_returnvalue;
 };
 
-extern Q_DECL_EXPORT QHash<Smoke*, PerlQt4Module> perlqt_modules;
+extern Q_DECL_EXPORT QHash<Smoke*, PerlQt5Module> perlqt_modules;
 
 inline smokeperl_object* sv_obj_info(SV* sv) { // ptr on success, null on fail
     if(!sv || !SvROK(sv) || !(SvTYPE(SvRV(sv)) == SVt_PVHV || SvTYPE(SvRV(sv)) == SVt_PVAV))
@@ -40,8 +40,8 @@ inline smokeperl_object* sv_obj_info(SV* sv) { // ptr on success, null on fail
     return o;
 }
 
-// keep this enum in sync with lib/Qt4/debug.pm
-enum Qt4DebugChannel {
+// keep this enum in sync with lib/Qt5/debug.pm
+enum Qt5DebugChannel {
     qtdb_none = 0x00,
     qtdb_ambiguous = 0x01,
     qtdb_autoload = 0x02,

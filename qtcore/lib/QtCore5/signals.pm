@@ -1,14 +1,14 @@
-package QtCore4::signals;
+package QtCore5::signals;
 #
 # Proposed usage:
 #
-# use QtCore4::signals changeSomething => ['int'];
+# use QtCore5::signals changeSomething => ['int'];
 #
 
 use strict;
 use warnings;
 use Carp;
-use QtCore4;
+use QtCore5;
 use Scalar::Util qw(looks_like_number);
 
 our $VERSION = 0.60;
@@ -17,7 +17,7 @@ sub import {
     no strict 'refs';
     my $self = shift;
     croak "Odd number of arguments in signal declaration" if @_%2;
-    my $caller = $self eq 'QtCore4::signals' ? (caller)[0] : $self;
+    my $caller = $self eq 'QtCore5::signals' ? (caller)[0] : $self;
     my(@signals) = @_;
     my $meta = \%{ $caller . '::META' };
 

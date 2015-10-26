@@ -1,7 +1,8 @@
-//util.h brings in all the required Qt4 headers.  This has to happen before the
+//util.h brings in all the required Qt5 headers.  This has to happen before the
 //perl stuff below
 #include "util.h"
 
+#include <QDebug>
 #include <QXmlStreamAttributes>
 
 // Perl headers
@@ -14,17 +15,17 @@ extern "C" {
 
 // Now my own headers
 #include "smoke.h"
-#include "QtCore4.h"
+#include "QtCore5.h"
 #include "binding.h"
 #include "smokeperl.h"
 #include "marshall_types.h" // Method call classes
 #include "handlers.h" // for install_handlers function
 #include "listclass_macros.h"
 
-extern PerlQt4::Binding binding;
+extern PerlQt5::Binding binding;
 extern Q_DECL_EXPORT Smoke* qtcore_Smoke;
 extern "C" void init_qtcore_Smoke();
-extern Q_DECL_EXPORT QHash<Smoke*, PerlQt4Module> perlqt_modules;
+extern Q_DECL_EXPORT QHash<Smoke*, PerlQt5Module> perlqt_modules;
 extern SV* sv_qapp;
 Q_DECL_EXPORT QList<Smoke*> smokeList;
 QList<QString> arrayTypes;
@@ -172,7 +173,7 @@ getNativeMetaObject( smokeId, methodId )
     CODE:
         smokeperl_object* nothis = alloc_smokeperl_object( false, 0, 0, 0 );
         Smoke* smoke = smokeList[smokeId];
-        PerlQt4::MethodCall call(
+        PerlQt5::MethodCall call(
             smoke,
             methodId,
             nothis,
@@ -204,7 +205,7 @@ getSVt( sv )
     OUTPUT:
         RETVAL
 
-#// Args: char* name: the c++ name of a Qt4 class
+#// Args: char* name: the c++ name of a Qt5 class
 #// Returns: An array where the first element is the smoke classId for that
 #// class, and the second element is the index into the list of smoke objects.
 void
@@ -216,8 +217,8 @@ findClass( name )
         PUSHs(sv_2mortal(newSViv(mi.index)));
         PUSHs(sv_2mortal(newSViv(smokeList.indexOf(mi.smoke))));
 
-#// Args: char* name: the c++ name of a Qt4 class
-#// Returns: the smoke classId for that Qt4 class
+#// Args: char* name: the c++ name of a Qt5 class
+#// Returns: the smoke classId for that Qt5 class
 const char*
 classFromId( moduleId )
         SV* moduleId
@@ -291,73 +292,74 @@ make_metaObject(parentModuleId,parentMeta,stringdata_sv,data_sv)
         SV* stringdata_sv
         SV* data_sv
     CODE:
-        // Get the meta object of the super class, to inherit the super's
-        // sig/slots
-        QMetaObject* superdata;
-        if( SvROK(parentMeta) ){
-            // The parent class is a custom Perl class whose metaObject
-            // was constructed at runtime
-            superdata = (QMetaObject*)sv_obj_info(parentMeta)->ptr;
-        }
-        else {
-            // The parent class is a Smoke class, so call metaObject() on the
-            // instance to get it via a smoke library call
-            Smoke* parentClassSmoke = smokeList[SvIV(*(SV**)av_fetch((AV*)SvRV(parentModuleId), 0, 0))];
-            Smoke::Index parentClassId = SvIV(*(SV**)av_fetch((AV*)SvRV(parentModuleId), 1, 0));
-            Smoke::ModuleIndex classMId( parentClassSmoke, parentClassId );
-            Smoke::ModuleIndex nameMId = parentClassSmoke->idMethodName("staticMetaObject");
-            Smoke::ModuleIndex meth = parentClassSmoke->findMethod(classMId, nameMId);
-            if (meth.index > 0) {
-                Smoke::Method &m = meth.smoke->methods[meth.smoke->methodMaps[meth.index].method];
-                Smoke::ClassFn fn = meth.smoke->classes[m.classId].classFn;
-                Smoke::StackItem args[1];
-                (*fn)(m.method, 0, args);
-                superdata = (QMetaObject*) args[0].s_voidp;
-            }
-            else {
-                // Should never happen...
-                croak( "Cannot find %s::metaObject() method\n",
-                       meth.smoke->classes[parentClassId].className );
-            }
-        }
+        RETVAL = &PL_sv_undef;
+    //    // Get the meta object of the super class, to inherit the super's
+    //    // sig/slots
+    //    QMetaObject* superdata;
+    //    if( SvROK(parentMeta) ){
+    //        // The parent class is a custom Perl class whose metaObject
+    //        // was constructed at runtime
+    //        superdata = (QMetaObject*)sv_obj_info(parentMeta)->ptr;
+    //    }
+    //    else {
+    //        // The parent class is a Smoke class, so call metaObject() on the
+    //        // instance to get it via a smoke library call
+    //        Smoke* parentClassSmoke = smokeList[SvIV(*(SV**)av_fetch((AV*)SvRV(parentModuleId), 0, 0))];
+    //        Smoke::Index parentClassId = SvIV(*(SV**)av_fetch((AV*)SvRV(parentModuleId), 1, 0));
+    //        Smoke::ModuleIndex classMId( parentClassSmoke, parentClassId );
+    //        Smoke::ModuleIndex nameMId = parentClassSmoke->idMethodName("staticMetaObject");
+    //        Smoke::ModuleIndex meth = parentClassSmoke->findMethod(classMId, nameMId);
+    //        if (meth.index > 0) {
+    //            Smoke::Method &m = meth.smoke->methods[meth.smoke->methodMaps[meth.index].method];
+    //            Smoke::ClassFn fn = meth.smoke->classes[m.classId].classFn;
+    //            Smoke::StackItem args[1];
+    //            (*fn)(m.method, 0, args);
+    //            superdata = (QMetaObject*) args[0].s_voidp;
+    //        }
+    //        else {
+    //            // Should never happen...
+    //            croak( "Cannot find %s::metaObject() method\n",
+    //                   meth.smoke->classes[parentClassId].className );
+    //        }
+    //    }
 
-        // Create the qt_meta_data array.
-        int count = av_len((AV*)SvRV(data_sv)) + 1;
-        uint* qt_meta_data = new uint[count];
-        for (int i = 0; i < count; i++) {
-            SV** datarow = av_fetch((AV*)SvRV(data_sv), i, 0);
-            qt_meta_data[i] = (uint)SvIV(*datarow);
-        }
+    //    // Create the qt_meta_data array.
+    //    int count = av_len((AV*)SvRV(data_sv)) + 1;
+    //    uint* qt_meta_data = new uint[count];
+    //    for (int i = 0; i < count; i++) {
+    //        SV** datarow = av_fetch((AV*)SvRV(data_sv), i, 0);
+    //        qt_meta_data[i] = (uint)SvIV(*datarow);
+    //    }
 
-        // Create the qt_meta_stringdata array.
-        // Can't use string functions here, because these strings contain
-        // null (0) bits, which the string functions will interpret as the end
-        // of the string
-        STRLEN len = SvLEN(stringdata_sv);
-        char* qt_meta_stringdata = new char[len];
-        memcpy( (void*)(qt_meta_stringdata), (void*)SvPV_nolen(stringdata_sv), len );
+    //    // Create the qt_meta_stringdata array.
+    //    // Can't use string functions here, because these strings contain
+    //    // null (0) bits, which the string functions will interpret as the end
+    //    // of the string
+    //    STRLEN len = SvLEN(stringdata_sv);
+    //    char* qt_meta_stringdata = new char[len];
+    //    memcpy( (void*)(qt_meta_stringdata), (void*)SvPV_nolen(stringdata_sv), len );
 
-        // Define our meta object
-        const QMetaObject staticMetaObject = {
-            { superdata, qt_meta_stringdata,
-              qt_meta_data, 0 }
-        };
-        QMetaObject *meta = new QMetaObject;
-        *meta = staticMetaObject;
+    //    // Define our meta object
+    //    const QMetaObject staticMetaObject = {
+    //        { superdata, qt_meta_stringdata,
+    //          qt_meta_data, 0 }
+    //    };
+    //    QMetaObject *meta = new QMetaObject;
+    //    *meta = staticMetaObject;
 
-        //Package up this pointer to be returned to perl
-        smokeperl_object o;
-        o.smoke = qtcore_Smoke;
-        o.classId = qtcore_Smoke->idClass("QMetaObject").index,
-        o.ptr = meta;
-        o.allocated = true;
+    //    //Package up this pointer to be returned to perl
+    //    smokeperl_object o;
+    //    o.smoke = qtcore_Smoke;
+    //    o.classId = qtcore_Smoke->idClass("QMetaObject").index,
+    //    o.ptr = meta;
+    //    o.allocated = true;
 
-        HV *hv = newHV();
-        RETVAL = newRV_noinc((SV*)hv);
-        sv_bless( RETVAL, gv_stashpv( " Qt::MetaObject", TRUE ) );
-        sv_magic((SV*)hv, 0, '~', (char*)&o, sizeof(o));
-        //Not sure we need the entry in the pointer_map
-        mapPointer(RETVAL, &o, pointer_map, o.classId, 0);
+    //    HV *hv = newHV();
+    //    RETVAL = newRV_noinc((SV*)hv);
+    //    sv_bless( RETVAL, gv_stashpv( " Qt::MetaObject", TRUE ) );
+    //    sv_magic((SV*)hv, 0, '~', (char*)&o, sizeof(o));
+    //    //Not sure we need the entry in the pointer_map
+    //    mapPointer(RETVAL, &o, pointer_map, o.classId, 0);
     OUTPUT:
         RETVAL
 
@@ -432,7 +434,7 @@ qApp()
     OUTPUT:
         RETVAL
 
-MODULE = QtCore4            PACKAGE = QtCore4
+MODULE = QtCore5            PACKAGE = QtCore5
 
 #// The build system with cmake and mingw relies on the visibility being set
 #// for a dll to export that symbol.  So we need to redefine XSPROTO so that we
@@ -441,7 +443,7 @@ MODULE = QtCore4            PACKAGE = QtCore4
 #ifdef WIN32
 #undef XSPROTO
 #define XSPROTO(name) void Q_DECL_EXPORT name(pTHX_ CV* cv)
-#define boot_QtCore4 boot_PerlQtCore4
+#define boot_QtCore5 boot_PerlQtCore5
 #endif
 
 BOOT:
@@ -457,14 +459,15 @@ BOOT:
     PL_use_safe_putenv = 1;
 #endif
 
+    qDebug() << "IN BOOT";
     init_qtcore_Smoke();
     smokeList << qtcore_Smoke;
 
-    binding = PerlQt4::Binding(qtcore_Smoke);
-    PerlQt4Module module = { "PerlQtCore4", resolve_classname_qt, 0, &binding };
+    binding = PerlQt5::Binding(qtcore_Smoke);
+    PerlQt5Module module = { "PerlQtCore5", resolve_classname_qt, 0, &binding };
     perlqt_modules[qtcore_Smoke] = module;
 
-    install_handlers(Qt4_handlers);
+    install_handlers(Qt5_handlers);
 
     pointer_map = get_hv( "Qt::_internal::pointer_map", FALSE );
 

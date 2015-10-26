@@ -7,7 +7,7 @@
 #define Q_DECL_EXPORT
 #endif
 
-namespace PerlQt4 {
+namespace PerlQt5 {
 
 class Q_DECL_EXPORT Binding : public SmokeBinding {
 public:
@@ -20,6 +20,6 @@ public:
 
 }
 
-extern PerlQt4::Binding binding;
+extern PerlQt5::Binding binding;
 
 #endif // BINDING_H

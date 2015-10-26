@@ -4,7 +4,7 @@
 
 #include "marshall_types.h"
 #include "binding.h"
-#include "QtCore4.h"
+#include "QtCore5.h"
 #include "smokeperl.h"
 
 extern "C" {
@@ -18,7 +18,7 @@ extern Q_DECL_EXPORT Smoke *qtcore_Smoke;
 extern Q_DECL_EXPORT int do_debug;
 extern Q_DECL_EXPORT QList<Smoke*> smokeList;
 
-namespace PerlQt4 {
+namespace PerlQt5 {
 
 Binding::Binding() : SmokeBinding(0) {};
 Binding::Binding(Smoke *s) : SmokeBinding(s) {};
@@ -152,4 +152,4 @@ char* Binding::className(Smoke::Index classId) {
     return SvPV_nolen(retval);
 }
 
-} // End namespace PerlQt4
+} // End namespace PerlQt5

@@ -1,4 +1,4 @@
-package QtCore4::isa;
+package QtCore5::isa;
 
 use strict;
 use warnings;
@@ -11,7 +11,7 @@ my $H = sub {my ($n) = @_; no strict 'refs'; no warnings 'once'; \%{$n}};
 my $ISUB = sub {my ($n, $s) = @_; no strict 'refs'; *{$n} = $s};
 
 sub import {
-    # Class will be QtCore4::isa.  Caller is the name of the package doing the use.
+    # Class will be QtCore5::isa.  Caller is the name of the package doing the use.
     my $class = shift;
     my $caller = (caller)[0];
 
@@ -20,7 +20,7 @@ sub import {
     my $pm = $caller . ".pm";
     $pm =~ s!::!/!g;
     unless(exists $::INC{$pm}) {
-        $::INC{$pm} = $::INC{"QtCore4/isa.pm"};
+        $::INC{$pm} = $::INC{"QtCore5/isa.pm"};
     }
 
     # Define the Qt::ISA array

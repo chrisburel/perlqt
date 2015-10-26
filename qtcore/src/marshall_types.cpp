@@ -3,20 +3,19 @@
 #include <QVector>
 #include <QMetaObject>
 #include <QMetaMethod>
-#include <QPalette>
 
 #include "smoke.h"
 #include "marshall_types.h"
 #include "smokeperl.h" // for smokeperl_object
 #include "smokehelp.h" // for SmokeType and SmokeClass
 #include "handlers.h" // for getMarshallType
-#include "QtCore4.h" // for extern sv_this
+#include "QtCore5.h" // for extern sv_this
 #include "util.h" // for caller()
 
 extern Smoke* qtcore_Smoke;
 
 void
-smokeStackToQt4Stack(Smoke::Stack stack, void ** o, int start, int end, QList<MocArgument*> args)
+smokeStackToQt5Stack(Smoke::Stack stack, void ** o, int start, int end, QList<MocArgument*> args)
 {
     for (int i = start, j = 0; i < end; ++i, ++j) {
         Smoke::StackItem *si = stack + j;
@@ -117,7 +116,7 @@ smokeStackToQt4Stack(Smoke::Stack stack, void ** o, int start, int end, QList<Mo
 }
 
 void
-smokeStackFromQt4Stack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args)
+smokeStackFromQt5Stack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args)
 {
     for (int i = start, j = 0; i < end; ++i, ++j) {
         void *o = _o[j];
@@ -211,7 +210,7 @@ smokeStackFromQt4Stack(Smoke::Stack stack, void ** _o, int start, int end, QList
     }
 }
 
-namespace PerlQt4 {
+namespace PerlQt5 {
 
     MethodReturnValueBase::MethodReturnValueBase(Smoke *smoke, Smoke::Index methodIndex, Smoke::Stack stack) :
       _smoke(smoke), _methodIndex(methodIndex), _stack(stack) {
@@ -306,11 +305,11 @@ namespace PerlQt4 {
             Smoke::ModuleIndex classId = smoke()->idClass(t.constData(), true);
             if (!perlqt_modules[smoke()].slot_returnvalue(classId, o, _stack)) {
                 // module did not handle this type, do the default
-                smokeStackToQt4Stack(_stack, o, 0, 1, _replyType);
+                smokeStackToQt5Stack(_stack, o, 0, 1, _replyType);
             }
         }
         else {
-            smokeStackToQt4Stack(_stack, o, 0, 1, _replyType);
+            smokeStackToQt5Stack(_stack, o, 0, 1, _replyType);
         }
     }
 
@@ -622,7 +621,7 @@ namespace PerlQt4 {
     //------------------------------------------------
 
     // The steps are:
-    // Copy Qt4 stack to Smoke Stack
+    // Copy Qt5 stack to Smoke Stack
     // use next() to marshall the smoke stack
     // callMethod()
     // The rest is modeled after the VirtualMethodCall
@@ -740,7 +739,7 @@ namespace PerlQt4 {
     }
 
     void InvokeSlot::copyArguments() {
-        smokeStackFromQt4Stack( _stack, _a + 1, 1, _items + 1, _args );
+        smokeStackFromQt5Stack( _stack, _a + 1, 1, _items + 1, _args );
     }
 
     //------------------------------------------------
@@ -785,7 +784,7 @@ namespace PerlQt4 {
 
         // o+1 because o[0] is the return value. _items+1 because we have to
         // accomidate for the offset of o[0] already being used
-        smokeStackToQt4Stack(_stack, o + 1, 1, _items + 1, _args);
+        smokeStackToQt5Stack(_stack, o + 1, 1, _items + 1, _args);
         // The 0 index stores the return value
         void* ptr;
         o[0] = &ptr;
@@ -853,4 +852,4 @@ namespace PerlQt4 {
             o[0] = new QString;
         }
     }
-} // End namespace PerlQt4
+} // End namespace PerlQt5

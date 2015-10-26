@@ -21,7 +21,7 @@ sub new {
 }
 
 # This subroutine is used to set the context for translation correctly for any
-# perl subclasses.  Without it, the context would always be set to the base Qt4
+# perl subclasses.  Without it, the context would always be set to the base Qt5
 # class.
 sub tr {
     if( !Qt::qApp() ) {
@@ -772,7 +772,7 @@ qWarning
 );
 
 unless(exists $::INC{'Qt/GlobalSpace.pm'}) {
-    $::INC{'Qt/GlobalSpace.pm'} = $::INC{'QtCore4.pm'};
+    $::INC{'Qt/GlobalSpace.pm'} = $::INC{'QtCore5.pm'};
 }
 
 sub import {
@@ -1127,7 +1127,7 @@ sub getSmokeMethodId {
                 # else will be 2
                 my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
                 my @caller = caller($stackDepth);
-                while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/QtCore4\/isa\.pm/ ) {
+                while ( $caller[1] =~ m/QtCore5\.pm$/ || $caller[1] =~ m/QtCore5\/isa\.pm/ ) {
                     ++$stackDepth;
                     @caller = caller($stackDepth);
                 }
@@ -1153,7 +1153,7 @@ sub getSmokeMethodId {
         if (!objmatch( $methodIds[0], \@_)) {
             my $stackDepth = ( $methodname eq $classname ) ? 4 : 2;
             my @caller = caller($stackDepth);
-            while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/QtCore4\/isa\.pm/ ) {
+            while ( $caller[1] =~ m/QtCore5\.pm$/ || $caller[1] =~ m/QtCore5\/isa\.pm/ ) {
                 ++$stackDepth;
                 @caller = caller($stackDepth);
             }
@@ -1185,7 +1185,7 @@ sub getSmokeMethodId {
         }
         else {
             my $noMethodFound = reportNoMethodFound( $classname, $methodname, @_ );
-            $noMethodFound .= "'use QtCore4::debug qw(ambiguous)' for more information.\n";
+            $noMethodFound .= "'use QtCore5::debug qw(ambiguous)' for more information.\n";
             die $noMethodFound;
         }
     }
@@ -1202,7 +1202,7 @@ sub getMetaObject {
     # was asked for, return the saved one.
     return $meta->{object} if $meta->{object} and !$meta->{changed};
 
-    # If this is a native Qt4 class, call metaObject() on that class directly
+    # If this is a native Qt5 class, call metaObject() on that class directly
     if ( $package2classId{$class} ) {
         my $moduleId = $package2classId{$class};
         my $cxxClass = classFromId( $moduleId );
@@ -1349,7 +1349,7 @@ sub reportAlternativeMethods {
     # @_ now equals the original argument array of the method call
     my $stackDepth = ( $methodname eq $classname ) ? 5 : 3;
     my @caller = caller($stackDepth);
-    while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/QtCore4\/isa\.pm/ ) {
+    while ( $caller[1] =~ m/QtCore5\.pm$/ || $caller[1] =~ m/QtCore5\/isa\.pm/ ) {
         ++$stackDepth;
         @caller = caller($stackDepth);
     }
@@ -1373,9 +1373,9 @@ sub reportNoMethodFound {
     my $stackDepth = ( $methodname eq $classname ) ? 5 : 3;
 
     # Look up the stack to find who called us.  We don't care if it was
-    # called from QtCore4.pm or isa.pm
+    # called from QtCore5.pm or isa.pm
     my @caller = caller($stackDepth);
-    while ( $caller[1] =~ m/QtCore4\.pm$/ || $caller[1] =~ m/QtCore4\/isa\.pm/ ) {
+    while ( $caller[1] =~ m/QtCore5\.pm$/ || $caller[1] =~ m/QtCore5\/isa\.pm/ ) {
         ++$stackDepth;
         @caller = caller($stackDepth);
     }
@@ -1516,7 +1516,7 @@ sub makeMetaData {
     return ($stringdata, $data);
 }
 
-# Args: $cxxClassName: the name of a Qt4 class
+# Args: $cxxClassName: the name of a Qt5 class
 # Returns: The name of the associated perl package
 # Desc: Given a c++ class name, determine the perl package name
 sub normalize_classname {
@@ -1596,7 +1596,7 @@ sub isa {
     return $class->isa( $baseClass );
 }
 
-package QtCore4;
+package QtCore5;
 
 use 5.008006;
 use strict;
@@ -1609,7 +1609,7 @@ our $VERSION = '0.96';
 
 our @EXPORT = qw( SIGNAL SLOT emit CAST qApp );
 
-QtCore4::loadModule(__PACKAGE__, $VERSION);
+QtCore5::loadModule(__PACKAGE__, $VERSION);
 
 Qt::_internal::init();
 
@@ -1943,12 +1943,12 @@ use overload
 
 =head1 NAME
 
-QtCore4 - Perl bindings for the QtCore version 4 library
+QtCore5 - Perl bindings for the QtCore version 5 library
 
 =head1 SYNOPSIS
 
-  use QtCore4;
-  use QtGui4;
+  use QtCore5;
+  use QtGui5;
   my $app = Qt::Application(\@ARGV);
   my $button = Qt::PushButton( 'Hello, World!', undef);
   $button->show();
@@ -1956,7 +1956,7 @@ QtCore4 - Perl bindings for the QtCore version 4 library
 
 =head1 DESCRIPTION
 
-This module provides a Perl interface to the QtCore version 4 library.
+This module provides a Perl interface to the QtCore version 5 library.
 
 =head2 EXPORTS
 
@@ -1992,7 +1992,7 @@ Serves a similar function to bless(), but takes care of Qt's specific quirks.
 
 This module provides bindings to the QtCore module of the Qt library from Perl.
 There are separate Perl modules for each Qt module, including QtGui, QtNetwork,
-QtXml, and QtTest.  This document applies to all Qt4 and KDE4 modules.
+QtXml, and QtTest.  This document applies to all Qt5 and KDE5 modules.
 
 The module has been designed to work like writing Qt applications in C++.
 However, a few things have been renamed.  Everything is in the Qt:: namespace.
@@ -2012,7 +2012,7 @@ Qt::Application( \@ARGV );
 =head2 SUBCLASSING
 
 To create a subclass of a Qt class, declare a package, and then declare that
-package's base class by using QtCore4::isa and passing it an argument.
+package's base class by using QtCore5::isa and passing it an argument.
 Multiple inheritance is not supported.  This package must implement a
 subroutine called NEW.  The NEW method is the constructor for that class.  The
 first argument to this method will be the name of the class being constructed,
@@ -2026,8 +2026,8 @@ explicitly 'use' it, even if the two packages are defined in the same file.
 
 This is a stub of a class called 'MyWidget', that subclasses Qt::Widget:
     package MyWidget;
-    use QtCore4;
-    use QtCore4::isa qw( Qt::Widget );
+    use QtCore5;
+    use QtCore5::isa qw( Qt::Widget );
 
     sub NEW {
         my ( $class, $parent ) = @_;
@@ -2035,7 +2035,7 @@ This is a stub of a class called 'MyWidget', that subclasses Qt::Widget:
     }
 
     package main;
-    use QtCore4;
+    use QtCore5;
     use MyWidget;
 
     my $app = Qt::Application(\@ARGV);
@@ -2118,7 +2118,7 @@ According to the Qt documentation:
     Instead, you can use the QVariant::value() or the qVariantValue() template
     function.
 
-PerlQt4 implements this functionality by supplying 2 functions,
+PerlQt5 implements this functionality by supplying 2 functions,
 Qt::qVariantValue() and Qt::qVariantFromValue().  These two functions, in
 addition to handling the QtGui types, can also handle Perl hash references and
 array references.  To accomplish this, 2 metatypes have been declared, called
@@ -2178,7 +2178,7 @@ library.  They can be accessed in the examples/ directory in the source tree.
 
 The existing Qt documentation is very complete.  Use it for your reference.
 
-Get the project's current version at http://code.google.com/p/perlqt4/
+Get the project's current version at http://code.google.com/p/perlqt5/
 
 =head1 AUTHOR
 

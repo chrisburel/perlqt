@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 2.8.11)
 
 project(PerlQt)
 
@@ -8,7 +8,7 @@ set(USE_BUILD_DIR_FOR_TESTS OFF CACHE BOOL "Use to toggle between using the buil
 
 find_package(Perl REQUIRED)
 find_package(PerlLibs REQUIRED)
-find_package(Qt4 REQUIRED)
+find_package(Qt5Core REQUIRED)
 find_package(Smoke REQUIRED COMPONENTS QtCore)
 find_package(Smoke COMPONENTS QtCore QtGui QtNetwork Qt3Support QtDeclarative QtDBus QtHelp QtMultimedia
                               QtOpenGl QtScript QtSql QtSvg QtTest QtUiTools QtWebKit QtXml QtXmlPatterns

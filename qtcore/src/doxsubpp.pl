@@ -8,7 +8,7 @@ my $in   = $ARGV[1];
 my $out  = $ARGV[2];
 
 my $mm = ExtUtils::MakeMaker->new( {
-    NAME => 'PerlQt4',
+    NAME => 'PerlQt5',
     NEEDS_LINKING => 1,
 } );
 

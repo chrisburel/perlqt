@@ -15,13 +15,13 @@ extern "C" {
 }
 
 #include "marshall.h"
-#include "binding.h" // for definition of PerlQt4::Binding
+#include "binding.h" // for definition of PerlQt5::Binding
 #include "smokeperl.h" // for smokeperl_object
 
-void smokeStackToQt4Stack(Smoke::Stack stack, void ** o, int start, int end, QList<MocArgument*> args);
-void smokeStackFromQt4Stack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args);
+void smokeStackToQt5Stack(Smoke::Stack stack, void ** o, int start, int end, QList<MocArgument*> args);
+void smokeStackFromQt5Stack(Smoke::Stack stack, void ** _o, int start, int end, QList<MocArgument*> args);
 
-namespace PerlQt4 {
+namespace PerlQt5 {
 
 class Q_DECL_EXPORT MethodReturnValueBase : public Marshall {
 public:
@@ -212,7 +212,7 @@ protected:
     int _items;
     SV** _sp;
     SV* _this;
-    void** _a; // The Qt4 metacall stack
+    void** _a; // The Qt5 metacall stack
 };
 
 class Q_DECL_EXPORT EmitSignal : public Marshall {
@@ -243,6 +243,6 @@ protected:
     SV* _retval;
 };
 
-} // End namespace PerlQt4
+} // End namespace PerlQt5
 
 #endif // MARSHALL_TYPES_H

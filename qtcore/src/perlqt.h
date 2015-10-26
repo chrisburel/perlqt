@@ -1,9 +1,9 @@
 #ifndef PERLQT_H
 #define PERLQT_H
 
-// keep this enum in sync with lib/Qt4/debug.pm
+// keep this enum in sync with lib/Qt5/debug.pm
 
-enum Qt4DebugChannel {
+enum Qt5DebugChannel {
     qtdb_none = 0x00,
     qtdb_ambiguous = 0x01,
     qtdb_autoload = 0x02,
