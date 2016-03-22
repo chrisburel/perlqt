@@ -2251,7 +2251,7 @@ XS(XS_AUTOLOAD) {
                 methcache.insert(mcid, new Smoke::ModuleIndex(mi));
         }
 
-        static smokeperl_object nothis = { 0, 0, 0, false };
+        static smokeperl_object nothis = { 0, 0, 0, NULL };
         smokeperl_object* call_this = 0;
         if ( SvOK(sv_this) ) {
             call_this = sv_obj_info( sv_this );
