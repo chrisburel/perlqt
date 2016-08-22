@@ -18,6 +18,7 @@ include(MacroOptionalAddBindings)
 include(MacroLogFeature)
 include(MacroProve)
 find_package(PerlMore)
+find_package(XSUBPP REQUIRED QUIET)
 
 string(LENGTH "${PERL_INSTALL_PREFIX}" PERL_INSTALL_PREFIX_LEN)
 math(EXPR PERL_INSTALL_PREFIX_LEN "${PERL_INSTALL_PREFIX_LEN}+1")
@@ -40,19 +41,18 @@ IF("${isSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${PERL_LIB_DIR}")
 ENDIF("${isSystemDir}" STREQUAL "-1")
 
-# This assumes there will be a release version of the qtcore library available
-GET_FILENAME_COMPONENT(QT_LIB_DIR ${QT_QTCORE_LIBRARY_RELEASE} PATH)
-LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES ${QT_LIB_DIR} isSystemDir)
-IF("${isSystemDir}" STREQUAL "-1")
-   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${QT_LIB_DIR}")
-ENDIF("${isSystemDir}" STREQUAL "-1")
+## This assumes there will be a release version of the qtcore library available
+#GET_FILENAME_COMPONENT(QT_LIB_DIR ${QT_QTCORE_LIBRARY_RELEASE} PATH)
+#LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES ${QT_LIB_DIR} isSystemDir)
+#IF("${isSystemDir}" STREQUAL "-1")
+#   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${QT_LIB_DIR}")
+#ENDIF("${isSystemDir}" STREQUAL "-1")
 
-
-add_subdirectory(qtcore)
+add_subdirectory(modules)
 
 macro_display_bindings_log()
 
 macro_display_feature_log()
 
-install(EXPORT PerlQtExport DESTINATION ${CMAKE_INSTALL_PREFIX}/share/perlqt/cmake NAMESPACE PERLQT_)
+#install(EXPORT PerlQtExport DESTINATION ${CMAKE_INSTALL_PREFIX}/share/perlqt/cmake NAMESPACE PERLQT_)
 add_subdirectory(cmake)
