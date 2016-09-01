@@ -24,6 +24,7 @@ target_link_libraries(perlqtcore5
     ${SMOKE_BASE_LIBRARY}
     ${SMOKE_QTCORE_LIBRARY}
     ${PERL_LIBS}
+    smokeperl
 )
 
 set_target_properties(perlqtcore5 PROPERTIES

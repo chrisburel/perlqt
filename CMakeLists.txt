@@ -11,7 +11,11 @@ find_package(PerlLibs REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Smoke REQUIRED COMPONENTS QtCore)
 
-include_directories(${SMOKE_INCLUDE_DIR} ${SMOKE_QTCORE_INCLUDE_DIR})
+include_directories(
+    ${SMOKE_INCLUDE_DIR}
+    ${SMOKE_QTCORE_INCLUDE_DIR}
+    ${CMAKE_SOURCE_DIR}/src
+)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${SMOKE_CMAKE_MODULE_DIR})
 include(MacroOptionalFindPackage)
 include(MacroOptionalAddBindings)
@@ -48,6 +52,7 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 #   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${QT_LIB_DIR}")
 #ENDIF("${isSystemDir}" STREQUAL "-1")
 
+add_subdirectory(src)
 add_subdirectory(modules)
 
 macro_display_bindings_log()
