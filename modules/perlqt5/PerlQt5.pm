@@ -1,37 +1,27 @@
-package PerlQt5::QtCore;
+package PerlQt5;
 
 use strict;
 use warnings;
-use XSLoader;
 
 our $VERSION = '1.0.0';
-
-PerlQt5::QtCore::loadModule(__PACKAGE__, $VERSION);
 
 sub import {
     my ($package, @exports) = @_;
     my $caller = (caller)[0];
 
     foreach my $export (@exports) {
+        my $subpackageFile = "$package/$export.pm";
         my $subpackage = "${package}::${export}";
         my $subpackageGlob = "${subpackage}::";
+        require $subpackageFile;
+        $subpackage->import();
+
         my $alias = "${caller}::${export}::";
         {
             no strict 'refs';
-            if (!exists ${"${package}::"}{"${export}::"}) {
-                die "$package does not export $export\n";
-            }
             *{$alias} = \*{$subpackageGlob};
         }
     }
-}
-
-sub loadModule {
-    my ($module, $version) = @_;
-    if ($^O eq 'MSWin32') {
-        $module = 'Perl'. $module;
-    }
-    XSLoader::load($module, $version);
 }
 
 1;
