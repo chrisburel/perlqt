@@ -3,6 +3,8 @@
 #include "xsfunctions.h"
 #include "methodresolution.h"
 #include "smokemanager.h"
+#include "smokeobject.h"
+#include "methodcall.h"
 
 XS(XS_AUTOLOAD) {
     dXSARGS;
@@ -30,13 +32,22 @@ XS(XS_AUTOLOAD) {
             XSRETURN(0);
         classId = smoke->findClass(className.c_str());
     }
-    std::cout << "In AUTOLOAD for " << package << "    " << className << "::" << methodName << "    " << items << std::endl;
+    else if (SvROK(self) && SvTYPE(SvRV(self)) == SVt_PVHV) {
+        SmokePerl::Object* obj = SmokePerl::Object::fromSV(self);
+        if (obj == nullptr)
+            XSRETURN(0);
+        classId = obj->classId;
+    }
     std::vector<std::string> mungedMethods = SmokePerl::mungedMethods(methodName, items - 1, SP - items + 2);
     std::vector<Smoke::ModuleIndex> candidates = SmokePerl::findCandidates(classId, mungedMethods);
     if (candidates.size() != 1) {
         croak("Unable to call overloaded method");
     }
-    XSRETURN(0);
+
+    SmokePerl::MethodCall methodCall(candidates[0], self, SP - items + 2);
+    methodCall.next();
+    ST(0) = sv_2mortal(methodCall.var());
+    XSRETURN(1);
 }
 
 XS(XS_CAN) {

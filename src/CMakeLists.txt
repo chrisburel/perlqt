@@ -3,8 +3,13 @@ include_directories(
 )
 
 add_library(smokeperl SHARED
+    handlers.cpp
+    marshall.cpp
+    methodcall.cpp
     methodresolution.cpp
+    smokebinding.cpp
     smokemanager.cpp
+    smokeobject.cpp
     xsfunctions.cpp
 )
 
@@ -18,4 +23,5 @@ target_link_libraries(smokeperl
     ${PERL_LIBRARY}
     ${SMOKE_BASE_LIBRARY}
     ${PERL_LIBS}
+    Qt5::Core
 )

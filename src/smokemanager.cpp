@@ -7,6 +7,7 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#include "smokebinding.h"
 #include "smokemanager.h"
 #include "xsfunctions.h"
 
@@ -14,6 +15,8 @@ namespace SmokePerl {
 
 void SmokeManager::addSmokeModule(Smoke* smoke, const std::string& nspace) {
     packageToSmoke[nspace] = smoke;
+    smokeToPackage[smoke] = nspace;
+    smokeToBinding[smoke] = new SmokePerlBinding(smoke);
     for (int i = 1; i < smoke->numClasses; ++i) {
         const Smoke::Class& klass = smoke->classes[i];
         if (!klass.external) {
@@ -40,16 +43,28 @@ void SmokeManager::addSmokeModule(Smoke* smoke, const std::string& nspace) {
     }
 }
 
-Smoke* SmokeManager::getSmokeForPackage(const std::string& package) const {
-    if (!packageToSmoke.count(package))
+SmokePerlBinding* SmokeManager::getBindingForSmoke(Smoke* smoke) const {
+    if (!smokeToBinding.count(smoke))
         return nullptr;
-    return packageToSmoke.at(package);
+    return smokeToBinding.at(smoke);
 }
 
 std::string SmokeManager::getClassForPackage(const std::string& package) const {
     if (!perlPackageToCClass.count(package))
         return "";
     return perlPackageToCClass.at(package);
+}
+
+std::string SmokeManager::getPackageForSmoke(Smoke* smoke) const {
+    if (!smokeToPackage.count(smoke))
+        return "";
+    return smokeToPackage.at(smoke);
+}
+
+Smoke* SmokeManager::getSmokeForPackage(const std::string& package) const {
+    if (!packageToSmoke.count(package))
+        return nullptr;
+    return packageToSmoke.at(package);
 }
 
 }
