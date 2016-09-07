@@ -8,6 +8,10 @@ namespace SmokePerl {
 
 void marshall_basetype(Marshall* m) {
     switch(m->type().element()) {
+        case Smoke::t_int:
+            marshall_PrimitiveRef<int>(m);
+        break;
+
         case Smoke::t_class: {
             switch(m->action()) {
                 case Marshall::FromSV:
@@ -85,11 +89,6 @@ template<> double* selectSmokeStackField<double>(Marshall *m) { return &m->item(
 
 template <class T> T perlToPrimitive(SV*);
 
-template <class T>
-static void marshallFromPerl(Marshall* m) {
-    (*selectSmokeStackField<T>(m)) = perlToPrimitive<T>(m->var());
-}
-
 template<>
 int perlToPrimitive<int>(SV* sv) {
     if (!SvOK(sv))
@@ -97,6 +96,39 @@ int perlToPrimitive<int>(SV* sv) {
     if (SvROK(sv)) // Because enums can be used as ints
         return SvIV(SvRV(sv));
     return SvIV(sv);
+}
+
+template<>
+char* perlToPrimitive<char*>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    if (SvROK(sv))
+        sv = SvRV(sv);
+    char* str = SvPV_nolen(sv);
+    return str;
+}
+
+template <class T> SV* primitiveToPerl(T);
+
+template<>
+SV* primitiveToPerl<int>(int intVal) {
+    return newSViv(intVal);
+}
+
+template <class T>
+static void marshallFromPerl(Marshall* m) {
+    (*selectSmokeStackField<T>(m)) = perlToPrimitive<T>(m->var());
+}
+
+template<>
+void marshallFromPerl<char*>(Marshall* m) {
+    SV* sv = m->var();
+    char* buf = perlToPrimitive<char*>(sv);
+    m->item().s_voidp = buf;
+    m->next();
+    if (!m->type().isConst() && !SvREADONLY(sv)) {
+        sv_setpv(sv, buf);
+    }
 }
 
 template<>
@@ -127,6 +159,11 @@ void marshallFromPerl<int*>(Marshall* m) {
 template void marshallFromPerl<int*>(Marshall* m);
 
 template <class T>
+static void marshallToPerl(Marshall* m) {
+    SvSetMagicSV(m->var(), primitiveToPerl<T>(*selectSmokeStackField<T>(m)));
+}
+
+template <class T>
 void marshall_PrimitiveRef(Marshall* m) {
     switch(m->action()) {
         case Marshall::FromSV: {
@@ -134,7 +171,7 @@ void marshall_PrimitiveRef(Marshall* m) {
             break;
         }
         case Marshall::ToSV: {
-            m->unsupported();
+            marshallToPerl<T>(m);
             break;
         }
         default:
@@ -143,6 +180,7 @@ void marshall_PrimitiveRef(Marshall* m) {
     }
 }
 
+template void marshall_PrimitiveRef<char*>(Marshall* m);
 template void marshall_PrimitiveRef<int>(Marshall* m);
 template void marshall_PrimitiveRef<int*>(Marshall* m);
 
