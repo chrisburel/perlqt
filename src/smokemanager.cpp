@@ -35,9 +35,18 @@ void SmokeManager::addSmokeModule(Smoke* smoke, const std::string& nspace) {
             // Set ISA array
             std::string isaName = perlClassName + "::ISA";
             AV* isa = get_av(isaName.c_str(), true);
-            Smoke::Index* parents = smoke->inheritanceList + klass.parents;
-            while (*parents) {
-                av_push(isa, newSVpv((nspace + "::" + smoke->classes[*parents++].className).c_str(), 0));
+            for (Smoke::Index* parent = smoke->inheritanceList + klass.parents; *parent != 0; ++parent) {
+                char* className;
+                if (smoke->classes[*parent].external) {
+                    Smoke::ModuleIndex mi = Smoke::findClass(smoke->classes[*parent].className);
+                    if (mi != Smoke::NullModuleIndex) {
+                        className = getBindingForSmoke(mi.smoke)->className(mi.index);
+                    }
+                }
+                else {
+                    className = getBindingForSmoke(smoke)->className(*parent);
+                }
+                av_push(isa, newSVpv(className, 0));
             }
         }
     }
