@@ -27,10 +27,7 @@ XS(XS_AUTOLOAD) {
     SV* self = ST(0);
     Smoke::ModuleIndex classId;
     if (SvTYPE(self) == SVt_PV) {
-        Smoke* smoke = SmokePerl::SmokeManager::instance().getSmokeForPackage(package);
-        if (smoke == nullptr)
-            XSRETURN(0);
-        classId = smoke->findClass(className.c_str());
+        classId = Smoke::findClass(className.c_str());
     }
     else if (SvROK(self) && SvTYPE(SvRV(self)) == SVt_PVHV) {
         SmokePerl::Object* obj = SmokePerl::Object::fromSV(self);
