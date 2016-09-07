@@ -1,4 +1,5 @@
 #include "methodresolution.h"
+#include "smokeobject.h"
 
 namespace SmokePerl {
 
@@ -53,6 +54,11 @@ std::vector<std::string> mungedMethods(const std::string& methodName, int argc, 
                 temp.push_back(mungedMethod + '#');
             }
             result = temp;
+        }
+        else if (SmokePerl::Object::fromSV(value) != nullptr) {
+            for (auto& mungedMethod : result) {
+                mungedMethod += '#';
+            }
         }
         else if (SvROK(value) && (SvTYPE(SvRV(value)) == SVt_PVAV || SvTYPE(SvRV(value)) == SVt_PVHV)) {
             for (auto& mungedMethod : result) {

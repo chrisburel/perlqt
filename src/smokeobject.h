@@ -43,6 +43,10 @@ public:
     static int free(pTHX_ SV* sv, MAGIC* mg);
     SV* wrap() const;
 
+    inline void* cast(const Smoke::ModuleIndex targetId) const {
+        return classId.smoke->cast(value, classId, targetId);
+    }
+
     void* value;
     Smoke::ModuleIndex classId;
     ValueOwnership ownership;

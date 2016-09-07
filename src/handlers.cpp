@@ -10,6 +10,17 @@ void marshall_basetype(Marshall* m) {
     switch(m->type().element()) {
         case Smoke::t_class: {
             switch(m->action()) {
+                case Marshall::FromSV:
+                {
+                    Object* obj = SmokePerl::Object::fromSV(m->var());
+                    if (obj == nullptr) {
+                        m->item().s_class = nullptr;
+                        break;
+                    }
+
+                    m->item().s_voidp = obj->cast({m->smoke(), m->type().classId()});
+                }
+                break;
                 case Marshall::ToSV:
                 {
                     // Get return value
@@ -41,6 +52,7 @@ void marshall_basetype(Marshall* m) {
 
                     SvSetMagicSV(m->var(), sv);
                 }
+                break;
             }
         }
         break;
