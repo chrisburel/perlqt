@@ -49,8 +49,20 @@ XS(XS_AUTOLOAD) {
 
 XS(XS_CAN) {
     dXSARGS;
-    const char* methodName = SvPVX(POPs);
-    const char* package = SvPVX(POPs);
+    const char* methodName = SvPVX(ST(1));
+    const char* package;
+    SV* self = ST(0);
+    if (SvTYPE(self) == SVt_PV) {
+       package = SvPVX(self);
+    }
+    else {
+        if (!SvROK(self))
+            XSRETURN(0);
+        HV* stash = SvSTASH(SvRV(self));
+        if (stash == nullptr)
+            XSRETURN(0);
+        package = HvNAME(stash);
+    }
     Smoke* smoke = SmokePerl::SmokeManager::instance().getSmokeForPackage(package);
     if (smoke == nullptr)
         XSRETURN(0);
