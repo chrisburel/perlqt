@@ -46,7 +46,7 @@ std::vector<std::string> mungedMethods(const std::string& methodName, int argc, 
     for (int i=0; i < argc; ++i) {
         SV* value = args[i];
 
-        if (value == &PL_sv_undef) {
+        if (SvTYPE(value) == SVt_NULL) {
             std::vector<std::string> temp;
             for (const auto& mungedMethod : result) {
                 temp.push_back(mungedMethod + '$');
