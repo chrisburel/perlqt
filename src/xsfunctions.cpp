@@ -35,13 +35,12 @@ XS(XS_AUTOLOAD) {
             XSRETURN(0);
         classId = obj->classId;
     }
-    std::vector<std::string> mungedMethods = SmokePerl::mungedMethods(methodName, items - 1, SP - items + 2);
-    std::vector<Smoke::ModuleIndex> candidates = SmokePerl::findCandidates(classId, mungedMethods);
-    if (candidates.size() != 1) {
-        croak("Unable to call overloaded method");
-    }
+    SmokePerl::MethodMatches matches = SmokePerl::resolveMethod(classId, methodName, items - 1, SP - items + 2);
 
-    SmokePerl::MethodCall methodCall(candidates[0], self, SP - items + 2);
+    if (matches.size() == 0) {
+        croak("Unable to resolve method.");
+    }
+    SmokePerl::MethodCall methodCall(matches[0].first[0], self, SP - items + 2);
     methodCall.next();
     ST(0) = sv_2mortal(methodCall.var());
     XSRETURN(1);

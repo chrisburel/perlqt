@@ -3,6 +3,85 @@
 
 namespace SmokePerl {
 
+static std::string typeName(const Smoke::Type& typeRef) {
+    std::string name(typeRef.name);
+    if (name.find("const ") != std::string::npos) {
+        name.replace(0, 5, "");
+    }
+    if (const auto pos = name.find("&") != std::string::npos) {
+        name.replace(pos, 1, "");
+    }
+    if (const auto pos = name.find("*") != std::string::npos) {
+        name.replace(pos, 1, "");
+    }
+    return name;
+}
+
+static int matchArgument(SV* actual, const Smoke::Type& typeRef) {
+    std::string fullArgType(typeRef.name);
+    if (fullArgType.find("const ") != std::string::npos) {
+        fullArgType.replace(0, 5, "");
+    }
+    std::string argType = typeName(typeRef);
+    int matchDistance = 0;
+
+    if (SvROK(actual)) {
+        actual = SvRV(actual);
+    }
+    if (SvTYPE(actual) == SVt_IV) {
+        switch (typeRef.flags & Smoke::tf_elem) {
+            case Smoke::t_int:
+                break;
+            case Smoke::t_long:
+                matchDistance += 1;
+                break;
+            case Smoke::t_short:
+                matchDistance += 2;
+                break;
+            case Smoke::t_enum:
+                matchDistance += 3;
+                break;
+            case Smoke::t_ulong:
+                matchDistance += 4;
+                break;
+            case Smoke::t_uint:
+                matchDistance += 5;
+                break;
+            case Smoke::t_ushort:
+                matchDistance += 6;
+                break;
+            case Smoke::t_char:
+                matchDistance += 7;
+                break;
+            case Smoke::t_uchar:
+                matchDistance += 8;
+                break;
+            default:
+                matchDistance += 100;
+        }
+    }
+    else if (SvTYPE(actual) == SVt_NV) {
+        switch (typeRef.flags & Smoke::tf_elem) {
+            case Smoke::t_double:
+                break;
+            case Smoke::t_float:
+                matchDistance += 1;
+                break;
+            default:
+                matchDistance += 100;
+        }
+    }
+    else if (actual == &PL_sv_yes || actual == &PL_sv_no) {
+        if ((typeRef.flags & Smoke::tf_elem) == Smoke::t_bool) {
+        }
+        else {
+            matchDistance += 100;
+        }
+    }
+
+    return matchDistance;
+}
+
 std::vector<Smoke::ModuleIndex> findCandidates(Smoke::ModuleIndex classId, const std::vector<std::string>& mungedMethods) {
     Smoke::Class& klass = classId.smoke->classes[classId.index];
     std::vector<Smoke::ModuleIndex> methodIds;
@@ -39,6 +118,7 @@ std::vector<Smoke::ModuleIndex> findCandidates(Smoke::ModuleIndex classId, const
 
     return candidates;
 }
+
 std::vector<std::string> mungedMethods(const std::string& methodName, int argc, SV** args) {
     std::vector<std::string> result;
     result.push_back(methodName);
@@ -72,6 +152,44 @@ std::vector<std::string> mungedMethods(const std::string& methodName, int argc, 
         }
     }
     return result;
+}
+
+MethodMatches resolveMethod(Smoke::ModuleIndex classId, const std::string& methodName, int argc, SV** args) {
+    const auto mungedMethods = SmokePerl::mungedMethods(methodName, argc, args);
+    const auto candidates = SmokePerl::findCandidates(classId, mungedMethods);
+
+    MethodMatches matches;
+
+    for (const auto& method : candidates) {
+        Smoke::Method& methodRef = method.smoke->methods[method.index];
+
+        if ((methodRef.flags & Smoke::mf_internal) == 0) {
+            std::vector<Smoke::ModuleIndex> methods {method};
+            int matchDistance = 0;
+
+            // If a method is overloaded only on const-ness, prefer the
+            // non-const version
+            if (methodRef.flags & Smoke::mf_const) {
+                matchDistance += 1;
+            }
+
+            for (int i = 0; i < methodRef.numArgs; ++i) {
+                SV* actual = args[i];
+                ushort argFlags = method.smoke->types[method.smoke->argumentList[methodRef.args+i]].flags;
+                int distance = matchArgument(actual, method.smoke->types[method.smoke->argumentList[methodRef.args+i]]);
+
+                matchDistance += distance;
+            }
+
+            auto insertPos = matches.end();
+            if (matches.size() > 0 && matchDistance <= matches[0].second) {
+                insertPos = matches.begin();
+            }
+            matches.insert(insertPos, MethodMatch(methods, matchDistance));
+        }
+    }
+
+    return matches;
 }
 
 }
