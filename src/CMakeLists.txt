@@ -25,3 +25,7 @@ target_link_libraries(smokeperl
     ${PERL_LIBS}
     Qt5::Core
 )
+
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

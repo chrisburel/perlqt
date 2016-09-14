@@ -1,0 +1,9 @@
+<config>
+    <resolveTypedefs>true</resolveTypedefs>
+    <qtMode>true</qtMode>
+    <generator>smoke</generator>
+    <definesList>@QTDEFINES_FILE@</definesList>
+    <includeDirs>
+@smoketestlib_dirs@
+    </includeDirs>
+</config>

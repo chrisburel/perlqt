@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.11)
 
 project(PerlQt)
 
-enable_testing()
+set(BUILD_TESTS OFF CACHE BOOL "Build tests")
 set(ENABLE_GUI_TESTS OFF CACHE BOOL "Run GUI tests in the \"test\" target")
 set(USE_BUILD_DIR_FOR_TESTS OFF CACHE BOOL "Use to toggle between using the build dir or the install dir for tests.")
 
@@ -25,6 +25,22 @@ include(MacroLogFeature)
 include(MacroProve)
 find_package(PerlMore)
 find_package(XSUBPP REQUIRED QUIET)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
+    set(BUILD_TESTS ON CACHE BOOL "Build tests" FORCE)
+    enable_testing()
+
+    include(CodeCoverage)
+    setup_target_for_coverage(
+        coverage
+        ctest
+        coverage
+    )
+else()
+    if (BUILD_TESTS)
+        enable_testing()
+    endif()
+endif()
 
 string(LENGTH "${PERL_INSTALL_PREFIX}" PERL_INSTALL_PREFIX_LEN)
 math(EXPR PERL_INSTALL_PREFIX_LEN "${PERL_INSTALL_PREFIX_LEN}+1")
