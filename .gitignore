@@ -3,3 +3,4 @@ Ui_*.pm
 blib
 build
 *~
+.*.swp
