@@ -13,6 +13,8 @@ extern "C" {
 
 namespace SmokePerl {
 
+class Object;
+
 class ObjectMap {
 public:
     static ObjectMap& instance() {
@@ -20,13 +22,14 @@ public:
         return instance;
     }
 
-    SV* get(const void* ptr) const;
+    Object* get(const void* ptr) const;
+    void insert(Object* obj, const Smoke::ModuleIndex& classId, void* lastptr=nullptr);
 
     ObjectMap(ObjectMap const&) = delete;
     void operator=(ObjectMap const&) = delete;
 private:
     ObjectMap() {};
-    std::unordered_map<const void *, SV*> perlVariablesMap;
+    std::unordered_map<const void *, Object*> perlVariablesMap;
 
 };
 
@@ -41,13 +44,14 @@ public:
     static Object* fromSV(SV* sv);
 
     static int free(pTHX_ SV* sv, MAGIC* mg);
-    SV* wrap() const;
+    SV* wrap();
 
     inline void* cast(const Smoke::ModuleIndex targetId) const {
         return classId.smoke->cast(value, classId, targetId);
     }
 
     void* value;
+    SV* sv;
     Smoke::ModuleIndex classId;
     ValueOwnership ownership;
     static constexpr MGVTBL vtbl_smoke { 0, 0, 0, 0, free };

@@ -35,20 +35,21 @@ void marshall_basetype(Marshall* m) {
                         return;
                     }
 
-                    SV* sv = SmokePerl::ObjectMap::instance().get(cxxptr);
+                    Object* obj = SmokePerl::ObjectMap::instance().get(cxxptr);
 
-                    if (sv != nullptr) {
-                        SvSetMagicSV(m->var(), sv);
+                    if (obj != nullptr) {
+                        SvSetMagicSV(m->var(), obj->sv);
                         return;
                     }
 
-                    Object* obj = new Object(
+                    obj = new Object(
                         cxxptr,
                         Smoke::findClass(m->smoke()->classes[m->type().classId()].className),
                         Object::QtOwnership
                     );
 
-                    sv = obj->wrap();
+                    SV* sv = obj->wrap();
+                    ObjectMap::instance().insert(obj, obj->classId);
 
                     SmokePerl::SmokePerlBinding* binding = SmokePerl::SmokeManager::instance().getBindingForSmoke(obj->classId.smoke);
                     const char* pkg = binding->className(obj->classId.index);

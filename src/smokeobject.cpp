@@ -1,17 +1,44 @@
+#include <iostream>
 #include "smokeobject.h"
 
 namespace SmokePerl {
 
 constexpr MGVTBL Object::vtbl_smoke;
 
-SV* ObjectMap::get(const void* ptr) const {
+Object* ObjectMap::get(const void* ptr) const {
     if (perlVariablesMap.count(ptr))
         return perlVariablesMap.at(ptr);
     return nullptr;
 }
 
+void ObjectMap::insert(Object* obj, const Smoke::ModuleIndex& classId, void* lastptr) {
+    Smoke* smoke = classId.smoke;
+    void* ptr = obj->cast(classId);
+
+    if (ptr != lastptr) {
+        lastptr = ptr;
+
+        perlVariablesMap[ptr] = obj;
+    }
+
+    for (Smoke::Index* parent = smoke->inheritanceList + smoke->classes[classId.index].parents;
+         *parent != 0;
+         parent++ ) {
+        if (smoke->classes[*parent].external) {
+            Smoke::ModuleIndex mi = Smoke::findClass(smoke->classes[*parent].className);
+            if (mi != Smoke::NullModuleIndex) {
+                insert(obj, mi, lastptr);
+            }
+        } else {
+            insert(obj, Smoke::ModuleIndex(smoke, *parent), lastptr);
+        }
+    }
+
+    return;
+}
+
 Object::Object(void* ptr, const Smoke::ModuleIndex& classId, ValueOwnership ownership) :
-    value(ptr), classId(classId), ownership(ownership) {
+    value(ptr), sv(nullptr), classId(classId), ownership(ownership) {
 }
 
 Object* Object::fromSV(SV* sv) {
@@ -24,13 +51,14 @@ Object* Object::fromSV(SV* sv) {
     return obj;
 }
 
-SV* Object::wrap() const {
-    SV* obj = (SV*) newHV();
-    SV* ref = newRV_noinc((SV*)obj);
+SV* Object::wrap() {
+    HV* hv = newHV();
+    SvREFCNT(hv) = 0;
+    sv = newRV_noinc((SV*)hv);
 
-    sv_magicext((SV*)obj, 0, PERL_MAGIC_ext, &vtbl_smoke, (char*)this, sizeof(*this));
+    sv_magicext((SV*)hv, 0, PERL_MAGIC_ext, &vtbl_smoke, (char*)this, sizeof(*this));
 
-    return ref;
+    return sv;
 }
 
 int Object::free(pTHX_ SV* sv, MAGIC* mg) {
