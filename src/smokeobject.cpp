@@ -37,8 +37,37 @@ void ObjectMap::insert(Object* obj, const Smoke::ModuleIndex& classId, void* las
     return;
 }
 
+void ObjectMap::remove(Object* obj, const Smoke::ModuleIndex& classId, void* lastptr) {
+    Smoke* smoke = classId.smoke;
+    void* ptr = obj->cast(classId);
+
+    if (ptr != lastptr) {
+        lastptr = ptr;
+
+        if (perlVariablesMap.count(ptr)) {
+            perlVariablesMap.erase(ptr);
+        }
+    }
+    for (Smoke::Index* parent = smoke->inheritanceList + smoke->classes[classId.index].parents;
+         *parent != 0;
+         parent++ ) {
+        if (smoke->classes[*parent].external) {
+            Smoke::ModuleIndex mi = Smoke::findClass(smoke->classes[*parent].className);
+            if (mi != Smoke::NullModuleIndex) {
+                remove(obj, mi, lastptr);
+            }
+        } else {
+            remove(obj, Smoke::ModuleIndex(smoke, *parent), lastptr);
+        }
+    }
+}
+
 Object::Object(void* ptr, const Smoke::ModuleIndex& classId, ValueOwnership ownership) :
     value(ptr), sv(nullptr), classId(classId), ownership(ownership) {
+}
+
+Object::~Object() {
+    finalize();
 }
 
 Object* Object::fromSV(SV* sv) {
@@ -62,7 +91,48 @@ SV* Object::wrap() {
 }
 
 int Object::free(pTHX_ SV* sv, MAGIC* mg) {
+    Object* obj = (Object*)mg->mg_ptr;
+    if (obj == nullptr)
+        return 0;
+
+    ObjectMap::instance().remove(obj, obj->classId);
+
+    delete obj;
+    mg->mg_ptr = 0;
+
     return 0;
+}
+
+void Object::finalize() {
+    switch (ownership) {
+        case CppOwnership:
+            break;
+        case ScriptOwnership:
+            dispose();
+            break;
+    };
+}
+
+void Object::dispose() {
+    std::string methodName = std::string("~") + classId.smoke->classes[classId.index].className;
+    Smoke::ModuleIndex nameId = classId.smoke->findMethodName(
+        classId.smoke->classes[classId.index].className,
+        methodName.c_str()
+    );
+    if (value == nullptr)
+        return;
+
+    Smoke::ModuleIndex methodId = classId.smoke->findMethod(classId, nameId);
+
+    if (methodId.index > 0) {
+        Smoke::Method& methodRef = methodId.smoke->methods[methodId.smoke->methodMaps[methodId.index].method];
+        Smoke::ClassFn fn = methodId.smoke->classes[methodRef.classId].classFn;
+        Smoke::StackItem destroyInstanceStack[1];
+        (*fn)(methodRef.method, value, destroyInstanceStack);
+    }
+
+    value = nullptr;
+    sv = nullptr;
 }
 
 }

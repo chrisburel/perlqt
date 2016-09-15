@@ -1,4 +1,4 @@
-use Test::More tests => 15;
+use Test::More tests => 16;
 
 use strict;
 use warnings;
@@ -31,3 +31,9 @@ my $newRef = SmokePerl::getInstance($app1ptr);
 is($app2, $newRef);
 is(SvREFCNT(%$app2), 2);
 is(SvREFCNT(%$newRef), 2);
+
+undef $app2;
+is(SvREFCNT(%$newRef), 1);
+undef $newRef;
+ok(!defined SmokePerl::getInstance($app1ptr));
+ok(!defined PerlSmokeTest::QApplication->instance());

@@ -5,3 +5,7 @@ QApplication* QApplication::self = nullptr;
 QApplication::QApplication() {
     QApplication::self = this;
 }
+
+QApplication::~QApplication() {
+    QApplication::self = nullptr;
+}

@@ -24,6 +24,7 @@ public:
 
     Object* get(const void* ptr) const;
     void insert(Object* obj, const Smoke::ModuleIndex& classId, void* lastptr=nullptr);
+    void remove(Object* obj, const Smoke::ModuleIndex& classId, void* lastptr=nullptr);
 
     ObjectMap(ObjectMap const&) = delete;
     void operator=(ObjectMap const&) = delete;
@@ -41,6 +42,7 @@ public:
     };
 
     Object(void* ptr, const Smoke::ModuleIndex& classId, ValueOwnership ownership);
+    virtual ~Object();
     static Object* fromSV(SV* sv);
 
     static int free(pTHX_ SV* sv, MAGIC* mg);
@@ -55,6 +57,10 @@ public:
     Smoke::ModuleIndex classId;
     ValueOwnership ownership;
     static constexpr MGVTBL vtbl_smoke { 0, 0, 0, 0, free };
+
+private:
+    void finalize();
+    void dispose();
 };
 
 }
