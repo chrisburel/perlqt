@@ -23,7 +23,6 @@ target_link_libraries(smokeperl
     ${PERL_LIBRARY}
     ${SMOKE_BASE_LIBRARY}
     ${PERL_LIBS}
-    Qt5::Core
 )
 
 if(BUILD_TESTS)
