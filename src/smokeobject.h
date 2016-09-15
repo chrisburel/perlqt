@@ -36,7 +36,7 @@ private:
 class Object {
 public:
     enum ValueOwnership {
-        QtOwnership,
+        CppOwnership,
         ScriptOwnership
     };
 

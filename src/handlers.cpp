@@ -45,7 +45,7 @@ void marshall_basetype(Marshall* m) {
                     obj = new Object(
                         cxxptr,
                         Smoke::findClass(m->smoke()->classes[m->type().classId()].className),
-                        Object::QtOwnership
+                        Object::CppOwnership
                     );
 
                     SV* sv = obj->wrap();
