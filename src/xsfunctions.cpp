@@ -20,7 +20,8 @@ XS(XS_AUTOLOAD) {
             className = SmokePerl::SmokeManager::instance().getClassForPackage(SvPV_nolen(*item));
         }
     }
-    if (strcmp(methodName, "new") == 0) {
+    bool isConstructor = strcmp(methodName, "new") == 0;
+    if (isConstructor) {
         methodName = className.c_str();
     }
 
@@ -43,6 +44,10 @@ XS(XS_AUTOLOAD) {
     SmokePerl::MethodCall methodCall(matches[0].first[0], self, SP - items + 2);
     methodCall.next();
     ST(0) = sv_2mortal(methodCall.var());
+    if (isConstructor) {
+        SmokePerl::Object* object = SmokePerl::Object::fromSV(ST(0));
+        object->ownership = SmokePerl::Object::ScriptOwnership;
+    }
     XSRETURN(1);
 }
 
