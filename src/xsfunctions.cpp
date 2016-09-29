@@ -75,10 +75,8 @@ XS(XS_CAN) {
     std::string className = SmokePerl::SmokeManager::instance().getClassForPackage(package);
     if (className == "")
         XSRETURN(0);
-    if (strcmp(methodName, "new") == 0) {
-        methodName = className.c_str();
-    }
-    Smoke::ModuleIndex method = smoke->findMethodName(className.c_str(), methodName);
+    bool isConstructor = strcmp(methodName, "new") == 0;
+    Smoke::ModuleIndex method = smoke->findMethodName(className.c_str(), isConstructor ? className.c_str() : methodName);
     if (method.index) {
         HV* stash = gv_stashpv(package, 0);
         GV* autoload = gv_fetchmethod_autoload(stash, methodName, 1);
