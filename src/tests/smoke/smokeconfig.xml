@@ -3,6 +3,7 @@
     <qtMode>false</qtMode>
     <classList>
         <class>QApplication</class>
+        <class>VirtualMethodTester</class>
     </classList>
     <parts>1</parts>
 </config>

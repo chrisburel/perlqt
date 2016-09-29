@@ -10,6 +10,7 @@ add_library(smokeperl SHARED
     smokebinding.cpp
     smokemanager.cpp
     smokeobject.cpp
+    virtualmethodcall.cpp
     xsfunctions.cpp
 )
 
