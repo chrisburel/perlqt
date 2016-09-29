@@ -26,7 +26,7 @@ XS(XS_AUTOLOAD) {
         }
         classId = Smoke::findClass(className.c_str());
     }
-    else if (SvROK(self) && SvTYPE(SvRV(self)) == SVt_PVHV) {
+    else {
         SmokePerl::Object* obj = SmokePerl::Object::fromSV(self);
         if (obj == nullptr)
             XSRETURN(0);
