@@ -164,6 +164,18 @@ static void marshallToPerl(Marshall* m) {
     SvSetMagicSV(m->var(), primitiveToPerl<T>(*selectSmokeStackField<T>(m)));
 }
 
+template <>
+void marshallToPerl<char*>(Marshall* m) {
+    char* str = (char*)m->item().s_voidp;
+    SV* sv = newSV(0);
+    sv_setpv(sv, str);
+
+    if (m->cleanup())
+        delete[] str;
+
+    SvSetMagicSV(m->var(), sv);
+}
+
 template <class T>
 void marshall_PrimitiveRef(Marshall* m) {
     switch(m->action()) {
