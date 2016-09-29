@@ -124,11 +124,22 @@ static void marshallFromPerl(Marshall* m) {
 template<>
 void marshallFromPerl<char*>(Marshall* m) {
     SV* sv = m->var();
-    char* buf = perlToPrimitive<char*>(sv);
+    char* buf = nullptr;
+    if (SvFLAGS(sv) & SVs_TEMP) {
+        STRLEN len = SvCUR(sv);
+        buf = new char[len];
+        strcpy(buf, SvPV_nolen(sv));
+    }
+    else {
+        buf = SvPV_nolen(sv);
+    }
     m->item().s_voidp = buf;
     m->next();
     if (!m->type().isConst() && !SvREADONLY(sv)) {
         sv_setpv(sv, buf);
+    }
+    if (m->cleanup() && SvFLAGS(sv) & SVs_TEMP) {
+        delete[] buf;
     }
 }
 
