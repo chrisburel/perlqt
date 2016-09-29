@@ -21,6 +21,7 @@ add_custom_command(
         ${SMOKE_GEN_BIN}
         "${CMAKE_CURRENT_BINARY_DIR}/config.xml"
         "${CMAKE_CURRENT_SOURCE_DIR}/smokeconfig.xml"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../smoketestlib.h"
 
     WORKING_DIRECTORY
         ${CMAKE_CURRENT_BINARY_DIR}
