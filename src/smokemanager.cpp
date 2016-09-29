@@ -17,7 +17,7 @@ void SmokeManager::addSmokeModule(Smoke* smoke, const std::string& nspace) {
     packageToSmoke[nspace] = smoke;
     smokeToPackage[smoke] = nspace;
     smokeToBinding[smoke] = new SmokePerlBinding(smoke);
-    for (int i = 1; i < smoke->numClasses; ++i) {
+    for (int i = 1; i <= smoke->numClasses; ++i) {
         const Smoke::Class& klass = smoke->classes[i];
         if (!klass.external) {
             std::string perlClassName = nspace + "::" + klass.className;
