@@ -33,6 +33,11 @@ XS(XS_AUTOLOAD) {
         classId = obj->classId;
     }
 
+    GV* gv = gv_fetchmethod_autoload(stash, methodName, 0);
+    if (gv) {
+        SmokePerl::SmokeManager::instance().setInVirtualSuperCall(std::string(classId.smoke->classes[classId.index].className) + "::" + methodName);
+    }
+
     bool isConstructor = strcmp(methodName, "new") == 0;
     if (isConstructor) {
         methodName = classId.smoke->classes[classId.index].className;
@@ -41,6 +46,9 @@ XS(XS_AUTOLOAD) {
     SmokePerl::MethodMatches matches = SmokePerl::resolveMethod(classId, methodName, items - 1, SP - items + 2);
 
     if (matches.size() == 0) {
+        if (gv) {
+            SmokePerl::SmokeManager::instance().setInVirtualSuperCall("");
+        }
         croak("Unable to resolve method.");
     }
     SmokePerl::MethodCall methodCall(matches[0].first[0], self, SP - items + 2);
@@ -50,6 +58,10 @@ XS(XS_AUTOLOAD) {
         SmokePerl::Object* object = SmokePerl::Object::fromSV(ST(0));
         object->ownership = SmokePerl::Object::ScriptOwnership;
         sv_bless(ST(0), stash);
+    }
+
+    if (gv) {
+        SmokePerl::SmokeManager::instance().setInVirtualSuperCall("");
     }
     XSRETURN(1);
 }

@@ -21,6 +21,14 @@ public:
     std::string getPackageForSmoke(Smoke* smoke) const;
     Smoke* getSmokeForPackage(const std::string& package) const;
 
+    inline const std::string& inVirtualSuperCall() const {
+        return m_inVirtualSuperCall;
+    }
+
+    inline void setInVirtualSuperCall(std::string newInVirtualSuperCall) {
+        m_inVirtualSuperCall = newInVirtualSuperCall;
+    }
+
     SmokeManager(SmokeManager const&) = delete;
     void operator=(SmokeManager const&) = delete;
 private:
@@ -29,6 +37,8 @@ private:
     std::unordered_map<std::string, std::string> perlPackageToCClass;
     std::unordered_map<Smoke*, SmokePerlBinding*> smokeToBinding;
     std::unordered_map<Smoke*, std::string> smokeToPackage;
+
+    std::string m_inVirtualSuperCall;
 };
 
 }

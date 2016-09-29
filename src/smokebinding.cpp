@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "smokebinding.h"
 #include "smokemanager.h"
 #include "smokeobject.h"
@@ -37,6 +39,16 @@ bool SmokePerlBinding::callMethod(Smoke::Index method, void* ptr, Smoke::Stack a
 
     HV* stash = SvSTASH(rv);
     const char* methodName = smoke->methodNames[smoke->methods[method].name];
+
+    // If this virtual method call came from a Perl method that went through
+    // XS_AUTOLOAD, it is possible that this virtual method call is a result of
+    // calling package->SUPER::method().  If the current method being called
+    // from XS_AUTOLOAD is the same as the method we're about to call, then
+    // that would lead to infinite recursion.  Break out of the recursion in
+    // this case.
+    if (SmokePerl::SmokeManager::instance().inVirtualSuperCall() == std::string(smoke->classes[obj->classId.index].className) + "::" + methodName) {
+        return false;
+    }
 
     GV* gv = gv_fetchmethod_autoload(stash, methodName, 0);
 
