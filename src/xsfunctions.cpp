@@ -13,11 +13,13 @@ XS(XS_AUTOLOAD) {
     const char* methodName = SvPVX(cv);
 
     std::string className = SmokePerl::SmokeManager::instance().getClassForPackage(package);
-    AV* mro = mro_get_linear_isa(stash);
-    for (int i=0; i < av_len(mro), className == ""; ++i) {
-        SV** item = av_fetch(mro, i, 0);
-        if (item) {
-            className = SmokePerl::SmokeManager::instance().getClassForPackage(SvPV_nolen(*item));
+    if (className == "") {
+        AV* mro = mro_get_linear_isa(stash);
+        for (int i=0; i < av_len(mro), className == ""; ++i) {
+            SV** item = av_fetch(mro, i, 0);
+            if (item) {
+                className = SmokePerl::SmokeManager::instance().getClassForPackage(SvPV_nolen(*item));
+            }
         }
     }
     bool isConstructor = strcmp(methodName, "new") == 0;
