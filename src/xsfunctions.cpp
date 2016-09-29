@@ -49,6 +49,7 @@ XS(XS_AUTOLOAD) {
     if (isConstructor) {
         SmokePerl::Object* object = SmokePerl::Object::fromSV(ST(0));
         object->ownership = SmokePerl::Object::ScriptOwnership;
+        sv_bless(ST(0), stash);
     }
     XSRETURN(1);
 }
