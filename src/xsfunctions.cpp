@@ -11,25 +11,19 @@ XS(XS_AUTOLOAD) {
     HV* stash = CvSTASH(cv);
     const char* package = HvNAME(stash);
     const char* methodName = SvPVX(cv);
-
-    std::string className = SmokePerl::SmokeManager::instance().getClassForPackage(package);
-    if (className == "") {
-        AV* mro = mro_get_linear_isa(stash);
-        for (int i=0; i < av_len(mro), className == ""; ++i) {
-            SV** item = av_fetch(mro, i, 0);
-            if (item) {
-                className = SmokePerl::SmokeManager::instance().getClassForPackage(SvPV_nolen(*item));
-            }
-        }
-    }
-    bool isConstructor = strcmp(methodName, "new") == 0;
-    if (isConstructor) {
-        methodName = className.c_str();
-    }
-
     SV* self = ST(0);
     Smoke::ModuleIndex classId;
     if (SvTYPE(self) == SVt_PV) {
+        std::string className = SmokePerl::SmokeManager::instance().getClassForPackage(package);
+        if (className == "") {
+            AV* mro = mro_get_linear_isa(stash);
+            for (int i=0; i < av_len(mro), className == ""; ++i) {
+                SV** item = av_fetch(mro, i, 0);
+                if (item) {
+                    className = SmokePerl::SmokeManager::instance().getClassForPackage(SvPV_nolen(*item));
+                }
+            }
+        }
         classId = Smoke::findClass(className.c_str());
     }
     else if (SvROK(self) && SvTYPE(SvRV(self)) == SVt_PVHV) {
@@ -38,6 +32,12 @@ XS(XS_AUTOLOAD) {
             XSRETURN(0);
         classId = obj->classId;
     }
+
+    bool isConstructor = strcmp(methodName, "new") == 0;
+    if (isConstructor) {
+        methodName = classId.smoke->classes[classId.index].className;
+    }
+
     SmokePerl::MethodMatches matches = SmokePerl::resolveMethod(classId, methodName, items - 1, SP - items + 2);
 
     if (matches.size() == 0) {
