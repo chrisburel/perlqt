@@ -95,6 +95,13 @@ XS(XS_CAN) {
         classId = obj->classId;
     }
 
+    // See if there's a perl method with this name
+    GV* perlSub = gv_fetchmethod_autoload(stash, methodName, 0);
+    if (perlSub) {
+        ST(0) = newRV_noinc((SV*)GvCV(perlSub));
+        XSRETURN(1);
+    }
+
     const char* className = classId.smoke->classes[classId.index].className;
 
     bool isConstructor = strcmp(methodName, "new") == 0;
