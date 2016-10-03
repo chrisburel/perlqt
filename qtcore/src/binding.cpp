@@ -5,6 +5,7 @@
 #include "marshall_types.h"
 #include "binding.h"
 #include "QtCore4.h"
+#include "util.h"
 #include "smokeperl.h"
 
 extern "C" {
@@ -32,7 +33,8 @@ void Binding::deleted(Smoke::Index /*classId*/, void *ptr) {
     unmapPointer( o, o->classId, 0 );
 
     // If it's a QObject, unmap all it's children too.
-    if ( isDerivedFrom( o->smoke, o->classId, o->smoke->idClass("QObject").index, 0 ) >= 0 ) {
+    Smoke::ModuleIndex qobjectIndex = o->smoke->findClass("QObject");
+    if ( isDerivedFrom( o->smoke, o->classId, qobjectIndex.smoke, qobjectIndex.index, 0 ) >= 0 ) {
         QObject* objptr = (QObject*)o->smoke->cast(
             ptr,
             o->classId,

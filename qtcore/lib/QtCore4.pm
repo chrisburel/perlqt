@@ -1057,7 +1057,8 @@ sub dumpCandidates {
 sub uniqMethods {
     my ($methodIds, $numArgs) = @_;
     my %hash;
-    foreach my $moduleId ( reverse @{$methodIds} ) {
+    my @ret;
+    foreach my $moduleId ( @{$methodIds} ) {
         my $smokeId = $moduleId->[0];
         my $methodId = $moduleId->[1];
         my $sig = join ',', map{
@@ -1065,9 +1066,11 @@ sub uniqMethods {
             $str =~ s/^const //;
             $str =~ s/[*&]$//;
             $str} ( 0..$numArgs-1 );
+        next if (exists $hash{$sig});
         $hash{$sig} = $moduleId;
+        push @ret, $moduleId;
     }
-    return values %hash;
+    return @ret;
 }
 
 # Args: @_: the args to the method being called
