@@ -22,6 +22,15 @@ sub NEW {
 }
 
 sub solve {
+    local *Qt::MessageBox::information = sub {
+        # Patch QMessageBox::information so that no additional event loop is
+        # started.  The test framework has no good way to intercept this
+        # method, because it will run in its own thread with its own event
+        # loop.
+        my ($parent, $title, $message, $submessage) = @_;
+        QVERIFY($title eq $parent->tr('Puzzle Completed'));
+    };
+
     my $window = this->{window};
     my $model = $window->{model};
     my $view = $window->{piecesList};
