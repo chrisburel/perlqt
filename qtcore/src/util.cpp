@@ -430,32 +430,18 @@ int isDerivedFromByName(const char *className, const char *baseClassName, int co
     return isDerivedFrom(classId.smoke, classId.index, baseId.smoke, baseId.index, count);
 }
 
-int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke::Index baseId, int cnt) {
-    if(classId == baseId)
-        return cnt;
-    cnt++;
-    for(Smoke::Index *p = smoke->inheritanceList + smoke->classes[classId].parents;
-        *p;
-        p++)
-    {
-        if(isDerivedFrom(smoke, *p, baseId, cnt) != -1)
-            return cnt;
-    }
-    return -1;
-}
-
-int isDerivedFrom(Smoke *smoke, const char *className, const char *baseClassName, int cnt) {
+int isDerivedFrom(Smoke *smoke, const char *className, const char *baseClassName, int count) {
     if(!smoke || !className || !baseClassName)
         return -1;
-    Smoke::Index idClass = smoke->idClass(className).index;
-    Smoke::Index idBase = smoke->idClass(baseClassName).index;
-    return isDerivedFrom(smoke, idClass, idBase, cnt);
+    Smoke::ModuleIndex classId = smoke->findClass(className);
+    Smoke::ModuleIndex baseId = smoke->findClass(baseClassName);
+    return isDerivedFrom(classId.smoke, classId.index, baseId.smoke, baseId.index, count);
 }
 
 Q_DECL_EXPORT int isDerivedFrom( smokeperl_object *o, const char *baseClassName ) {
-    Smoke::Index idClass = o->classId;
-    Smoke::Index idBase = o->smoke->idClass(baseClassName).index;
-    return isDerivedFrom(o->smoke, idClass, idBase, 0);
+    Smoke::ModuleIndex classId(o->smoke, o->classId);
+    Smoke::ModuleIndex baseId = o->smoke->findClass(baseClassName);
+    return isDerivedFrom(classId.smoke, classId.index, baseId.smoke, baseId.index);
 }
 
 // Enter keys: integer memory address of a cxxptr, values: associated perl sv
