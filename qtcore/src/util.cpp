@@ -412,13 +412,14 @@ int isDerivedFrom(Smoke *smoke, Smoke::Index classId, Smoke *baseSmoke, Smoke::I
 
     for(Smoke::Index p = smoke->classes[classId].parents; smoke->inheritanceList[p]; p++) {
         Smoke::Class& cur = smoke->classes[smoke->inheritanceList[p]];
+        int newCount;
         if (cur.external) {
             Smoke::ModuleIndex mi = smoke->findClass(cur.className);
-            if (isDerivedFrom(mi.smoke, mi.index, baseSmoke, baseId, count) != -1)
-                return count;
+            if ((newCount = isDerivedFrom(mi.smoke, mi.index, baseSmoke, baseId, count)) != -1)
+                return newCount;
         }
-        if (isDerivedFrom(smoke, smoke->inheritanceList[p], baseSmoke, baseId, count) != -1)
-            return count;
+        if ((newCount = isDerivedFrom(smoke, smoke->inheritanceList[p], baseSmoke, baseId, count)) != -1)
+            return newCount;
     }
     return -1;
 }
