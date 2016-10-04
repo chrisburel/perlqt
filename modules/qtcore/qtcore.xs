@@ -2,6 +2,8 @@
 #include "smokemanager.h"
 #include "qtcore_handlers.h"
 
+#include "perlqtinit.h"
+
 // Perl headers
 extern "C" {
 #include "EXTERN.h"
@@ -15,3 +17,4 @@ BOOT:
     init_qtcore_Smoke();
     SmokePerl::SmokeManager::instance().addSmokeModule(qtcore_Smoke, "PerlQt5::QtCore");
     SmokePerl::Marshall::installHandlers(qtcore_typeHandlers);
+    PerlQt5::initSmokeModule(qtcore_Smoke, "PerlQt5::QtCore");
