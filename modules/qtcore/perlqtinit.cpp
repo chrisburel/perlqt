@@ -20,6 +20,10 @@ void initSmokeModule(Smoke* smoke, std::string nspace) {
             // Set metaObject method
             std::string methodName = perlClassName + "::metaObject";
             newXS(methodName.c_str(), XS_QOBJECT_METAOBJECT, __FILE__);
+
+            // Set staticMetaObject method
+            methodName = perlClassName + "::staticMetaObject";
+            newXS(methodName.c_str(), XS_QOBJECT_STATICMETAOBJECT, __FILE__);
         }
     }
 }

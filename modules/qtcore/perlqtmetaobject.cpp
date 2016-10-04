@@ -4,91 +4,112 @@
 #define QMETAOBJECT_PRIVATE_HEADER QtCore/private/qmetaobjectbuilder_p.h
 #include QT_STRINGIFY(PERLQT_QT_VERSION/QMETAOBJECT_PRIVATE_HEADER)
 
+#include <qtcore_smoke.h>
+
+#include "methodcall.h"
 #include "smokemanager.h"
 #include "smokeobject.h"
 #include "perlqtmetaobject.h"
 
-XS(XS_QOBJECT_METAOBJECT) {
-    dXSARGS;
+namespace PerlQt5 {
+
+SV* MetaObjectManager::getMetaObjectForPackage(const char* package) {
 
     QMetaObject* metaObject;
 
-    // Find the type of object we have
-    SV* self;
-    HV* stash;
-    switch (items) {
-        case 1:
-            self = ST(0);
-            stash = SvSTASH(SvRV(self));
-            break;
-        case 2:
-            self = ST(1);
-            stash = gv_stashsv(ST(0), 0);
-            break;
-    }
-    const char* package = HvNAME(stash);
-
-    // See if that is a c++ class
-    std::string cppClassName = SmokePerl::SmokeManager::instance().getClassForPackage(package);
-    if (!cppClassName.empty()) {
-        // Got a c++ type, get its metaObject by a direct virtual method call
-        SmokePerl::Object* obj = SmokePerl::Object::fromSV(self);
-        QObject* object = (QObject*)obj->cast(obj->classId.smoke->findClass("QObject"));
-        SmokePerl::SmokeManager::instance().setInVirtualSuperCall(
-            std::string(obj->classId.smoke->classes[obj->classId.index].className) + "::metaObject"
-        );
-        metaObject = const_cast<QMetaObject*>(object->metaObject());
-        SmokePerl::SmokeManager::instance().setInVirtualSuperCall("");
+    if (packageToMetaObject.count(package)) {
+        metaObject = packageToMetaObject.at(package);
     }
     else {
-        // Got a perl type.  Build its metaobject.
-        QMetaObjectBuilder b;
-        b.setClassName(HvNAME(stash));
+        dXSARGS;
 
-        // Get the parent class's metaobject
-        AV* mro = mro_get_linear_isa(stash);
-        SV* superPackage = *av_fetch(mro, 1, 0);
-        GV* superMetaObjectMethod = gv_fetchmethod(gv_stashsv(superPackage, 0), "metaObject");
+        HV* stash = gv_stashpv(package, 0);
 
-        ENTER;
-        SAVETMPS;
-        PUSHMARK(SP);
-        XPUSHs(superPackage);
-        XPUSHs(self);
-        PUTBACK;
-        items = call_sv((SV*)GvCV(superMetaObjectMethod), G_SCALAR);
-        SPAGAIN;
-        SP -= items;
-        ax = (SP - PL_stack_base) + 1;
-        SmokePerl::Object* superMetaSmokeObject = SmokePerl::Object::fromSV(ST(0));
-        QMetaObject* superMetaObject = (QMetaObject*)superMetaSmokeObject->cast(superMetaSmokeObject->classId.smoke->findClass("QMetaObject"));
-        b.setSuperClass(superMetaObject);
-        PUTBACK;
-        FREETMPS;
-        LEAVE;
+        // See if package is a c++ class
+        std::string cppClassName = SmokePerl::SmokeManager::instance().getClassForPackage(package);
+        if (!cppClassName.empty()) {
+            // Get metaObject for c++ class by calling staticMetaObject
+            GV* gv = gv_fetchmethod_autoload(stash, "__PERLQT5__INTERNAL", 1);
+            CV* cv = GvCV(gv);
+            sv_setpvn((SV*)cv, "staticMetaObject", 16);
+            SvPOK_off(cv);
 
-        metaObject = b.toMetaObject();
+            ENTER;
+            SAVETMPS;
+            PUSHMARK(SP);
+            mXPUSHp(package, strlen(package));
+            PUTBACK;
+            items = call_sv((SV*)cv, G_SCALAR);
+            SPAGAIN;
+            SP -= items;
+            ax = (SP - PL_stack_base) + 1;
+            SmokePerl::Object* metaSmokeObject = SmokePerl::Object::fromSV(ST(0));
+            metaObject = (QMetaObject*)metaSmokeObject->cast(metaSmokeObject->classId.smoke->findClass("QMetaObject"));
+            PUTBACK;
+            FREETMPS;
+            LEAVE;
+        }
+        else {
+            // Got a perl type.  Build its metaobject.
+            QMetaObjectBuilder b;
+            b.setClassName(package);
+
+            // Get the parent class's metaobject
+            AV* mro = mro_get_linear_isa(stash);
+            SV* superPackage = *av_fetch(mro, 1, 0);
+            GV* gv = gv_fetchmethod_autoload(gv_stashsv(superPackage, 0), "staticMetaObject", 0);
+
+            ENTER;
+            SAVETMPS;
+            PUSHMARK(SP);
+            XPUSHs(superPackage);
+            PUTBACK;
+            items = call_sv((SV*)GvCV(gv), G_SCALAR);
+            SPAGAIN;
+            SP -= items;
+            ax = (SP - PL_stack_base) + 1;
+            SmokePerl::Object* superMetaSmokeObject = SmokePerl::Object::fromSV(ST(0));
+            QMetaObject* superMetaObject = (QMetaObject*)superMetaSmokeObject->cast(superMetaSmokeObject->classId.smoke->findClass("QMetaObject"));
+            b.setSuperClass(superMetaObject);
+            PUTBACK;
+            FREETMPS;
+            LEAVE;
+
+            metaObject = b.toMetaObject();
+        }
+
+        packageToMetaObject[package] = metaObject;
     }
+    SV* retval = newSV(0);
+    Smoke::StackItem stackItem;
+    stackItem.s_voidp = metaObject;
+    Smoke::ModuleIndex methodId = qtcore_Smoke->findMethod("QObject", "staticMetaObject");
+    methodId.index = qtcore_Smoke->methodMaps[methodId.index].method;
+    SmokePerl::MethodCall::ReturnValue retvalMarshaller(methodId, &stackItem, retval);
 
-    SmokePerl::Object* obj = SmokePerl::ObjectMap::instance().get(metaObject);
+    return retval;
+}
 
-    if (obj != nullptr) {
-        ST(0) = newSVsv(obj->sv);
-    }
-    else {
-        obj = new SmokePerl::Object(
-            metaObject,
-            Smoke::findClass("QMetaObject"),
-            SmokePerl::Object::CppOwnership
-        );
+}
 
-        SV* sv = obj->wrap();
-        SmokePerl::ObjectMap::instance().insert(obj, obj->classId);
+XS(XS_QOBJECT_STATICMETAOBJECT) {
+    dXSARGS;
 
-        sv_bless(sv, gv_stashpv("PerlQt5::QtCore::QMetaObject", TRUE));
+    SV* package = ST(0);
 
-        ST(0) = newSVsv(sv);
-    }
+    ST(0) = PerlQt5::MetaObjectManager::instance().getMetaObjectForPackage(SvPV_nolen(package));
+
+    sv_2mortal(ST(0));
+    XSRETURN(1);
+}
+
+XS(XS_QOBJECT_METAOBJECT) {
+    dXSARGS;
+
+    const char* package = HvNAME(SvSTASH(SvRV(ST(0))));
+
+    ST(0) = PerlQt5::MetaObjectManager::instance().getMetaObjectForPackage(package);
+
     sv_2mortal(ST(0));
     XSRETURN(1);
 }
