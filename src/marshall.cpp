@@ -7,6 +7,7 @@ static std::unordered_map<std::string, Marshall::HandlerFn> TypeHandlers {
     {"char*", marshall_PrimitiveRef<char*>},
     {"char**", marshall_CharPArray},
     {"int&", marshall_PrimitiveRef<int*>},
+    {"void**", marshall_VoidPArray},
 };
 
 void Marshall::installHandlers(const std::unordered_map<std::string, HandlerFn>& handlers) {

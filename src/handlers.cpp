@@ -267,4 +267,36 @@ void marshall_CharPArray(Marshall* m) {
         break;
     }
 }
+
+void marshall_VoidPArray(Marshall* m) {
+    // A void** type is an opaque type to Perl, but it is necessary to allow
+    // XS functions that deal with this type to be passed through the
+    // marshalling process.
+    switch(m->action()) {
+        case Marshall::FromSV:
+            m->item().s_voidp = SmokePerl::Object::fromSV(m->var())->value;
+        break;
+
+        case Marshall::ToSV:
+        {
+            void* cxxptr = m->item().s_voidp;
+
+            SmokePerl::Object* obj = new Object(
+                cxxptr,
+                Smoke::NullModuleIndex,
+                Object::CppOwnership
+            );
+
+            SV* sv = obj->wrap();
+
+            SvSetMagicSV(m->var(), sv);
+        }
+        break;
+
+        default:
+            m->unsupported();
+        break;
+    }
+}
+
 }
