@@ -142,5 +142,25 @@ XS(XS_QOBJECT_METAOBJECT) {
 
 XS(XS_QOBJECT_METACALL) {
     dXSARGS;
+    SV* selfSV = ST(0);
+    SV* cSV = ST(1);
+    SV* idSV = ST(2);
+    SV* argvSV = ST(3);
+
+    SV* metaObjectSV = PerlQt5::MetaObjectManager::instance().getMetaObjectForPackage(HvNAME(SvSTASH(SvRV(selfSV))));
+    SmokePerl::Object* metaSmokeObject = SmokePerl::Object::fromSV(metaObjectSV);
+    QMetaObject* metaObject = (QMetaObject*)metaSmokeObject->cast(metaSmokeObject->classId.smoke->findClass("QMetaObject"));
+
+    QMetaObject::Call c = (QMetaObject::Call)SvIV(SvRV(cSV));
+    int id = SvIV(idSV);
+    void** argv = (void**)SmokePerl::Object::fromSV(argvSV)->value;
+
+    if (id > metaObject->methodCount() - 1) {
+        ST(0) = sv_2mortal(newSViv(metaObject->methodCount() - id));
+        XSRETURN(1);
+    }
+
+    QMetaMethod method = metaObject->method(id);
+
     XSRETURN_EMPTY;
 }
