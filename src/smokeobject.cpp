@@ -85,7 +85,7 @@ SV* Object::wrap() {
     SvREFCNT(hv) = 0;
     sv = newRV_noinc((SV*)hv);
 
-    sv_magicext((SV*)hv, 0, PERL_MAGIC_ext, &vtbl_smoke, (char*)this, sizeof(*this));
+    sv_magicext((SV*)hv, 0, PERL_MAGIC_ext, &vtbl_smoke, (char*)this, 0);
 
     return sv;
 }
