@@ -1,14 +1,14 @@
 #include <string>
 #include <vector>
+
+#include <QMetaObject>
+
 #include <qtcore_smoke.h>
 #include "smokeobject.h"
 #include "smokemanager.h"
 #include "qtcore_handlers.h"
 
-#include "perlqtinit.h"
 #include "perlqtmetaobject.h"
-
-class QMetaObject;
 
 // Perl headers
 extern "C" {
@@ -24,13 +24,16 @@ void addSlot(metaObject, slotName, argTypes)
         const char* slotName
         AV* argTypes
     CODE:
-        QMetaObject* mo = (QMetaObject*)SmokePerl::Object::fromSV(metaObject)->value;
+        SmokePerl::Object* moSmokeObj = SmokePerl::Object::fromSV(metaObject);
+        QMetaObject* mo = (QMetaObject*)moSmokeObj->value;
         std::vector<std::string> arg_types;
         for (int i=0; i <= av_len(argTypes); ++i) {
             SV* item = *av_fetch(argTypes, i, 0);
             arg_types.push_back(std::string(SvPV_nolen(item)));
         }
+        const char* package = mo->className();
         PerlQt5::MetaObjectManager::instance().addSlot(mo, slotName, arg_types);
+        moSmokeObj->value = PerlQt5::MetaObjectManager::instance().getMetaObjectForPackage(package);
 
 MODULE = PerlQt5::QtCore PACKAGE = PerlQt5::QtCore
 
@@ -38,4 +41,6 @@ BOOT:
     init_qtcore_Smoke();
     SmokePerl::SmokeManager::instance().addSmokeModule(qtcore_Smoke, "PerlQt5::QtCore");
     SmokePerl::Marshall::installHandlers(qtcore_typeHandlers);
-    PerlQt5::initSmokeModule(qtcore_Smoke, "PerlQt5::QtCore");
+
+    newXS("PerlQt5::QtCore::QObject::metaObject", XS_QOBJECT_METAOBJECT, __FILE__);
+    newXS("PerlQt5::QtCore::QObject::staticMetaObject", XS_QOBJECT_STATICMETAOBJECT, __FILE__);
