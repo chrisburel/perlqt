@@ -15,10 +15,13 @@ extern "C" {
 namespace SmokePerl {
 
 char* SmokePerlBinding::className(Smoke::Index classId) {
-    std::string pkg = SmokePerl::SmokeManager::instance().getPackageForSmoke(smoke);
-    pkg += "::";
-    pkg += smoke->className(classId);
-    return const_cast<char*>(pkg.c_str());
+    if (classNameMap.count(classId) == 0) {
+        std::string pkg = SmokePerl::SmokeManager::instance().getPackageForSmoke(smoke);
+        pkg += "::";
+        pkg += smoke->className(classId);
+        classNameMap[classId] = pkg;
+    }
+    return const_cast<char*>(classNameMap.at(classId).c_str());
 }
 
 bool SmokePerlBinding::callMethod(Smoke::Index method, void* ptr, Smoke::Stack args, bool isAbstract) {
