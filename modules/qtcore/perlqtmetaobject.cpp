@@ -100,7 +100,20 @@ void MetaObjectManager::addSlot(QMetaObject* metaObject, const std::string& slot
     }
     signature += ')';
     QMetaMethodBuilder method = b.addSlot(signature.c_str());
-    packageToMetaObject[metaObject->className()] = b.toMetaObject();
+    metaObject = b.toMetaObject();
+    packageToMetaObject[metaObject->className()] = metaObject;
+    installMetacall(metaObject);
+}
+
+void MetaObjectManager::installMetacall(QMetaObject* metaObject) const {
+    GV* gv = gv_fetchmethod_autoload(gv_stashpv(metaObject->className(), 0), "qt_metacall", 0);
+    if (!gv) {
+        newXS(
+            (std::string(metaObject->className()) + "::qt_metacall").c_str(),
+            XS_QOBJECT_METACALL,
+            __FILE__
+        );
+    }
 }
 
 }
@@ -125,4 +138,9 @@ XS(XS_QOBJECT_METAOBJECT) {
 
     sv_2mortal(ST(0));
     XSRETURN(1);
+}
+
+XS(XS_QOBJECT_METACALL) {
+    dXSARGS;
+    XSRETURN_EMPTY;
 }

@@ -25,6 +25,8 @@ public:
     SV* getMetaObjectForPackage(const char* package);
     void addSlot(QMetaObject* metaObject, const std::string& slotName, const std::vector<std::string>& argTypes);
 
+    void installMetacall(QMetaObject* metaObject) const;
+
     MetaObjectManager(MetaObjectManager const&) = delete;
     void operator=(MetaObjectManager const&) = delete;
 private:
@@ -36,5 +38,6 @@ private:
 
 XS(XS_QOBJECT_STATICMETAOBJECT);
 XS(XS_QOBJECT_METAOBJECT);
+XS(XS_QOBJECT_METACALL);
 
 #endif
