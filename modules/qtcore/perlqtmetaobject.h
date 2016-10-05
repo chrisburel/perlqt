@@ -1,6 +1,8 @@
 #ifndef PERLQT5_PERLQTMETAOBJECT
 #define PERLQT5_PERLQTMETAOBJECT
 
+#include <string>
+#include <vector>
 #include <unordered_map>
 
 class QMetaObject;
@@ -21,6 +23,7 @@ public:
     }
 
     SV* getMetaObjectForPackage(const char* package);
+    void addSlot(QMetaObject* metaObject, const std::string& slotName, const std::vector<std::string>& argTypes);
 
     MetaObjectManager(MetaObjectManager const&) = delete;
     void operator=(MetaObjectManager const&) = delete;

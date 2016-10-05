@@ -90,6 +90,19 @@ SV* MetaObjectManager::getMetaObjectForPackage(const char* package) {
     return retval;
 }
 
+void MetaObjectManager::addSlot(QMetaObject* metaObject, const std::string& slotName, const std::vector<std::string>& argTypes) {
+    QMetaObjectBuilder b(metaObject);
+    std::string signature;
+    signature += slotName;
+    signature += '(';
+    for (const auto& typeName : argTypes) {
+        signature += typeName + ", ";
+    }
+    signature += ')';
+    QMetaMethodBuilder method = b.addSlot(signature.c_str());
+    packageToMetaObject[metaObject->className()] = b.toMetaObject();
+}
+
 }
 
 XS(XS_QOBJECT_STATICMETAOBJECT) {

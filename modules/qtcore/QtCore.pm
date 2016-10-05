@@ -34,4 +34,31 @@ sub loadModule {
     XSLoader::load($module, $version);
 }
 
+package PerlQt5::QtCore::QObject;
+
+use B;
+
+sub MODIFY_CODE_ATTRIBUTES {
+    my $package = shift;
+    my $code = shift;
+    my @attrs = @_;
+    my @unhandled;
+
+    # Get the name of the subroutine
+    my $cv = B::svref_2object($code);
+    my $name = $cv->GV->NAME;
+
+    # Add a slot with this name to the metaObject
+    my $metaObject = $package->staticMetaObject();
+    for my $attr (@attrs) {
+        if (my ($argTypes) = ($attr =~ m/^Slot\((.*)\)$/)) {
+            my @argTypes = split /, */, $argTypes;
+            PerlQt5::QtCore::_internal::addSlot($metaObject, $name, \@argTypes);
+            $metaObject = $package->staticMetaObject();
+        }
+    }
+
+    return;
+}
+
 1;
