@@ -12,6 +12,29 @@ void marshall_basetype(Marshall* m) {
             marshall_PrimitiveRef<int>(m);
         break;
 
+        case Smoke::t_enum:
+            switch(m->action()) {
+                case Marshall::FromSV:
+                {
+                    if (SvROK(m->var())) {
+                        m->item().s_enum = (long)SvIV(SvRV(m->var()));
+                    }
+                    else {
+                        m->item().s_enum = (long)SvIV(m->var());
+                    }
+                }
+                break;
+                case Marshall::ToSV:
+                {
+                    SV* rv = newRV_noinc(newSViv((IV)m->item().s_enum));
+                    std::string package = SmokePerl::SmokeManager::instance().getPackageForSmoke(m->type().smoke());
+                    sv_bless(rv, gv_stashpv((package + "::" + m->type().name()).c_str(), TRUE));
+                    SvSetMagicSV(m->var(), rv);
+                }
+                break;
+            }
+        break;
+
         case Smoke::t_class: {
             switch(m->action()) {
                 case Marshall::FromSV:
