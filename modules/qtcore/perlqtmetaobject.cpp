@@ -10,6 +10,7 @@
 #include "smokemanager.h"
 #include "smokeobject.h"
 #include "perlqtmetaobject.h"
+#include "invokeslot.h"
 
 namespace PerlQt5 {
 
@@ -195,12 +196,10 @@ XS(XS_QOBJECT_METACALL) {
         {
             if (id < metaObject->methodCount()) {
                 QMetaMethod method = metaObject->method(id);
-                GV* gv = gv_fetchmethod_autoload(stash, method.name(), 0);
-                ENTER;
-                PUSHMARK(SP);
-                PUTBACK;
-                call_sv((SV*)GvCV(gv), G_VOID);
-                LEAVE;
+
+                GV* gv = gv_fetchmethod_autoload(SvSTASH(SvRV(selfSV)), method.name(), 0);
+                PerlQt5::InvokeSlot slot(method, selfSV, argv, (SV*)GvCV(gv));
+                slot.next();
             }
             id -= metaObject->methodCount();
         }
