@@ -127,6 +127,8 @@ public:
 };
 
 void setStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void* ptr);
+void setPtrFromStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void** ptr);
+
 }
 
 #endif

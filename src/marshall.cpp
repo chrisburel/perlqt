@@ -100,4 +100,66 @@ void setStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void* ptr)
      return;
 }
 
+void setPtrFromStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void** ptr) {
+    switch(type.element()) {
+        case Smoke::t_bool:
+            *ptr = &stackItem.s_bool;
+            break;
+
+        case Smoke::t_char:
+            *ptr = &stackItem.s_char;
+            break;
+
+        case Smoke::t_uchar:
+            *ptr = &stackItem.s_uchar;
+            break;
+
+        case Smoke::t_short:
+            *ptr = &stackItem.s_short;
+            break;
+
+        case Smoke::t_ushort:
+            *ptr = &stackItem.s_ushort;
+            break;
+
+        case Smoke::t_int:
+            *ptr = &stackItem.s_int;
+            break;
+
+        case Smoke::t_uint:
+            *ptr = &stackItem.s_char;
+            break;
+
+        case Smoke::t_long:
+            *ptr = &stackItem.s_uint;
+            break;
+
+        case Smoke::t_ulong:
+            *ptr = &stackItem.s_ulong;
+            break;
+
+        case Smoke::t_float:
+            *ptr = &stackItem.s_float;
+            break;
+
+        case Smoke::t_double:
+            *ptr = &stackItem.s_double;
+            break;
+
+        case Smoke::t_enum:
+            *ptr = &stackItem.s_uint;
+            break;
+
+        case Smoke::t_voidp:
+        case Smoke::t_class:
+            *ptr = stackItem.s_class;
+            break;
+
+        default:
+            break;
+    }
+
+     return;
+}
+
 }
