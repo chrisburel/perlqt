@@ -126,6 +126,7 @@ public:
     typedef void (*DemarshallFunction)(SV*, void*);
 };
 
+void setStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void* ptr);
 }
 
 #endif
