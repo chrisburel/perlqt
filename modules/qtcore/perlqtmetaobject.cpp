@@ -22,7 +22,7 @@ SV* MetaObjectManager::getMetaObjectForPackage(const char* package) {
         metaObject = packageToMetaObject.at(package);
     }
     else {
-        dXSARGS;
+        dSP;
 
         HV* stash = gv_stashpv(package, 0);
 
@@ -40,10 +40,10 @@ SV* MetaObjectManager::getMetaObjectForPackage(const char* package) {
             PUSHMARK(SP);
             mXPUSHp(package, strlen(package));
             PUTBACK;
-            items = call_sv((SV*)cv, G_SCALAR);
+            int items = call_sv((SV*)cv, G_SCALAR);
             SPAGAIN;
             SP -= items;
-            ax = (SP - PL_stack_base) + 1;
+            I32 ax = (SP - PL_stack_base) + 1;
             SmokePerl::Object* metaSmokeObject = SmokePerl::Object::fromSV(ST(0));
             metaObject = (QMetaObject*)metaSmokeObject->cast(metaSmokeObject->classId.smoke->findClass("QMetaObject"));
             PUTBACK;
@@ -65,10 +65,10 @@ SV* MetaObjectManager::getMetaObjectForPackage(const char* package) {
             PUSHMARK(SP);
             XPUSHs(superPackage);
             PUTBACK;
-            items = call_sv((SV*)GvCV(gv), G_SCALAR);
+            int items = call_sv((SV*)GvCV(gv), G_SCALAR);
             SPAGAIN;
             SP -= items;
-            ax = (SP - PL_stack_base) + 1;
+            I32 ax = (SP - PL_stack_base) + 1;
             SmokePerl::Object* superMetaSmokeObject = SmokePerl::Object::fromSV(ST(0));
             QMetaObject* superMetaObject = (QMetaObject*)superMetaSmokeObject->cast(superMetaSmokeObject->classId.smoke->findClass("QMetaObject"));
             b.setSuperClass(superMetaObject);
