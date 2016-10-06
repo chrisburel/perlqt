@@ -107,6 +107,14 @@ void MetaObjectManager::addSlot(QMetaObject* metaObject, const std::string& slot
 
 void MetaObjectManager::installMetacall(QMetaObject* metaObject) const {
     GV* gv = gv_fetchmethod_autoload(gv_stashpv(metaObject->className(), 0), "qt_metacall", 0);
+    if (gv != nullptr) {
+        // If we found a gv, but it is not in the direct package specified (and
+        // instead was looked up via @ISA), then the method doesn't exist in
+        // the package yet.
+        if (strcmp(metaObject->className(), HvNAME(GvSTASH(gv))) != 0) {
+            gv = nullptr;
+        }
+    }
     if (!gv) {
         newXS(
             (std::string(metaObject->className()) + "::qt_metacall").c_str(),
