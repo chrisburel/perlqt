@@ -76,4 +76,12 @@ Smoke* SmokeManager::getSmokeForPackage(const std::string& package) const {
     return packageToSmoke.at(package);
 }
 
+const std::vector<Smoke*> SmokeManager::getSmokes() const {
+    std::vector<Smoke*> keys;
+    for (const auto& pair : smokeToBinding) {
+        keys.push_back(pair.first);
+    }
+    return keys;
+}
+
 }
