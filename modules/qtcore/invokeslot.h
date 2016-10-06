@@ -9,6 +9,46 @@ class QMetaMethod;
 namespace PerlQt5 {
 
 class InvokeSlot : public SmokePerl::Marshall {
+    class ReturnValue : SmokePerl::Marshall {
+    public:
+        ReturnValue(Smoke* smoke, const QMetaMethod& method, SV* returnValue, void** a);
+
+        inline SmokePerl::SmokeType type() const {
+            return m_type;
+        }
+
+        inline Marshall::Action action() const {
+            return Marshall::FromSV;
+        }
+
+        inline Smoke::StackItem& item() const {
+            return const_cast<Smoke::StackItem&>(m_stackItem);
+        }
+
+        inline SV* var() const {
+            return m_returnValue;
+        }
+
+        inline Smoke* smoke() const {
+            return m_smoke;
+        }
+
+        inline bool cleanup() const {
+            return false;
+        }
+
+        void unsupported() const {}
+        void next() {}
+
+    private:
+        SV* m_returnValue;
+        const QMetaMethod& m_metaMethod;
+        void** m_a;
+        Smoke* m_smoke;
+        Smoke::StackItem m_stackItem;
+        SmokePerl::SmokeType m_type;
+    };
+
 public:
     InvokeSlot(const QMetaMethod& method, SV* self, void** a, SV* code);
     ~InvokeSlot();

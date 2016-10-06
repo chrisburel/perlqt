@@ -5,6 +5,21 @@
 
 namespace PerlQt5 {
 
+InvokeSlot::ReturnValue::ReturnValue(Smoke* smoke, const QMetaMethod& method, SV* returnValue, void** a) :
+    m_smoke(smoke), m_returnValue(returnValue), m_metaMethod(method), m_a(a) {
+
+    m_type = SmokePerl::SmokeType::find(m_metaMethod.typeName(), m_smoke);
+
+    SmokePerl::setPtrFromStackItem(
+        type(),
+        m_stackItem,
+        &m_a[0]
+    );
+
+    Marshall::HandlerFn fn = getMarshallFn(type());
+    (*fn)(this);
+}
+
 InvokeSlot::InvokeSlot(const QMetaMethod& method, SV* self, void** a, SV* code) :
     m_self(self), m_a(a), m_metaMethod(method),
     m_current(-1), m_called(false), m_code(code) {
@@ -74,6 +89,12 @@ void InvokeSlot::callMethod() {
     // Call the method in scalar context
     I32 callFlags = G_SCALAR;
     call_sv(m_code, callFlags);
+
+    // Refresh the stack pointer, it moved after the subroutine call
+    SPAGAIN;
+
+    // Marshall the return value
+    ReturnValue result(m_smoke, m_metaMethod, POPs, m_a);
 
     PUTBACK;
     FREETMPS;
