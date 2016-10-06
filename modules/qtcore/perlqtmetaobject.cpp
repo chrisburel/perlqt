@@ -155,12 +155,29 @@ XS(XS_QOBJECT_METACALL) {
     int id = SvIV(idSV);
     void** argv = (void**)SmokePerl::Object::fromSV(argvSV)->value;
 
-    if (id > metaObject->methodCount() - 1) {
-        ST(0) = sv_2mortal(newSViv(metaObject->methodCount() - id));
-        XSRETURN(1);
+    switch (c) {
+        case QMetaObject::InvokeMetaMethod:
+        {
+            if (id > metaObject->methodCount() - 1) {
+                // Remap the id to the parent class's metaobject's index
+                ST(0) = sv_2mortal(newSViv(metaObject->methodCount() - id));
+                XSRETURN(1);
+            }
+            QMetaMethod method = metaObject->method(id);
+            GV* gv = gv_fetchmethod_autoload(gv_stashpv(metaObject->className(), 0), method.name(), 0);
+            ENTER;
+            PUSHMARK(SP);
+            PUTBACK;
+            call_sv((SV*)GvCV(gv), G_VOID);
+            LEAVE;
+
+            // Indicate we handled this call by returning -1
+            ST(0) = sv_2mortal(newSViv(-1));
+            XSRETURN(1);
+        }
     }
 
-    QMetaMethod method = metaObject->method(id);
-
-    XSRETURN_EMPTY;
+    // Indicate we did not handle this call by returning the id unchanged.
+    ST(0) = sv_2mortal(newSViv(id));
+    XSRETURN(1);
 }
