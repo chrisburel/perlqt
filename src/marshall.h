@@ -6,6 +6,8 @@
 
 #include <smoke.h>
 
+#include "smokemanager.h"
+
 // Perl headers
 extern "C" {
 #include "EXTERN.h"
@@ -28,6 +30,32 @@ public:
         m_type = m_smoke->types + m_id;
     }
     // default copy constructors are fine, this is a constant structure
+
+    static SmokeType find(const char* typeName, Smoke* smoke) {
+        Smoke::Index typeId = smoke->idType(typeName);
+        if (typeId != 0) {
+            SmokeType result(smoke, typeId);
+
+            if ((result.element() == Smoke::t_voidp || result.element() == Smoke::t_class) && result.isStack()) {
+                return find((std::string(typeName) + '*').c_str(), smoke);
+            }
+            return result;
+        }
+
+        for (const auto& s : SmokeManager::instance().getSmokes()) {
+            typeId = s->idType(typeName);
+            if (typeId != 0) {
+                SmokeType result(s, typeId);
+
+                if ((result.element() == Smoke::t_voidp || result.element() == Smoke::t_class) && result.isStack()) {
+                    return find((std::string(typeName) + '*').c_str(), s);
+                }
+                return result;
+            }
+        }
+
+        return SmokeType(smoke, 0);
+    }
 
     // mutators
     void set(Smoke *s, Smoke::Index i) {
