@@ -155,37 +155,58 @@ XS(XS_QOBJECT_METACALL) {
     SV* idSV = ST(2);
     SV* argvSV = ST(3);
 
-    SV* metaObjectSV = PerlQt5::MetaObjectManager::instance().getMetaObjectForPackage(HvNAME(SvSTASH(SvRV(selfSV))));
+    // Call the super class's qt_metacall to see if they handle this call
+    HV* stash = GvSTASH(CvGV(cv));
+    AV* mro = mro_get_linear_isa(stash);
+    SV* superPackage = *av_fetch(mro, 1, 0);
+    GV* gv = gv_fetchmethod_autoload(gv_stashsv(superPackage, 0), "qt_metacall", 1);
+    ENTER;
+    SAVETMPS;
+    PUSHMARK(SP);
+    XPUSHs(selfSV);
+    XPUSHs(cSV);
+    XPUSHs(idSV);
+    XPUSHs(argvSV);
+    PUTBACK;
+    items = call_sv((SV*)GvCV(gv), G_SCALAR);
+    SPAGAIN;
+    SP -= items;
+    ax = (SP - PL_stack_base) + 1;
+    int id = SvIV(ST(0));
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+
+    if (id < 0) {
+        ST(0) = sv_2mortal(newSViv(id));
+        XSRETURN(1);
+    }
+
+    SV* metaObjectSV = PerlQt5::MetaObjectManager::instance().getMetaObjectForPackage(HvNAME(stash));
     SmokePerl::Object* metaSmokeObject = SmokePerl::Object::fromSV(metaObjectSV);
     QMetaObject* metaObject = (QMetaObject*)metaSmokeObject->cast(metaSmokeObject->classId.smoke->findClass("QMetaObject"));
 
     QMetaObject::Call c = (QMetaObject::Call)SvIV(SvRV(cSV));
-    int id = SvIV(idSV);
     void** argv = (void**)SmokePerl::Object::fromSV(argvSV)->value;
+    id = SvIV(idSV);
 
     switch (c) {
         case QMetaObject::InvokeMetaMethod:
         {
-            if (id > metaObject->methodCount() - 1) {
-                // Remap the id to the parent class's metaobject's index
-                ST(0) = sv_2mortal(newSViv(metaObject->methodCount() - id));
-                XSRETURN(1);
+            if (id < metaObject->methodCount()) {
+                QMetaMethod method = metaObject->method(id);
+                GV* gv = gv_fetchmethod_autoload(stash, method.name(), 0);
+                ENTER;
+                PUSHMARK(SP);
+                PUTBACK;
+                call_sv((SV*)GvCV(gv), G_VOID);
+                LEAVE;
             }
-            QMetaMethod method = metaObject->method(id);
-            GV* gv = gv_fetchmethod_autoload(gv_stashpv(metaObject->className(), 0), method.name(), 0);
-            ENTER;
-            PUSHMARK(SP);
-            PUTBACK;
-            call_sv((SV*)GvCV(gv), G_VOID);
-            LEAVE;
-
-            // Indicate we handled this call by returning -1
-            ST(0) = sv_2mortal(newSViv(-1));
-            XSRETURN(1);
+            id -= metaObject->methodCount();
         }
     }
 
-    // Indicate we did not handle this call by returning the id unchanged.
+    // Return our new id.
     ST(0) = sv_2mortal(newSViv(id));
     XSRETURN(1);
 }
