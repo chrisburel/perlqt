@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use PerlQt5::QtCore;
+use PerlQt5::QtCore qw(SIGNAL SLOT);
 use Test::More tests => 6;
 
 package MyObject;
@@ -21,14 +21,14 @@ my $obj = MyObject->new();
 our $appId = 1;
 
 $mapper->connect(
-    $app, '2applicationNameChanged()',
-    $mapper, '1map()'
+    $app, SIGNAL 'applicationNameChanged()',
+    $mapper, SLOT 'map()'
 );
 $mapper->setMapping($app, $appId);
 
 $obj->connect(
-    $mapper, '2mapped(int)',
-    $obj, '1mySub(int)'
+    $mapper, SIGNAL 'mapped(int)',
+    $obj, SLOT 'mySub(int)'
 );
 
 $app->setApplicationName('PerlQt5 connection test');

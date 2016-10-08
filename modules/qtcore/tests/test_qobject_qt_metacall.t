@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use PerlQt5::QtCore;
+use PerlQt5::QtCore qw(SLOT);
 use Test::More tests => 3;
 
 package MyObject;
@@ -25,7 +25,7 @@ package main;
 my $app = PerlQt5::QtCore::QCoreApplication->new(scalar @ARGV, \@ARGV);
 my $obj = MyObject->new();
 my $objSubclass = MyObjectSubclass->new();
-PerlQt5::QtCore::QTimer->singleShot(0, $obj, "1mySlot()");
-PerlQt5::QtCore::QTimer->singleShot(0, $objSubclass, "1mySlot()");
-PerlQt5::QtCore::QTimer->singleShot(0, $objSubclass, "1mySlotSubclass()");
+PerlQt5::QtCore::QTimer->singleShot(0, $obj, SLOT "mySlot()");
+PerlQt5::QtCore::QTimer->singleShot(0, $objSubclass, SLOT "mySlot()");
+PerlQt5::QtCore::QTimer->singleShot(0, $objSubclass, SLOT "mySlotSubclass()");
 $app->processEvents();

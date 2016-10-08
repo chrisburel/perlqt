@@ -14,14 +14,14 @@ sub import {
 
     foreach my $export (@exports) {
         my $subpackage = "${package}::${export}";
-        my $subpackageGlob = "${subpackage}::";
-        my $alias = "${caller}::${export}::";
+        my $alias = "${caller}::${export}";
         {
             no strict 'refs';
-            if (!exists ${"${package}::"}{"${export}::"}) {
+            my $isGlob = exists ${"${package}::"}{"${export}::"} ? '::' : '';
+            if (!$isGlob && !exists ${"${package}::"}{"${export}"}) {
                 die "$package does not export $export\n";
             }
-            *{$alias} = \*{$subpackageGlob};
+            *{"${alias}${isGlob}"} = \*{"${subpackage}${isGlob}"};
         }
     }
 }
@@ -32,6 +32,14 @@ sub loadModule {
         $module = 'Perl'. $module;
     }
     XSLoader::load($module, $version);
+}
+
+sub SIGNAL($) {
+    return '2'.$_[0];
+}
+
+sub SLOT($) {
+    return '1'.$_[0];
 }
 
 package PerlQt5::QtCore::QObject;
