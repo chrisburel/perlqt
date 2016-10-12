@@ -16,3 +16,22 @@ sub loadModule {
     XSLoader::load($module, $version);
 }
 
+package SmokePerl::BoundSignal;
+
+use overload '&{}' => \&call;
+
+sub new {
+    my ($class, $instance, $name, $code) = @_;
+    return bless {
+        instance => $instance,
+        name => $name,
+        code => $code,
+    }, $class;
+}
+
+sub call {
+    my $self = shift;
+    return sub{ $self->{code}->($self->{instance}, @_) };
+}
+
+1;

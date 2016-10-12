@@ -105,11 +105,44 @@ XS(XS_CAN) {
     const char* className = classId.smoke->classes[classId.index].className;
 
     bool isConstructor = strcmp(methodName, "new") == 0;
-    Smoke::ModuleIndex method = classId.smoke->findMethodName(className, isConstructor ? className : methodName);
+    std::vector<std::string> args(1);
+    if (isConstructor) {
+        args[0] = className;
+    }
+    else {
+        args[0] = methodName;
+    }
+    const std::vector<Smoke::ModuleIndex> candidates = SmokePerl::findCandidates(classId, args);
 
-    if (method.index) {
+    if (candidates.size()) {
+        const Smoke::ModuleIndex& method = candidates.at(0);
         GV* autoload = gv_fetchmethod_autoload(stash, methodName, 1);
-        ST(0) = newRV_noinc((SV*)GvCV(autoload));
+        if (method.smoke->methods[method.index].flags & Smoke::mf_signal) {
+            if (SvTYPE(self) == SVt_PV) {
+            }
+            else {
+                ENTER;
+                SAVETMPS;
+                PUSHMARK(SP);
+                XPUSHs(sv_2mortal(newSVpv("SmokePerl::BoundSignal", 0)));
+                XPUSHs(self);
+                XPUSHs(sv_2mortal(newSVpv(methodName, 0)));
+                XPUSHs(sv_2mortal(newRV((SV*)GvCV(autoload))));
+                PUTBACK;
+                HV* bsStash = gv_stashpv("SmokePerl::BoundSignal", 0);
+                GV* gv = gv_fetchmethod_autoload(bsStash, "new", 1);
+                call_sv((SV*)GvCV(gv), G_SCALAR);
+                SPAGAIN;
+                SV* boundSignal = newSVsv(POPs);
+                PUTBACK;
+                FREETMPS;
+                LEAVE;
+                ST(0) = boundSignal;
+            }
+        }
+        else {
+            ST(0) = newRV_noinc((SV*)GvCV(autoload));
+        }
         XSRETURN(1);
     }
     XSRETURN(0);
