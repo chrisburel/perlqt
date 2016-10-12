@@ -3,7 +3,6 @@ package PerlQt5::QtCore;
 use strict;
 use warnings;
 use XSLoader;
-use SmokePerl;
 
 our $VERSION = '1.0.0';
 

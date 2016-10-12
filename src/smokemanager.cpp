@@ -13,6 +13,10 @@ extern "C" {
 
 namespace SmokePerl {
 
+SmokeManager::SmokeManager() {
+    eval_pv("use SmokePerl;", true);
+}
+
 void SmokeManager::addSmokeModule(Smoke* smoke, const std::string& nspace) {
     packageToSmoke[nspace] = smoke;
     smokeToPackage[smoke] = nspace;
