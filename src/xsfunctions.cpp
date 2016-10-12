@@ -124,12 +124,12 @@ XS(XS_CAN) {
                 ENTER;
                 SAVETMPS;
                 PUSHMARK(SP);
-                XPUSHs(sv_2mortal(newSVpv("SmokePerl::BoundSignal", 0)));
+                XPUSHs(sv_2mortal(newSVpv("SmokePerl::BoundMethod", 0)));
                 XPUSHs(self);
                 XPUSHs(sv_2mortal(newSVpv(methodName, 0)));
                 XPUSHs(sv_2mortal(newRV((SV*)GvCV(autoload))));
                 PUTBACK;
-                HV* bsStash = gv_stashpv("SmokePerl::BoundSignal", 0);
+                HV* bsStash = gv_stashpv("SmokePerl::BoundMethod", 0);
                 GV* gv = gv_fetchmethod_autoload(bsStash, "new", 1);
                 call_sv((SV*)GvCV(gv), G_SCALAR);
                 SPAGAIN;

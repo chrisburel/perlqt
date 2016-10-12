@@ -16,7 +16,7 @@ sub loadModule {
     XSLoader::load($module, $version);
 }
 
-package SmokePerl::BoundSignal;
+package SmokePerl::BoundMethod;
 
 use overload '&{}' => \&call;
 
