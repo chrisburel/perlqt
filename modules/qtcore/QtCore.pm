@@ -55,7 +55,6 @@ sub new {
         return bless {
             instance => $instance,
             name => $name,
-            code => $code,
         }, $class;
     }
     return;
@@ -71,7 +70,6 @@ sub new {
         return bless {
             instance => $instance,
             name => $name,
-            code => $code,
         }, $class;
     }
     return;

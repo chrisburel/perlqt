@@ -63,13 +63,15 @@ sub new {
     return bless {
         instance => $instance,
         name => $name,
-        code => $code,
     }, $class;
 }
 
 sub call {
     my $self = shift;
-    return sub{ $self->{code}->($self->{instance}, @_) };
+    return sub{
+        my $method = $self->{name};
+        return $self->{instance}->$method(@_);
+    };
 }
 
 sub bool {
