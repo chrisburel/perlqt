@@ -51,11 +51,24 @@ use base qw(SmokePerl::Method);
 
 sub new {
     my ($class, $instance, $name, $flags, $code) = @_;
-    if (defined $flags && $flags & SmokePerl::Method::mf_signal) {
-        return bless {
-            instance => $instance,
-            name => $name,
-        }, $class;
+    if ($instance->isa('PerlQt5::QtCore::QObject')) {
+        # Find signal index
+        my $metaObject = $instance->metaObject();
+        my $signalIndex = undef;
+        foreach my $idx (0..$metaObject->methodCount()-1) {
+            my $method = $metaObject->method($idx);
+            if (${$method->methodType} == ${PerlQt5::QtCore::QMetaMethod->Signal} and $method->name()->constData() eq $name){
+                $signalIndex = $idx;
+                last;
+            }
+        }
+        if (defined $signalIndex) {
+            return bless {
+                instance => $instance,
+                name => $name,
+                signalIndex => $signalIndex,
+            }, $class;
+        }
     }
     return;
 }
@@ -66,11 +79,24 @@ use base qw(SmokePerl::Method);
 
 sub new {
     my ($class, $instance, $name, $flags, $code) = @_;
-    if (defined $flags && $flags & SmokePerl::Method::mf_slot) {
-        return bless {
-            instance => $instance,
-            name => $name,
-        }, $class;
+    if ($instance->isa('PerlQt5::QtCore::QObject')) {
+        # Find slot index
+        my $metaObject = $instance->metaObject();
+        my $slotIndex = undef;
+        foreach my $idx (0..$metaObject->methodCount()-1) {
+            my $method = $metaObject->method($idx);
+            if (${$method->methodType} == ${PerlQt5::QtCore::QMetaMethod->Slot} and $method->name()->constData() eq $name){
+                $slotIndex = $idx;
+                last;
+            }
+        }
+        if (defined $slotIndex) {
+            return bless {
+                instance => $instance,
+                name => $name,
+                slotIndex => $slotIndex,
+            }, $class;
+        }
     }
     return;
 }
