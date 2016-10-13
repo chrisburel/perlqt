@@ -3,10 +3,13 @@ package PerlQt5::QtCore;
 use strict;
 use warnings;
 use XSLoader;
+use SmokePerl;
 
 our $VERSION = '1.0.0';
 
 PerlQt5::QtCore::loadModule(__PACKAGE__, $VERSION);
+SmokePerl::addMethodTypeHandler('PerlQt5::QtCore::Signal');
+SmokePerl::addMethodTypeHandler('PerlQt5::QtCore::Slot');
 
 sub import {
     my ($package, @exports) = @_;
@@ -40,6 +43,38 @@ sub SIGNAL($) {
 
 sub SLOT($) {
     return '1'.$_[0];
+}
+
+package PerlQt5::QtCore::Signal;
+
+use base qw(SmokePerl::Method);
+
+sub new {
+    my ($class, $instance, $name, $flags, $code) = @_;
+    if (defined $flags && $flags & SmokePerl::Method::mf_signal) {
+        return bless {
+            instance => $instance,
+            name => $name,
+            code => $code,
+        }, $class;
+    }
+    return;
+}
+
+package PerlQt5::QtCore::Slot;
+
+use base qw(SmokePerl::Method);
+
+sub new {
+    my ($class, $instance, $name, $flags, $code) = @_;
+    if (defined $flags && $flags & SmokePerl::Method::mf_slot) {
+        return bless {
+            instance => $instance,
+            name => $name,
+            code => $code,
+        }, $class;
+    }
+    return;
 }
 
 package PerlQt5::QtCore::QObject;
