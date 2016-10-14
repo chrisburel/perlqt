@@ -149,6 +149,16 @@ void QObjectSlotDispatcher::impl(int which, QSlotObjectBase *this_, QObject *r, 
         }
         break;
         case Compare: {
+            QObjectSlotDispatcher* This = static_cast<QObjectSlotDispatcher*>(this_);
+
+            SV* func = reinterpret_cast<SV*>(metaArgs[0]);
+            if (!SvOK(func) || !(SvROK(func))) {
+                *ret = false;
+                return;
+            }
+
+            *ret = (SvRV(func) == SvRV(This->func));
+            return;
         }
         break;
         case NumOperations:
@@ -260,4 +270,26 @@ XS(XS_QTCORE_SIGNAL_CONNECT) {
     QMetaObject::Connection conn = QObjectPrivate::connect(obj, signalIndex, slot, Qt::AutoConnection);
 
     XSRETURN_UNDEF;
+}
+
+XS(XS_QTCORE_SIGNAL_DISCONNECT) {
+    dXSARGS;
+
+    HV* signal = (HV*)SvRV(ST(0));
+    SV* func = ST(1);
+
+    SV* self = *hv_fetch(signal, "instance", 8, 0);
+    int signalIndex = SvIV(*hv_fetch(signal, "signalIndex", 11, 0));
+
+    SmokePerl::Object* objSmokeObj = SmokePerl::Object::fromSV(self);
+    QObject* obj = (QObject*)objSmokeObj->cast(objSmokeObj->classId.smoke->findClass("QObject"));
+
+    void* a[] = {
+        func
+    };
+
+    bool success = QObjectPrivate::disconnect(obj, signalIndex, reinterpret_cast<void**>(&a));
+
+    success ? XST_mYES(0) : XST_mNO(0);
+    XSRETURN(1);
 }

@@ -45,3 +45,4 @@ BOOT:
     newXS("PerlQt5::QtCore::QObject::metaObject", XS_QOBJECT_METAOBJECT, __FILE__);
     newXS("PerlQt5::QtCore::QObject::staticMetaObject", XS_QOBJECT_STATICMETAOBJECT, __FILE__);
     newXS("PerlQt5::QtCore::Signal::connect", XS_QTCORE_SIGNAL_CONNECT, __FILE__);
+    newXS("PerlQt5::QtCore::Signal::disconnect", XS_QTCORE_SIGNAL_DISCONNECT, __FILE__);
