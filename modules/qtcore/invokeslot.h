@@ -61,8 +61,8 @@ public:
     Smoke::StackItem& item() const;
 
     inline SV* var() const {
-        // The 0th spot is reserved for $self
-        return m_argv[m_current + 1];
+        // The 0th spot is reserved for $self if m_hasSelf is true
+        return m_argv[m_current + (m_hasSelf ? 1 : 0)];
     }
 
     inline Smoke* smoke() const {
@@ -78,7 +78,7 @@ public:
     void next();
 
 private:
-    SV* m_self;
+    bool m_hasSelf;
     const QMetaMethod& m_metaMethod;
     SV** m_argv;
     void** m_a;
