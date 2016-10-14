@@ -144,7 +144,8 @@ void QObjectSlotDispatcher::impl(int which, QSlotObjectBase *this_, QObject *r, 
         break;
         case Call: {
             QObjectSlotDispatcher* This = static_cast<QObjectSlotDispatcher*>(this_);
-            call_sv(This->func, G_VOID);
+            PerlQt5::InvokeSlot slot(This->method, nullptr, metaArgs, This->func);
+            slot.next();
         }
         break;
         case Compare: {
@@ -254,6 +255,7 @@ XS(XS_QTCORE_SIGNAL_CONNECT) {
 
     PerlQt5::QObjectSlotDispatcher *slot = new PerlQt5::QObjectSlotDispatcher;
     slot->signalIndex = signalIndex;
+    slot->method = obj->metaObject()->method(signalIndex);
     slot->func = newSVsv(func);
     QMetaObject::Connection conn = QObjectPrivate::connect(obj, signalIndex, slot, Qt::AutoConnection);
 

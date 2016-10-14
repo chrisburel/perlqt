@@ -6,6 +6,8 @@
 #include <unordered_map>
 
 class QMetaObject;
+#include <QMetaMethod>
+
 #define QOBJECT_PRIVATE_HEADER QtCore/private/qobject_p.h
 #include QT_STRINGIFY(PERLQT_QT_VERSION/QOBJECT_PRIVATE_HEADER)
 
@@ -40,6 +42,7 @@ private:
 struct QObjectSlotDispatcher : public QtPrivate::QSlotObjectBase
 {
     int signalIndex;
+    QMetaMethod method;
     SV* func = nullptr;
 
     QObjectSlotDispatcher();

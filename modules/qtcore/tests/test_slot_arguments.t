@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use PerlQt5::QtCore qw(SIGNAL SLOT);
-use Test::More tests => 6;
+use Test::More tests => 8;
 
 package MyObject;
 use base qw(PerlQt5::QtCore::QObject);
@@ -10,8 +10,9 @@ use Test::More;
 sub mySub : Slot(int) {
     my ($self, $id) = @_;
     ok(1, 'Slot called');
-    is($id, $main::appId, 'Slot argument value');
+    isa_ok($self, 'MyObject');
     is(scalar @_, 2, 'Slot argument count');
+    is($id, $main::appId, 'Slot argument value');
 }
 
 package main;
