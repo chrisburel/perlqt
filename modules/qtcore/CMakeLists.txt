@@ -18,6 +18,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/PerlQt5/${libraryName
 
 add_library(perlqtcore5 SHARED
     ${CMAKE_CURRENT_BINARY_DIR}/qtcore.cpp
+    can.cpp
     invokeslot.cpp
     perlqtmetaobject.cpp
     qtcore_handlers.cpp
