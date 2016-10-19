@@ -8,6 +8,7 @@ namespace SmokePerl {
 
 class MethodCall : public Marshall {
 
+public:
     class ReturnValue : Marshall {
     public:
         ReturnValue(Smoke::ModuleIndex methodId, Smoke::Stack stack, SV* returnValue);
@@ -48,7 +49,6 @@ class MethodCall : public Marshall {
         SV* m_returnValue;
     };
 
-public:
     MethodCall(Smoke::ModuleIndex mi, SV* self, SV** argv);
     ~MethodCall();
 

@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 #include <smoke.h>
 #include "smokebinding.h"
@@ -20,6 +21,8 @@ public:
     std::string getClassForPackage(const std::string& package) const;
     std::string getPackageForSmoke(Smoke* smoke) const;
     Smoke* getSmokeForPackage(const std::string& package) const;
+
+    const std::vector<Smoke*> getSmokes() const;
 
     inline const std::string& inVirtualSuperCall() const {
         return m_inVirtualSuperCall;

@@ -95,7 +95,8 @@ int Object::free(pTHX_ SV* sv, MAGIC* mg) {
     if (obj == nullptr)
         return 0;
 
-    ObjectMap::instance().remove(obj, obj->classId);
+    if (obj->classId != Smoke::NullModuleIndex)
+        ObjectMap::instance().remove(obj, obj->classId);
 
     delete obj;
     mg->mg_ptr = 0;

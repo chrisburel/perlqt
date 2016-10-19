@@ -13,6 +13,7 @@ template <class T>
 void marshall_PrimitiveRef(Marshall* m);
 
 void marshall_CharPArray(Marshall* m);
+void marshall_VoidPArray(Marshall* m);
 
 }
 #endif

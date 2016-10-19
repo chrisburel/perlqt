@@ -126,6 +126,7 @@ std::vector<std::string> mungedMethods(const std::string& methodName, int argc, 
     for (int i=0; i < argc; ++i) {
         SV* value = args[i];
 
+        SmokePerl::Object* obj = SmokePerl::Object::fromSV(value);
         if (SvTYPE(value) == SVt_NULL) {
             std::vector<std::string> temp;
             for (const auto& mungedMethod : result) {
@@ -135,7 +136,7 @@ std::vector<std::string> mungedMethods(const std::string& methodName, int argc, 
             }
             result = temp;
         }
-        else if (SmokePerl::Object::fromSV(value) != nullptr) {
+        else if (obj != nullptr && obj->classId != Smoke::NullModuleIndex) {
             for (auto& mungedMethod : result) {
                 mungedMethod += '#';
             }

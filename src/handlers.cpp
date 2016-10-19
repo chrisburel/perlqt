@@ -12,6 +12,29 @@ void marshall_basetype(Marshall* m) {
             marshall_PrimitiveRef<int>(m);
         break;
 
+        case Smoke::t_enum:
+            switch(m->action()) {
+                case Marshall::FromSV:
+                {
+                    if (SvROK(m->var())) {
+                        m->item().s_enum = (long)SvIV(SvRV(m->var()));
+                    }
+                    else {
+                        m->item().s_enum = (long)SvIV(m->var());
+                    }
+                }
+                break;
+                case Marshall::ToSV:
+                {
+                    SV* rv = newRV_noinc(newSViv((IV)m->item().s_enum));
+                    std::string package = SmokePerl::SmokeManager::instance().getPackageForSmoke(m->type().smoke());
+                    sv_bless(rv, gv_stashpv((package + "::" + m->type().name()).c_str(), TRUE));
+                    SvSetMagicSV(m->var(), rv);
+                }
+                break;
+            }
+        break;
+
         case Smoke::t_class: {
             switch(m->action()) {
                 case Marshall::FromSV:
@@ -244,4 +267,36 @@ void marshall_CharPArray(Marshall* m) {
         break;
     }
 }
+
+void marshall_VoidPArray(Marshall* m) {
+    // A void** type is an opaque type to Perl, but it is necessary to allow
+    // XS functions that deal with this type to be passed through the
+    // marshalling process.
+    switch(m->action()) {
+        case Marshall::FromSV:
+            m->item().s_voidp = SmokePerl::Object::fromSV(m->var())->value;
+        break;
+
+        case Marshall::ToSV:
+        {
+            void* cxxptr = m->item().s_voidp;
+
+            SmokePerl::Object* obj = new Object(
+                cxxptr,
+                Smoke::NullModuleIndex,
+                Object::CppOwnership
+            );
+
+            SV* sv = obj->wrap();
+
+            SvSetMagicSV(m->var(), sv);
+        }
+        break;
+
+        default:
+            m->unsupported();
+        break;
+    }
+}
+
 }
