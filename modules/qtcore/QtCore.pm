@@ -50,7 +50,7 @@ package PerlQt5::QtCore::Signal;
 use base qw(SmokePerl::Method);
 
 sub new {
-    my ($class, $instance, $name, $flags, $code) = @_;
+    my ($class, $instance, $name, $code) = @_;
     if ($instance->isa('PerlQt5::QtCore::QObject')) {
         # Find signal index
         my $metaObject = $instance->metaObject();
@@ -78,7 +78,7 @@ package PerlQt5::QtCore::Slot;
 use base qw(SmokePerl::Method);
 
 sub new {
-    my ($class, $instance, $name, $flags, $code) = @_;
+    my ($class, $instance, $name, $code) = @_;
     if ($instance->isa('PerlQt5::QtCore::QObject')) {
         # Find slot index
         my $metaObject = $instance->metaObject();

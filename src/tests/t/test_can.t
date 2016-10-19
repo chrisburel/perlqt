@@ -1,4 +1,4 @@
-use Test::More tests => 15;
+use Test::More tests => 16;
 
 use strict;
 use warnings;
@@ -55,3 +55,6 @@ ok(!defined $fakeApp->can('new'));
 my $one = 1;
 $fakeApp = bless \$one, 'Application';
 ok(!defined $fakeApp->can('new'));
+
+my $testerObj = PerlSmokeTest::VirtualMethodTester->new();
+ok(defined $testerObj->can('setName'));

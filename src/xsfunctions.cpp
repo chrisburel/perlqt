@@ -97,7 +97,6 @@ XS(XS_CAN) {
 
     // See if there's a perl method with this name
     GV* gv = gv_fetchmethod_autoload(stash, methodName, 0);
-    Smoke::Method method;
     if (!gv) {
         const char* className = classId.smoke->classes[classId.index].className;
 
@@ -109,11 +108,9 @@ XS(XS_CAN) {
         else {
             args[0] = methodName;
         }
-        const std::vector<Smoke::ModuleIndex> candidates = SmokePerl::findCandidates(classId, args);
+        Smoke::ModuleIndex methodId = classId.smoke->findMethodName(className, isConstructor ? className : methodName);
 
-        if (candidates.size()) {
-            const Smoke::ModuleIndex& methodId = candidates.at(0);
-            method = methodId.smoke->methods[methodId.index];
+        if (methodId != Smoke::NullModuleIndex) {
             gv = gv_fetchmethod_autoload(stash, methodName, 1);
         }
     }
@@ -125,12 +122,6 @@ XS(XS_CAN) {
         XPUSHs(sv_2mortal(newSVpv("SmokePerl::Method", 0)));
         XPUSHs(self);
         XPUSHs(sv_2mortal(newSVpv(methodName, 0)));
-        if (method.classId != 0) {
-            mXPUSHs(newSViv(method.flags));
-        }
-        else {
-            XPUSHs(&PL_sv_undef);
-        }
         XPUSHs(sv_2mortal(newRV((SV*)GvCV(gv))));
         PUTBACK;
         HV* bsStash = gv_stashpv("SmokePerl::Method", 0);
