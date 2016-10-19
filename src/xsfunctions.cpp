@@ -96,20 +96,43 @@ XS(XS_CAN) {
     }
 
     // See if there's a perl method with this name
-    GV* perlSub = gv_fetchmethod_autoload(stash, methodName, 0);
-    if (perlSub) {
-        ST(0) = newRV_noinc((SV*)GvCV(perlSub));
-        XSRETURN(1);
+    GV* gv = gv_fetchmethod_autoload(stash, methodName, 0);
+    if (!gv) {
+        const char* className = classId.smoke->classes[classId.index].className;
+
+        bool isConstructor = strcmp(methodName, "new") == 0;
+        std::vector<std::string> args(1);
+        if (isConstructor) {
+            args[0] = className;
+        }
+        else {
+            args[0] = methodName;
+        }
+        Smoke::ModuleIndex methodId = classId.smoke->findMethodName(className, isConstructor ? className : methodName);
+
+        if (methodId != Smoke::NullModuleIndex) {
+            gv = gv_fetchmethod_autoload(stash, methodName, 1);
+        }
     }
 
-    const char* className = classId.smoke->classes[classId.index].className;
-
-    bool isConstructor = strcmp(methodName, "new") == 0;
-    Smoke::ModuleIndex method = classId.smoke->findMethodName(className, isConstructor ? className : methodName);
-
-    if (method.index) {
-        GV* autoload = gv_fetchmethod_autoload(stash, methodName, 1);
-        ST(0) = newRV_noinc((SV*)GvCV(autoload));
+    if (gv) {
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        XPUSHs(sv_2mortal(newSVpv("SmokePerl::Method", 0)));
+        XPUSHs(self);
+        XPUSHs(sv_2mortal(newSVpv(methodName, 0)));
+        XPUSHs(sv_2mortal(newRV((SV*)GvCV(gv))));
+        PUTBACK;
+        HV* bsStash = gv_stashpv("SmokePerl::Method", 0);
+        GV* gv = gv_fetchmethod_autoload(bsStash, "new", 1);
+        call_sv((SV*)GvCV(gv), G_SCALAR);
+        SPAGAIN;
+        SV* boundSignal = newSVsv(POPs);
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+        ST(0) = sv_2mortal(boundSignal);
         XSRETURN(1);
     }
     XSRETURN(0);

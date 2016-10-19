@@ -6,6 +6,10 @@
 #include <unordered_map>
 
 class QMetaObject;
+#include <QMetaMethod>
+
+#define QOBJECT_PRIVATE_HEADER QtCore/private/qobject_p.h
+#include QT_STRINGIFY(PERLQT_QT_VERSION/QOBJECT_PRIVATE_HEADER)
 
 extern "C" {
 #include "EXTERN.h"
@@ -34,10 +38,26 @@ private:
     std::unordered_map<std::string, QMetaObject*> packageToMetaObject;
 };
 
+// Ideas from qtdeclarative/src/qml/jsruntime/qv4qobjectwrapper.cpp
+struct QObjectSlotDispatcher : public QtPrivate::QSlotObjectBase
+{
+    int signalIndex;
+    QMetaMethod method;
+    SV* func = nullptr;
+
+    QObjectSlotDispatcher();
+
+    ~QObjectSlotDispatcher();
+
+    static void impl(int which, QSlotObjectBase *this_, QObject *r, void **metaArgs, bool *ret);
+};
+
 }
 
 XS(XS_QOBJECT_STATICMETAOBJECT);
 XS(XS_QOBJECT_METAOBJECT);
 XS(XS_QOBJECT_METACALL);
+XS(XS_QTCORE_SIGNAL_CONNECT);
+XS(XS_QTCORE_SIGNAL_DISCONNECT);
 
 #endif

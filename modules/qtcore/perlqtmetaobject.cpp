@@ -125,6 +125,47 @@ void MetaObjectManager::installMetacall(QMetaObject* metaObject) const {
     }
 }
 
+QObjectSlotDispatcher::QObjectSlotDispatcher() :
+    QtPrivate::QSlotObjectBase(&impl), signalIndex(-1)
+{
+}
+
+QObjectSlotDispatcher::~QObjectSlotDispatcher() {
+    if (func != nullptr) {
+        SvREFCNT_dec(func);
+    }
+}
+
+void QObjectSlotDispatcher::impl(int which, QSlotObjectBase *this_, QObject *r, void **metaArgs, bool *ret) {
+    switch (which) {
+        case Destroy: {
+            delete static_cast<QObjectSlotDispatcher*>(this_);
+        }
+        break;
+        case Call: {
+            QObjectSlotDispatcher* This = static_cast<QObjectSlotDispatcher*>(this_);
+            PerlQt5::InvokeSlot slot(This->method, nullptr, metaArgs, This->func);
+            slot.next();
+        }
+        break;
+        case Compare: {
+            QObjectSlotDispatcher* This = static_cast<QObjectSlotDispatcher*>(this_);
+
+            SV* func = reinterpret_cast<SV*>(metaArgs[0]);
+            if (!SvOK(func) || !(SvROK(func))) {
+                *ret = false;
+                return;
+            }
+
+            *ret = (SvRV(func) == SvRV(This->func));
+            return;
+        }
+        break;
+        case NumOperations:
+        break;
+    }
+}
+
 }
 
 XS(XS_QOBJECT_STATICMETAOBJECT) {
@@ -207,5 +248,48 @@ XS(XS_QOBJECT_METACALL) {
 
     // Return our new id.
     ST(0) = sv_2mortal(newSViv(id));
+    XSRETURN(1);
+}
+
+XS(XS_QTCORE_SIGNAL_CONNECT) {
+    dXSARGS;
+
+    HV* signal = (HV*)SvRV(ST(0));
+    SV* func = ST(1);
+
+    SV* self = *hv_fetch(signal, "instance", 8, 0);
+    int signalIndex = SvIV(*hv_fetch(signal, "signalIndex", 11, 0));
+
+    SmokePerl::Object* objSmokeObj = SmokePerl::Object::fromSV(self);
+    QObject* obj = (QObject*)objSmokeObj->cast(objSmokeObj->classId.smoke->findClass("QObject"));
+
+    PerlQt5::QObjectSlotDispatcher *slot = new PerlQt5::QObjectSlotDispatcher;
+    slot->signalIndex = signalIndex;
+    slot->method = obj->metaObject()->method(signalIndex);
+    slot->func = newSVsv(func);
+    QMetaObject::Connection conn = QObjectPrivate::connect(obj, signalIndex, slot, Qt::AutoConnection);
+
+    XSRETURN_UNDEF;
+}
+
+XS(XS_QTCORE_SIGNAL_DISCONNECT) {
+    dXSARGS;
+
+    HV* signal = (HV*)SvRV(ST(0));
+    SV* func = ST(1);
+
+    SV* self = *hv_fetch(signal, "instance", 8, 0);
+    int signalIndex = SvIV(*hv_fetch(signal, "signalIndex", 11, 0));
+
+    SmokePerl::Object* objSmokeObj = SmokePerl::Object::fromSV(self);
+    QObject* obj = (QObject*)objSmokeObj->cast(objSmokeObj->classId.smoke->findClass("QObject"));
+
+    void* a[] = {
+        func
+    };
+
+    bool success = QObjectPrivate::disconnect(obj, signalIndex, reinterpret_cast<void**>(&a));
+
+    success ? XST_mYES(0) : XST_mNO(0);
     XSRETURN(1);
 }

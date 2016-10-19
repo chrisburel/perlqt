@@ -35,7 +35,7 @@ public:
     SmokeManager(SmokeManager const&) = delete;
     void operator=(SmokeManager const&) = delete;
 private:
-    SmokeManager() {};
+    SmokeManager();
     std::unordered_map<std::string, Smoke*> packageToSmoke;
     std::unordered_map<std::string, std::string> perlPackageToCClass;
     std::unordered_map<Smoke*, SmokePerlBinding*> smokeToBinding;

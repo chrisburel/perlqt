@@ -3,10 +3,13 @@ package PerlQt5::QtCore;
 use strict;
 use warnings;
 use XSLoader;
+use SmokePerl;
 
 our $VERSION = '1.0.0';
 
 PerlQt5::QtCore::loadModule(__PACKAGE__, $VERSION);
+SmokePerl::addMethodTypeHandler('PerlQt5::QtCore::Signal');
+SmokePerl::addMethodTypeHandler('PerlQt5::QtCore::Slot');
 
 sub import {
     my ($package, @exports) = @_;
@@ -40,6 +43,62 @@ sub SIGNAL($) {
 
 sub SLOT($) {
     return '1'.$_[0];
+}
+
+package PerlQt5::QtCore::Signal;
+
+use base qw(SmokePerl::Method);
+
+sub new {
+    my ($class, $instance, $name, $code) = @_;
+    if ($instance->isa('PerlQt5::QtCore::QObject')) {
+        # Find signal index
+        my $metaObject = $instance->metaObject();
+        my $signalIndex = undef;
+        foreach my $idx (0..$metaObject->methodCount()-1) {
+            my $method = $metaObject->method($idx);
+            if (${$method->methodType} == ${PerlQt5::QtCore::QMetaMethod->Signal} and $method->name()->constData() eq $name){
+                $signalIndex = $idx;
+                last;
+            }
+        }
+        if (defined $signalIndex) {
+            return bless {
+                instance => $instance,
+                name => $name,
+                signalIndex => $signalIndex,
+            }, $class;
+        }
+    }
+    return;
+}
+
+package PerlQt5::QtCore::Slot;
+
+use base qw(SmokePerl::Method);
+
+sub new {
+    my ($class, $instance, $name, $code) = @_;
+    if ($instance->isa('PerlQt5::QtCore::QObject')) {
+        # Find slot index
+        my $metaObject = $instance->metaObject();
+        my $slotIndex = undef;
+        foreach my $idx (0..$metaObject->methodCount()-1) {
+            my $method = $metaObject->method($idx);
+            if (${$method->methodType} == ${PerlQt5::QtCore::QMetaMethod->Slot} and $method->name()->constData() eq $name){
+                $slotIndex = $idx;
+                last;
+            }
+        }
+        if (defined $slotIndex) {
+            return bless {
+                instance => $instance,
+                name => $name,
+                slotIndex => $slotIndex,
+            }, $class;
+        }
+    }
+    return;
 }
 
 package PerlQt5::QtCore::QObject;

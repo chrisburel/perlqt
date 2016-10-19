@@ -13,6 +13,10 @@ extern "C" {
 
 namespace SmokePerl {
 
+SmokeManager::SmokeManager() {
+    eval_pv("use SmokePerl;", true);
+}
+
 void SmokeManager::addSmokeModule(Smoke* smoke, const std::string& nspace) {
     packageToSmoke[nspace] = smoke;
     smokeToPackage[smoke] = nspace;
@@ -24,13 +28,15 @@ void SmokeManager::addSmokeModule(Smoke* smoke, const std::string& nspace) {
             packageToSmoke[perlClassName] = smoke;
             perlPackageToCClass[perlClassName] = klass.className;
 
-            // Set AUTOLOAD method
-            std::string autoload = perlClassName + "::AUTOLOAD";
-            newXS(autoload.c_str(), XS_AUTOLOAD, __FILE__);
+            if (klass.parents == 0) {
+                // Set AUTOLOAD method
+                std::string autoload = perlClassName + "::AUTOLOAD";
+                newXS(autoload.c_str(), XS_AUTOLOAD, __FILE__);
 
-            // Set can method for this class
-            std::string can = perlClassName + "::can";
-            newXS(can.c_str(), XS_CAN, __FILE__);
+                // Set can method for this class
+                std::string can = perlClassName + "::can";
+                newXS(can.c_str(), XS_CAN, __FILE__);
+            }
 
             // Set ISA array
             std::string isaName = perlClassName + "::ISA";

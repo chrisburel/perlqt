@@ -1,5 +1,6 @@
 #include <QMetaMethod>
 
+#include "qtcore_smoke.h"
 #include "smokeobject.h"
 #include "invokeslot.h"
 
@@ -21,16 +22,17 @@ InvokeSlot::ReturnValue::ReturnValue(Smoke* smoke, const QMetaMethod& method, SV
 }
 
 InvokeSlot::InvokeSlot(const QMetaMethod& method, SV* self, void** a, SV* code) :
-    m_self(self), m_a(a), m_metaMethod(method),
-    m_current(-1), m_called(false), m_code(code) {
+        m_a(a), m_metaMethod(method), m_current(-1), m_called(false),
+        m_code(code) {
 
-    SmokePerl::Object* obj = SmokePerl::Object::fromSV(self);
-    m_smoke = obj->classId.smoke;
+    m_smoke = qtcore_Smoke;
 
-    int argc = method.parameterTypes().count();
+    m_hasSelf = (self != nullptr);
+    // hasSelf determines if we make room in the argument stack for $self
+    int argc = method.parameterCount() + (m_hasSelf ? 1 : 0);
 
-    m_smokeTypes = new SmokePerl::SmokeType[argc + 1];
-    for (int i = 0; i < argc; ++i) {
+    m_smokeTypes = new SmokePerl::SmokeType[argc];
+    for (int i = 0; i < method.parameterCount(); ++i) {
         m_smokeTypes[i] = SmokePerl::SmokeType::find(method.parameterTypes().at(i).constData(), m_smoke);
     }
 
@@ -38,17 +40,20 @@ InvokeSlot::InvokeSlot(const QMetaMethod& method, SV* self, void** a, SV* code) 
     ENTER;
     SAVETMPS;
     PUSHMARK(SP);
-    // Reserve space on the stack for our arguments.  Remember to make space
-    // for $self
-    EXTEND(SP, argc + 1);
-
+    // Reserve space on the stack for our arguments.
+    EXTEND(SP, argc);
     m_argv = SP + 1;
-    for (int i = 0; i < argc + 1; ++i)
-        m_argv[i] = sv_newmortal();
-    // Put $self in @_
-    sv_setsv(m_argv[0], self);
+    SP += argc;
+    PUTBACK;
 
-    m_stack = new Smoke::StackItem[argc + 1];
+    for (int i = 0; i < argc; ++i)
+        m_argv[i] = sv_newmortal();
+    if (m_hasSelf) {
+        // Put $self in @_
+        sv_setsv(m_argv[0], self);
+    }
+
+    m_stack = new Smoke::StackItem[argc];
 }
 
 InvokeSlot::~InvokeSlot() {
@@ -63,10 +68,10 @@ SmokePerl::SmokeType InvokeSlot::type() const {
 Smoke::StackItem& InvokeSlot::item() const {
     SmokePerl::setStackItem(
         type(),
-        m_stack[m_current + 1],
+        m_stack[m_current + (m_hasSelf ? 1 : 0)],
         m_a[m_current + 1]
     );
-    return m_stack[m_current + 1];
+    return m_stack[m_current + (m_hasSelf ? 1 : 0)];
 }
 
 void InvokeSlot::unsupported() const {
@@ -78,22 +83,12 @@ void InvokeSlot::callMethod() {
         return;
     m_called = true;
 
-    // Set up the stack pointer
-    dSP;
-    SP = m_argv + m_metaMethod.parameterTypes().count();
-    PUTBACK;
-
-    // Find the method to call
-    GV* gv = gv_fetchmethod_autoload(SvSTASH(SvRV(m_self)), m_metaMethod.name(), 0);
-
     // Call the method in scalar context
     I32 callFlags = G_SCALAR;
     call_sv(m_code, callFlags);
 
-    // Refresh the stack pointer, it moved after the subroutine call
-    SPAGAIN;
-
     // Marshall the return value
+    dSP;
     ReturnValue result(m_smoke, m_metaMethod, POPs, m_a);
 
     PUTBACK;
@@ -105,7 +100,7 @@ void InvokeSlot::next() {
     int previous = m_current;
     ++m_current;
 
-    while (!m_called && m_current < m_metaMethod.parameterTypes().count()) {
+    while (!m_called && m_current < m_metaMethod.parameterCount()) {
         Marshall::HandlerFn fn = getMarshallFn(type());
         (*fn)(this);
         ++m_current;
