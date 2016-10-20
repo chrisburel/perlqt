@@ -149,9 +149,9 @@ void marshallFromPerl<char*>(Marshall* m) {
     SV* sv = m->var();
     char* buf = nullptr;
     if (SvFLAGS(sv) & SVs_TEMP) {
-        STRLEN len = SvCUR(sv);
+        STRLEN len = SvLEN(sv);
         buf = new char[len];
-        strcpy(buf, SvPV_nolen(sv));
+        strncpy(buf, SvPV_nolen(sv), len);
     }
     else {
         buf = SvPV_nolen(sv);
