@@ -13,6 +13,12 @@ extern "C" {
 
 namespace SmokePerl {
 
+SmokeManager::~SmokeManager() {
+    for (const auto& pair : smokeToBinding) {
+        delete pair.second;
+    }
+}
+
 SmokeManager::SmokeManager() {
     eval_pv("use SmokePerl;", true);
 }

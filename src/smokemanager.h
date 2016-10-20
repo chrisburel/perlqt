@@ -11,6 +11,8 @@
 namespace SmokePerl {
 class SmokeManager {
 public:
+    ~SmokeManager();
+
     static SmokeManager& instance() {
         static SmokeManager instance;
         return instance;
