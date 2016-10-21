@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.8.11)
 
 project(PerlQt)
 
+set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite")
+find_program(MEMORYCHECK_COMMAND NAMES valgrind)
+include(CTest)
+
 set(BUILD_TESTS OFF CACHE BOOL "Build tests")
 set(ENABLE_GUI_TESTS OFF CACHE BOOL "Run GUI tests in the \"test\" target")
 set(USE_BUILD_DIR_FOR_TESTS OFF CACHE BOOL "Use to toggle between using the build dir or the install dir for tests.")
