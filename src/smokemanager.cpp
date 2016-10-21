@@ -42,6 +42,10 @@ void SmokeManager::addSmokeModule(Smoke* smoke, const std::string& nspace) {
                 // Set can method for this class
                 std::string can = perlClassName + "::can";
                 newXS(can.c_str(), XS_CAN, __FILE__);
+
+                // Set DESTROY method
+                std::string destroy = perlClassName + "::DESTROY";
+                newXS(destroy.c_str(), XS_DESTROY, __FILE__);
             }
 
             // Set ISA array

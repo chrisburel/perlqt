@@ -137,3 +137,6 @@ XS(XS_CAN) {
     }
     XSRETURN(0);
 }
+
+XS(XS_DESTROY) {
+}

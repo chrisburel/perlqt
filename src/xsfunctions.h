@@ -10,5 +10,6 @@ extern "C" {
 
 XS(XS_AUTOLOAD);
 XS(XS_CAN);
+XS(XS_DESTROY);
 
 #endif
