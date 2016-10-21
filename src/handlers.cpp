@@ -68,7 +68,7 @@ void marshall_basetype(Marshall* m) {
                     obj = new Object(
                         cxxptr,
                         Smoke::findClass(m->smoke()->classes[m->type().classId()].className),
-                        Object::CppOwnership
+                        ((m->type().flags() & Smoke::tf_ref) == Smoke::tf_stack) ? Object::ScriptOwnership : Object::CppOwnership
                     );
 
                     SV* sv = obj->wrap();
