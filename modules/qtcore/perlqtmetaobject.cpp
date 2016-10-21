@@ -14,12 +14,20 @@
 
 namespace PerlQt5 {
 
+MetaObjectManager::~MetaObjectManager() {
+    for (const auto& pair : packageToMetaObject) {
+        if (pair.second.ownedByPerl) {
+            free(pair.second.metaObject);
+        }
+    }
+}
+
 SV* MetaObjectManager::getMetaObjectForPackage(const char* package) {
 
     QMetaObject* metaObject;
 
     if (packageToMetaObject.count(package)) {
-        metaObject = packageToMetaObject.at(package);
+        metaObject = packageToMetaObject.at(package).metaObject;
     }
     else {
         dSP;
@@ -49,6 +57,7 @@ SV* MetaObjectManager::getMetaObjectForPackage(const char* package) {
             PUTBACK;
             FREETMPS;
             LEAVE;
+            packageToMetaObject[package] = {false, metaObject};
         }
         else {
             // Got a perl type.  Build its metaobject.
@@ -77,9 +86,9 @@ SV* MetaObjectManager::getMetaObjectForPackage(const char* package) {
             LEAVE;
 
             metaObject = b.toMetaObject();
+            packageToMetaObject[package] = {true, metaObject};
         }
 
-        packageToMetaObject[package] = metaObject;
     }
     SV* retval = newSV(0);
     Smoke::StackItem stackItem;
@@ -91,18 +100,31 @@ SV* MetaObjectManager::getMetaObjectForPackage(const char* package) {
     return retval;
 }
 
-void MetaObjectManager::addSlot(QMetaObject* metaObject, const std::string& slotName, const std::vector<std::string>& argTypes) {
-    QMetaObjectBuilder b(metaObject);
-    std::string signature;
-    signature += slotName;
-    signature += '(';
-    for (const auto& typeName : argTypes) {
-        signature += typeName + ", ";
+void MetaObjectManager::addSlot(QMetaObject*& metaObject, const std::string& slotName, const std::vector<std::string>& argTypes) {
+    {
+        // Put the QMetaObjectBuilder into its own block, so that it is cleaned
+        // up before the end of the method.  The QMetaObjectBuilder references
+        // the existing QMetaObject, which may be cleaned up.  The
+        // QMetaObjectBuilder needs to be cleaned up before the metaObject it
+        // references is cleaned up.
+        QMetaObjectBuilder b(metaObject);
+        std::string signature;
+        signature += slotName;
+        signature += '(';
+        for (const auto& typeName : argTypes) {
+            signature += typeName + ", ";
+        }
+        signature += ')';
+        QMetaMethodBuilder method = b.addSlot(signature.c_str());
+        metaObject = b.toMetaObject();
     }
-    signature += ')';
-    QMetaMethodBuilder method = b.addSlot(signature.c_str());
-    metaObject = b.toMetaObject();
-    packageToMetaObject[metaObject->className()] = metaObject;
+    if (packageToMetaObject.count(metaObject->className())) {
+        MetaObjectInfo info = packageToMetaObject[metaObject->className()];
+        if (info.ownedByPerl) {
+            free(info.metaObject);
+        }
+    }
+    packageToMetaObject[metaObject->className()] = {true, metaObject};
     installMetacall(metaObject);
 }
 

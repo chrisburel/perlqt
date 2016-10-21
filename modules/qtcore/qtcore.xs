@@ -32,9 +32,8 @@ void addSlot(metaObject, slotName, argTypes)
             SV* item = *av_fetch(argTypes, i, 0);
             arg_types.push_back(std::string(SvPV_nolen(item)));
         }
-        const char* package = mo->className();
         PerlQt5::MetaObjectManager::instance().addSlot(mo, slotName, arg_types);
-        moSmokeObj->value = PerlQt5::MetaObjectManager::instance().getMetaObjectForPackage(package);
+        moSmokeObj->value = mo;
 
 MODULE = PerlQt5::QtCore PACKAGE = PerlQt5::QtCore
 
