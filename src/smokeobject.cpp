@@ -115,13 +115,22 @@ void Object::finalize() {
 }
 
 void Object::dispose() {
-    std::string methodName = std::string("~") + classId.smoke->classes[classId.index].className;
+    if (value == nullptr)
+        return;
+
+    std::string className(classId.smoke->classes[classId.index].className);
+    std::size_t indexOfColon = className.rfind("::");
+    std::string methodName;
+    if (indexOfColon != std::string::npos) {
+        methodName = '~' + className.substr(indexOfColon + 2);
+    }
+    else {
+        methodName = '~' + className;
+    }
     Smoke::ModuleIndex nameId = classId.smoke->findMethodName(
         classId.smoke->classes[classId.index].className,
         methodName.c_str()
     );
-    if (value == nullptr)
-        return;
 
     Smoke::ModuleIndex methodId = classId.smoke->findMethod(classId, nameId);
 
