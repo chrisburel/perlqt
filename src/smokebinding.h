@@ -14,7 +14,7 @@ public:
     SmokePerlBinding(Smoke* smoke) : SmokeBinding(smoke) {}
     virtual char* className(Smoke::Index classId);
     virtual bool callMethod(Smoke::Index method, void* ptr, Smoke::Stack args, bool isAbstract=false);
-    virtual void deleted(Smoke::Index classId, void* obj);
+    virtual void deleted(Smoke::Index classId, void* cxxptr);
 private:
     std::unordered_map<Smoke::Index, std::string> classNameMap;
 };
