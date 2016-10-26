@@ -38,6 +38,8 @@ void addSlot(metaObject, slotName, argTypes)
 MODULE = PerlQt5::QtCore PACKAGE = PerlQt5::QtCore
 
 BOOT:
+    PL_use_safe_putenv = 1;
+
     init_qtcore_Smoke();
     SmokePerl::SmokeManager::instance().addSmokeModule(qtcore_Smoke, "PerlQt5::QtCore");
     SmokePerl::Marshall::installHandlers(qtcore_typeHandlers);
