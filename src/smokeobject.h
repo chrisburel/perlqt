@@ -1,7 +1,9 @@
 #ifndef SMOKEPERL_SMOKEOBJECT
 #define SMOKEPERL_SMOKEOBJECT
 
+#include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <smoke.h>
 
@@ -52,6 +54,8 @@ public:
         return classId.smoke->cast(value, classId, targetId);
     }
 
+    void setParent(Object* parent);
+
     void* value;
     SV* sv;
     Smoke::ModuleIndex classId;
@@ -59,6 +63,16 @@ public:
     static constexpr MGVTBL vtbl_smoke { 0, 0, 0, 0, free };
 
 private:
+    using ChildrenList = std::unordered_set<Object*>;
+
+    struct ParentInfo {
+        ParentInfo() : parent(nullptr) {}
+        Object* parent;
+        ChildrenList children;
+    };
+
+    std::unique_ptr<ParentInfo> parentInfo;
+
     void finalize();
     void dispose();
 };

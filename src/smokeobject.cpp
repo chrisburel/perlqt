@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include "smokeobject.h"
 
@@ -63,7 +64,7 @@ void ObjectMap::remove(Object* obj, const Smoke::ModuleIndex& classId, void* las
 }
 
 Object::Object(void* ptr, const Smoke::ModuleIndex& classId, ValueOwnership ownership) :
-    value(ptr), sv(nullptr), classId(classId), ownership(ownership) {
+    value(ptr), sv(nullptr), classId(classId), ownership(ownership), parentInfo(new ParentInfo) {
 }
 
 Object::~Object() {
@@ -102,6 +103,38 @@ int Object::free(pTHX_ SV* sv, MAGIC* mg) {
     mg->mg_ptr = 0;
 
     return 0;
+}
+
+void Object::setParent(Object* parent) {
+    if (this == parent)
+        return;
+
+    bool parentIsNull = !parent;
+    if (!parentIsNull) {
+        // do not re-add a child
+        if (parentInfo && (parentInfo->parent == parent))
+            return;
+    }
+
+    bool hasAnotherParent = parentInfo && parentInfo->parent && parentInfo->parent != parent;
+
+    // Avoid destroy child during reparent operation
+    SvREFCNT_inc(SvRV(sv));
+
+    if (!parentIsNull) {
+        parentInfo->parent = parent;
+        parent->parentInfo->children.insert(this);
+
+        // The parent now has a reference to us
+        SvREFCNT_inc(SvRV(sv));
+
+        // The parent is now responsible for managing this memory.  Remove our
+        // ownership.
+        ownership = CppOwnership;
+    }
+
+    // Remove previous safe ref
+    SvREFCNT_dec(SvRV(sv));
 }
 
 void Object::finalize() {
