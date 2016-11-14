@@ -55,6 +55,7 @@ public:
     }
 
     void setParent(Object* parent);
+    void removeParent(bool giveOwnershipBack=true);
 
     void* value;
     SV* sv;

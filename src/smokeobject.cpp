@@ -121,6 +121,9 @@ void Object::setParent(Object* parent) {
     // Avoid destroy child during reparent operation
     SvREFCNT_inc(SvRV(sv));
 
+    if (parentIsNull || hasAnotherParent)
+        removeParent();
+
     if (!parentIsNull) {
         parentInfo->parent = parent;
         parent->parentInfo->children.insert(this);
@@ -134,6 +137,26 @@ void Object::setParent(Object* parent) {
     }
 
     // Remove previous safe ref
+    SvREFCNT_dec(SvRV(sv));
+}
+
+void Object::removeParent(bool giveOwnershipBack) {
+    if (parentInfo->parent == nullptr)
+        return;
+
+    ChildrenList& siblings = parentInfo->parent->parentInfo->children;
+    // Verify if this child is pare of parent list
+    ChildrenList::iterator iChild = std::find(siblings.begin(), siblings.end(), this);
+    if (iChild == siblings.end())
+        return;
+
+    siblings.erase(iChild);
+
+    parentInfo->parent = nullptr;
+
+    ownership = giveOwnershipBack ? CppOwnership : ScriptOwnership;
+
+    // Remove parent ref
     SvREFCNT_dec(SvRV(sv));
 }
 
