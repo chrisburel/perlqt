@@ -1,7 +1,9 @@
 #ifndef SMOKEPERL_SMOKEOBJECT
 #define SMOKEPERL_SMOKEOBJECT
 
+#include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <smoke.h>
 
@@ -52,6 +54,14 @@ public:
         return classId.smoke->cast(value, classId, targetId);
     }
 
+    bool isValid() {
+        return validCppObject;
+    }
+
+    void setParent(Object* parent);
+    void removeParent(bool giveOwnershipBack=true);
+    void invalidate();
+
     void* value;
     SV* sv;
     Smoke::ModuleIndex classId;
@@ -59,8 +69,21 @@ public:
     static constexpr MGVTBL vtbl_smoke { 0, 0, 0, 0, free };
 
 private:
+    using ChildrenList = std::unordered_set<Object*>;
+
+    struct ParentInfo {
+        ParentInfo() : parent(nullptr) {}
+        Object* parent;
+        ChildrenList children;
+    };
+
+    std::unique_ptr<ParentInfo> parentInfo;
+    bool validCppObject = true;
+
     void finalize();
     void dispose();
+    void destroyParentInfo();
+    void recursive_invalidate(std::unordered_set<Object*>& seen);
 };
 
 }

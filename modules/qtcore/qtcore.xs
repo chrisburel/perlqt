@@ -9,6 +9,7 @@
 #include "qtcore_handlers.h"
 
 #include "perlqtmetaobject.h"
+#include "perlqtobject.h"
 #include "can.h"
 
 // Perl headers
@@ -47,5 +48,6 @@ BOOT:
     newXS("PerlQt5::QtCore::QObject::metaObject", XS_QOBJECT_METAOBJECT, __FILE__);
     newXS("PerlQt5::QtCore::QObject::staticMetaObject", XS_QOBJECT_STATICMETAOBJECT, __FILE__);
     newXS("PerlQt5::QtCore::QObject::can", XS_QOBJECT_CAN, __FILE__);
+    newXS("PerlQt5::QtCore::QObject::DESTROY", XS_QOBJECT_DESTROY, __FILE__);
     newXS("PerlQt5::QtCore::Signal::connect", XS_QTCORE_SIGNAL_CONNECT, __FILE__);
     newXS("PerlQt5::QtCore::Signal::disconnect", XS_QTCORE_SIGNAL_DISCONNECT, __FILE__);

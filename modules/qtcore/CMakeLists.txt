@@ -20,6 +20,7 @@ add_library(perlqtcore5 SHARED
     ${CMAKE_CURRENT_BINARY_DIR}/qtcore.cpp
     can.cpp
     invokeslot.cpp
+    perlqtobject.cpp
     perlqtmetaobject.cpp
     qtcore_handlers.cpp
 )
