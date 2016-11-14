@@ -54,6 +54,10 @@ public:
         return classId.smoke->cast(value, classId, targetId);
     }
 
+    bool isValid() {
+        return value != nullptr;
+    }
+
     void setParent(Object* parent);
     void removeParent(bool giveOwnershipBack=true);
 
@@ -76,6 +80,9 @@ private:
 
     void finalize();
     void dispose();
+    void destroyParentInfo();
+    void invalidate();
+    void recursive_invalidate(std::unordered_set<Object*>& seen);
 };
 
 }

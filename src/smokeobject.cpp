@@ -68,6 +68,7 @@ Object::Object(void* ptr, const Smoke::ModuleIndex& classId, ValueOwnership owne
 }
 
 Object::~Object() {
+    destroyParentInfo();
     finalize();
 }
 
@@ -200,5 +201,44 @@ void Object::dispose() {
     value = nullptr;
     sv = nullptr;
 }
+
+void Object::destroyParentInfo() {
+    while (!parentInfo->children.empty()) {
+        // Mark child as invalid
+        Object* child = *parentInfo->children.begin();
+        child->invalidate();
+        child->removeParent(false);
+    }
+    this->removeParent(false);
+}
+
+void Object::invalidate() {
+    std::unordered_set<Object*> seen;
+    recursive_invalidate(seen);
+}
+
+void Object::recursive_invalidate(std::unordered_set<Object*>& seen) {
+    // Skip if this object not is a valid object or if it's already been seen
+    if (seen.count(this) != 0)
+        return;
+    seen.insert(this);
+
+    value = nullptr;
+
+    // Create a copy because this list can be changed during the process
+    ChildrenList copy = parentInfo->children;
+    ChildrenList::iterator it = copy.begin();
+
+    for (; it != copy.end(); ++it) {
+        // invalidate the child
+        (*it)->recursive_invalidate(seen);
+
+        // if the parent not is a wrapper class, then remove children from
+        // him, because We do not know when this object will be destroyed
+        if (!isValid())
+            (*it)->removeParent(true);
+    }
+}
+
 
 }

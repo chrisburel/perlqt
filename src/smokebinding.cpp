@@ -29,7 +29,7 @@ bool SmokePerlBinding::callMethod(Smoke::Index method, void* ptr, Smoke::Stack a
 
     SmokePerl::Object* obj = SmokePerl::ObjectMap::instance().get(ptr);
 
-    if (obj == nullptr)
+    if (obj == nullptr || !obj->isValid())
         return false;
 
     SV* self = obj->sv;
@@ -76,7 +76,7 @@ bool SmokePerlBinding::callMethod(Smoke::Index method, void* ptr, Smoke::Stack a
 void SmokePerlBinding::deleted(Smoke::Index classId, void* cxxptr) {
     SmokePerl::Object* obj = SmokePerl::ObjectMap::instance().get(cxxptr);
 
-    if (obj == nullptr || obj->value == nullptr) {
+    if (obj == nullptr || !obj->isValid()) {
         return;
     }
 
