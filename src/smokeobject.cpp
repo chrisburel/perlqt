@@ -172,7 +172,7 @@ void Object::finalize() {
 }
 
 void Object::dispose() {
-    if (value == nullptr)
+    if (!isValid())
         return;
 
     std::string className(classId.smoke->classes[classId.index].className);
@@ -223,7 +223,7 @@ void Object::recursive_invalidate(std::unordered_set<Object*>& seen) {
         return;
     seen.insert(this);
 
-    value = nullptr;
+    validCppObject = false;
 
     // Create a copy because this list can be changed during the process
     ChildrenList copy = parentInfo->children;

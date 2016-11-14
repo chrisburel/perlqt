@@ -81,7 +81,7 @@ void SmokePerlBinding::deleted(Smoke::Index classId, void* cxxptr) {
     }
 
     SmokePerl::ObjectMap::instance().remove(obj, obj->classId);
-    obj->value = nullptr;
+    obj->invalidate();
 
     return;
 }

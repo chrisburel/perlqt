@@ -15,6 +15,9 @@ XS(XS_QOBJECT_DESTROY) {
     }
 
     SmokePerl::Object* obj = SmokePerl::Object::fromSV(ST(0));
+    if (!obj->isValid())
+        return;
+
     QObject* qobj = (QObject*)obj->cast(obj->classId.smoke->findClass("QObject"));
     if (!qobj)
         return;

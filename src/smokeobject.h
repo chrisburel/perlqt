@@ -55,11 +55,12 @@ public:
     }
 
     bool isValid() {
-        return value != nullptr;
+        return validCppObject;
     }
 
     void setParent(Object* parent);
     void removeParent(bool giveOwnershipBack=true);
+    void invalidate();
 
     void* value;
     SV* sv;
@@ -77,11 +78,11 @@ private:
     };
 
     std::unique_ptr<ParentInfo> parentInfo;
+    bool validCppObject = true;
 
     void finalize();
     void dispose();
     void destroyParentInfo();
-    void invalidate();
     void recursive_invalidate(std::unordered_set<Object*>& seen);
 };
 
