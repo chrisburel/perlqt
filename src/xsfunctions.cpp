@@ -1,5 +1,6 @@
 #include <iostream>
 
+#define NO_XSLOCKS
 #include "xsfunctions.h"
 #include "methodresolution.h"
 #include "smokemanager.h"
@@ -8,6 +9,7 @@
 
 XS(XS_AUTOLOAD) {
     dXSARGS;
+    dXCPT;
     HV* stash = CvSTASH(cv);
     const char* package = HvNAME(stash);
     const char* methodName = SvPVX(cv);
@@ -49,10 +51,24 @@ XS(XS_AUTOLOAD) {
         if (gv) {
             SmokePerl::SmokeManager::instance().setInVirtualSuperCall("");
         }
+        matches.~vector<SmokePerl::MethodMatch>();
         croak("Unable to resolve method.");
     }
+
     SmokePerl::MethodCall methodCall(matches[0].first[0], self, SP - items + 2);
-    methodCall.next();
+    XCPT_TRY_START {
+        // This call could cause some other call to die or croak.  die and
+        // croak are implemented with longjmp.  longjmp will bypass the normal
+        // execution of C++ destructors, so...
+        methodCall.next();
+    } XCPT_TRY_END
+    XCPT_CATCH {
+        // ... we have to call them manually.
+        methodCall.~MethodCall();
+        matches.~vector<SmokePerl::MethodMatch>();
+        XCPT_RETHROW;
+    }
+
     ST(0) = sv_2mortal(methodCall.var());
     if (isConstructor) {
         SmokePerl::Object* object = SmokePerl::Object::fromSV(ST(0));
