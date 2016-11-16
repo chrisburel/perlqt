@@ -1,0 +1,898 @@
+language: cpp
+
+before_install:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+
+install:
+  - export CC=clang-$CLANG_VERSION
+  - export CXX=clang++-$CLANG_VERSION
+  - export QT_VER=$(echo $QT_VERSION | sed 's/\.//g')
+  - export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/usr/share/llvm-$CLANG_VERSION/cmake:/usr/lib/llvm-$CLANG_VERSION/share/llvm/cmake
+  # gtest install workaround
+  - pushd /usr/src/gtest
+  - sudo cmake .
+  - sudo make
+  - sudo mv libgtest* /usr/lib/
+  - popd
+  # -- workaround end
+
+  # Build Qt
+  - IFS=. read QT_MAJOR QT_MINOR QT_MICRO <<< "${QT_VERSION}"
+  - wget http://download.qt.io/official_releases/qt/`echo $QT_VERSION | sed 's/\.[^.]*$//g'`/$QT_VERSION/single/qt-everywhere-opensource-src-$QT_VERSION.tar.gz
+  - tar -xf qt-everywhere-opensource-src-$QT_VERSION.tar.gz
+  - pushd qt-everywhere-opensource-src-$QT_VERSION
+  - perl -pi -e 's@^QMAKE_CC.*= clang$@QMAKE_CC = '$CC'@; s@^QMAKE_CXX.*= clang\+\+@QMAKE_CXX = '$CXX'@g' qtbase/mkspecs/common/clang.conf
+  # Remove modules we don't want to build
+  - find . -maxdepth 1 -mindepth 1 -type d | grep -v qtbase | xargs rm -rf
+  # Patch old versions of Qt that don't compile with clang
+  # smokegen and smokeqt use CMake features from Qt5 that weren't added until 5.2.0.
+  # - if (( $QT_MINOR <= 1 )); then pushd qtbase; git clone --depth=168 --branch=v5.1.1 --bare http://code.qt.io/qt/qtbase.git; git --git-dir=qtbase.git diff 658dfef5^..658dfef5 | patch -Np1; popd; fi
+  - grep -- "-no-pulseaudio" qtbase/configure && NO_PULSE=-no-pulseaudio || NO_PULSE=
+  # Get Qt to build with clang >3.7
+  # See https://github.com/qt/qtbase/commit/cf63c63d558227fdbef09699c261560e7474f5ea
+  - if (( $QT_MINOR > 2 && $QT_MINOR < 6 )); then perl -pi.bak -e 's#\b_Nullable\b#Nullable#g' qtbase/src/tools/qlalr/lalr.cpp; fi
+  - ./configure --prefix=/opt/qt$QT_VER -platform linux-clang -confirm-license -opensource -nomake tools -nomake examples $NO_PULSE -qt-xcb -no-gui -no-dbus
+  - make -j4 > /dev/null
+  - sudo make install > /dev/null
+  - popd
+  - export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:"$(ls /opt/qt$QT_VER/lib/cmake/* -1d | tr '\n' :)"
+  - echo $CMAKE_PREFIX_PATH | tr ':' '\n'
+
+  # Build Perl
+  - wget http://www.cpan.org/src/5.0/perl-$PERL_VERSION.tar.bz2
+  - tar -xf perl-$PERL_VERSION.tar.bz2
+  - pushd perl-$PERL_VERSION
+  - ./Configure -des -Dprefix=/usr/perl-$PERL_VERSION -Duseshrplib
+  - make -j4 > /dev/null
+  - sudo make install > /dev/null
+  - popd
+  - export PERL_LIBRARY=$(find /usr/perl-$PERL_VERSION -name libperl.so)
+
+  # Build smokegen
+  - git clone --depth=50 --branch=clang https://github.com/chrisburel/smokegen.git
+  - pushd smokegen
+  - mkdir build
+  - pushd build
+  - cmake .. -DCMAKE_INSTALL_PREFIX=/usr/perlqt -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
+  - make -j4
+  - sudo make install
+  - popd
+  - popd
+
+  # Build smokeqt
+  - git clone --depth=50 --branch=qt5 https://github.com/chrisburel/smokeqt.git
+  - pushd smokeqt
+  - mkdir build
+  - pushd build
+  - cmake .. -DCMAKE_INSTALL_PREFIX=/usr/perlqt -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
+  - make -j4
+  - sudo make install
+  - popd
+  - popd
+
+script:
+  - mkdir build
+  - pushd build
+  - $CXX --version
+  - cmake .. -DCMAKE_INSTALL_PREFIX=/usr/perlqt -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DPERL_EXECUTABLE=/usr/perl-$PERL_VERSION/bin/perl -DPERL_LIBRARY=$PERL_LIBRARY -DBUILD_TESTS=ON
+  - make -j4
+  - sudo make install
+  - export PERL5LIB="$(cmake -LA -N . | grep CUSTOM_PERL_SITE_ARCH_DIR:STRING= | sed 's/^CUSTOM_PERL_SITE_ARCH_DIR:STRING=//')":$PERL5LIB
+  - echo $PERL5LIB
+  - ctest --verbose
+  - popd
+
+matrix:
+  include:
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.7.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.7.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.7.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.6.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.6.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.6.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.5.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.5.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.5.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.4.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.4.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.4.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.3.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.3.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.3.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.2.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.2.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.8
+        - libclang-3.8-dev
+        - llvm-3.8-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.8
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.8 QT_VERSION=5.2.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.7.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.7.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.7.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.6.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.6.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.6.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.5.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.5.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.5.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.4.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.4.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.4.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.3.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.3.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.3.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.2.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.2.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.7
+        - libclang-3.7-dev
+        - llvm-3.7-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.7 QT_VERSION=5.2.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.7.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.7.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.7.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.6.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.6.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.6.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.5.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.5.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.5.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.4.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.4.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.4.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.3.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.3.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.3.0 PERL_VERSION=5.20.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.2.0 PERL_VERSION=5.24.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.2.0 PERL_VERSION=5.22.0
+  - addons:
+      apt:
+        packages:
+        - clang-3.6
+        - libclang-3.6-dev
+        - llvm-3.6-dev
+        - cmake
+        - cmake-data
+        - libgtest-dev
+        - libedit-dev
+        sources:
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.6
+        - george-edison55-precise-backports
+    env: CLANG_VERSION=3.6 QT_VERSION=5.2.0 PERL_VERSION=5.20.0
