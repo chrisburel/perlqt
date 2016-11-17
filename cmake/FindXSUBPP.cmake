@@ -33,7 +33,7 @@ function(xsubpp input output)
     string(REGEX REPLACE "\\.[^.]*$" ".xs" outputxs ${output})
     add_custom_command(
         OUTPUT ${output} ${outputxs}
-        COMMAND ${XSUBPP_SCRIPT} ARGS ${XSUBPP_ARGS} -output ${output} ${input}
+        COMMAND ${PERL_EXECUTABLE} ARGS ${XSUBPP_SCRIPT} ${XSUBPP_ARGS} -output ${output} ${input}
         COMMAND ${CMAKE_COMMAND} ARGS -E copy ${input} ${outputxs}
         DEPENDS ${input}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
