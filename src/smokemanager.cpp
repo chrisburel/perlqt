@@ -23,6 +23,11 @@ SmokeManager::SmokeManager() {
     eval_pv("use SmokePerl;", true);
 }
 
+SmokeManager& SmokeManager::instance() {
+    static SmokeManager instance;
+    return instance;
+}
+
 void SmokeManager::addSmokeModule(Smoke* smoke, const std::string& nspace) {
     packageToSmoke[nspace] = smoke;
     smokeToPackage[smoke] = nspace;

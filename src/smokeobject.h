@@ -19,10 +19,7 @@ class Object;
 
 class ObjectMap {
 public:
-    static ObjectMap& instance() {
-        static ObjectMap instance;
-        return instance;
-    }
+    static ObjectMap& instance();
 
     Object* get(const void* ptr) const;
     void insert(Object* obj, const Smoke::ModuleIndex& classId, void* lastptr=nullptr);

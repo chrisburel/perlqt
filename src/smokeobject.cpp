@@ -6,6 +6,11 @@ namespace SmokePerl {
 
 constexpr MGVTBL Object::vtbl_smoke;
 
+ObjectMap& ObjectMap::instance() {
+    static ObjectMap instance;
+    return instance;
+}
+
 Object* ObjectMap::get(const void* ptr) const {
     if (perlVariablesMap.count(ptr))
         return perlVariablesMap.at(ptr);
