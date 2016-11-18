@@ -26,6 +26,11 @@ target_link_libraries(smokeperl
     ${PERL_LIBS}
 )
 
+install(
+    TARGETS smokeperl
+    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+)
+
 if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()

@@ -41,3 +41,5 @@ add_custom_target(
     perlsmokeperlpm ALL
     ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/SmokePerl.pm ${CMAKE_BINARY_DIR}/blib/lib/SmokePerl.pm
 )
+
+install(FILES SmokePerl.pm DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR})

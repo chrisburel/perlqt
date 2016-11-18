@@ -74,6 +74,10 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 #   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${QT_LIB_DIR}")
 #ENDIF("${isSystemDir}" STREQUAL "-1")
 
+if (NOT LIB_INSTALL_DIR)
+    set (LIB_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+endif (NOT LIB_INSTALL_DIR)
+
 add_subdirectory(src)
 add_subdirectory(modules)
 
