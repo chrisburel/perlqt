@@ -5,7 +5,7 @@
 #include <vector>
 #include <unordered_map>
 
-class QMetaObject;
+#include <QMetaObject>
 #include <QMetaMethod>
 
 #include <QtCore/private/qobject_p.h>

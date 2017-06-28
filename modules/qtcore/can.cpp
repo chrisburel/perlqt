@@ -1,4 +1,5 @@
 #include <QMetaObject>
+#include <QMetaMethod>
 
 #include "can.h"
 #include "smokeobject.h"

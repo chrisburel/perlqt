@@ -2,6 +2,7 @@
 #include <vector>
 
 #include <QMetaObject>
+#include <QMetaMethod>
 
 #include <qtcore_smoke.h>
 #include "smokeobject.h"
