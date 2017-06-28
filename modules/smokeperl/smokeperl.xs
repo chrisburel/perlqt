@@ -10,6 +10,12 @@ extern "C" {
 #ifdef _MSC_VER
 #undef XS_EXTERNAL
 #define XS_EXTERNAL(name) extern "C" __declspec(dllexport) XSPROTO(name)
+
+XS_EXTERNAL(boot_SmokePerl);
+XS_EXTERNAL(boot_PerlSmokePerl)
+{
+    boot_SmokePerl(aTHX_ cv);
+}
 #endif
 
 MODULE = SmokePerl PACKAGE = SmokePerl

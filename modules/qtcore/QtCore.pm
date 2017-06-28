@@ -32,7 +32,7 @@ sub import {
 sub loadModule {
     my ($module, $version) = @_;
     if ($^O eq 'MSWin32') {
-        $module = 'Perl'. $module;
+        $module =~ s/::/::Perl/;
     }
     XSLoader::load($module, $version);
 }

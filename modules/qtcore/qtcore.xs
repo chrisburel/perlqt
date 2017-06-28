@@ -25,6 +25,12 @@ extern "C" {
 #ifdef _MSC_VER
 #undef XS_EXTERNAL
 #define XS_EXTERNAL(name) extern "C" __declspec(dllexport) XSPROTO(name)
+
+XS_EXTERNAL(boot_PerlQt5__QtCore);
+XS_EXTERNAL(boot_PerlQt5__PerlQtCore)
+{
+    boot_PerlQt5__QtCore(aTHX_ cv);
+}
 #endif
 
 MODULE = PerlQt5::QtCore::_internal PACKAGE = PerlQt5::QtCore::_internal
