@@ -1,6 +1,8 @@
 #ifndef SMOKEPERL_AUTOLOAD
 #define SMOKEPERL_AUTOLOAD
 
+#include "smokeperl_export.h"
+
 // Perl headers
 extern "C" {
 #include "EXTERN.h"
@@ -11,7 +13,7 @@ extern "C" {
 #include "undoXsubDefines.h"
 
 XS(XS_AUTOLOAD);
-XS(XS_CAN);
+SMOKEPERL_EXPORT XSPROTO(XS_CAN);
 XS(XS_DESTROY);
 
 #endif

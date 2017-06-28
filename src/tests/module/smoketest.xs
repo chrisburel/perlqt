@@ -10,6 +10,11 @@ extern "C" {
 
 #include "undoXsubDefines.h"
 
+#ifdef _MSC_VER
+#undef XS_EXTERNAL
+#define XS_EXTERNAL(name) extern "C" __declspec(dllexport) XSPROTO(name)
+#endif
+
 MODULE = PerlSmokeTest PACKAGE = PerlSmokeTest
 
 BOOT:

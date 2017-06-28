@@ -6,10 +6,11 @@
 #include <vector>
 
 #include <smoke.h>
+#include "smokeperl_export.h"
 #include "smokebinding.h"
 
 namespace SmokePerl {
-class SmokeManager {
+class SMOKEPERL_EXPORT SmokeManager {
 public:
     static SmokeManager& instance();
 
