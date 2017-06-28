@@ -210,6 +210,18 @@ void marshallToPerl<char*>(Marshall* m) {
     SvSetMagicSV(m->var(), sv);
 }
 
+template <>
+void marshallToPerl<int*>(Marshall* m) {
+    int* num = (int*)m->item().s_voidp;
+    SV* sv = newSV(0);
+    sv_setiv(sv, *num);
+
+    if (m->cleanup())
+        delete num;
+
+    SvSetMagicSV(m->var(), sv);
+}
+
 template <class T>
 void marshall_PrimitiveRef(Marshall* m) {
     switch(m->action()) {
