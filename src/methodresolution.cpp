@@ -176,7 +176,7 @@ MethodMatches resolveMethod(Smoke::ModuleIndex classId, const std::string& metho
 
             for (int i = 0; i < methodRef.numArgs; ++i) {
                 SV* actual = args[i];
-                ushort argFlags = method.smoke->types[method.smoke->argumentList[methodRef.args+i]].flags;
+                unsigned short argFlags = method.smoke->types[method.smoke->argumentList[methodRef.args+i]].flags;
                 int distance = matchArgument(actual, method.smoke->types[method.smoke->argumentList[methodRef.args+i]]);
 
                 matchDistance += distance;

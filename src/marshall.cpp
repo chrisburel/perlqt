@@ -57,7 +57,7 @@ void setStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void* ptr)
             break;
 
         case Smoke::t_ushort:
-            stackItem.s_ushort = *static_cast<ushort*>(ptr);
+            stackItem.s_ushort = *static_cast<unsigned short*>(ptr);
             break;
 
         case Smoke::t_int:
@@ -69,11 +69,11 @@ void setStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void* ptr)
             break;
 
         case Smoke::t_long:
-            stackItem.s_uint = *static_cast<uint*>(ptr);
+            stackItem.s_uint = *static_cast<unsigned int*>(ptr);
             break;
 
         case Smoke::t_ulong:
-            stackItem.s_ulong = *static_cast<ulong*>(ptr);
+            stackItem.s_ulong = *static_cast<unsigned long*>(ptr);
             break;
 
         case Smoke::t_float:
@@ -85,7 +85,7 @@ void setStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void* ptr)
             break;
 
         case Smoke::t_enum:
-            stackItem.s_uint = *static_cast<uint*>(ptr);
+            stackItem.s_uint = *static_cast<unsigned int*>(ptr);
             break;
 
         case Smoke::t_voidp:
