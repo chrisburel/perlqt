@@ -8,6 +8,8 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#include "undoXsubDefines.h"
+
 MODULE = PerlSmokeTest PACKAGE = PerlSmokeTest
 
 BOOT:

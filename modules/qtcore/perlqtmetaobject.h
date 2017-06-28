@@ -16,6 +16,8 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#include "undoXsubDefines.h"
+
 namespace PerlQt5 {
 
 class MetaObjectManager {

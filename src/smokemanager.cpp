@@ -7,6 +7,8 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#include "undoXsubDefines.h"
+
 #include "smokebinding.h"
 #include "smokemanager.h"
 #include "xsfunctions.h"

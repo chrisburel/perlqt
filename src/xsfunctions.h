@@ -8,6 +8,8 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#include "undoXsubDefines.h"
+
 XS(XS_AUTOLOAD);
 XS(XS_CAN);
 XS(XS_DESTROY);

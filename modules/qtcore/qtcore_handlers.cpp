@@ -8,6 +8,8 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#include "undoXsubDefines.h"
+
 QString* qstringFromPerlString( SV* perlstring ) {
     if (SvROK(perlstring))
         perlstring = SvRV(perlstring);

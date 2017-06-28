@@ -19,6 +19,8 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#include "undoXsubDefines.h"
+
 MODULE = PerlQt5::QtCore::_internal PACKAGE = PerlQt5::QtCore::_internal
 
 void addSlot(metaObject, slotName, argTypes)

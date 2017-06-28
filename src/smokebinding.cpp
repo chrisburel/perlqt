@@ -12,6 +12,8 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#include "undoXsubDefines.h"
+
 namespace SmokePerl {
 
 char* SmokePerlBinding::className(Smoke::Index classId) {
