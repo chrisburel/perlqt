@@ -47,3 +47,4 @@ add_custom_target(
     perlqt5widgetspm ALL
     ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/QtWidgets.pm ${CMAKE_BINARY_DIR}/blib/lib/PerlQt5/QtWidgets.pm
 )
+install(FILES QtWidgets.pm DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/PerlQt5)

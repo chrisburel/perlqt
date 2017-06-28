@@ -30,7 +30,9 @@ target_link_libraries(smokeperl
 
 install(
     TARGETS smokeperl
-    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
 )
 
 if(BUILD_TESTS)
