@@ -2,6 +2,8 @@ include_directories(
     ${PERL_INCLUDE_PATH}
 )
 
+add_definitions(${PERL_CXX_FLAGS})
+
 add_library(smokeperl SHARED
     handlers.cpp
     marshall.cpp

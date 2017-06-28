@@ -5,7 +5,7 @@ include_directories(
     ${PERL_INCLUDE_PATH}
 )
 
-set(CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS})
+add_definitions(${PERL_CXX_FLAGS})
 
 if(WIN32)
     set(libraryName PerlQtWidgets)

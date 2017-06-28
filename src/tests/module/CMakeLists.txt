@@ -4,7 +4,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../smoke
     ${PERL_INCLUDE_PATH}
 )
-set(CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS})
+add_definitions(${PERL_CXX_FLAGS})
 
 set(libraryName PerlSmokeTest)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/blib/arch/auto/${libraryName})
