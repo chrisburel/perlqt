@@ -17,7 +17,7 @@ set(USE_BUILD_DIR_FOR_TESTS OFF CACHE BOOL "Use to toggle between using the buil
 
 find_package(Perl REQUIRED)
 find_package(PerlLibs REQUIRED)
-find_package(Qt5Core REQUIRED)
+find_package(Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt5 COMPONENTS Gui Widgets)
 find_package(Smoke REQUIRED COMPONENTS QtCore)
 find_package(Smoke COMPONENTS QtGui QtWidgets)
