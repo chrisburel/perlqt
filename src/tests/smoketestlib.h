@@ -1,4 +1,14 @@
-class QApplication {
+#if defined (_WIN32)
+    #if defined(smoketestlib_EXPORTS)
+        #define SMOKETESTLIB_EXPORT __declspec(dllexport)
+    #else
+        #define SMOKETESTLIB_EXPORT __declspec(dllimport)
+    #endif
+#else
+    #define SMOKETESTLIB_EXPORT
+#endif
+
+class SMOKETESTLIB_EXPORT QApplication {
 public:
     QApplication();
     virtual ~QApplication();
@@ -10,7 +20,7 @@ private:
 
 };
 
-class VirtualMethodTester {
+class SMOKETESTLIB_EXPORT VirtualMethodTester {
 public:
     VirtualMethodTester() {};
 

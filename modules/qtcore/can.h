@@ -8,6 +8,8 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#include "undoXsubDefines.h"
+
 XS(XS_QOBJECT_CAN);
 
 #endif

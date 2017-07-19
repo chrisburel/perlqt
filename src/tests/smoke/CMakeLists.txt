@@ -39,3 +39,10 @@ include_directories(
 )
 add_library(smokesmoketestlib SHARED ${smoketestlib_LIB_SRCS})
 target_link_libraries(smokesmoketestlib ${SMOKE_BASE_LIBRARY} smoketestlib)
+
+install(
+    TARGETS smokesmoketestlib
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+)

@@ -5,17 +5,18 @@
 #include <vector>
 #include <unordered_map>
 
-class QMetaObject;
+#include <QMetaObject>
 #include <QMetaMethod>
 
-#define QOBJECT_PRIVATE_HEADER QtCore/private/qobject_p.h
-#include QT_STRINGIFY(PERLQT_QT_VERSION/QOBJECT_PRIVATE_HEADER)
+#include <QtCore/private/qobject_p.h>
 
 extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 }
+
+#include "undoXsubDefines.h"
 
 namespace PerlQt5 {
 

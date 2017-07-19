@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 2.8.11)
 
 project(PerlQt)
 
+if(MSVC)
+    # Use all the cores
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+endif(MSVC)
+
 set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite")
 find_program(MEMORYCHECK_COMMAND NAMES valgrind)
 include(CTest)
@@ -12,7 +17,7 @@ set(USE_BUILD_DIR_FOR_TESTS OFF CACHE BOOL "Use to toggle between using the buil
 
 find_package(Perl REQUIRED)
 find_package(PerlLibs REQUIRED)
-find_package(Qt5Core REQUIRED)
+find_package(Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt5 COMPONENTS Gui Widgets)
 find_package(Smoke REQUIRED COMPONENTS QtCore)
 find_package(Smoke COMPONENTS QtGui QtWidgets)

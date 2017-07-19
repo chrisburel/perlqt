@@ -7,17 +7,21 @@
 
 #include <smoke.h>
 
+#include "smokeperl_export.h"
+
 extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 }
 
+#include "undoXsubDefines.h"
+
 namespace SmokePerl {
 
 class Object;
 
-class ObjectMap {
+class SMOKEPERL_EXPORT ObjectMap {
 public:
     static ObjectMap& instance();
 
@@ -33,7 +37,7 @@ private:
 
 };
 
-class Object {
+class SMOKEPERL_EXPORT Object {
 public:
     enum ValueOwnership {
         CppOwnership,

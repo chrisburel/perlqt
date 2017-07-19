@@ -1,8 +1,7 @@
 #include <QObject>
 #include <QMetaObject>
 
-#define QMETAOBJECT_PRIVATE_HEADER QtCore/private/qmetaobjectbuilder_p.h
-#include QT_STRINGIFY(PERLQT_QT_VERSION/QMETAOBJECT_PRIVATE_HEADER)
+#include <QtCore/private/qmetaobjectbuilder_p.h>
 
 #include <qtcore_smoke.h>
 

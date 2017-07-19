@@ -2,6 +2,7 @@
 #include <vector>
 
 #include <QMetaObject>
+#include <QMetaMethod>
 
 #include <qtcore_smoke.h>
 #include "smokeobject.h"
@@ -18,6 +19,19 @@ extern "C" {
 #include "perl.h"
 #include "XSUB.h"
 }
+
+#include "undoXsubDefines.h"
+
+#ifdef _MSC_VER
+#undef XS_EXTERNAL
+#define XS_EXTERNAL(name) extern "C" __declspec(dllexport) XSPROTO(name)
+
+XS_EXTERNAL(boot_PerlQt5__QtCore);
+XS_EXTERNAL(boot_PerlQt5__PerlQtCore)
+{
+    boot_PerlQt5__QtCore(aTHX_ cv);
+}
+#endif
 
 MODULE = PerlQt5::QtCore::_internal PACKAGE = PerlQt5::QtCore::_internal
 

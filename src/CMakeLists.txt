@@ -2,6 +2,8 @@ include_directories(
     ${PERL_INCLUDE_PATH}
 )
 
+add_definitions(${PERL_CXX_FLAGS})
+
 add_library(smokeperl SHARED
     handlers.cpp
     marshall.cpp
@@ -28,7 +30,9 @@ target_link_libraries(smokeperl
 
 install(
     TARGETS smokeperl
-    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
 )
 
 if(BUILD_TESTS)

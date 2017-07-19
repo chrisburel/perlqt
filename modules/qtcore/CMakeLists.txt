@@ -3,11 +3,10 @@ xsubpp(qtcore.xs ${CMAKE_CURRENT_BINARY_DIR}/qtcore.cpp)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${PERL_INCLUDE_PATH}
+    ${Qt5Core_PRIVATE_INCLUDE_DIRS}
 )
 
-add_definitions("-DPERLQT_QT_VERSION=${Qt5Core_VERSION}")
-
-set(CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS})
+add_definitions(${PERL_CXX_FLAGS})
 
 if(WIN32)
     set(libraryName PerlQtCore)

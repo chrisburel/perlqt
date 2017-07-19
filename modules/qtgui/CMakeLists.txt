@@ -5,7 +5,7 @@ include_directories(
     ${PERL_INCLUDE_PATH}
 )
 
-set(CMAKE_CXX_FLAGS ${PERL_CXX_FLAGS})
+add_definitions(${PERL_CXX_FLAGS})
 
 if(WIN32)
     set(libraryName PerlQtGui)
@@ -45,3 +45,5 @@ add_custom_target(
     ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/QtGui.pm
     ${CMAKE_BINARY_DIR}/blib/lib/PerlQt5/QtGui.pm
 )
+
+install(FILES QtGui.pm DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/PerlQt5)

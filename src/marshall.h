@@ -6,6 +6,7 @@
 
 #include <smoke.h>
 
+#include "smokeperl_export.h"
 #include "smokemanager.h"
 
 // Perl headers
@@ -14,6 +15,8 @@ extern "C" {
 #include "perl.h"
 #include "XSUB.h"
 }
+
+#include "undoXsubDefines.h"
 
 namespace SmokePerl {
 
@@ -102,7 +105,7 @@ public:
 
 };
 
-class Marshall {
+class SMOKEPERL_EXPORT Marshall {
 public:
     typedef void (*HandlerFn)(Marshall *);
     enum Action {
@@ -126,8 +129,8 @@ public:
     typedef void (*DemarshallFunction)(SV*, void*);
 };
 
-void setStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void* ptr);
-void setPtrFromStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void** ptr);
+SMOKEPERL_EXPORT void setStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void* ptr);
+SMOKEPERL_EXPORT void setPtrFromStackItem(const SmokeType& type, Smoke::StackItem& stackItem, void** ptr);
 
 }
 

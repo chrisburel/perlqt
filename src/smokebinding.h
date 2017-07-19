@@ -6,9 +6,11 @@
 
 #include <smoke.h>
 
+#include "smokeperl_export.h"
+
 namespace SmokePerl {
 
-class SmokePerlBinding : public SmokeBinding {
+class SMOKEPERL_EXPORT SmokePerlBinding : public SmokeBinding {
 public:
     SmokePerlBinding() : SmokeBinding(0) {}
     SmokePerlBinding(Smoke* smoke) : SmokeBinding(smoke) {}

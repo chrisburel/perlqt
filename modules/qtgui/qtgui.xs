@@ -8,6 +8,17 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#ifdef _MSC_VER
+#undef XS_EXTERNAL
+#define XS_EXTERNAL(name) extern "C" __declspec(dllexport) XSPROTO(name)
+
+XS_EXTERNAL(boot_PerlQt5__QtGui);
+XS_EXTERNAL(boot_PerlQt5__PerlQtGui)
+{
+    boot_PerlQt5__QtGui(aTHX_ cv);
+}
+#endif
+
 MODULE = PerlQt5::QtGui PACKAGE = PerlQt5::QtGui
 
 BOOT:

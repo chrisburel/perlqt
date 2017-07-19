@@ -13,6 +13,8 @@ extern "C" {
 #include "XSUB.h"
 }
 
+#include "undoXsubDefines.h"
+
 namespace SmokePerl {
 
 using MethodMatch = std::pair<std::vector<Smoke::ModuleIndex>, int>;

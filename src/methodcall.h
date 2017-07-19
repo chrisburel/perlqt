@@ -2,14 +2,15 @@
 #define SMOKEPERL_METHODCALL
 
 #include <smoke.h>
+#include "smokeperl_export.h"
 #include "marshall.h"
 
 namespace SmokePerl {
 
-class MethodCall : public Marshall {
+class SMOKEPERL_EXPORT MethodCall : public Marshall {
 
 public:
-    class ReturnValue : Marshall {
+    class SMOKEPERL_EXPORT ReturnValue : Marshall {
     public:
         ReturnValue(Smoke::ModuleIndex methodId, Smoke::Stack stack, SV* returnValue);
         inline const Smoke::Method& method() const {

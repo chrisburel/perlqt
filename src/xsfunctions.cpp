@@ -82,7 +82,7 @@ XS(XS_AUTOLOAD) {
     XSRETURN(1);
 }
 
-XS(XS_CAN) {
+SMOKEPERL_EXPORT XSPROTO(XS_CAN) {
     dXSARGS;
     const char* methodName = SvPVX(ST(1));
     SV* self = ST(0);

@@ -1,5 +1,4 @@
 enable_testing()
-set(USE_BUILD_DIR_FOR_TESTS ON)
 
 file(GLOB testFiles *.t)
 list(SORT testFiles)
