@@ -20,8 +20,8 @@ install:
 
   # Build Qt
   - IFS=. read QT_MAJOR QT_MINOR QT_MICRO <<< "${QT_VERSION}"
-  - wget http://download.qt.io/official_releases/qt/`echo $QT_VERSION | sed 's/\.[^.]*$//g'`/$QT_VERSION/single/qt-everywhere-opensource-src-$QT_VERSION.tar.gz
-  - tar -xf qt-everywhere-opensource-src-$QT_VERSION.tar.gz
+  - wget http://download.qt.io/archive/qt/`echo $QT_VERSION | sed 's/\.[^.]*$//g'`/$QT_VERSION/single/qt-everywhere-opensource-src-$QT_VERSION.tar.xz
+  - tar -xf qt-everywhere-opensource-src-$QT_VERSION.tar.xz
   - pushd qt-everywhere-opensource-src-$QT_VERSION
   - perl -pi -e 's@^QMAKE_CC.*= clang$@QMAKE_CC = '$CC'@; s@^QMAKE_CXX.*= clang\+\+@QMAKE_CXX = '$CXX'@g' qtbase/mkspecs/common/clang.conf
   # Remove modules we don't want to build
