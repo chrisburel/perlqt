@@ -86,8 +86,6 @@ endif (NOT LIB_INSTALL_DIR)
 add_subdirectory(src)
 add_subdirectory(modules)
 
-macro_display_bindings_log()
-
 macro_display_feature_log()
 
 #install(EXPORT PerlQtExport DESTINATION ${CMAKE_INSTALL_PREFIX}/share/perlqt/cmake NAMESPACE PERLQT_)
