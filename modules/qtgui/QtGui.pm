@@ -7,24 +7,10 @@ use PerlQt5::QtCore;
 
 our $VERSION = '1.0.0';
 
-PerlQt5::QtGui::loadModule(__PACKAGE__, $VERSION);
+PerlQt5::QtCore::loadModule(__PACKAGE__, $VERSION);
 
 sub import {
-    my ($package, @exports) = @_;
-    my $caller = (caller)[0];
-
-    foreach my $export (@exports) {
-        my $subpackage = "${package}::${export}";
-        my $subpackageGlob = "${subpackage}::";
-        my $alias = "${caller}::${export}::";
-        {
-            no strict 'refs';
-            if (!exists ${"${package}::"}{"${export}::"}) {
-                die "$package does not export $export\n";
-            }
-            *{$alias} = \*{$subpackageGlob};
-        }
-    }
+    goto &PerlQt5::QtCore::import;
 }
 
 sub loadModule {
