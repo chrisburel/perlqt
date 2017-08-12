@@ -47,3 +47,5 @@ add_custom_target(
 )
 
 install(FILES QtGui.pm DESTINATION ${CUSTOM_PERL_SITE_ARCH_DIR}/PerlQt5)
+
+add_subdirectory(tests)

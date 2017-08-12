@@ -1,3 +1,12 @@
+function(addTestsFromTFiles)
+    file(GLOB testFiles *.t)
+    list(SORT testFiles)
+    foreach(testFile ${testFiles})
+        get_filename_component(testName "${testFile}" NAME_WE)
+        macro_prove(${testName} ${testFile})
+    endforeach()
+endfunction()
+
 add_subdirectory(smokeperl)
 add_subdirectory(perlqt5)
 add_subdirectory(qtcore)
