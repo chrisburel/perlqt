@@ -23,6 +23,7 @@ find_package(Qt5
     DBus
     Gui
     Network
+    Sql
     Widgets
     QUIET
 )
@@ -33,6 +34,7 @@ find_package(Smoke
     QtDBus
     QtGui
     QtNetwork
+    QtSql
     QtWidgets
     QUIET
 )
