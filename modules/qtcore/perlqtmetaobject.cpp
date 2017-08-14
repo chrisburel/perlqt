@@ -120,6 +120,9 @@ void MetaObjectManager::addSlot(QMetaObject*& metaObject, const std::string& slo
     if (packageToMetaObject.count(metaObject->className())) {
         MetaObjectInfo info = packageToMetaObject[metaObject->className()];
         if (info.ownedByPerl) {
+            if (SmokePerl::Object* obj = SmokePerl::ObjectMap::instance().get(info.metaObject)) {
+                SmokePerl::ObjectMap::instance().remove(obj, obj->classId);
+            }
             free(info.metaObject);
         }
     }

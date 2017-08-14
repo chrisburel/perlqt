@@ -121,7 +121,6 @@ sub MODIFY_CODE_ATTRIBUTES {
         if (my ($argTypes) = ($attr =~ m/^Slot\((.*)\)$/)) {
             my @argTypes = split /, */, $argTypes;
             PerlQt5::QtCore::_internal::addSlot($metaObject, $name, \@argTypes);
-            $metaObject = $package->staticMetaObject();
         }
     }
 
