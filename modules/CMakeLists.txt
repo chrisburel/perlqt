@@ -14,6 +14,7 @@ macro_optional_add_bindings(SMOKE_QTDBUS_FOUND              "QtDBus"            
 macro_optional_add_bindings(SMOKE_QTGUI_FOUND     "QtGui"     qtgui)
 macro_optional_add_bindings(SMOKE_QTHELP_FOUND              "QtHelp"              qthelp)
 macro_optional_add_bindings(SMOKE_QTMULTIMEDIA_FOUND        "QtMultimedia"        qtmultimedia)
+macro_optional_add_bindings(SMOKE_QTMULTIMEDIAWIDGETS_FOUND "QtMultimediaWidgets" qtmultimediawidgets)
 macro_optional_add_bindings(SMOKE_QTNETWORK_FOUND           "QtNetwork"           qtnetwork)
 macro_optional_add_bindings(SMOKE_QTOPENGL_FOUND            "QtOpenGL"            qtopengl)
 macro_optional_add_bindings(SMOKE_QTSQL_FOUND               "QtSql"               qtsql)

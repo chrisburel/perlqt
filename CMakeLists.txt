@@ -24,6 +24,7 @@ find_package(Qt5
     Gui
     Help
     Multimedia
+    MultimediaWidgets
     Network
     OpenGL
     Sql
@@ -38,6 +39,7 @@ find_package(Smoke
     QtGui
     QtHelp
     QtMultimedia
+    QtMultimediaWidgets
     QtNetwork
     QtOpenGL
     QtSql
