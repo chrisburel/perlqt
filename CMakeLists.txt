@@ -23,6 +23,7 @@ find_package(Qt5
     DBus
     Gui
     Help
+    Multimedia
     Network
     Sql
     Widgets
@@ -35,6 +36,7 @@ find_package(Smoke
     QtDBus
     QtGui
     QtHelp
+    QtMultimedia
     QtNetwork
     QtSql
     QtWidgets
