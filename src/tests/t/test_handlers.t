@@ -6,10 +6,19 @@ use Test::More;
 
 use PerlSmokeTest;
 
+sub isClose {
+    my ($got, $expected, $message) = @_;
+    ok(abs($got - $expected) < 1e-7, $message);
+}
+
 my $testData = [
     ['Char', 'a', \&is, 'char handler'],
     ['Char', ord('a'), \&is, 'char handler - as int', 'a'],
     ['Char', undef, \&is, 'char handler - undef', "\0"],
+    ['Float', 0.1, \&isClose, 'float handler'],
+    ['Float', POSIX::FLT_MIN, \&isClose, 'float handler - min value'],
+    ['Float', POSIX::FLT_MAX, \&isClose, 'float handler - max value'],
+    ['Float', undef, \&isClose, 'float handler - undef', 0],
     ['Int', 42, \&is, 'int handler'],
     ['Int', \42, \&is, 'int handler - reference', 42],
     ['Int', POSIX::INT_MIN, \&is, 'int handler - min value'],

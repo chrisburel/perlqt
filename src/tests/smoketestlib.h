@@ -45,6 +45,7 @@ private:
 
 class SMOKETESTLIB_EXPORT HandlersTester
     : private HandlersTesterType<char>
+    , private HandlersTesterType<float>
     , private HandlersTesterType<int>
 {
 public:
@@ -53,5 +54,6 @@ public:
     void set##uctype(type newValue) { HandlersTesterType<type>::set(newValue); }
 
     MAKE_GETTER(char, Char);
+    MAKE_GETTER(float, Float);
     MAKE_GETTER(int, Int);
 };
