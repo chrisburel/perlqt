@@ -22,6 +22,7 @@ find_package(Qt5
     COMPONENTS
     DBus
     Gui
+    Help
     Network
     Sql
     Widgets
@@ -33,6 +34,7 @@ find_package(Smoke
     COMPONENTS
     QtDBus
     QtGui
+    QtHelp
     QtNetwork
     QtSql
     QtWidgets
