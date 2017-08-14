@@ -33,3 +33,23 @@ public:
 private:
     const char* m_name;
 };
+
+template <class T>
+class HandlersTesterType {
+public:
+    T get() const { return data; }
+    void set(const T& newData) { data = newData; }
+private:
+    T data;
+};
+
+class SMOKETESTLIB_EXPORT HandlersTester
+    : private HandlersTesterType<char>
+{
+public:
+#define MAKE_GETTER(type, uctype) \
+    type get##uctype() const { return HandlersTesterType<type>::get(); } \
+    void set##uctype(type newValue) { HandlersTesterType<type>::set(newValue); }
+
+    MAKE_GETTER(char, Char);
+};

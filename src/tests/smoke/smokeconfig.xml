@@ -4,6 +4,7 @@
     <classList>
         <class>QApplication</class>
         <class>VirtualMethodTester</class>
+        <class>HandlersTester</class>
     </classList>
     <parts>1</parts>
 </config>
