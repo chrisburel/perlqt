@@ -12,6 +12,7 @@ add_subdirectory(perlqt5)
 add_subdirectory(qtcore)
 macro_optional_add_bindings(SMOKE_QTDBUS_FOUND              "QtDBus"              qtdbus)
 macro_optional_add_bindings(SMOKE_QTGUI_FOUND     "QtGui"     qtgui)
+macro_optional_add_bindings(SMOKE_QTNETWORK_FOUND           "QtNetwork"           qtnetwork)
 macro_optional_add_bindings(SMOKE_QTWIDGETS_FOUND "QtWidgets" qtwidgets)
 
 macro_display_bindings_log()

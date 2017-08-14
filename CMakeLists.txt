@@ -22,6 +22,7 @@ find_package(Qt5
     COMPONENTS
     DBus
     Gui
+    Network
     Widgets
     QUIET
 )
@@ -31,6 +32,7 @@ find_package(Smoke
     COMPONENTS
     QtDBus
     QtGui
+    QtNetwork
     QtWidgets
     QUIET
 )
