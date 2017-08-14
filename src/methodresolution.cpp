@@ -127,7 +127,9 @@ std::vector<std::string> mungedMethods(const std::string& methodName, int argc, 
         SV* value = args[i];
 
         SmokePerl::Object* obj = SmokePerl::Object::fromSV(value);
-        if (SvTYPE(value) == SVt_NULL) {
+        if (!SvOK(value)) {
+            // value is undef.  undef can be anything, so add all possible
+            // signatures and figure it out later
             std::vector<std::string> temp;
             for (const auto& mungedMethod : result) {
                 temp.push_back(mungedMethod + '$');
