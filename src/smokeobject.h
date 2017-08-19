@@ -68,7 +68,7 @@ public:
 
     void* value;
     SV* sv;
-    Smoke::ModuleIndex classId;
+    const Smoke::ModuleIndex classId;
     ValueOwnership ownership;
     static constexpr MGVTBL vtbl_smoke { 0, 0, 0, 0, free };
 
