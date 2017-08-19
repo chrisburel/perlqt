@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "methodresolution.h"
 #include "smokeobject.h"
 
@@ -17,13 +18,15 @@ static std::string typeName(const Smoke::Type& typeRef) {
     return name;
 }
 
-static int matchArgument(SV* actual, const Smoke::Type& typeRef) {
+static int matchArgument(SV* actual, const Smoke::ModuleIndex& baseClassId, const Smoke::Type& typeRef) {
     std::string fullArgType(typeRef.name);
     if (fullArgType.find("const ") != std::string::npos) {
         fullArgType.replace(0, 5, "");
     }
     std::string argType = typeName(typeRef);
     int matchDistance = 0;
+
+    Object* object = Object::fromSV(actual);
 
     if (SvROK(actual)) {
         actual = SvRV(actual);
@@ -73,6 +76,23 @@ static int matchArgument(SV* actual, const Smoke::Type& typeRef) {
     }
     else if (actual == &PL_sv_yes || actual == &PL_sv_no) {
         if ((typeRef.flags & Smoke::tf_elem) == Smoke::t_bool) {
+        }
+        else {
+            matchDistance += 100;
+        }
+    }
+    else if (SvTYPE(actual) == SVt_PVHV || SvTYPE(actual) == SVt_PVAV) {
+        if ((typeRef.flags & Smoke::tf_elem) == Smoke::t_class) {
+            if (object && object->isValid()) {
+                matchDistance += object->inheritanceDistance(baseClassId);
+            }
+            else {
+                matchDistance = -1;
+            }
+        }
+        else if ((typeRef.flags & Smoke::tf_elem) == Smoke::t_voidp && object && object->isValid() && object->classId == Smoke::NullModuleIndex) {
+            // This is the case when the arg is a void**, as used by methods
+            // like qt_metacall
         }
         else {
             matchDistance += 100;
@@ -176,22 +196,38 @@ MethodMatches resolveMethod(Smoke::ModuleIndex classId, const std::string& metho
                 matchDistance += 1;
             }
 
+            bool allArgTypesCompatible = true;
             for (int i = 0; i < methodRef.numArgs; ++i) {
                 SV* actual = args[i];
-                unsigned short argFlags = method.smoke->types[method.smoke->argumentList[methodRef.args+i]].flags;
-                int distance = matchArgument(actual, method.smoke->types[method.smoke->argumentList[methodRef.args+i]]);
+                const Smoke::Type& type = method.smoke->types[method.smoke->argumentList[methodRef.args+i]];
+                const int distance = matchArgument(
+                    actual,
+                    {method.smoke, type.classId},
+                    type
+                );
+
+                if (distance == -1) {
+                    allArgTypesCompatible = false;
+                    break;
+                }
 
                 matchDistance += distance;
             }
 
-            auto insertPos = matches.end();
-            if (matches.size() > 0 && matchDistance <= matches[0].second) {
-                insertPos = matches.begin();
-            }
-            matches.insert(insertPos, MethodMatch(methods, matchDistance));
+            if (!allArgTypesCompatible)
+                continue;
+
+            matches.push_back(MethodMatch(methods, matchDistance));
         }
     }
 
+    // Sort the array of matches based on their score.  Use a stable sort so
+    // that order is preserved.  The order that is defined in the smoke object
+    // should be the order in which the methods were declaraed in the source
+    // header.
+    std::stable_sort(matches.begin(), matches.end(), [](const MethodMatch& lhs, const MethodMatch& rhs) {
+        return lhs.second < rhs.second;
+    });
     return matches;
 }
 

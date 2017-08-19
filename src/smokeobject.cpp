@@ -111,6 +111,33 @@ int Object::free(pTHX_ SV* sv, MAGIC* mg) {
     return 0;
 }
 
+int Object::inheritanceDistance(const Smoke::ModuleIndex& baseId) {
+    if (baseId.smoke->classes[baseId.index].external)
+        return inheritanceDistance(classId, classId.smoke->findClass(baseId.smoke->classes[baseId.index].className));
+    return inheritanceDistance(classId, baseId);
+}
+
+int Object::inheritanceDistance(const Smoke::ModuleIndex& classId, const Smoke::ModuleIndex& baseId, int count) {
+    if (!baseId.smoke || !baseId.index)
+        return -1;
+    if (classId == baseId)
+        return count;
+    ++count;
+
+    for (Smoke::Index p = classId.smoke->classes[classId.index].parents; classId.smoke->inheritanceList[p]; ++p) {
+        const Smoke::Class& parentClass = classId.smoke->classes[classId.smoke->inheritanceList[p]];
+        Smoke::ModuleIndex parentClassId;
+        if (parentClass.external) {
+            parentClassId = classId.smoke->findClass(parentClass.className);
+        }
+        else {
+            parentClassId = {classId.smoke, classId.smoke->inheritanceList[p]};
+        }
+        return inheritanceDistance(parentClassId, baseId, count);
+    }
+    return -1;
+}
+
 void Object::setParent(Object* parent) {
     if (this == parent)
         return;
