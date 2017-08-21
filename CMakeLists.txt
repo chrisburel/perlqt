@@ -29,6 +29,7 @@ find_package(Qt5
     OpenGL
     Qml
     Quick
+    Script
     Sql
     Widgets
     QUIET
@@ -46,6 +47,7 @@ find_package(Smoke
     QtOpenGL
     QtQml
     QtQuick
+    QtScript
     QtSql
     QtWidgets
     QUIET
