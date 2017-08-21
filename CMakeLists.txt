@@ -27,6 +27,7 @@ find_package(Qt5
     MultimediaWidgets
     Network
     OpenGL
+    Qml
     Sql
     Widgets
     QUIET
@@ -42,6 +43,7 @@ find_package(Smoke
     QtMultimediaWidgets
     QtNetwork
     QtOpenGL
+    QtQml
     QtSql
     QtWidgets
     QUIET
