@@ -33,6 +33,7 @@ find_package(Qt5
     Sql
     Svg
     Test
+    UiTools
     Widgets
     QUIET
 )
@@ -53,6 +54,7 @@ find_package(Smoke
     QtSql
     QtSvg
     QtTest
+    QtUiTools
     QtWidgets
     QUIET
 )
