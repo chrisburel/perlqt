@@ -31,6 +31,7 @@ find_package(Qt5
     Quick
     Script
     Sql
+    Svg
     Widgets
     QUIET
 )
@@ -49,6 +50,7 @@ find_package(Smoke
     QtQuick
     QtScript
     QtSql
+    QtSvg
     QtWidgets
     QUIET
 )
