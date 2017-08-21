@@ -32,6 +32,7 @@ find_package(Qt5
     Script
     Sql
     Svg
+    Test
     Widgets
     QUIET
 )
@@ -51,6 +52,7 @@ find_package(Smoke
     QtScript
     QtSql
     QtSvg
+    QtTest
     QtWidgets
     QUIET
 )

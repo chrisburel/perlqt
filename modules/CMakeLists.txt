@@ -22,6 +22,7 @@ macro_optional_add_bindings(SMOKE_QTQUICK_FOUND             "QtQuick"           
 macro_optional_add_bindings(SMOKE_QTSCRIPT_FOUND            "QtScript"            qtscript)
 macro_optional_add_bindings(SMOKE_QTSQL_FOUND               "QtSql"               qtsql)
 macro_optional_add_bindings(SMOKE_QTSVG_FOUND               "QtSvg"               qtsvg)
+macro_optional_add_bindings(SMOKE_QTTEST_FOUND              "QtTest"              qttest)
 macro_optional_add_bindings(SMOKE_QTWIDGETS_FOUND "QtWidgets" qtwidgets)
 
 macro_display_bindings_log()
