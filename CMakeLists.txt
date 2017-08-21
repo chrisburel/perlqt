@@ -34,6 +34,7 @@ find_package(Qt5
     Svg
     Test
     UiTools
+    WebEngineCore
     Widgets
     QUIET
 )
@@ -55,6 +56,7 @@ find_package(Smoke
     QtSvg
     QtTest
     QtUiTools
+    QtWebEngineCore
     QtWidgets
     QUIET
 )
