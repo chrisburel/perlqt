@@ -28,5 +28,6 @@ macro_optional_add_bindings(SMOKE_QTWEBENGINECORE_FOUND     "QtWebEngineCore"   
 macro_optional_add_bindings(SMOKE_QTWEBENGINEWIDGETS_FOUND  "QtWebEngineWidgets"  qtwebenginewidgets)
 macro_optional_add_bindings(SMOKE_QTWIDGETS_FOUND "QtWidgets" qtwidgets)
 macro_optional_add_bindings(SMOKE_QTXML_FOUND               "QtXml"               qtxml)
+macro_optional_add_bindings(SMOKE_QTXMLPATTERNS_FOUND       "QtXmlPatterns"       qtxmlpatterns)
 
 macro_display_bindings_log()

@@ -38,6 +38,7 @@ find_package(Qt5
     WebEngineWidgets
     Widgets
     Xml
+    XmlPatterns
     QUIET
 )
 
@@ -62,6 +63,7 @@ find_package(Smoke
     QtWebEngineWidgets
     QtWidgets
     QtXml
+    QtXmlPatterns
     QUIET
 )
 
