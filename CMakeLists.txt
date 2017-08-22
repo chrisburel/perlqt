@@ -35,6 +35,7 @@ find_package(Qt5
     Svg
     Test
     UiTools
+    WebChannel
     WebEngineCore
     WebEngineWidgets
     Widgets
@@ -61,6 +62,7 @@ find_package(Smoke
     QtSvg
     QtTest
     QtUiTools
+    QtWebChannel
     QtWebEngineCore
     QtWebEngineWidgets
     QtWidgets
