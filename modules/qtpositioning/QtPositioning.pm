@@ -1,12 +1,9 @@
-package PerlQt5::QtWebEngineCore;
+package PerlQt5::QtPositioning;
 
 use strict;
 use warnings;
 use XSLoader;
-use PerlQt5::QtQuick;
-use PerlQt5::QtGui;
-use PerlQt5::QtNetwork;
-use PerlQt5::QtPositioning;
+use PerlQt5::QtCore;
 
 our $VERSION = '1.0.0';
 
