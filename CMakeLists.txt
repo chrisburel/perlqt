@@ -28,6 +28,7 @@ find_package(Qt5
     Network
     OpenGL
     Positioning
+    PrintSupport
     Qml
     Quick
     Script
@@ -54,6 +55,7 @@ find_package(Smoke
     QtMultimediaWidgets
     QtNetwork
     QtPositioning
+    QtPrintSupport
     QtOpenGL
     QtQml
     QtQuick
