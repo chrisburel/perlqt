@@ -21,6 +21,7 @@ macro_optional_add_bindings(SMOKE_QTPOSITIONING_FOUND       "QtPositioning"     
 macro_optional_add_bindings(SMOKE_QTPRINTSUPPORT_FOUND      "QtPrintSupport"      qtprintsupport)
 macro_optional_add_bindings(SMOKE_QTQML_FOUND               "QtQml"               qtqml)
 macro_optional_add_bindings(SMOKE_QTQUICK_FOUND             "QtQuick"             qtquick)
+macro_optional_add_bindings(SMOKE_QTQUICKWIDGETS_FOUND      "QtQuickWidgets"      qtquickwidgets)
 macro_optional_add_bindings(SMOKE_QTSCRIPT_FOUND            "QtScript"            qtscript)
 macro_optional_add_bindings(SMOKE_QTSQL_FOUND               "QtSql"               qtsql)
 macro_optional_add_bindings(SMOKE_QTSVG_FOUND               "QtSvg"               qtsvg)

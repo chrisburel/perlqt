@@ -31,6 +31,7 @@ find_package(Qt5
     PrintSupport
     Qml
     Quick
+    QuickWidgets
     Script
     Sql
     Svg
@@ -59,6 +60,7 @@ find_package(Smoke
     QtOpenGL
     QtQml
     QtQuick
+    QtQuickWidgets
     QtScript
     QtSql
     QtSvg
