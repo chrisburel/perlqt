@@ -25,6 +25,7 @@ macro_optional_add_bindings(SMOKE_QTSVG_FOUND               "QtSvg"             
 macro_optional_add_bindings(SMOKE_QTTEST_FOUND              "QtTest"              qttest)
 macro_optional_add_bindings(SMOKE_QTUITOOLS_FOUND           "QtUiTools"           qtuitools)
 macro_optional_add_bindings(SMOKE_QTWEBENGINECORE_FOUND     "QtWebEngineCore"     qtwebenginecore)
+macro_optional_add_bindings(SMOKE_QTWEBENGINEWIDGETS_FOUND  "QtWebEngineWidgets"  qtwebenginewidgets)
 macro_optional_add_bindings(SMOKE_QTWIDGETS_FOUND "QtWidgets" qtwidgets)
 
 macro_display_bindings_log()
