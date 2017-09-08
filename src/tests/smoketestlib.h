@@ -49,6 +49,7 @@ class SMOKETESTLIB_EXPORT HandlersTester
     , private HandlersTesterType<double>
     , private HandlersTesterType<float>
     , private HandlersTesterType<int>
+    , private HandlersTesterType<short>
 {
 public:
 #define MAKE_GETTER(type, uctype) \
@@ -60,4 +61,5 @@ public:
     MAKE_GETTER(double, Double);
     MAKE_GETTER(float, Float);
     MAKE_GETTER(int, Int);
+    MAKE_GETTER(short, Short);
 };

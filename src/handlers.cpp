@@ -28,6 +28,10 @@ void marshall_basetype(Marshall* m) {
             marshall_PrimitiveRef<int>(m);
         break;
 
+        case Smoke::t_short:
+            marshall_PrimitiveRef<signed short>(m);
+        break;
+
         case Smoke::t_enum:
             switch(m->action()) {
                 case Marshall::FromSV:
@@ -168,6 +172,15 @@ int perlToPrimitive<int>(SV* sv) {
 }
 
 template<>
+signed short perlToPrimitive<signed short>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    if (SvROK(sv))
+        sv = SvRV(sv);
+    return (signed short)SvIV(sv);
+}
+
+template<>
 char* perlToPrimitive<char*>(SV* sv) {
     if (!SvOK(sv))
         return 0;
@@ -203,6 +216,11 @@ SV* primitiveToPerl<float>(float floatVal) {
 template<>
 SV* primitiveToPerl<int>(int intVal) {
     return newSViv(intVal);
+}
+
+template<>
+SV* primitiveToPerl<signed short>(signed short shortVal) {
+    return newSViv(shortVal);
 }
 
 template <class T>

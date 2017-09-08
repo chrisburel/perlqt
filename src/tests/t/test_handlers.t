@@ -31,6 +31,11 @@ my $testData = [
     ['Int', POSIX::INT_MIN, \&is, 'int handler - min value'],
     ['Int', POSIX::INT_MAX, \&is, 'int handler - max value'],
     ['Int', undef, \&is, 'int handler - undef', 0],
+    ['Short', 42, \&is, 'short handler'],
+    ['Short', \42, \&is, 'short handler - reference', 42],
+    ['Short', POSIX::SHRT_MIN, \&is, 'short handler - min value'],
+    ['Short', POSIX::SHRT_MAX, \&is, 'short handler - max value'],
+    ['Short', undef, \&is, 'short handler - undef', 0],
 ];
 
 sub runTestsWithData {
