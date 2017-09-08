@@ -46,6 +46,7 @@ private:
 class SMOKETESTLIB_EXPORT HandlersTester
     : private HandlersTesterType<bool>
     , private HandlersTesterType<char>
+    , private HandlersTesterType<unsigned char>
     , private HandlersTesterType<double>
     , private HandlersTesterType<float>
     , private HandlersTesterType<int>
@@ -59,6 +60,7 @@ public:
 
     MAKE_GETTER(bool, Bool);
     MAKE_GETTER(char, Char);
+    MAKE_GETTER(unsigned char, UnsignedChar);
     MAKE_GETTER(double, Double);
     MAKE_GETTER(float, Float);
     MAKE_GETTER(int, Int);
