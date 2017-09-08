@@ -12,6 +12,10 @@ void marshall_basetype(Marshall* m) {
             marshall_PrimitiveRef<signed char>(m);
         break;
 
+        case Smoke::t_double:
+            marshall_PrimitiveRef<double>(m);
+        break;
+
         case Smoke::t_float:
             marshall_PrimitiveRef<float>(m);
         break;
@@ -132,6 +136,13 @@ signed char perlToPrimitive<signed char>(SV* sv) {
 }
 
 template<>
+double perlToPrimitive<double>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    return SvNV(sv);
+}
+
+template<>
 float perlToPrimitive<float>(SV* sv) {
     if (!SvOK(sv))
         return 0;
@@ -163,6 +174,11 @@ template<>
 SV* primitiveToPerl<signed char>(signed char charVal) {
     SV* sv = newSVpvn((const char*)(&charVal), 1);
     return sv;
+}
+
+template<>
+SV* primitiveToPerl<double>(double doubleVal) {
+    return newSVnv(doubleVal);
 }
 
 template<>
