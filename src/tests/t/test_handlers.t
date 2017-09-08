@@ -12,6 +12,9 @@ sub isClose {
 }
 
 my $testData = [
+    ['Bool', 1, \&is, 'bool handler - true value'],
+    ['Bool', 0, \&is, 'bool handler - false value', ''],
+    ['Bool', undef, \&is, 'bool handler - undef is false', ''],
     ['Char', 'a', \&is, 'char handler'],
     ['Char', ord('a'), \&is, 'char handler - as int', 'a'],
     ['Char', undef, \&is, 'char handler - undef', "\0"],

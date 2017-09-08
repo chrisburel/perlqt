@@ -8,6 +8,10 @@ namespace SmokePerl {
 
 void marshall_basetype(Marshall* m) {
     switch(m->type().element()) {
+        case Smoke::t_bool:
+            marshall_PrimitiveRef<bool>(m);
+        break;
+
         case Smoke::t_char:
             marshall_PrimitiveRef<signed char>(m);
         break;
@@ -126,6 +130,11 @@ template<> double* selectSmokeStackField<double>(Marshall *m) { return &m->item(
 template <class T> T perlToPrimitive(SV*);
 
 template<>
+bool perlToPrimitive<bool>(SV* sv) {
+    return SvTRUE(sv);
+}
+
+template<>
 signed char perlToPrimitive<signed char>(SV* sv) {
     if (!SvOK(sv))
         return 0;
@@ -169,6 +178,11 @@ char* perlToPrimitive<char*>(SV* sv) {
 }
 
 template <class T> SV* primitiveToPerl(T);
+
+template<>
+SV* primitiveToPerl<bool>(bool boolVal) {
+    return boolSV(boolVal);
+}
 
 template<>
 SV* primitiveToPerl<signed char>(signed char charVal) {
