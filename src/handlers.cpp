@@ -210,7 +210,7 @@ SV* primitiveToPerl<bool>(bool boolVal) {
 
 template<>
 SV* primitiveToPerl<signed char>(signed char charVal) {
-    SV* sv = newSVpvn((const char*)(&charVal), 1);
+    SV* sv = newSViv(charVal);
     return sv;
 }
 
