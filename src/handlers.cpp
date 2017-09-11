@@ -40,6 +40,10 @@ void marshall_basetype(Marshall* m) {
             marshall_PrimitiveRef<long>(m);
         break;
 
+        case Smoke::t_ulong:
+            marshall_PrimitiveRef<unsigned long>(m);
+        break;
+
         case Smoke::t_short:
             marshall_PrimitiveRef<signed short>(m);
         break;
@@ -214,6 +218,13 @@ long perlToPrimitive<long>(SV* sv) {
 }
 
 template<>
+unsigned long perlToPrimitive<unsigned long>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    return (unsigned long)SvUV(sv);
+}
+
+template<>
 signed short perlToPrimitive<signed short>(SV* sv) {
     if (!SvOK(sv))
         return 0;
@@ -282,6 +293,11 @@ SV* primitiveToPerl<unsigned int>(unsigned int uintVal) {
 template<>
 SV* primitiveToPerl<long>(long longVal) {
     return newSViv(longVal);
+}
+
+template<>
+SV* primitiveToPerl<unsigned long>(unsigned long ulongVal) {
+    return newSVuv(ulongVal);
 }
 
 template<>
