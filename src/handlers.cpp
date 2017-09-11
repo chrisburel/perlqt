@@ -242,16 +242,6 @@ unsigned short perlToPrimitive<unsigned short>(SV* sv) {
     return (signed short)SvUV(sv);
 }
 
-template<>
-char* perlToPrimitive<char*>(SV* sv) {
-    if (!SvOK(sv))
-        return 0;
-    if (SvROK(sv))
-        sv = SvRV(sv);
-    char* str = SvPV_nolen(sv);
-    return str;
-}
-
 template <class T> SV* primitiveToPerl(T);
 
 template<>
