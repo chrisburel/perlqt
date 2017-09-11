@@ -32,6 +32,10 @@ void marshall_basetype(Marshall* m) {
             marshall_PrimitiveRef<int>(m);
         break;
 
+        case Smoke::t_uint:
+            marshall_PrimitiveRef<unsigned int>(m);
+        break;
+
         case Smoke::t_long:
             marshall_PrimitiveRef<long>(m);
         break;
@@ -194,6 +198,15 @@ int perlToPrimitive<int>(SV* sv) {
 }
 
 template<>
+unsigned int perlToPrimitive<unsigned int>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    if (SvROK(sv)) // Because enums can be used as ints
+        sv = SvRV(sv);
+    return SvUV(sv);
+}
+
+template<>
 long perlToPrimitive<long>(SV* sv) {
     if (!SvOK(sv))
         return 0;
@@ -259,6 +272,11 @@ SV* primitiveToPerl<float>(float floatVal) {
 template<>
 SV* primitiveToPerl<int>(int intVal) {
     return newSViv(intVal);
+}
+
+template<>
+SV* primitiveToPerl<unsigned int>(unsigned int uintVal) {
+    return newSVuv(uintVal);
 }
 
 template<>
