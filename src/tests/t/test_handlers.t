@@ -47,6 +47,10 @@ my $testData = [
     ['Short', POSIX::SHRT_MIN, \&is, 'short handler - min value'],
     ['Short', POSIX::SHRT_MAX, \&is, 'short handler - max value'],
     ['Short', undef, \&is, 'short handler - undef', 0],
+    ['UnsignedShort', 42, \&is, 'unsigned short handler'],
+    ['UnsignedShort', \42, \&is, 'unsigned short handler - reference', 42],
+    ['UnsignedShort', POSIX::USHRT_MAX, \&is, 'unsigned short handler - max value'],
+    ['UnsignedShort', undef, \&is, 'unsigned short handler - undef', 0],
 ];
 
 sub runTestsWithData {

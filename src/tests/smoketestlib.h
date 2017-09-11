@@ -52,6 +52,7 @@ class SMOKETESTLIB_EXPORT HandlersTester
     , private HandlersTesterType<int>
     , private HandlersTesterType<long>
     , private HandlersTesterType<short>
+    , private HandlersTesterType<unsigned short>
 {
 public:
 #define MAKE_GETTER(type, uctype) \
@@ -66,4 +67,5 @@ public:
     MAKE_GETTER(int, Int);
     MAKE_GETTER(long, Long);
     MAKE_GETTER(short, Short);
+    MAKE_GETTER(unsigned short, UnsignedShort);
 };
