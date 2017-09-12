@@ -401,7 +401,6 @@ void marshall_PrimitiveRef(Marshall* m) {
 }
 
 template void marshall_PrimitiveRef<char*>(Marshall* m);
-template void marshall_PrimitiveRef<int>(Marshall* m);
 template void marshall_PrimitiveRef<int*>(Marshall* m);
 
 void marshall_CharPArray(Marshall* m) {
