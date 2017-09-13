@@ -73,10 +73,19 @@ sub runTestsWithData {
 
         $testHandler->$setter($value);
 
-        $cmp->($testHandler->$getter(), $expected, $testName);
+        my $got;
+        if ($funcName =~ m/Mutate$/) {
+            # Mutate methods modify the input $value directly
+            $got = $value;
+        }
+        else {
+            # Non-mutate methods can be checked by calling the corresponding
+            # getter
+            $got = $testHandler->$getter();
+        }
+        $cmp->($got, $expected, $testName);
     }
 }
 
 plan tests => scalar @{$testData};
 runTestsWithData($testData);
-
