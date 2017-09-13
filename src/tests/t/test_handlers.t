@@ -65,7 +65,7 @@ sub runTestsWithData {
     foreach my $datum (@{$testData}) {
         my $testHandler = PerlSmokeTest::HandlersTester->new();
         my ($funcName, $value, $cmp, $testName, $expected) = @{$datum};
-        if (not defined $expected) {
+        if (scalar (@{$datum}) < 5) {
             $expected = $value;
         }
         my $getter = 'get' . $funcName;
