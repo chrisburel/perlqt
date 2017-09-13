@@ -330,25 +330,31 @@ void marshallFromPerl<char*>(Marshall* m) {
 template<>
 void marshallFromPerl<int*>(Marshall* m) {
     SV *sv = m->var();
-    if ( !SvOK(sv) ) {
-        sv_setiv( sv, 0 );
-    }
-    if ( SvROK(sv) ) {
+    int* i = nullptr;
+    bool isConstRef = m->type().isConst() && m->type().isRef();
+
+    if (SvROK(sv)) {
         sv = SvRV(sv);
     }
-
-    if ( !SvIOK(sv) ) {
-        sv_setiv( sv, 0 );
+    if (SvOK(sv)) {
+        if (isConstRef) {
+            // Avoid dynamic allocation for const ref argument
+            sv_2iv(sv);
+            i = (int*)(&SvIVX(sv));
+        }
+        else {
+            i = new int(SvIV(sv));
+        }
     }
 
-    int *i = new int(SvIV(sv));
     m->item().s_voidp = i;
     m->next();
 
-    if(m->cleanup() && m->type().isConst()) {
-        delete i;
-    } else {
+    if (!m->type().isConst() && i && !SvREADONLY(sv)) {
         sv_setiv(sv, *i);
+    }
+    if (m->cleanup() && i && !isConstRef) {
+        delete i;
     }
 }
 
@@ -374,8 +380,9 @@ void marshallToPerl<char*>(Marshall* m) {
 template <>
 void marshallToPerl<int*>(Marshall* m) {
     int* num = (int*)m->item().s_voidp;
-    SV* sv = newSV(0);
-    sv_setiv(sv, *num);
+    SV* sv = &PL_sv_undef;
+    if (num)
+        sv = newSViv(*num);
 
     if (m->cleanup())
         delete num;

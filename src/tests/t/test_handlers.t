@@ -11,6 +11,10 @@ sub isClose {
     ok(abs($got - $expected) < 1e-7, $message);
 }
 
+use constant {
+    CONST_INT_VALUE => 72
+};
+
 my $testData = [
     ['Bool', 1, \&is, 'bool handler - true value'],
     ['Bool', 0, \&is, 'bool handler - false value', ''],
@@ -42,6 +46,12 @@ my $testData = [
     ['UnsignedInt', \42, \&is, 'unsigned int handler - reference', 42],
     ['UnsignedInt', POSIX::UINT_MAX, \&is, 'unsigned int handler - max value'],
     ['UnsignedInt', undef, \&is, 'unsigned int handler - undef', 0],
+    ['ConstIntRef', 5, \&is, 'const int& handler'],
+    ['IntStar', \CONST_INT_VALUE, \&is, 'int* handler - readonly value', CONST_INT_VALUE],
+    ['IntStar', undef, \&is, 'int* handler - undef'],
+    ['IntStarMultBy2Mutate', 5, \&is, 'int* handler - mutate', 10],
+    ['IntStarMultBy2Mutate', \CONST_INT_VALUE, \&is, 'int& handler - readonly value'],
+    ['IntRefMultBy2Mutate', 5, \&is, 'int& handler - mutate', 10],
     ['Long', 42, \&is, 'long handler'],
     ['Long', POSIX::LONG_MIN, \&is, 'long handler - min value'],
     ['Long', POSIX::LONG_MAX, \&is, 'long handler - max value'],

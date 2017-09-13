@@ -43,6 +43,35 @@ private:
     T data;
 };
 
+template <class T>
+class HandlersTesterType<const T&> {
+public:
+    const T& get() const { return data; }
+    void set(const T& newData) { data = newData; }
+
+private:
+    T data;
+};
+
+template <class T>
+class HandlersTesterType<T*> {
+public:
+    ~HandlersTesterType() {
+        if (data) delete data;
+    }
+
+    T* get() const { return data; }
+    void set(T* newData) {
+        if (data) delete data;
+
+        if (newData) data = new T(*newData);
+        else data = nullptr;
+    }
+
+private:
+    T* data;
+};
+
 class SMOKETESTLIB_EXPORT HandlersTester
     : private HandlersTesterType<bool>
     , private HandlersTesterType<char>
@@ -50,6 +79,9 @@ class SMOKETESTLIB_EXPORT HandlersTester
     , private HandlersTesterType<double>
     , private HandlersTesterType<float>
     , private HandlersTesterType<int>
+    , private HandlersTesterType<int*>
+    , private HandlersTesterType<const int*>
+    , private HandlersTesterType<const int&>
     , private HandlersTesterType<unsigned int>
     , private HandlersTesterType<long>
     , private HandlersTesterType<unsigned long>
@@ -61,15 +93,28 @@ public:
     type get##uctype() const { return HandlersTesterType<type>::get(); } \
     void set##uctype(type newValue) { HandlersTesterType<type>::set(newValue); }
 
+
     MAKE_GETTER(bool, Bool);
     MAKE_GETTER(char, Char);
     MAKE_GETTER(unsigned char, UnsignedChar);
     MAKE_GETTER(double, Double);
     MAKE_GETTER(float, Float);
     MAKE_GETTER(int, Int);
+    MAKE_GETTER(int*, IntStar);
+    MAKE_GETTER(const int&, ConstIntRef);
     MAKE_GETTER(unsigned int, UnsignedInt);
     MAKE_GETTER(long, Long);
     MAKE_GETTER(unsigned long, UnsignedLong);
     MAKE_GETTER(short, Short);
     MAKE_GETTER(unsigned short, UnsignedShort);
+
+    void setIntStarMultBy2Mutate(int* newValue) {
+        if (newValue) *newValue *= 2;
+        HandlersTesterType<int*>::set(newValue);
+    }
+
+    void setIntRefMultBy2Mutate(int& newValue) {
+        newValue *= 2;
+        HandlersTesterType<int>::set(newValue);
+    }
 };
