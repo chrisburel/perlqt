@@ -8,8 +8,48 @@ namespace SmokePerl {
 
 void marshall_basetype(Marshall* m) {
     switch(m->type().element()) {
+        case Smoke::t_bool:
+            marshall_PrimitiveRef<bool>(m);
+        break;
+
+        case Smoke::t_char:
+            marshall_PrimitiveRef<signed char>(m);
+        break;
+
+        case Smoke::t_uchar:
+            marshall_PrimitiveRef<unsigned char>(m);
+        break;
+
+        case Smoke::t_double:
+            marshall_PrimitiveRef<double>(m);
+        break;
+
+        case Smoke::t_float:
+            marshall_PrimitiveRef<float>(m);
+        break;
+
         case Smoke::t_int:
             marshall_PrimitiveRef<int>(m);
+        break;
+
+        case Smoke::t_uint:
+            marshall_PrimitiveRef<unsigned int>(m);
+        break;
+
+        case Smoke::t_long:
+            marshall_PrimitiveRef<long>(m);
+        break;
+
+        case Smoke::t_ulong:
+            marshall_PrimitiveRef<unsigned long>(m);
+        break;
+
+        case Smoke::t_short:
+            marshall_PrimitiveRef<signed short>(m);
+        break;
+
+        case Smoke::t_ushort:
+            marshall_PrimitiveRef<unsigned short>(m);
         break;
 
         case Smoke::t_enum:
@@ -114,6 +154,45 @@ template<> double* selectSmokeStackField<double>(Marshall *m) { return &m->item(
 template <class T> T perlToPrimitive(SV*);
 
 template<>
+bool perlToPrimitive<bool>(SV* sv) {
+    return SvTRUE(sv);
+}
+
+template<>
+signed char perlToPrimitive<signed char>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    if (SvIOK(sv))
+        return (char)SvIV(sv);
+    char* str = SvPV_nolen(sv);
+    return *str;
+}
+
+template<>
+unsigned char perlToPrimitive<unsigned char>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    if (SvIOK(sv))
+        return (unsigned char)SvUV(sv);
+    char* str = SvPV_nolen(sv);
+    return *(unsigned char*)str;
+}
+
+template<>
+double perlToPrimitive<double>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    return SvNV(sv);
+}
+
+template<>
+float perlToPrimitive<float>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    return SvNV(sv);
+}
+
+template<>
 int perlToPrimitive<int>(SV* sv) {
     if (!SvOK(sv))
         return 0;
@@ -123,20 +202,102 @@ int perlToPrimitive<int>(SV* sv) {
 }
 
 template<>
-char* perlToPrimitive<char*>(SV* sv) {
+unsigned int perlToPrimitive<unsigned int>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    if (SvROK(sv)) // Because enums can be used as ints
+        sv = SvRV(sv);
+    return SvUV(sv);
+}
+
+template<>
+long perlToPrimitive<long>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    return (long)SvIV(sv);
+}
+
+template<>
+unsigned long perlToPrimitive<unsigned long>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    return (unsigned long)SvUV(sv);
+}
+
+template<>
+signed short perlToPrimitive<signed short>(SV* sv) {
     if (!SvOK(sv))
         return 0;
     if (SvROK(sv))
         sv = SvRV(sv);
-    char* str = SvPV_nolen(sv);
-    return str;
+    return (signed short)SvIV(sv);
+}
+
+template<>
+unsigned short perlToPrimitive<unsigned short>(SV* sv) {
+    if (!SvOK(sv))
+        return 0;
+    if (SvROK(sv))
+        sv = SvRV(sv);
+    return (signed short)SvUV(sv);
 }
 
 template <class T> SV* primitiveToPerl(T);
 
 template<>
+SV* primitiveToPerl<bool>(bool boolVal) {
+    return boolSV(boolVal);
+}
+
+template<>
+SV* primitiveToPerl<signed char>(signed char charVal) {
+    SV* sv = newSViv(charVal);
+    return sv;
+}
+
+template<>
+SV* primitiveToPerl<unsigned char>(unsigned char charVal) {
+    return newSVuv(charVal);
+}
+
+template<>
+SV* primitiveToPerl<double>(double doubleVal) {
+    return newSVnv(doubleVal);
+}
+
+template<>
+SV* primitiveToPerl<float>(float floatVal) {
+    return newSVnv(floatVal);
+}
+
+template<>
 SV* primitiveToPerl<int>(int intVal) {
     return newSViv(intVal);
+}
+
+template<>
+SV* primitiveToPerl<unsigned int>(unsigned int uintVal) {
+    return newSVuv(uintVal);
+}
+
+template<>
+SV* primitiveToPerl<long>(long longVal) {
+    return newSViv(longVal);
+}
+
+template<>
+SV* primitiveToPerl<unsigned long>(unsigned long ulongVal) {
+    return newSVuv(ulongVal);
+}
+
+template<>
+SV* primitiveToPerl<signed short>(signed short shortVal) {
+    return newSViv(shortVal);
+}
+
+template<>
+SV* primitiveToPerl<unsigned short>(unsigned short shortVal) {
+    return newSVuv(shortVal);
 }
 
 template <class T>
@@ -169,25 +330,31 @@ void marshallFromPerl<char*>(Marshall* m) {
 template<>
 void marshallFromPerl<int*>(Marshall* m) {
     SV *sv = m->var();
-    if ( !SvOK(sv) ) {
-        sv_setiv( sv, 0 );
-    }
-    if ( SvROK(sv) ) {
+    int* i = nullptr;
+    bool isConstRef = m->type().isConst() && m->type().isRef();
+
+    if (SvROK(sv)) {
         sv = SvRV(sv);
     }
-
-    if ( !SvIOK(sv) ) {
-        sv_setiv( sv, 0 );
+    if (SvOK(sv)) {
+        if (isConstRef) {
+            // Avoid dynamic allocation for const ref argument
+            sv_2iv(sv);
+            i = (int*)(&SvIVX(sv));
+        }
+        else {
+            i = new int(SvIV(sv));
+        }
     }
 
-    int *i = new int(SvIV(sv));
     m->item().s_voidp = i;
     m->next();
 
-    if(m->cleanup() && m->type().isConst()) {
-        delete i;
-    } else {
+    if (!m->type().isConst() && i && !SvREADONLY(sv)) {
         sv_setiv(sv, *i);
+    }
+    if (m->cleanup() && i && !isConstRef) {
+        delete i;
     }
 }
 
@@ -213,8 +380,9 @@ void marshallToPerl<char*>(Marshall* m) {
 template <>
 void marshallToPerl<int*>(Marshall* m) {
     int* num = (int*)m->item().s_voidp;
-    SV* sv = newSV(0);
-    sv_setiv(sv, *num);
+    SV* sv = &PL_sv_undef;
+    if (num)
+        sv = newSViv(*num);
 
     if (m->cleanup())
         delete num;
@@ -240,7 +408,6 @@ void marshall_PrimitiveRef(Marshall* m) {
 }
 
 template void marshall_PrimitiveRef<char*>(Marshall* m);
-template void marshall_PrimitiveRef<int>(Marshall* m);
 template void marshall_PrimitiveRef<int*>(Marshall* m);
 
 void marshall_CharPArray(Marshall* m) {
