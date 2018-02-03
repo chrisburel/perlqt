@@ -11,6 +11,10 @@ sub isClose {
     ok(abs($got - $expected) < 1e-7, $message);
 }
 
+sub getTemporaryString {
+    return "String with SVs_TEMP set";
+}
+
 use constant {
     CONST_INT_VALUE => 72
 };
@@ -24,6 +28,8 @@ my $testData = [
     ['Char', POSIX::CHAR_MIN, \&is, 'char handler - min value'],
     ['Char', POSIX::CHAR_MAX, \&is, 'char handler - max value'],
     ['Char', undef, \&is, 'char handler - undef', 0],
+    ['CharStar', 'Hello, world!', \&is, 'char* handler'],
+    ['CharStar', \&getTemporaryString, \&is, 'char* handler - temporary'],
     ['UnsignedChar', 'a', \&is, 'unsigned char handler', ord('a')],
     ['UnsignedChar', ord('a'), \&is, 'unsigned char handler - as int', ord('a')],
     ['UnsignedChar', -127, \&is, 'unsigned char handler - negative values', 256-127],
@@ -76,12 +82,24 @@ sub runTestsWithData {
         my $testHandler = PerlSmokeTest::HandlersTester->new();
         my ($funcName, $value, $cmp, $testName, $expected) = @{$datum};
         if (scalar (@{$datum}) < 5) {
-            $expected = $value;
+            if (ref ($value) eq 'CODE') {
+                $expected = $value->();
+            }
+            else {
+                $expected = $value;
+            }
         }
         my $getter = 'get' . $funcName;
         my $setter = 'set' . $funcName;
 
-        $testHandler->$setter($value);
+        if (ref ($value) eq 'CODE') {
+            # Pass the result of a subroutine call to the setter, so that
+            # SVt_TEMP is set on the variable going in
+            $testHandler->$setter($value->());
+        }
+        else {
+            $testHandler->$setter($value);
+        }
 
         my $got;
         if ($funcName =~ m/Mutate$/) {

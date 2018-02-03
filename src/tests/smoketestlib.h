@@ -1,3 +1,5 @@
+#include <cstring>
+
 #if defined (_WIN32)
     #if defined(smoketestlib_EXPORTS)
         #define SMOKETESTLIB_EXPORT __declspec(dllexport)
@@ -72,9 +74,36 @@ private:
     T* data;
 };
 
+template <>
+class HandlersTesterType<char*> {
+public:
+    ~HandlersTesterType() {
+        if (data) delete data;
+    }
+
+    char* get() const { return data; }
+    void set(char* newData) {
+        if (data) delete[] data;
+
+        if (newData) {
+            size_t len = strlen(newData);
+            data = new char[len + 1];
+            strncpy(data, newData, len);
+            data[len] = '\0';
+        }
+        else {
+            data = nullptr;
+        }
+    }
+
+private:
+    char* data;
+};
+
 class SMOKETESTLIB_EXPORT HandlersTester
     : private HandlersTesterType<bool>
     , private HandlersTesterType<char>
+    , private HandlersTesterType<char*>
     , private HandlersTesterType<unsigned char>
     , private HandlersTesterType<double>
     , private HandlersTesterType<float>
@@ -96,6 +125,7 @@ public:
 
     MAKE_GETTER(bool, Bool);
     MAKE_GETTER(char, Char);
+    MAKE_GETTER(char*, CharStar);
     MAKE_GETTER(unsigned char, UnsignedChar);
     MAKE_GETTER(double, Double);
     MAKE_GETTER(float, Float);
