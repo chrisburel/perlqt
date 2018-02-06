@@ -339,7 +339,6 @@ template<>
 void marshallFromPerl<int*>(Marshall* m) {
     SV *sv = m->var();
     int* i = nullptr;
-    bool isConstRef = m->type().isConst() && m->type().isRef();
 
     if (SvROK(sv)) {
         sv = SvRV(sv);
@@ -354,9 +353,9 @@ void marshallFromPerl<int*>(Marshall* m) {
     if (!m->type().isConst() && i && !SvREADONLY(sv)) {
         sv_setiv(sv, *i);
     }
-    if (m->cleanup() && i && !isConstRef) {
-        delete i;
-    }
+
+    // No cleanup. We don't know who should own the new int*, assume that the
+    // called function will perform cleanup
 }
 
 template void marshallFromPerl<int*>(Marshall* m);
