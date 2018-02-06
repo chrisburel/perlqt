@@ -18,7 +18,7 @@ sub mySub {
     }
 }
 
-my $app = PerlQt5::QtCore::QCoreApplication->new(scalar @ARGV, \@ARGV);
+my $app = PerlQt5::QtCore::QCoreApplication->new(\@ARGV);
 my $signal = $app->can('objectNameChanged');
 isa_ok($signal, 'PerlQt5::QtCore::Signal');
 

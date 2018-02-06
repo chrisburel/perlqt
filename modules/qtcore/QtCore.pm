@@ -101,6 +101,14 @@ sub new {
     return;
 }
 
+package PerlQt5::QtCore::QCoreApplication;
+
+sub new {
+    my ($class, $argv) = @_;
+    unshift @{$argv}, $0;
+    return bless $class->QCoreApplication(scalar @{$argv}, $argv), $class;
+}
+
 package PerlQt5::QtCore::QObject;
 
 use B;

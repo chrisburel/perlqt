@@ -22,7 +22,7 @@ sub mySlotSubclass : Slot() {
 }
 
 package main;
-my $app = PerlQt5::QtCore::QCoreApplication->new(scalar @ARGV, \@ARGV);
+my $app = PerlQt5::QtCore::QCoreApplication->new(\@ARGV);
 my $obj = MyObject->new();
 my $objSubclass = MyObjectSubclass->new();
 PerlQt5::QtCore::QTimer->singleShot(0, $obj, SLOT "mySlot()");

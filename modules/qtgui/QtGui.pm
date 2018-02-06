@@ -21,4 +21,12 @@ sub loadModule {
     XSLoader::load($module, $version);
 }
 
+package PerlQt5::QtGui::QGuiApplication;
+
+sub new {
+    my ($class, $argv) = @_;
+    unshift @{$argv}, $0;
+    return bless $class->QGuiApplication(scalar @{$argv}, $argv), $class;
+}
+
 1;

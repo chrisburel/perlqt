@@ -16,7 +16,7 @@ sub mySub : Slot(int) {
 }
 
 package main;
-my $app = PerlQt5::QtCore::QCoreApplication->new(scalar @ARGV, \@ARGV);
+my $app = PerlQt5::QtCore::QCoreApplication->new(\@ARGV);
 my $mapper = PerlQt5::QtCore::QSignalMapper->new();
 my $obj = MyObject->new();
 our $appId = 1;
