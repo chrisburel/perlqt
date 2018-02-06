@@ -6,6 +6,14 @@
 
 namespace SmokePerl {
 
+static bool SvMaybeDefined(SV* sv) {
+    // Some SVs may fail the SvOK test, but have MAGIC that allows them to get
+    // valid IVs out. For instance, in the perl code
+    // "my @arr = qw(a b c); someFunc($#arr)"
+    // someFunc() gets a tied variable with PERL_MAGIC_arylen magic
+    return SvOK(sv) || SvMAGICAL(sv);
+}
+
 void marshall_basetype(Marshall* m) {
     switch(m->type().element()) {
         case Smoke::t_bool:
@@ -160,7 +168,7 @@ bool perlToPrimitive<bool>(SV* sv) {
 
 template<>
 signed char perlToPrimitive<signed char>(SV* sv) {
-    if (!SvOK(sv))
+    if (!SvMaybeDefined(sv))
         return 0;
     if (SvIOK(sv))
         return (char)SvIV(sv);
@@ -170,7 +178,7 @@ signed char perlToPrimitive<signed char>(SV* sv) {
 
 template<>
 unsigned char perlToPrimitive<unsigned char>(SV* sv) {
-    if (!SvOK(sv))
+    if (!SvMaybeDefined(sv))
         return 0;
     if (SvIOK(sv))
         return (unsigned char)SvUV(sv);
@@ -180,21 +188,21 @@ unsigned char perlToPrimitive<unsigned char>(SV* sv) {
 
 template<>
 double perlToPrimitive<double>(SV* sv) {
-    if (!SvOK(sv))
+    if (!SvMaybeDefined(sv))
         return 0;
     return SvNV(sv);
 }
 
 template<>
 float perlToPrimitive<float>(SV* sv) {
-    if (!SvOK(sv))
+    if (!SvMaybeDefined(sv))
         return 0;
     return SvNV(sv);
 }
 
 template<>
 int perlToPrimitive<int>(SV* sv) {
-    if (!SvOK(sv))
+    if (!SvMaybeDefined(sv))
         return 0;
     if (SvROK(sv)) // Because enums can be used as ints
         return SvIV(SvRV(sv));
@@ -203,7 +211,7 @@ int perlToPrimitive<int>(SV* sv) {
 
 template<>
 unsigned int perlToPrimitive<unsigned int>(SV* sv) {
-    if (!SvOK(sv))
+    if (!SvMaybeDefined(sv))
         return 0;
     if (SvROK(sv)) // Because enums can be used as ints
         sv = SvRV(sv);
@@ -212,21 +220,21 @@ unsigned int perlToPrimitive<unsigned int>(SV* sv) {
 
 template<>
 long perlToPrimitive<long>(SV* sv) {
-    if (!SvOK(sv))
+    if (!SvMaybeDefined(sv))
         return 0;
     return (long)SvIV(sv);
 }
 
 template<>
 unsigned long perlToPrimitive<unsigned long>(SV* sv) {
-    if (!SvOK(sv))
+    if (!SvMaybeDefined(sv))
         return 0;
     return (unsigned long)SvUV(sv);
 }
 
 template<>
 signed short perlToPrimitive<signed short>(SV* sv) {
-    if (!SvOK(sv))
+    if (!SvMaybeDefined(sv))
         return 0;
     if (SvROK(sv))
         sv = SvRV(sv);
@@ -235,7 +243,7 @@ signed short perlToPrimitive<signed short>(SV* sv) {
 
 template<>
 unsigned short perlToPrimitive<unsigned short>(SV* sv) {
-    if (!SvOK(sv))
+    if (!SvMaybeDefined(sv))
         return 0;
     if (SvROK(sv))
         sv = SvRV(sv);
@@ -336,15 +344,8 @@ void marshallFromPerl<int*>(Marshall* m) {
     if (SvROK(sv)) {
         sv = SvRV(sv);
     }
-    if (SvOK(sv)) {
-        if (isConstRef) {
-            // Avoid dynamic allocation for const ref argument
-            sv_2iv(sv);
-            i = (int*)(&SvIVX(sv));
-        }
-        else {
-            i = new int(SvIV(sv));
-        }
+    if (SvMaybeDefined(sv)) {
+        i = new int(SvIV(sv));
     }
 
     m->item().s_voidp = i;

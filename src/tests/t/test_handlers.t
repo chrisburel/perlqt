@@ -39,22 +39,28 @@ my $testData = [
     ['Double', POSIX::DBL_MIN, \&isClose, 'double handler - min value'],
     ['Double', POSIX::DBL_MAX, \&isClose, 'double handler - max value'],
     ['Double', undef, \&isClose, 'double handler - undef', 0],
+    ['Double', '__magical_number__', \&is, 'double handler - value with get magic', 4],
     ['Float', 0.1, \&isClose, 'float handler'],
     ['Float', POSIX::FLT_MIN, \&isClose, 'float handler - min value'],
     ['Float', POSIX::FLT_MAX, \&isClose, 'float handler - max value'],
     ['Float', undef, \&isClose, 'float handler - undef', 0],
+    ['Float', '__magical_number__', \&is, 'float handler - value with get magic', 4],
     ['Int', 42, \&is, 'int handler'],
     ['Int', \42, \&is, 'int handler - reference', 42],
     ['Int', POSIX::INT_MIN, \&is, 'int handler - min value'],
     ['Int', POSIX::INT_MAX, \&is, 'int handler - max value'],
     ['Int', undef, \&is, 'int handler - undef', 0],
+    ['Int', '__magical_number__', \&is, 'int handler - value with get magic', 4],
     ['UnsignedInt', 42, \&is, 'unsigned int handler'],
     ['UnsignedInt', \42, \&is, 'unsigned int handler - reference', 42],
     ['UnsignedInt', POSIX::UINT_MAX, \&is, 'unsigned int handler - max value'],
     ['UnsignedInt', undef, \&is, 'unsigned int handler - undef', 0],
+    ['UnsignedInt', '__magical_number__', \&is, 'unsigned int handler - value with get magic', 4],
     ['ConstIntRef', 5, \&is, 'const int& handler'],
+    ['ConstIntRef', '__magical_number__', \&is, 'const int& handler - value with get magic', 4],
     ['IntStar', \CONST_INT_VALUE, \&is, 'int* handler - readonly value', CONST_INT_VALUE],
     ['IntStar', undef, \&is, 'int* handler - undef'],
+    ['IntStar', '__magical_number__', \&is, 'int* handler - value with get magic', 4],
     ['IntStarMultBy2Mutate', 5, \&is, 'int* handler - mutate', 10],
     ['IntStarMultBy2Mutate', \CONST_INT_VALUE, \&is, 'int& handler - readonly value'],
     ['IntRefMultBy2Mutate', 5, \&is, 'int& handler - mutate', 10],
@@ -62,18 +68,22 @@ my $testData = [
     ['Long', POSIX::LONG_MIN, \&is, 'long handler - min value'],
     ['Long', POSIX::LONG_MAX, \&is, 'long handler - max value'],
     ['Long', undef, \&is, 'long handler - undef', 0],
+    ['Long', '__magical_number__', \&is, 'long handler - value with get magic', 4],
     ['UnsignedLong', 42, \&is, 'unsigned long handler'],
     ['UnsignedLong', POSIX::ULONG_MAX, \&is, 'unsigned long handler - max value'],
     ['UnsignedLong', undef, \&is, 'unsigned long handler - undef', 0],
+    ['UnsignedLong', '__magical_number__', \&is, 'unsigned long handler - value with get magic', 4],
     ['Short', 42, \&is, 'short handler'],
     ['Short', \42, \&is, 'short handler - reference', 42],
     ['Short', POSIX::SHRT_MIN, \&is, 'short handler - min value'],
     ['Short', POSIX::SHRT_MAX, \&is, 'short handler - max value'],
     ['Short', undef, \&is, 'short handler - undef', 0],
+    ['Short', '__magical_number__', \&is, 'short handler - value with get magic', 4],
     ['UnsignedShort', 42, \&is, 'unsigned short handler'],
     ['UnsignedShort', \42, \&is, 'unsigned short handler - reference', 42],
     ['UnsignedShort', POSIX::USHRT_MAX, \&is, 'unsigned short handler - max value'],
     ['UnsignedShort', undef, \&is, 'unsigned short handler - undef', 0],
+    ['UnsignedShort', '__magical_number__', \&is, 'unsigned short handler - value with get magic', 4],
 ];
 
 sub runTestsWithData {
@@ -96,6 +106,10 @@ sub runTestsWithData {
             # Pass the result of a subroutine call to the setter, so that
             # SVt_TEMP is set on the variable going in
             $testHandler->$setter($value->());
+        }
+        elsif (defined $value and $value eq '__magical_number__') {
+            my @array = qw(a b c d e);
+            $testHandler->$setter($#array);
         }
         else {
             $testHandler->$setter($value);
