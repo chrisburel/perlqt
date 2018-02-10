@@ -26,6 +26,50 @@ sub getMethodTypeHandlers {
     return @methodHandlers;
 }
 
+package SmokePerl::Enum;
+
+use overload
+    '==' => sub { return applyOperator(\&equal, @_) },
+    '&' => sub { return applyOperatorBless(\&and, @_) },
+    '|' => sub { return applyOperatorBless(\&or, @_) },
+    '^' => sub { return applyOperatorBless(\&xor, @_) },
+    '~' => sub { return ~${$_[0]} },
+    '0+' => sub { return ${$_[0]} },
+    '""' => sub { return ref($_[0]) . "(${$_[0]})"; },
+    ;
+
+sub and($$) {
+    return $_[0] & $_[1];
+}
+
+sub equal($$) {
+    return $_[0] == $_[1];
+}
+
+sub or($$) {
+    return $_[0] | $_[1];
+}
+
+sub xor($$) {
+    return $_[0] ^ $_[1];
+}
+
+sub applyOperator {
+    my ($opFunc) = shift;
+    if (ref $_[1]) {
+        return $opFunc->(${$_[0]}, ${$_[1]});
+    }
+    elsif ($_[2]) {
+        # arguments have been swapped
+        return $opFunc->($_[1], ${$_[0]});
+    }
+    return $opFunc->(${$_[0]}, $_[1]);
+}
+
+sub applyOperatorBless {
+    return bless \applyOperator(@_), ref $_[1];
+}
+
 package SmokePerl::Method;
 
 use overload

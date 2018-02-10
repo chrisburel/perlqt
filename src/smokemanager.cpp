@@ -78,6 +78,11 @@ void SmokeManager::addSmokeModule(Smoke* smoke, const std::string& nspace) {
         if ((curType.flags & Smoke::tf_elem) == Smoke::t_enum) {
             const std::string perlClassName = nspace + "::" + curType.name;
             perlPackageToCClass[perlClassName] = curType.name;
+
+            // Set ISA array for enums
+            const std::string isaName = perlClassName + "::ISA";
+            AV* isa = get_av(isaName.c_str(), true);
+            av_push(isa, newSVpvn("SmokePerl::Enum", 15));
         }
     }
 }
