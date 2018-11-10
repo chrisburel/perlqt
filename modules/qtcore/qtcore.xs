@@ -53,7 +53,9 @@ void addSlot(metaObject, slotName, argTypes)
 MODULE = PerlQt5::QtCore PACKAGE = PerlQt5::QtCore
 
 BOOT:
+#if defined (MULTIPLICITY) && defined (PERL_GLOBAL_STRUCT)
     PL_use_safe_putenv = 1;
+#endif
 
     init_qtcore_Smoke();
     SmokePerl::SmokeManager::instance().addSmokeModule(qtcore_Smoke, "PerlQt5::QtCore");
