@@ -3,16 +3,16 @@ use Test::More tests => 16;
 use strict;
 use warnings;
 
-use Devel::Peek qw(SvREFCNT);
+use B qw(svref_2object);
 use PerlSmokeTest;
 use SmokePerl;
 
 my $app = PerlSmokeTest::QApplication->new();
-is(SvREFCNT(%$app), 1);
+is(svref_2object($app)->REFCNT, 1);
 
 my $app2 = $app->instance();
-is(SvREFCNT(%$app), 2);
-is(SvREFCNT(%$app2), 2);
+is(svref_2object($app)->REFCNT, 2);
+is(svref_2object($app2)->REFCNT, 2);
 
 is($app2, $app);
 is(ref $app, 'PerlSmokeTest::QApplication');
@@ -25,15 +25,15 @@ ok(defined $app2ptr);
 is($app1ptr, $app2ptr);
 
 undef $app;
-is(SvREFCNT(%$app2), 1);
+is(svref_2object($app2)->REFCNT, 1);
 
 my $newRef = SmokePerl::getInstance($app1ptr);
 is($app2, $newRef);
-is(SvREFCNT(%$app2), 2);
-is(SvREFCNT(%$newRef), 2);
+is(svref_2object($app2)->REFCNT, 2);
+is(svref_2object($newRef)->REFCNT, 2);
 
 undef $app2;
-is(SvREFCNT(%$newRef), 1);
+is(svref_2object($newRef)->REFCNT, 1);
 undef $newRef;
 ok(!defined SmokePerl::getInstance($app1ptr));
 ok(!defined PerlSmokeTest::QApplication->instance());
